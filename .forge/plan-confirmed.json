@@ -1,0 +1,9 @@
+{
+  "confirmed_at": "2026-07-10T00:00:00Z",
+  "plan_path": "DEV-PLAN.md",
+  "confirmed_by": "user",
+  "plan_version": "v1.0.0",
+  "total_phases": 4,
+  "v0.1.0_scope": "4 phases: Project Skeleton+Workspace → Agent Chat → Memory/File/Terminal → Release",
+  "critique_applied": true
+}

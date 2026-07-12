@@ -1,0 +1,27 @@
+services:
+  tepeu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "30141:30141"
+    volumes:
+      # Persist SQLite database and workspace files
+      - tepeu-data:/app/workspace
+      # Persist master encryption key
+      - tepeu-keys:/app/.tepeu
+    environment:
+      - TEPEU_HOME=/app
+      # Override master key path to the persistent volume
+      - JAVA_OPTS=-Dtepeu.security.master-key-file=/app/.tepeu/master.key
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:30141/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  tepeu-data:
+  tepeu-keys:

@@ -1,0 +1,54 @@
+# Project Memory — Tepeu Agentic OS
+
+## Tech Stack
+- **Runtime**: Java 21 (virtual threads)
+- **Backend**: Spring Boot 4.0+ + Spring AI 2.0.0 GA
+- **Agent tools**: spring-ai-agent-utils 0.10.0 (community, org.springaicommunity)
+- **Database**: SQLite (WAL mode)
+- **Frontend**: React 18 + TypeScript 5 + Tailwind CSS 4 + Vite 6
+- **Build**: Maven 3.9 (backend) + npm (frontend)
+- **Deploy**: Docker multi-stage, single JAR
+
+## Architecture
+- Monorepo: `backend/` (Spring Boot) + `frontend/` (Vite/React)
+- Frontend dev: Vite proxy to port 30141
+- Frontend prod: built to `backend/src/main/resources/static/`
+- SQLite schema auto-created on startup via DatabaseConfig.java
+- All API responses use unified `ApiResponse<T>` wrapper
+- React state management: useState（hooks 局部）+ props（原 EventLoop 计划已退役 ADR-003，eventLoop.ts 已删）
+- No authentication in Phase 1 (local-only mode)
+
+## Phase 2 — Agent 对话（SSE 流式）架构
+- **Chat 链路**：`controller/ChatController` `POST /api/chat/stream`（`SseEmitter`，事件名 `message`，data JSON `{type:token|final|error}`）→ `agent/AgentOrchestrator.streamTurn`（加载 session 历史→`Prompt`）→ `service/chat/ChatService.stream`（`Flux<ChatResponse>`）→ `service/chat/ChatModelFactory.getChatModel(providerId)`（**程序化**构建 Spring AI 2.0 `ChatModel`，从 DB 加密 key 解密注入；javap 验证 `OpenAiSetup.setupSyncClient`/`AnthropicSetup`/`OllamaApi` + `ChatModel.stream(Prompt)→Flux`）。错误码在 exception message：UNKNOWN_PROVIDER/UNSUPPORTED_PROVIDER/PROVIDER_DISABLED/MISSING_API_KEY/MISSING_MODEL。
+- **会话持久化**：`session` + `message` 表（role user/assistant/system），FK `ON DELETE CASCADE`。`SessionService` + `controller/SessionController`（`/api/session` GET/POST/DELETE）。
+- **前端**：`hooks/useChat`（**fetch + ReadableStream** 解析 POST SSE——`EventSource` 是 GET-only 不能用）+ `components/views/ChatView`（provider 下拉 + 消息流 + 输入）+ `ProviderSettingsView`（API key/baseUrl/model/enabled，`⚙` nav；key 留空保存=保留旧 key）。
+- **Spring AI 2.0 + Boot 4.0.7**：编译+运行**无冲突**（Phase 2 实测）。版本对齐风险排除。
+- **testConnection**：真实实现在 `ChatService.testConnection(providerId)`（build model + `model.call("ping")` + catch→false），非 `LlmProviderService` 占位（已移除，避免与 `ChatModelFactory` 循环依赖，见 ADR-007）。`ProviderController` 注入 `ChatService`。前端 `ProviderSettingsView` 有 Test Connection 按钮（`!maskedKey` 时 disabled）。`POST /api/provider/test/{id}` 实测返 500 CONNECTION_FAILED（无 key/无效 key）。
+- **streamWithTools 工具注册**：单次 per-request `.toolCallbacks(wrapped)`（M1 修复，原三重注册）。注：Spring AI 2.0 中 `defaultToolCallbacks` + `.toolCallbacks(ToolCallback...)` **均已 @Deprecated**；装饰器模式（工具事件可视化）暂不可避免走 deprecated API（carry-over，见 ADR-007）。
+- **Phase 2 状态：[2026-07-11] 验收完成（5/6 过，1 已知偏差）。真实 LLM e2e 流式+工具调用已用 DeepSeek（via Anthropic 兼容端点 `api.deepseek.com/anthropic`）验证通过。** 偏差：验收标准 6（写/删文件工具）——FileTools 仅 read-only，有意为之（写操作属未来 Phase）。
+
+## 已知坑点 / Gotchas
+
+- **构建工具是 Maven（pom.xml），不是 Gradle**。`backend/gradle/` 是空目录残留，无 gradlew。后端命令用 `mvn`。DEV-PLAN/dev-map 曾误写 Gradle，已于 2026-07-11 修正。
+- **Spring AI 2.0 GA starter 命名为 `spring-ai-starter-model-*`**（openai/anthropic/ollama）。旧名 `spring-ai-*-spring-boot-starter` 在 2.0 已废弃，BOM `spring-ai-bom:2.0.0` 不再管理——用了会报 "version is missing"。
+- **Spring AI 2.0 + Boot 4.0.7 实测无冲突**（Phase 2 验证：ChatModel 程序化构建 + `stream()` 编译运行均正常）。原 spring-projects/spring-ai#6465 对齐担忧排除。
+- **JdbcTemplate + RowMapper 若捕获注入的 blank-final 字段，必须把 RowMapper 移进构造器赋值**（field initializer 在 ctor body 前执行，会触发 "might not have been initialized"）。
+- 前端无独立 `lint` 脚本（仅 typecheck）；后端未配 checkstyle。
+- **Boot 4 默认 Jackson 3**（`tools.jackson.*`），不是 Jackson 2（`com.fasterxml.*`）。注入 `ObjectMapper` 必须用 `tools.jackson.databind.ObjectMapper`，否则报「无 ObjectMapper bean」。Jackson 3 仍兼容旧 `com.fasterxml.jackson.annotation.*` 注解（实测 `@JsonInclude(NON_NULL)` 生效）。
+- **SQLite JDBC URL 不要带 `?mode=wal`**：Windows 下 `?` 是非法文件名字符 → `SQLITE_CANTOPEN`；WAL 已由 `DatabaseConfig` 的 `PRAGMA journal_mode=WAL` 设置。
+- **本地 Maven 仓库在 `D:\maven\repo`**（非默认 `~/.m2`）。
+- **§7.4 加密主密钥文件**：`<user.home>/.tepeu/master.key`（AES-256-GCM，32B，`enc:v1:` 存储格式）。**需备份，丢失则已存 API key 不可恢复**。配置项 `tepeu.security.master-key-file`。服务层返回明文 key 给内部调用（Phase 2 agent）；HTTP 永远脱敏。见 ADR-006。
+- **`mvn spring-boot:run` fork 的子 JVM 不会被 `TaskStop` 杀掉**：停服务要 `taskkill //F //PID <java-pid>`（`netstat -ano | grep 30141` 找 PID），否则端口 30141 被占 → 下次启动报 "Port already in use"。
+- **gstack browse 多步流程必须用 `chain`**：单条 `$B <cmd>` 之间不保留页面状态（每次回到 about:blank）；`$B js` 不 await Promise（不能用它做延时）；用 `wait --networkidle` 做真实等待。
+- **FileBrowserView mount 自动加载已修复**（2026-07-11）：原 `useFileBrowser` 无 mount 触发，须点 `~` 面包屑才列文件；已给 `FileBrowserView` 加 `useEffect(() => loadFiles('/'), [loadFiles])`。开 Files 即列文件（gstack 验：`seed.txt` 自动出现，`GET /api/files/list` 自动 200）。
+- Phase 1 **全部验收已于 2026-07-11 通过**：API 全栈 + §7.4 加密 + 浏览器视觉（多面板布局/主题切换/文件浏览器，gstack 验）。**仅剩 `/code-review` 未做**。
+- **无 git 仓库**：`E:\work\tepeu` 非 git repo（`git rev-parse` 报 fatal，无 `.git`）。旧 handoff 称"first commit + push"不实——git 从未真正 init，或 .git 已丢失。后果：无 diff → 内置 `/code-review`（diff-based）不可用（Phase 2 review 走内联文件审查）；无法做原子 commit / worktree；HARD-GATE 的 worktree 强制不成立（无 git）。**建议**：若要恢复 commit 工作流 + 启用 diff-based code-review，需 `git init` + 初始 commit（历史已丢，无法找回 per-Phase commit）。未做（避免 scope 蔓延），待用户决定。
+- **机器离线**：本机无法访问 `api.openai.com`（curl HTTP 000/6s timeout）。真实 LLM e2e 验证需用户提供可访问的 key/endpoint 或本地起 ollama。
+- **Phase 3 新增前端依赖**：highlight.js、marked、xterm、xterm-addon-fit（Phase 3 构建验证通过）。
+- **FileController 端点更新（Phase 3）**：`GET /api/files/history`、`POST /api/files/restore/{id}`、`POST /api/files/version`。全部接受可选的 workspaceId 参数。基于 FileVersionService（新增）。
+- **MemoryController 搜索增强（Phase 3）**：`POST /api/memory/search` 新增可选的 `tags` 数组参数（SQLite `LIKE` 匹配 JSON 数组）。
+- **Terminal WS 安全启用（Phase 3 C2）**：`/api/terminal/ws` 在 `WebSocketConfig` 注册，origin 锁 localhost + `TerminalWebSocketHandler` 远程地址校验 + Jackson 序列化取代手写 JSON + GBK charset 支持 Windows 中文输出。
+- **Frontend 新增面板（Phase 3）**：MemoryView（搜索/创建/编辑/删除/标签过滤/来源追溯 + useMemory hook）、FileBrowserView 增强（highlight.js 语法高亮 + marked Markdown + 图片预览 + 版本面板 + 拖拽上传）、TerminalView（xterm.js + useTerminal WebSocket hook + AI CLI 自然语言→命令翻译）。
+- **Workspace 文件隔离（Phase 3 M4）**：Workspace 模型新增 `root_path` 列。新 workspace 自动默认 `workspaces/<id>`，历史 workspace（root_path=null）回填为 `workspaces/<id>`。FileController 按 workspace 解析文件目录。
+- **Phase 3 全部验证通过**：70 后端测试通过 + tsc 0 错误 + frontend build 2.69s。
+

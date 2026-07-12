@@ -1,0 +1,36 @@
+# Backend
+backend/target/
+backend/*.db
+backend/*.db-journal
+backend/*.db-wal
+backend/*.db-shm
+backend/.mvn/
+backend/mvnw*
+# 运行时工作区（用户/Agent 生成文件，可能含敏感内容）
+backend/workspace/
+backend/workspaces/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+.env.*
+
+# Secrets / crypto master key（真实 API key 加密后存在 SQLite，主密钥在用户目录）
+*.key
+.tepeu/
+.tepleu/

@@ -1,0 +1,351 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  /* Light theme (default) */
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f5f5f5;
+  --color-bg-tertiary: #e8e8e8;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-border: #e0e0e0;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-sidebar-bg: #f8f9fa;
+  --color-sidebar-text: #333333;
+  --color-panel-bg: #ffffff;
+
+  /* Chat 语义别名（对齐 pi-web） */
+  --color-text-dim: #8a8a8a;
+  --color-bg-hover: #ececec;
+  --color-bg-selected: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-secondary));
+  --color-user-bg: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg));
+  --color-bg-subtle: color-mix(in srgb, var(--color-text) 4%, transparent);
+  --color-danger: #dc2626;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei', monospace;
+}
+
+.dark {
+  --color-bg: #1a1a1a;
+  --color-bg-secondary: #252525;
+  --color-bg-tertiary: #333333;
+  --color-text: #e5e5e5;
+  --color-text-secondary: #999999;
+  --color-border: #333333;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
+  --color-sidebar-bg: #1e1e1e;
+  --color-sidebar-text: #cccccc;
+  --color-panel-bg: #1e1e1e;
+
+  --color-text-dim: #6b6b6b;
+  --color-bg-hover: #2e2e2e;
+  --color-bg-selected: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg-secondary));
+  --color-user-bg: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
+  --color-bg-subtle: color-mix(in srgb, var(--color-text) 6%, transparent);
+  --color-danger: #f87171;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Terminal keeps dark background even in light mode */
+.terminal-panel {
+  background-color: #1a1a1a !important;
+  color: #00ff00 !important;
+  font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* —— Chat 面板 —— */
+.chat-panel {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--color-text);
+}
+
+/* 有小地图导航后隐藏原生滚动条，滚轮/触控板/小地图仍可滚动 */
+.chat-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/旧 Edge */
+}
+
+.chat-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari */
+}
+
+.chat-composer-card {
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  border-radius: 14px;
+  background: var(--color-bg);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px -12px rgba(15, 23, 42, 0.12);
+}
+
+.dark .chat-composer-card {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 8px 24px -12px rgba(0, 0, 0, 0.45);
+}
+
+.chat-composer-card.streaming {
+  border-color: color-mix(in srgb, #f59e0b 45%, var(--color-border));
+}
+
+.chat-select {
+  appearance: none;
+  font-size: 12px;
+  padding: 4px 24px 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  cursor: pointer;
+}
+
+.chat-select:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.chat-stats {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--color-text-dim);
+}
+
+/* —— Markdown —— */
+.markdown-body {
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.markdown-body > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-body > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body p {
+  margin: 0.55em 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+  line-height: 1.35;
+}
+
+.markdown-body h1 { font-size: 1.35em; }
+.markdown-body h2 { font-size: 1.2em; }
+.markdown-body h3 { font-size: 1.08em; }
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0.5em 0;
+  padding-left: 22px;
+}
+
+.markdown-body li {
+  margin: 0.2em 0;
+}
+
+.markdown-body a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.markdown-body code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+  background: var(--color-bg-subtle);
+}
+
+.markdown-body pre {
+  margin: 0.7em 0;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  overflow: auto;
+}
+
+.markdown-body pre code {
+  display: block;
+  padding: 12px 14px;
+  background: transparent;
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.markdown-body blockquote {
+  margin: 0.6em 0;
+  padding: 0.2em 0 0.2em 12px;
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.7em 0;
+  font-size: 13px;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--color-border);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.markdown-body th {
+  background: var(--color-bg-secondary);
+  font-weight: 600;
+}
+
+.markdown-body .md-table-wrap {
+  overflow-x: auto;
+  margin: 0.7em 0;
+}
+
+.markdown-user-message p {
+  white-space: pre-wrap;
+}
+
+.markdown-user-message > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-user-message > *:last-child {
+  margin-bottom: 0;
+}
+
+/* —— IDE 三栏壳 —— */
+.ide-shell {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.ide-left {
+  width: 240px;
+  transition: width 0.2s ease;
+}
+
+.ide-left.ide-panel-closed {
+  width: 0;
+  border-right-width: 0 !important;
+}
+
+.ide-left-inner {
+  width: 240px;
+}
+
+.ide-right {
+  width: min(42vw, 520px);
+  min-width: 0;
+  transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+.ide-right.ide-panel-open-right {
+  min-width: 280px;
+}
+
+.ide-right.ide-panel-closed {
+  width: 0;
+  min-width: 0;
+  border-left-width: 0 !important;
+}
+
+.ide-right-inner {
+  width: min(42vw, 520px);
+  min-width: 280px;
+  height: 100%;
+}
+
+.ide-panel-closed .ide-left-inner,
+.ide-panel-closed .ide-right-inner {
+  pointer-events: none;
+}
+
+/* 对话小地图：窄屏隐藏，桌面显示 */
+.chat-minimap {
+  z-index: 5;
+}
+
+@media (max-width: 767px) {
+  .chat-minimap {
+    display: none !important;
+  }
+}
+
+/* 会话列表悬停图标按钮 */
+.session-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.session-icon-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.session-icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* 预览顶栏图标按钮（全屏 / 下载 / 关闭） */
+.preview-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.75;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.preview-tool-btn:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+

@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "cmd /c .claude\\hooks\\hallucination-gate.bat" }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "cmd /c .claude\\hooks\\detect-feedback-signal.bat" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "cmd /c .claude\\hooks\\phase-exit-guard.bat" },
+          { "type": "command", "command": "cmd /c .claude\\hooks\\stop-gate.bat" },
+          { "type": "command", "command": "cmd /c .claude\\hooks\\retry-gate.bat" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "cmd /c .claude\\hooks\\memory-guard.bat" },
+          { "type": "command", "command": "cmd /c .claude\\hooks\\check-sync.bat" }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "cmd /c .claude\\hooks\\mark-review-needed.bat" },
+          { "type": "command", "command": "cmd /c .claude\\hooks\\memory-check.bat" }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "cmd /c .claude\\hooks\\check-evolution.bat" }
+        ]
+      }
+    ]
+  }
+}

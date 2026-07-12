@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+backend/target/
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Framework config
+.claude/
+.forge/
+memory/
+
+# Documentation
+*.md
+Product-Spec.md
+DEV-PLAN.md
+Design-Brief.md
+
+# Environment
+.env
+*.key
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# SQLite DB (will be volume-mounted at runtime)
+*.db
+*.db-shm
+*.db-wal
+
+# Java
+*.class
+*.jar
+!backend/target/tepeu.jar

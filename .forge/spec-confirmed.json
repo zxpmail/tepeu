@@ -1,0 +1,14 @@
+{
+  "confirmed_at": "2026-07-10T00:00:00Z",
+  "spec_path": "Product-Spec.md",
+  "confirmed_by": "user",
+  "spec_version": "v1.0.0",
+  "mode": "0-to-1",
+  "scope": "v1.0 = Phase 1 single-machine only; enterprise cluster deferred to post-v1.0.0",
+  "validation": {
+    "quality_council_rounds": 2,
+    "final_verdict": "待确认 (no blocking items)",
+    "resolved_count": 12,
+    "blocking_remaining": 0
+  }
+}

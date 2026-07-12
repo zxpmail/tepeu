@@ -1,0 +1,85 @@
+server:
+  port: 30141
+
+spring:
+  application:
+    name: tepeu
+
+  # Java 21 virtual threads for request handling (Spec §5.4.5)
+  threads:
+    virtual:
+      enabled: true
+
+  # SQLite datasource configuration
+  datasource:
+    url: jdbc:sqlite:tepeu.db
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 4
+      connection-init-sql: PRAGMA foreign_keys=ON
+
+  # LLM Provider configuration (defaults — API keys stored encrypted in DB)
+  ai:
+    openai:
+      api-key: ""
+      chat:
+        options:
+          model: gpt-4o
+    anthropic:
+      api-key: ""
+      chat:
+        options:
+          model: claude-sonnet-4-20250514
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+
+# Actuator health endpoint
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# LLM Provider metadata (which providers are available)
+tepeu:
+  reqforge:
+    # 本机 ReqForge 根目录（GitHub 不可达时一键安装回退）；也可用环境变量 TEPEU_REQFORGE_PATH
+    local-path: ${TEPEU_REQFORGE_PATH:E:/work/ReqForge}
+  llm:
+    providers:
+      - id: openai
+        name: OpenAI
+        models:
+          - id: gpt-4o
+            name: GPT-4o
+          - id: gpt-4o-mini
+            name: GPT-4o Mini
+      - id: anthropic
+        name: Anthropic
+        models:
+          - id: claude-sonnet-4-20250514
+            name: Claude Sonnet 4
+          - id: claude-haiku-3-5-20241022
+            name: Claude Haiku 3.5
+      - id: ollama
+        name: Ollama (Local)
+        models:
+          - id: llama3
+            name: Llama 3
+          - id: qwen2.5
+            name: Qwen 2.5
+  security:
+    # AES-256-GCM master key file for at-rest secret encryption (§7.4).
+    # Auto-generated on first run if absent. Back this file up — losing it makes stored keys unrecoverable.
+    master-key-file: ${user.home}/.tepeu/master.key

@@ -1,0 +1,5 @@
+[2026-07-11T02:46:51.027Z] GET http://localhost:30141/ → 200 (14ms, 408B)
+[2026-07-11T02:46:51.047Z] GET http://localhost:30141/assets/index-BT9keg-B.js → 200 (19ms, 165522B)
+[2026-07-11T02:46:51.048Z] GET http://localhost:30141/assets/index-CqLb3kLk.css → 200 (4ms, 11589B)
+[2026-07-11T02:46:51.146Z] GET http://localhost:30141/api/workspace → 200 (3ms, 249B)
+[2026-07-11T02:46:51.146Z] GET http://localhost:30141/api/files/list?path=%2F → 200 (4ms, 64B)
