@@ -1,0 +1,12 @@
+{
+  "variant": "experimental",
+  "task_id": "T4-feature-history-cap",
+  "category": "feature",
+  "passed": false,
+  "judge_note": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\python.exe: can't open file 'E:\\\\work\\\\tepeu-ate-experimental\\\\@{task_id=T4-feature-history-cap; passed=True; note=ok}': [Errno 2] No such file or directory",
+  "num_turns": null,
+  "total_cost_usd": null,
+  "duration_ms": null,
+  "is_error": true,
+  "model": null
+}

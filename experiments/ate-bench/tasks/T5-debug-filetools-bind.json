@@ -1,0 +1,10 @@
+{
+  "id": "T5-debug-filetools-bind",
+  "category": "debug",
+  "prompt": "Explain what goes wrong if FileTools tool methods run when no workspace has been bound for the current turn. Write the explanation to ate-out/T5-bind.txt. Mention the relevant fields/methods (e.g. bindWorkspace, activeBasePath, or equivalent) and what the user-visible failure looks like.",
+  "judge": {
+    "type": "file_contains_all",
+    "path": "ate-out/T5-bind.txt",
+    "must_contain": ["bindWorkspace", "activeBasePath"]
+  }
+}

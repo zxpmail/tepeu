@@ -11,9 +11,11 @@ import java.util.Optional;
 public class MemoryService {
 
     private final MemoryRepository repository;
+    private final MemoryFileMirror fileMirror;
 
-    public MemoryService(MemoryRepository repository) {
+    public MemoryService(MemoryRepository repository, MemoryFileMirror fileMirror) {
         this.repository = repository;
+        this.fileMirror = fileMirror;
     }
 
     public List<Memory> listMemories(String workspaceId, int limit, String cursor) {
@@ -34,7 +36,10 @@ public class MemoryService {
         memory.setSource(source);
         memory.setContent(content);
         memory.setTags(tags);
-        return repository.save(memory);
+        Memory saved = repository.save(memory);
+        // DB 权威；MD 仅供 Agent 阅读（双写）
+        fileMirror.write(saved);
+        return saved;
     }
 
     public Optional<Memory> updateMemory(String id, String content, List<String> tags) {
@@ -45,14 +50,19 @@ public class MemoryService {
         Memory m = existing.get();
         if (content != null) m.setContent(content);
         if (tags != null) m.setTags(tags);
-        return Optional.of(repository.update(m));
+        Memory updated = repository.update(m);
+        fileMirror.write(updated);
+        return Optional.of(updated);
     }
 
     public boolean deleteMemory(String id) {
-        if (repository.findById(id).isEmpty()) {
+        Optional<Memory> existing = repository.findById(id);
+        if (existing.isEmpty()) {
             return false;
         }
+        Memory m = existing.get();
         repository.deleteById(id);
+        fileMirror.delete(m.getWorkspaceId(), id);
         return true;
     }
 }

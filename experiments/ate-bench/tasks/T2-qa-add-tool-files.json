@@ -1,0 +1,13 @@
+{
+  "id": "T2-qa-add-tool-files",
+  "category": "qa",
+  "prompt": "I want to add a new agent tool named send_sms (send an SMS). List every source file that must be created or modified for the tool to be available to the chat agent at runtime. Write one file path per line to ate-out/T2-files.txt. Do not implement the tool yet.",
+  "judge": {
+    "type": "file_contains_any_group",
+    "path": "ate-out/T2-files.txt",
+    "groups": [
+      ["ChatService", "ToolRegistry", "Tools.java", "AgentTools"],
+      ["send_sms", "SmsTool", "SmsTools", "SendSms"]
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+{"task_id": "T1-qa-call-chain", "category": "qa", "passed": true, "judge_note": "ok", "num_turns": 13, "total_cost_usd": 0.511701, "duration_ms": 46354, "is_error": false, "model": "deepseek-v4-flash", "claude_exit": 0}

@@ -1,0 +1,26 @@
+{
+  "id": "T3-feature-weather-tool",
+  "category": "feature",
+  "prompt": "Add a new agent tool WeatherTool with a @Tool method named get_weather that takes a city string and returns a short fake weather string (no real HTTP needed). Register it so ChatService/streamWithTools exposes it to the model, following this repo's existing tool patterns. Keep the change minimal. After editing, ensure the project still compiles (mvn -q -DskipTests compile in backend/).",
+  "judge": {
+    "type": "all",
+    "checks": [
+      {
+        "type": "file_regex",
+        "path": "backend/src/main/java",
+        "glob": "**/*Weather*.java",
+        "regex": "get_weather"
+      },
+      {
+        "type": "repo_grep",
+        "pattern": "WeatherTool|weatherTool",
+        "glob": "backend/src/main/java/**/*.java",
+        "min_matches": 2
+      },
+      {
+        "type": "maven_compile",
+        "cwd": "backend"
+      }
+    ]
+  }
+}

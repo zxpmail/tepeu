@@ -1,0 +1,10 @@
+{
+  "id": "T1-qa-call-chain",
+  "category": "qa",
+  "prompt": "Describe the complete call chain for handling a user chat request that may use tools, from HTTP entry to tool execution. Write your answer as plain text to the file ate-out/T1-call-chain.txt (create the ate-out directory if needed). Your answer MUST name these types if they exist in the repo: ChatController, AgentOrchestrator, ChatService. Also name how tools are registered for the model (e.g. ToolCallbacks.from, ToolRegistry, or equivalent).",
+  "judge": {
+    "type": "file_contains_all",
+    "path": "ate-out/T1-call-chain.txt",
+    "must_contain": ["ChatController", "AgentOrchestrator", "ChatService"]
+  }
+}

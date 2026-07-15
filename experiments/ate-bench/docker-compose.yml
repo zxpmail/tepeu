@@ -1,0 +1,17 @@
+# 用法：
+#   冒烟（无 LLM）：docker compose -f experiments/ate-bench/docker-compose.yml run --rm ate
+#   全量（需 key）：ATE_MODE=full ANTHROPIC_API_KEY=... docker compose ... run --rm ate
+services:
+  ate:
+    build:
+      context: ../..
+      dockerfile: experiments/ate-bench/Dockerfile
+    working_dir: /workspace
+    environment:
+      ATE_MODE: ${ATE_MODE:-smoke}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MAX_BUDGET_USD: ${MAX_BUDGET_USD:-1.5}
+    volumes:
+      - ./results:/workspace/experiments/ate-bench/results
+    # 可选：挂载本机 Claude 配置（OAuth）——仅当不用 API key 时
+    # - ${HOME}/.claude:/root/.claude

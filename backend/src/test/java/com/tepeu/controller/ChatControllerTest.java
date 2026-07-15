@@ -3,6 +3,7 @@ package com.tepeu.controller;
 import com.tepeu.agent.AgentOrchestrator;
 import com.tepeu.dto.ChatRequest;
 import com.tepeu.model.Session;
+import com.tepeu.service.IdempotencyService;
 import com.tepeu.service.SessionService;
 import com.tepeu.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,8 @@ class ChatControllerTest {
         orchestrator = mock(AgentOrchestrator.class);
         sessionService = mock(SessionService.class);
         taskService = mock(TaskService.class);
-        controller = new ChatController(orchestrator, sessionService, taskService, new ObjectMapper());
+        controller = new ChatController(orchestrator, sessionService, taskService,
+                new IdempotencyService(), new ObjectMapper());
     }
 
     @Test

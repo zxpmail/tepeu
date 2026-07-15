@@ -1,0 +1,13 @@
+{
+  "variant": "baseline",
+  "task_id": "T5-debug-filetools-bind",
+  "category": "debug",
+  "passed": true,
+  "judge_note": "ok",
+  "num_turns": 15,
+  "total_cost_usd": 0.6388029999999999,
+  "duration_ms": 72547,
+  "is_error": false,
+  "model": "deepseek-v4-flash",
+  "claude_exit": 0
+}

@@ -12,6 +12,7 @@ import java.util.List;
  *   <li>{@code provider} — LLM provider id: {@code openai|anthropic|ollama}</li>
  *   <li>{@code fileRefs} — optional workspace-relative paths from {@code @} mentions</li>
  *   <li>{@code skillRefs} — optional skill slugs from {@code /} or {@code @} (也可从 message 解析)</li>
+ *   <li>{@code idempotencyKey} — optional；相同 key 在 TTL 内不重复调用模型，回放上次结果</li>
  * </ul>
  */
 public class ChatRequest {
@@ -23,6 +24,8 @@ public class ChatRequest {
     private List<String> fileRefs;
     /** 用户本轮显式调用的技能 slug */
     private List<String> skillRefs;
+    /** 客户端/Agent 生成的幂等键；判断重复由服务端完成 */
+    private String idempotencyKey;
 
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
@@ -36,4 +39,6 @@ public class ChatRequest {
     public void setFileRefs(List<String> fileRefs) { this.fileRefs = fileRefs; }
     public List<String> getSkillRefs() { return skillRefs; }
     public void setSkillRefs(List<String> skillRefs) { this.skillRefs = skillRefs; }
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
 }

@@ -1,0 +1,3 @@
+Done — `MAX_HISTORY_MESSAGES` in `AgentOrchestrator.java:28` changed from `50` to `40`.
+
+(Note: `TaskService.java` has a comment noting it should stay consistent with `AgentOrchestrator.MAX_HISTORY_MESSAGES`, but as instructed, I didn't touch anything else.)

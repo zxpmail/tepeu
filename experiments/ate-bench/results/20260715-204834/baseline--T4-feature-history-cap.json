@@ -1,0 +1,13 @@
+{
+  "variant": "baseline",
+  "task_id": "T4-feature-history-cap",
+  "category": "feature",
+  "passed": true,
+  "judge_note": "ok",
+  "num_turns": 4,
+  "total_cost_usd": 0.337475,
+  "duration_ms": 10963,
+  "is_error": false,
+  "model": "deepseek-v4-flash",
+  "claude_exit": 0
+}

@@ -1,0 +1,14 @@
+{
+  "n": 3,
+  "turns": [
+    11,
+    17,
+    9
+  ],
+  "avg_turns": 12.333333333333334,
+  "min_turns": 9.0,
+  "max_turns": 17.0,
+  "baseline_turns_ref": 20,
+  "passive_exp_turns_ref": 21,
+  "first_inject_ref": 13
+}

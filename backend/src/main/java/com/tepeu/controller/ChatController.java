@@ -4,6 +4,7 @@ import com.tepeu.agent.AgentOrchestrator;
 import com.tepeu.agent.tool.ToolEventEmitter;
 import com.tepeu.dto.ChatRequest;
 import com.tepeu.model.Message;
+import com.tepeu.service.IdempotencyService;
 import com.tepeu.service.SessionService;
 import com.tepeu.service.TaskService;
 import org.slf4j.Logger;
@@ -45,15 +46,18 @@ public class ChatController {
     private final AgentOrchestrator orchestrator;
     private final SessionService sessionService;
     private final TaskService taskService;
+    private final IdempotencyService idempotencyService;
     private final ObjectMapper objectMapper;
 
     public ChatController(AgentOrchestrator orchestrator,
                           SessionService sessionService,
                           TaskService taskService,
+                          IdempotencyService idempotencyService,
                           ObjectMapper objectMapper) {
         this.orchestrator = orchestrator;
         this.sessionService = sessionService;
         this.taskService = taskService;
+        this.idempotencyService = idempotencyService;
         this.objectMapper = objectMapper;
     }
 
@@ -92,6 +96,25 @@ public class ChatController {
         final String resolvedSessionId = sessionId;
         final String resolvedWorkspaceId = workspaceId;
         final String providerId = req.getProvider();
+        final String idemKey = req.getIdempotencyKey();
+
+        // 幂等：判断在基础设施层，不交给模型「自己想是否重复」
+        IdempotencyService.AcquireResult acquire = idempotencyService.tryAcquire(idemKey);
+        if (acquire.status() == IdempotencyService.AcquireStatus.IN_PROGRESS) {
+            sendErrorEvent(emitter, sendLock, "IDEMPOTENCY_IN_PROGRESS",
+                    "A request with the same idempotencyKey is already running");
+            emitter.complete();
+            return emitter;
+        }
+        if (acquire.status() == IdempotencyService.AcquireStatus.REPLAY) {
+            String cached = acquire.cachedText() == null ? "" : acquire.cachedText();
+            if (!cached.isEmpty()) {
+                sendEvent(emitter, sendLock, Map.of("type", "token", "content", cached));
+            }
+            sendEvent(emitter, sendLock, Map.of("type", "final", "idempotentReplay", true));
+            emitter.complete();
+            return emitter;
+        }
 
         sessionService.appendMessage(resolvedSessionId, "user", req.getMessage());
 
@@ -119,6 +142,7 @@ public class ChatController {
                 error -> {
                     log.error("Chat stream failed provider={} session={}: {}",
                             providerId, resolvedSessionId, error.toString(), error);
+                    idempotencyService.release(idemKey);
                     String[] mapped = mapError(error);
                     sendErrorEvent(emitter, sendLock, mapped[0], mapped[1]);
                     emitter.complete();
@@ -132,6 +156,7 @@ public class ChatController {
                             log.warn("Failed to persist assistant reply for session {}: {}", resolvedSessionId, e.getMessage());
                         }
                     }
+                    idempotencyService.complete(idemKey, reply);
                     emitAndRecordUsage(emitter, sendLock, resolvedWorkspaceId, resolvedSessionId,
                             providerId, lastUsage.get(), lastModel.get());
                     sendEvent(emitter, sendLock, Map.of("type", "final"));

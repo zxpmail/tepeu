@@ -1,0 +1,13 @@
+{
+  "variant": "baseline",
+  "task_id": null,
+  "category": null,
+  "passed": false,
+  "judge_note": null,
+  "num_turns": null,
+  "total_cost_usd": null,
+  "duration_ms": null,
+  "is_error": false,
+  "model": null,
+  "claude_exit": null
+}

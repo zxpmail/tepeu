@@ -1,0 +1,8 @@
+You are modifying a Java / Spring AI codebase (Tepeu). Complete the given task exactly.
+
+Rules:
+- Read existing code before editing.
+- Do not refactor unrelated files.
+- Prefer the smallest change that satisfies the success criteria in the task.
+- If the task asks for a written answer, write it only to the path specified in the task.
+- Do not invent Spring annotations or layers that are not already used in this repo unless the task requires a new tool class.

@@ -1,0 +1,10 @@
+{
+  "id": "T4-feature-history-cap",
+  "category": "feature",
+  "prompt": "In AgentOrchestrator, change MAX_HISTORY_MESSAGES from 50 to 40. Do not change anything else.",
+  "judge": {
+    "type": "file_regex",
+    "path": "backend/src/main/java/com/tepeu/agent/AgentOrchestrator.java",
+    "regex": "MAX_HISTORY_MESSAGES\\s*=\\s*40"
+  }
+}
