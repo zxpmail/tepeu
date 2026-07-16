@@ -1,0 +1,16 @@
+﻿{
+    "n":  3,
+    "task_filter":  "T3",
+    "t3_turns":  [
+                     10,
+                     9,
+                     10
+                 ],
+    "t3_avg":  9.67,
+    "t3_min":  9,
+    "t3_max":  10,
+    "t3_stdev":  0.47,
+    "c_alone_t3_ref":  13,
+    "c_plus_first_t3_ref":  10,
+    "baseline_c_field_t3_ref":  11
+}

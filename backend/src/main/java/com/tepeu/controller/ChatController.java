@@ -264,7 +264,7 @@ public class ChatController {
     private static boolean isKnownCode(String code) {
         return switch (code) {
             case "UNKNOWN_PROVIDER", "UNSUPPORTED_PROVIDER", "PROVIDER_DISABLED",
-                 "MISSING_API_KEY", "MISSING_MODEL" -> true;
+                 "MISSING_API_KEY", "MISSING_MODEL", "API_KEY_LOOKS_LIKE_URL" -> true;
             default -> false;
         };
     }
@@ -276,6 +276,7 @@ public class ChatController {
             case "PROVIDER_DISABLED" -> "Provider is disabled";
             case "MISSING_API_KEY" -> "Provider API key is not configured";
             case "MISSING_MODEL" -> "Provider model is not configured";
+            case "API_KEY_LOOKS_LIKE_URL" -> "API Key was saved as a URL; paste the real key into API Key field";
             default -> "Chat request failed";
         };
     }

@@ -1,32 +1,54 @@
-# 跑 ATE：5 任务 × 2 变体（内部调用 run_one.py）。
+﻿# 跑 ATE：默认 5 任务 × baseline + experimental(A+B)；可用 -Variant registry-only 跑条件 C。
 param(
     [string]$TaskFilter = "",
-    [double]$MaxBudgetUsd = 1.5
+    [double]$MaxBudgetUsd = 1.5,
+    [ValidateSet("ab", "registry-only", "both")][string]$Mode = "ab"
 )
 $ErrorActionPreference = "Stop"
 chcp 65001 | Out-Null
 
 $BenchRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$RepoRoot = (Resolve-Path (Join-Path $BenchRoot "..\..")).Path
+$Parent = Split-Path $RepoRoot -Parent
 $TasksDir = Join-Path $BenchRoot "tasks"
 $PromptFile = Join-Path $BenchRoot "prompt\system.txt"
 $ResultsDir = Join-Path $BenchRoot "results"
 $RunOne = Join-Path $PSScriptRoot "run_one.py"
 $ApplyExp = Join-Path $PSScriptRoot "apply-experimental.ps1"
+$ApplyReg = Join-Path $PSScriptRoot "apply-registry-only.ps1"
 
-$Variants = @(
-    @{ Name = "baseline"; Root = "E:\work\tepeu-ate-baseline"; Experimental = $false },
-    @{ Name = "experimental"; Root = "E:\work\tepeu-ate-experimental"; Experimental = $true }
-)
+$BaselineRoot = Join-Path $Parent "tepeu-ate-baseline"
+$ExperimentalRoot = Join-Path $Parent "tepeu-ate-experimental"
+
+$Variants = @()
+if ($Mode -eq "ab" -or $Mode -eq "both") {
+    $Variants += @{ Name = "baseline"; Root = $BaselineRoot; Apply = $null }
+    $Variants += @{ Name = "experimental"; Root = $ExperimentalRoot; Apply = $ApplyExp }
+}
+if ($Mode -eq "registry-only" -or $Mode -eq "both") {
+    if ($Mode -eq "registry-only") {
+        $Variants += @{ Name = "baseline"; Root = $BaselineRoot; Apply = $null }
+    }
+    $Variants += @{ Name = "registry-only"; Root = $ExperimentalRoot; Apply = $ApplyReg }
+}
 
 New-Item -ItemType Directory -Force -Path $ResultsDir | Out-Null
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $runDir = Join-Path $ResultsDir $stamp
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
-Write-Host "Results -> $runDir"
+Write-Host "Results -> $runDir (Mode=$Mode)"
 
 $tasks = Get-ChildItem $TasksDir -Filter "*.json" | Sort-Object Name
 if ($TaskFilter) {
-    $tasks = $tasks | Where-Object { $_.BaseName -like "*$TaskFilter*" -or $_.Name -like "*$TaskFilter*" }
+    $parts = @($TaskFilter -split "[|,]" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $tasks = $tasks | Where-Object {
+        $t = $_
+        $ok = $false
+        foreach ($p in $parts) {
+            if ($t.BaseName -like "*$p*" -or $t.Name -like "*$p*") { $ok = $true; break }
+        }
+        $ok
+    }
 }
 
 $summary = New-Object System.Collections.Generic.List[object]
@@ -43,8 +65,8 @@ foreach ($variant in $Variants) {
 
         git -C $repo reset --hard HEAD | Out-Null
         git -C $repo clean -fd | Out-Null
-        if ($variant.Experimental) {
-            & $ApplyExp -RepoRoot $repo
+        if ($variant.Apply) {
+            & $variant.Apply -RepoRoot $repo
         }
 
         $outJson = Join-Path $runDir "$($variant.Name)--$taskId.json"

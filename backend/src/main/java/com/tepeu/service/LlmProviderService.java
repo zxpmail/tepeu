@@ -64,13 +64,27 @@ public class LlmProviderService {
             p.setProviderId(providerId);
             return p;
         });
-        if (apiKey != null) provider.setApiKey(crypto.encrypt(apiKey));
-        if (baseUrl != null) provider.setBaseUrl(baseUrl);
+        // null/blank = keep existing key; reject URL-shaped values (common paste/autofill mix-up with Base URL)
+        if (apiKey != null && !apiKey.isBlank()) {
+            String trimmed = apiKey.trim();
+            if (looksLikeUrl(trimmed)) {
+                throw new IllegalArgumentException(
+                        "API_KEY_LOOKS_LIKE_URL: API Key 不能是网址；请把 https://... 填到 Base URL，Key 填智谱/OpenAI 等密钥");
+            }
+            provider.setApiKey(crypto.encrypt(trimmed));
+        }
+        if (baseUrl != null) provider.setBaseUrl(baseUrl.isBlank() ? null : baseUrl.trim());
         if (defaultModel != null) provider.setDefaultModel(defaultModel);
         provider.setEnabled(enabled);
 
         LlmProvider saved = existing.isPresent() ? repository.update(provider) : repository.save(provider);
         return withDecryptedKey(saved);
+    }
+
+    /** Detect accidental paste of Base URL into the API Key field. */
+    static boolean looksLikeUrl(String value) {
+        String v = value.trim().toLowerCase();
+        return v.startsWith("http://") || v.startsWith("https://");
     }
 
     private LlmProvider withDecryptedKey(LlmProvider p) {

@@ -1,0 +1,29 @@
+You are modifying a Java / Spring AI codebase (Tepeu). Complete the given task exactly.
+
+Rules:
+- Read existing code before editing.
+- Do not refactor unrelated files.
+- Prefer the smallest change that satisfies the success criteria in the task.
+- If the task asks for a written answer, write it only to the path specified in the task.
+- Do not invent Spring annotations or layers that are not already used in this repo unless the task requires a new tool class.
+
+## Tool contract examples (read this first when adding tools)
+
+Existing tools are Spring `@Component` classes with `@Tool` methods. They are listed ONLY in `com.tepeu.agent.Tools` via `ToolRegistry.register(...)`. Do NOT add constructor deps on `ChatService`.
+
+Pattern (abbreviated from FileTools / ShellTools):
+
+```java
+@Component
+public class FileTools {
+  @Tool(description = "Read a workspace file")
+  public String readFile(@ToolParam(description = "relative path") String path) { /* ... */ }
+}
+```
+
+To add WeatherTool:
+1. Create `backend/.../tool/WeatherTool.java` (`@Component` + `@Tool` methods).
+2. In `Tools.java` `toolRegistry(...)`, add one line: `registry.register("weatherTool", weatherTool);`
+3. Stop. Do not edit ChatService.
+
+Runtime: `ChatService.streamWithTools` does `ToolCallbacks.from(toolRegistry.beans())`.

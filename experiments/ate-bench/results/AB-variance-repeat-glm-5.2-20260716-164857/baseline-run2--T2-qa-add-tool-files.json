@@ -1,0 +1,16 @@
+﻿{
+    "task_id":  "T2-qa-add-tool-files",
+    "category":  "qa",
+    "passed":  true,
+    "judge_note":  "ok",
+    "num_turns":  15,
+    "total_cost_usd":  0.23895199999999997,
+    "duration_ms":  104467,
+    "is_error":  false,
+    "model":  "glm-5.2",
+    "claude_exit":  0,
+    "run":  2,
+    "variant":  "baseline",
+    "requested_model":  "glm-5.2",
+    "retry":  1
+}

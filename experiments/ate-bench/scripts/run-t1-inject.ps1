@@ -2,22 +2,29 @@
 $ErrorActionPreference = "Stop"
 chcp 65001 | Out-Null
 
-$repo = "E:\work\tepeu-ate-experimental"
-$bench = "E:\work\tepeu\experiments\ate-bench"
-$apply = Join-Path $bench "scripts\apply-experimental.ps1"
-$runOne = Join-Path $bench "scripts\run_one.py"
-$task = Join-Path $bench "tasks\T1-qa-call-chain.json"
-$prompt = Join-Path $bench "prompt\system-with-call-path.txt"
+$BenchRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$RepoRoot = (Resolve-Path (Join-Path $BenchRoot "..\..")).Path
+$Parent = Split-Path $RepoRoot -Parent
+$repo = Join-Path $Parent "tepeu-ate-experimental"
+$apply = Join-Path $BenchRoot "scripts\apply-experimental.ps1"
+$runOne = Join-Path $BenchRoot "scripts\run_one.py"
+$task = Join-Path $BenchRoot "tasks\T1-qa-call-chain.json"
+$prompt = Join-Path $BenchRoot "prompt\system-with-call-path.txt"
+$genInject = Join-Path $BenchRoot "scripts\generate_call_path_inject.py"
 
 if (-not (Test-Path $repo)) {
     throw "Missing fixture $repo — run setup-fixtures.ps1 first"
 }
 
+# 同步债出路：跑前从 Tools.java + AGENT_CALL_PATH.md 再生 inject
+& python $genInject
+if ($LASTEXITCODE -ne 0) { throw "generate_call_path_inject.py failed" }
+
 git -C $repo reset --hard HEAD | Out-Null
 git -C $repo clean -fd | Out-Null
 & $apply -RepoRoot $repo
 
-$runDir = Join-Path $bench ("results\T1-inject-" + (Get-Date -Format "yyyyMMdd-HHmmss"))
+$runDir = Join-Path $BenchRoot ("results\T1-inject-" + (Get-Date -Format "yyyyMMdd-HHmmss"))
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 $agentLog = Join-Path $runDir "experimental-inject--T1-qa-call-chain.agent.json"
 

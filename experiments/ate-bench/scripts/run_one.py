@@ -11,8 +11,30 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+BENCH_ROOT = ROOT.parent
 JUDGE = ROOT / "judge.py"
 PARSE = ROOT / "parse_agent_json.py"
+
+
+def apply_seed(repo: Path, task: dict, variant: str | None = None) -> None:
+    """Optional task['seed'].copy: plant bugs/fixtures before the agent runs.
+
+    Paths may contain ``{variant}`` (e.g. AgentOrchestrator.{variant}.java).
+    """
+    seed = task.get("seed") or {}
+    copies = seed.get("copy") or []
+    for item in copies:
+        from_tmpl = item["from"]
+        if "{variant}" in from_tmpl:
+            if not variant:
+                raise ValueError(f"seed path needs --variant: {from_tmpl}")
+            from_tmpl = from_tmpl.format(variant=variant)
+        src = (BENCH_ROOT / from_tmpl).resolve()
+        dst = (repo / item["to"]).resolve()
+        if not src.is_file():
+            raise FileNotFoundError(f"seed missing: {src}")
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
 
 
 def resolve_claude() -> str:
@@ -37,10 +59,41 @@ def main() -> int:
     ap.add_argument("--system-prompt-file", required=True)
     ap.add_argument("--agent-log", required=True)
     ap.add_argument("--max-budget-usd", type=float, default=1.5)
+    ap.add_argument(
+        "--variant",
+        default=None,
+        help="Fixture variant name for seed path templates ({variant})",
+    )
+    ap.add_argument(
+        "--model",
+        default=None,
+        help="Override model id (sets ANTHROPIC_MODEL* env + claude --model)",
+    )
+    ap.add_argument(
+        "--base-url",
+        default=None,
+        help="Override ANTHROPIC_BASE_URL (e.g. https://open.bigmodel.cn/api/anthropic)",
+    )
+    ap.add_argument(
+        "--auth-token",
+        default=None,
+        help="Override ANTHROPIC_AUTH_TOKEN / ANTHROPIC_API_KEY for this run only",
+    )
+    ap.add_argument(
+        "--settings-file",
+        default=None,
+        help="Claude --settings JSON (use with --bare to force 3P base_url/key)",
+    )
+    ap.add_argument(
+        "--bare",
+        action="store_true",
+        help="Pass claude --bare (needed so settings env wins over ~/.claude/settings.json)",
+    )
     args = ap.parse_args()
 
     task = json.loads(Path(args.task).read_text(encoding="utf-8"))
     repo = Path(args.repo)
+    apply_seed(repo, task, variant=args.variant)
     agent_log = Path(args.agent_log)
     err_log = Path(str(agent_log).replace(".agent.json", ".agent.err.txt"))
     if err_log == agent_log:
@@ -60,6 +113,27 @@ def main() -> int:
         "--output-format",
         "json",
     ]
+    if args.model:
+        cmd.extend(["--model", args.model])
+    if args.bare:
+        cmd.append("--bare")
+    if args.settings_file:
+        cmd.extend(["--settings", str(Path(args.settings_file).resolve())])
+    env = os.environ.copy()
+    if args.base_url:
+        env["ANTHROPIC_BASE_URL"] = args.base_url
+    if args.auth_token:
+        env["ANTHROPIC_AUTH_TOKEN"] = args.auth_token
+        env["ANTHROPIC_API_KEY"] = args.auth_token
+    if args.model:
+        # 覆盖 settings.json / 壳层里写死的 flash，避免仍落到 deepseek-v4-flash
+        for key in (
+            "ANTHROPIC_MODEL",
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+            "ANTHROPIC_DEFAULT_SONNET_MODEL",
+            "ANTHROPIC_DEFAULT_OPUS_MODEL",
+        ):
+            env[key] = args.model
     # Windows：必须 shell=True 才能跑 .cmd；且 args 必须是字符串，否则参数会丢光
     run_cmd: str | list[str]
     if os.name == "nt":
@@ -76,6 +150,7 @@ def main() -> int:
             stdout=out,
             stderr=err,
             shell=use_shell,
+            env=env,
         )
 
     metrics = {"ok": False, "is_error": True, "num_turns": None, "total_cost_usd": None, "duration_ms": None, "model": None}

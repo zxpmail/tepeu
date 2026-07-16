@@ -1,0 +1,14 @@
+﻿{
+    "task_id":  "T8-debug-history-trim",
+    "category":  "debug",
+    "passed":  true,
+    "judge_note":  "file_regex:ok; maven_compile:compile ok",
+    "num_turns":  7,
+    "total_cost_usd":  0.29446799999999995,
+    "duration_ms":  21202,
+    "is_error":  false,
+    "model":  "deepseek-v4-flash",
+    "claude_exit":  0,
+    "run":  3,
+    "variant":  "experimental"
+}

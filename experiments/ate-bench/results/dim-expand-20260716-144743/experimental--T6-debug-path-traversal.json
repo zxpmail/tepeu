@@ -1,0 +1,13 @@
+﻿{
+    "task_id":  "T6-debug-path-traversal",
+    "category":  "debug",
+    "passed":  false,
+    "judge_note":  "file_regex:regex not found",
+    "num_turns":  6,
+    "total_cost_usd":  0.292867,
+    "duration_ms":  30734,
+    "is_error":  false,
+    "model":  "deepseek-v4-flash",
+    "claude_exit":  0,
+    "variant":  "experimental"
+}

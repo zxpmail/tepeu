@@ -1,0 +1,9 @@
+{
+    "variant":  "c-plus-examples",
+    "task_id":  "T3-feature-weather-tool",
+    "passed":  true,
+    "judge_note":  "file_regex:matched in backend\\src\\main\\java\\com\\tepeu\\agent\\tool\\WeatherTool.java; repo_grep:matches=6; maven_compile:compile ok",
+    "num_turns":  10,
+    "total_cost_usd":  0.329032,
+    "model":  "deepseek-v4-flash"
+}

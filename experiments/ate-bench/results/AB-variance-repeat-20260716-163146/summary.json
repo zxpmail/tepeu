@@ -1,0 +1,83 @@
+﻿{
+    "times":  3,
+    "task_filter":  "T2,T3",
+    "baseline_t2":  {
+                        "stdev":  3.4,
+                        "min":  4,
+                        "avg":  7.33,
+                        "n":  3,
+                        "turns":  [
+                                      4,
+                                      12,
+                                      6
+                                  ],
+                        "max":  12
+                    },
+    "baseline_t3":  {
+                        "stdev":  5.25,
+                        "min":  11,
+                        "avg":  18.33,
+                        "n":  3,
+                        "turns":  [
+                                      23,
+                                      11,
+                                      21
+                                  ],
+                        "max":  23
+                    },
+    "experimental_t2":  {
+                            "stdev":  1.25,
+                            "min":  11,
+                            "avg":  12.67,
+                            "n":  3,
+                            "turns":  [
+                                          11,
+                                          14,
+                                          13
+                                      ],
+                            "max":  14
+                        },
+    "experimental_t3":  {
+                            "stdev":  2.16,
+                            "min":  10,
+                            "avg":  12,
+                            "n":  3,
+                            "turns":  [
+                                          10,
+                                          11,
+                                          15
+                                      ],
+                            "max":  15
+                        },
+    "baseline_t2t3_sum":  {
+                              "stdev":  1.89,
+                              "min":  23,
+                              "avg":  25.67,
+                              "n":  3,
+                              "turns":  [
+                                            27,
+                                            23,
+                                            27
+                                        ],
+                              "max":  27
+                          },
+    "experimental_t2t3_sum":  {
+                                  "stdev":  2.87,
+                                  "min":  21,
+                                  "avg":  24.67,
+                                  "n":  3,
+                                  "turns":  [
+                                                21,
+                                                25,
+                                                28
+                                            ],
+                                  "max":  28
+                              },
+    "mean_delta_pct_on_sum":  -3.9,
+    "prior_same_day":  {
+                           "ab_field_baseline_t3":  18,
+                           "ab_field_sum_delta_pct":  -24,
+                           "c_field_baseline_t3":  11,
+                           "note":  "prior single-run fields; this batch is the variance fill"
+                       }
+}

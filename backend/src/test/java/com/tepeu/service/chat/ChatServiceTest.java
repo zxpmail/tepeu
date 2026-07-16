@@ -13,9 +13,10 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,31 +41,31 @@ class ChatServiceTest {
     }
 
     @Test
-    void testConnection_validModel_returnsTrue() {
+    void testConnection_validModel_returnsNull() {
         when(factory.getChatModel("openai")).thenReturn(new StubChatModel("ok"));
-        assertTrue(service.testConnection("openai"));
+        assertNull(service.testConnection("openai"));
     }
 
     @Test
-    void testConnection_missingApiKey_returnsFalse() {
+    void testConnection_missingApiKey_returnsCode() {
         when(factory.getChatModel("openai"))
                 .thenThrow(new IllegalStateException("MISSING_API_KEY"));
-        assertFalse(service.testConnection("openai"));
+        assertEquals("MISSING_API_KEY", service.testConnection("openai"));
     }
 
     @Test
-    void testConnection_modelCallThrows_returnsFalse() {
+    void testConnection_modelCallThrows_returnsFailed() {
         ChatModel model = mock(ChatModel.class);
         when(model.call(any(Prompt.class))).thenThrow(new RuntimeException("401 Unauthorized"));
         when(factory.getChatModel("openai")).thenReturn(model);
-        assertFalse(service.testConnection("openai"));
+        assertEquals("CONNECTION_FAILED", service.testConnection("openai"));
     }
 
     @Test
-    void testConnection_unknownProvider_returnsFalse() {
+    void testConnection_unknownProvider_returnsCode() {
         when(factory.getChatModel("deepseek"))
                 .thenThrow(new IllegalArgumentException("UNKNOWN_PROVIDER"));
-        assertFalse(service.testConnection("deepseek"));
+        assertEquals("UNKNOWN_PROVIDER", service.testConnection("deepseek"));
     }
 
     @Test

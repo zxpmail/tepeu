@@ -83,6 +83,10 @@ public class ChatModelFactory {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("MISSING_API_KEY");
         }
+        if (apiKey.trim().toLowerCase().startsWith("http://")
+                || apiKey.trim().toLowerCase().startsWith("https://")) {
+            throw new IllegalStateException("API_KEY_LOOKS_LIKE_URL");
+        }
         String modelName = provider.getDefaultModel();
         if (modelName == null || modelName.isBlank()) {
             throw new IllegalStateException("MISSING_MODEL");

@@ -1,0 +1,15 @@
+﻿{
+    "task_id":  "T3-feature-weather-tool",
+    "category":  "feature",
+    "passed":  true,
+    "judge_note":  "file_regex:matched in backend\\src\\main\\java\\com\\tepeu\\agent\\tool\\WeatherTool.java; repo_grep:matches=10; maven_compile:compile ok",
+    "num_turns":  22,
+    "total_cost_usd":  0.255671,
+    "duration_ms":  276010,
+    "is_error":  true,
+    "model":  "glm-5.2",
+    "claude_exit":  1,
+    "run":  1,
+    "variant":  "baseline",
+    "requested_model":  "glm-5.2"
+}

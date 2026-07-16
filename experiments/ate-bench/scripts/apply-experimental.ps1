@@ -1,4 +1,4 @@
-# 将 experimental 补丁应用到指定仓库根目录
+# 将 experimental 补丁应用到指定仓库根目录（含 AGENT_CALL_PATH.md = 条件 A+B）
 param(
     [Parameter(Mandatory = $true)][string]$RepoRoot
 )
@@ -12,4 +12,4 @@ Copy-Item -Force (Join-Path $PatchDir "AGENT_CALL_PATH.md") (Join-Path $DestAgen
 Copy-Item -Force (Join-Path $PatchDir "ChatService.java") (Join-Path $RepoRoot "backend\src\main\java\com\tepeu\service\chat\ChatService.java")
 Copy-Item -Force (Join-Path $PatchDir "AgentOrchestrator.java") (Join-Path $DestAgent "AgentOrchestrator.java")
 Copy-Item -Force (Join-Path $PatchDir "ChatServiceTest.java") (Join-Path $RepoRoot "backend\src\test\java\com\tepeu\service\chat\ChatServiceTest.java")
-Write-Host "Applied experimental patch to $RepoRoot"
+Write-Host "Applied experimental (A+B: registry + passive doc) to $RepoRoot"

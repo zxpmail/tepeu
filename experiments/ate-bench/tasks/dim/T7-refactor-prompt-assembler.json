@@ -1,0 +1,32 @@
+{
+  "id": "T7-refactor-prompt-assembler",
+  "category": "refactor",
+  "suite": "dim-expand",
+  "prompt": "Refactor AgentOrchestrator: extract prompt assembly (private toPromptMessages and any private helpers it exclusively needs) into a new class PromptAssembler in package com.tepeu.agent. AgentOrchestrator must use PromptAssembler for building the Prompt message list (constructor-injected @Component, or a plain class constructed inside AgentOrchestrator — either is fine). Preserve MAX_HISTORY_MESSAGES == 50 behavior. Do not change ChatService tool registration. Keep the change focused. Ensure backend compiles (mvn -q -DskipTests compile in backend/).",
+  "judge": {
+    "type": "all",
+    "checks": [
+      {
+        "type": "file_regex",
+        "path": "backend/src/main/java",
+        "glob": "**/PromptAssembler.java",
+        "regex": "class\\s+PromptAssembler"
+      },
+      {
+        "type": "repo_grep",
+        "pattern": "PromptAssembler",
+        "glob": "backend/src/main/java/**/*.java",
+        "min_matches": 2
+      },
+      {
+        "type": "file_regex",
+        "path": "backend/src/main/java/com/tepeu/agent/AgentOrchestrator.java",
+        "regex": "PromptAssembler"
+      },
+      {
+        "type": "maven_compile",
+        "cwd": "backend"
+      }
+    ]
+  }
+}

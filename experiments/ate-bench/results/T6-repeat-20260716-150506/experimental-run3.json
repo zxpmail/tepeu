@@ -1,0 +1,14 @@
+﻿{
+    "task_id":  "T6-debug-path-traversal",
+    "category":  "debug",
+    "passed":  true,
+    "judge_note":  "file_regex:ok; file_regex:ok; maven_compile:compile ok",
+    "num_turns":  9,
+    "total_cost_usd":  0.346788,
+    "duration_ms":  40283,
+    "is_error":  false,
+    "model":  "deepseek-v4-flash",
+    "claude_exit":  0,
+    "run":  3,
+    "variant":  "experimental"
+}

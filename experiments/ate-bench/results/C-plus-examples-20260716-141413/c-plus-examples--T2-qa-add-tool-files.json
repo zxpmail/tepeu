@@ -1,0 +1,9 @@
+{
+    "variant":  "c-plus-examples",
+    "task_id":  "T2-qa-add-tool-files",
+    "passed":  true,
+    "judge_note":  "ok",
+    "num_turns":  7,
+    "total_cost_usd":  0.255417,
+    "model":  "deepseek-v4-flash"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "T6-debug-path-traversal",
+  "category": "debug",
+  "suite": "dim-expand",
+  "prompt": "Bug report: WorkspacePathResolver.resolveSafely currently allows paths like \"/../etc/passwd\" to escape the workspace base directory (the startsWith(basePath) boundary check was removed). Fix resolveSafely so out-of-base paths return null again, matching the previous safe behavior and existing FileTools tests. Keep the change minimal — prefer restoring the boundary check in WorkspacePathResolver only. Ensure backend compiles (mvn -q -DskipTests compile in backend/).",
+  "seed": {
+    "copy": [
+      {
+        "from": "patches/seed-t6-path-traversal/WorkspacePathResolver.java",
+        "to": "backend/src/main/java/com/tepeu/service/WorkspacePathResolver.java"
+      }
+    ]
+  },
+  "judge": {
+    "type": "all",
+    "checks": [
+      {
+        "type": "file_regex",
+        "path": "backend/src/main/java/com/tepeu/service/WorkspacePathResolver.java",
+        "regex": "resolveSafely[\\s\\S]{0,600}?\\.startsWith\\s*\\(\\s*(base|basePath|normalizedBase)\\b"
+      },
+      {
+        "type": "file_regex",
+        "path": "backend/src/main/java/com/tepeu/service/WorkspacePathResolver.java",
+        "regex": "resolveSafely[\\s\\S]{0,600}?\\bnull\\b"
+      },
+      {
+        "type": "maven_compile",
+        "cwd": "backend"
+      }
+    ]
+  }
+}

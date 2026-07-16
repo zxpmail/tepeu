@@ -1,0 +1,24 @@
+﻿{
+    "n":  7,
+    "turns":  [
+                  13,
+                  12,
+                  10,
+                  9,
+                  11,
+                  12,
+                  12
+              ],
+    "avg_turns":  11.29,
+    "min_turns":  9,
+    "max_turns":  13,
+    "stdev_turns":  1.28,
+    "baseline_turns_ref":  20,
+    "passive_exp_turns_ref":  21,
+    "first_inject_ref":  13,
+    "prior_n3_turns":  [
+                           9,
+                           17,
+                           11
+                       ]
+}

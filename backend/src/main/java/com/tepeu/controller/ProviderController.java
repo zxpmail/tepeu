@@ -52,22 +52,36 @@ public class ProviderController {
     }
 
     @PutMapping("/config/{providerId}")
-    public ResponseEntity<ApiResponse<LlmProvider>> saveConfig(
+    public ResponseEntity<?> saveConfig(
             @PathVariable String providerId, @RequestBody ProviderConfigRequest req) {
-        LlmProvider provider = providerService.saveOrUpdateProvider(
-                providerId, req.getApiKey(), req.getBaseUrl(),
-                req.getDefaultModel(), req.isEnabled());
-        return ResponseEntity.ok(ApiResponse.success("Provider configuration saved", withMaskedKey(provider)));
+        try {
+            LlmProvider provider = providerService.saveOrUpdateProvider(
+                    providerId, req.getApiKey(), req.getBaseUrl(),
+                    req.getDefaultModel(), req.isEnabled());
+            return ResponseEntity.ok(ApiResponse.success("Provider configuration saved", withMaskedKey(provider)));
+        } catch (IllegalArgumentException e) {
+            String msg = e.getMessage() != null ? e.getMessage() : "INVALID_ARGUMENT";
+            String code = msg.startsWith("API_KEY_LOOKS_LIKE_URL") ? "API_KEY_LOOKS_LIKE_URL" : "INVALID_ARGUMENT";
+            String detail = msg.contains(":") ? msg.substring(msg.indexOf(':') + 1).trim() : msg;
+            return ResponseEntity.badRequest().body(ApiResponse.error(code, detail));
+        }
     }
 
     @PostMapping("/test/{providerId}")
     public ResponseEntity<ApiResponse<?>> testConnection(@PathVariable String providerId) {
-        boolean ok = chatService.testConnection(providerId);
-        if (ok) {
+        String err = chatService.testConnection(providerId);
+        if (err == null) {
             return ResponseEntity.ok(ApiResponse.success("Connection successful", null));
         }
-        return ResponseEntity.status(500)
-                .body(ApiResponse.error("CONNECTION_FAILED", "Connection test failed"));
+        String message = switch (err) {
+            case "MISSING_API_KEY" -> "尚未配置 API Key，请先保存真正的密钥（不要填网址）";
+            case "API_KEY_LOOKS_LIKE_URL" -> "当前 API Key 被存成了网址；请重新粘贴智谱密钥到 API Key 栏后保存";
+            case "PROVIDER_DISABLED" -> "服务商未启用";
+            case "MISSING_MODEL" -> "未配置默认模型";
+            case "UNKNOWN_PROVIDER" -> "未知服务商";
+            default -> "Connection test failed";
+        };
+        return ResponseEntity.status(500).body(ApiResponse.error(err, message));
     }
 
     /** Replace the plaintext key with a display-safe masked form before serialization. */

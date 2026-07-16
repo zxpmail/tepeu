@@ -1,0 +1,35 @@
+﻿{
+    "task":  "T8",
+    "times":  3,
+    "baseline":  {
+                     "stdev":  0,
+                     "min":  5,
+                     "passed":  3,
+                     "avg":  5,
+                     "n":  3,
+                     "turns":  [
+                                   5,
+                                   5,
+                                   5
+                               ],
+                     "max":  5
+                 },
+    "experimental":  {
+                         "stdev":  0.47,
+                         "min":  6,
+                         "passed":  3,
+                         "avg":  6.67,
+                         "n":  3,
+                         "turns":  [
+                                       7,
+                                       6,
+                                       7
+                                   ],
+                         "max":  7
+                     },
+    "prior_single":  {
+                         "experimental":  null,
+                         "dir":  null,
+                         "baseline":  null
+                     }
+}

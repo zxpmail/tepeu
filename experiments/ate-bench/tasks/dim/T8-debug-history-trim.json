@@ -1,0 +1,28 @@
+{
+  "id": "T8-debug-history-trim",
+  "category": "debug",
+  "suite": "dim-expand",
+  "prompt": "Bug report: when chat history exceeds MAX_HISTORY_MESSAGES, AgentOrchestrator.toPromptMessages (or PromptAssembler if extracted) keeps the OLDEST messages via subList(0, MAX_HISTORY_MESSAGES) instead of the newest. Users lose recent context. Fix it so the trim keeps the last MAX_HISTORY_MESSAGES entries (history.size() - MAX_HISTORY_MESSAGES .. end), matching the original intent of the history cap. Keep MAX_HISTORY_MESSAGES == 50. Minimal change. Ensure backend compiles (mvn -q -DskipTests compile in backend/).",
+  "seed": {
+    "copy": [
+      {
+        "from": "patches/seed-t8-history-trim/AgentOrchestrator.{variant}.java",
+        "to": "backend/src/main/java/com/tepeu/agent/AgentOrchestrator.java"
+      }
+    ]
+  },
+  "judge": {
+    "type": "all",
+    "checks": [
+      {
+        "type": "file_regex",
+        "path": "backend/src/main/java/com/tepeu/agent/AgentOrchestrator.java",
+        "regex": "subList\\s*\\(\\s*history\\.size\\s*\\(\\s*\\)\\s*-\\s*MAX_HISTORY_MESSAGES\\s*,\\s*history\\.size\\s*\\(\\s*\\)\\s*\\)"
+      },
+      {
+        "type": "maven_compile",
+        "cwd": "backend"
+      }
+    ]
+  }
+}

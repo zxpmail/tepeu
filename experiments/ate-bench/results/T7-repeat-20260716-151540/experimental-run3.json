@@ -1,0 +1,14 @@
+﻿{
+    "task_id":  "T7-refactor-prompt-assembler",
+    "category":  "refactor",
+    "passed":  true,
+    "judge_note":  "file_regex:matched in backend\\src\\main\\java\\com\\tepeu\\agent\\PromptAssembler.java; repo_grep:matches=4; file_regex:ok; maven_compile:compile ok",
+    "num_turns":  14,
+    "total_cost_usd":  0.559899,
+    "duration_ms":  57079,
+    "is_error":  false,
+    "model":  "deepseek-v4-flash",
+    "claude_exit":  0,
+    "run":  3,
+    "variant":  "experimental"
+}

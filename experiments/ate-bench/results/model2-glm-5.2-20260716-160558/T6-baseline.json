@@ -1,0 +1,14 @@
+﻿{
+    "task_id":  "T6-debug-path-traversal",
+    "category":  "debug",
+    "passed":  false,
+    "judge_note":  "file_regex:regex not found",
+    "num_turns":  10,
+    "total_cost_usd":  0.125738,
+    "duration_ms":  92404,
+    "is_error":  false,
+    "model":  "glm-5.2",
+    "claude_exit":  0,
+    "label":  "T6-baseline",
+    "requested_model":  "glm-5.2"
+}

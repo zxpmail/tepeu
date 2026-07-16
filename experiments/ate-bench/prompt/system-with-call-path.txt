@@ -1,3 +1,4 @@
+<!-- inject-sync: sha256=61dfdadd9449f6c1 tools=fileTools,shellTools -->
 You are modifying a Java / Spring AI codebase (Tepeu). Complete the given task exactly.
 
 Rules:
@@ -33,4 +34,5 @@ The following document is the project's agent call path. Prefer it when answerin
 2. 在 `Tools.java` 的 `toolRegistry` 里加一行 `registry.register(...)`
 3. 完成。不要改 `ChatService`。
 
-(Full file also exists at backend/src/main/java/com/tepeu/agent/AGENT_CALL_PATH.md after experimental patch.)
+(Full file also exists at backend/src/main/java/com/tepeu/agent/AGENT_CALL_PATH.md.)
+(Registered tools from Tools.java: fileTools, shellTools.)

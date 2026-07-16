@@ -1,0 +1,54 @@
+[
+    {
+        "variant":  "baseline",
+        "task_id":  "T2-qa-add-tool-files",
+        "category":  "qa",
+        "passed":  true,
+        "judge_note":  "ok",
+        "num_turns":  11,
+        "total_cost_usd":  0.809118,
+        "duration_ms":  67947,
+        "is_error":  false,
+        "model":  "deepseek-v4-flash",
+        "claude_exit":  0
+    },
+    {
+        "variant":  "baseline",
+        "task_id":  "T3-feature-weather-tool",
+        "category":  "feature",
+        "passed":  true,
+        "judge_note":  "file_regex:matched in backend\\src\\main\\java\\com\\tepeu\\agent\\tool\\WeatherTool.java; repo_grep:matches=10; maven_compile:compile ok",
+        "num_turns":  18,
+        "total_cost_usd":  0.9804330000000002,
+        "duration_ms":  89805,
+        "is_error":  false,
+        "model":  "deepseek-v4-flash",
+        "claude_exit":  0
+    },
+    {
+        "variant":  "experimental",
+        "task_id":  "T2-qa-add-tool-files",
+        "category":  "qa",
+        "passed":  true,
+        "judge_note":  "ok",
+        "num_turns":  10,
+        "total_cost_usd":  0.746219,
+        "duration_ms":  71443,
+        "is_error":  false,
+        "model":  "deepseek-v4-flash",
+        "claude_exit":  0
+    },
+    {
+        "variant":  "experimental",
+        "task_id":  "T3-feature-weather-tool",
+        "category":  "feature",
+        "passed":  true,
+        "judge_note":  "file_regex:matched in backend\\src\\main\\java\\com\\tepeu\\agent\\tool\\WeatherTool.java; repo_grep:matches=6; maven_compile:compile ok",
+        "num_turns":  12,
+        "total_cost_usd":  0.364524,
+        "duration_ms":  27273,
+        "is_error":  false,
+        "model":  "deepseek-v4-flash",
+        "claude_exit":  0
+    }
+]

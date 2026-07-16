@@ -1,0 +1,14 @@
+﻿{
+    "task_id":  "T3-feature-weather-tool",
+    "category":  "feature",
+    "passed":  true,
+    "judge_note":  "file_regex:matched in backend\\src\\main\\java\\com\\tepeu\\agent\\tool\\WeatherTool.java; repo_grep:matches=6; maven_compile:compile ok",
+    "num_turns":  11,
+    "total_cost_usd":  0.352518,
+    "duration_ms":  39841,
+    "is_error":  false,
+    "model":  "deepseek-v4-pro",
+    "claude_exit":  0,
+    "label":  "A-only--T3",
+    "requested_model":  "deepseek-v4-pro"
+}

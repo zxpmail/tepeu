@@ -74,14 +74,25 @@ public class ChatService {
         });
     }
 
-    public boolean testConnection(String providerId) {
+    /**
+     * Probe credentials with a minimal round-trip.
+     * @return null on success; otherwise a stable error code or short message for the UI.
+     */
+    public String testConnection(String providerId) {
         try {
             ChatModel model = factory.getChatModel(providerId);
             ChatResponse response = model.call(new Prompt(new UserMessage("ping")));
-            return response != null && response.getResult() != null;
+            if (response != null && response.getResult() != null) {
+                return null;
+            }
+            return "CONNECTION_FAILED";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            String code = e.getMessage() != null ? e.getMessage() : "CONNECTION_FAILED";
+            log.warn("Provider {} connection test failed: {}", providerId, code);
+            return code;
         } catch (RuntimeException e) {
             log.warn("Provider {} connection test failed: {}", providerId, e.toString(), e);
-            return false;
+            return "CONNECTION_FAILED";
         }
     }
 
