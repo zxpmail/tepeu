@@ -2,7 +2,7 @@
 
 固定同一编码 Agent（Claude Code CLI）与同一任务集，只改变代码库形态（Baseline vs Experimental），测量 Agent 修改系统的成本。
 
-配套文章：[`docs/essays/from-pithtrain-to-spring-ai.md`](../../docs/essays/from-pithtrain-to-spring-ai.md)  
+配套文章：[`docs/essays/spring-ai-coding-side-legibility.md`](../../docs/essays/spring-ai-coding-side-legibility.md)  
 合并结果：[`results/MERGED-20260715.md`](results/MERGED-20260715.md)
 
 **定位：** 初步验证（5 任务 × 1 模型 × 1 仓库），不是普遍结论。
