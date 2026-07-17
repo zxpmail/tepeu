@@ -128,8 +128,8 @@ Tepeu 里一条工具聊天：人脑是 Controller → Orchestrator → ChatServ
     └─ 结构可不动；改前临时把路径贴进 prompt / 工作区
 
 任务类型？（已注册）
-├─ 扩展·检索型（近 T2）→ 注册 alone 往往够
-├─ 扩展·生成型（近 T3）→ 分别冒烟：注入 vs 被动 md（勿默认 A-only）
+├─ 扩展·检索型（近 T2）→ 对本模型冒烟：注册 alone vs +路径 md（flash 上注册常够；glm 上 md 额外拉 T2）
+├─ 扩展·生成型（近 T3）→ 分别冒烟：注入 vs 被动 md（勿默认 A-only；glm 上 T3 多吃注册）
 ├─ 理解调用链（近 T1）→ 优先测注入；勿假设「有 md 就会读」
 ├─ 调试（近 T6）→ 勿默认 A+B 降 turns
 ├─ 重构（近 T7）→ 本仓 ≈持平
