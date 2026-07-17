@@ -59,6 +59,8 @@ python experiments/ate-bench/scripts/check_inject_sync.py --mode degrade # 过�
 powershell -File experiments/ate-bench/scripts/run-t1-inject-repeat.ps1
 # 定向补方差：同场 Baseline vs A+B，仅 T2+T3 ×N（默认 3）
 powershell -File experiments/ate-bench/scripts/run-ab-variance-repeat.ps1 -Times 3
+# glm × C（只注册）×3
+powershell -File experiments/ate-bench/scripts/run-c-variance-repeat.ps1 -Times 3 -Model glm-5.2 -FromTepeuProvider anthropic -MaxBudgetUsd 3.0
 ```
 
 ## 任务一览

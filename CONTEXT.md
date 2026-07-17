@@ -2,12 +2,12 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-文章终稿停笔；实验不加码（不做更大 n / 第二仓）。
+glm×C×3 已完成并写回文 / MERGED；H1′ 收窄为中间结果。
 
 ## 上次停在哪
-- 文：`docs/essays/from-pithtrain-to-spring-ai.md`（§5.0 + H1′ + §6）
-- 评价：工程札记 ~9.4；论文向 ~7.5（接受边界）
-- 数据：`experiments/ate-bench/results/MERGED-20260715.md`
+- C Δ≈**-12.4%** vs A+B ≈**-24.6%**（T3≈同，T2 靠 md）
+- 文：`docs/essays/from-pithtrain-to-spring-ai.md` §5.0
+- 目录：`C-variance-repeat-glm-5.2-20260716-175243`
 
 ## 近期关键决定
-- 停笔可发/可归档；再改文收益很小
+- 不做更大 n / 第二仓；H1′ 已用 C×3 裁决（非二选一）

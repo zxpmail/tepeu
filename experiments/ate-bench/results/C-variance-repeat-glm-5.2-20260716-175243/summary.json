@@ -1,0 +1,84 @@
+﻿{
+    "times":  3,
+    "task_filter":  "T2,T3",
+    "model":  "glm-5.2",
+    "from_tepeu_provider":  "anthropic",
+    "baseline_t2":  {
+                        "stdev":  2.36,
+                        "min":  12,
+                        "avg":  15.33,
+                        "n":  3,
+                        "turns":  [
+                                      17,
+                                      17,
+                                      12
+                                  ],
+                        "max":  17
+                    },
+    "baseline_t3":  {
+                        "stdev":  2.62,
+                        "min":  20,
+                        "avg":  22.33,
+                        "n":  3,
+                        "turns":  [
+                                      20,
+                                      21,
+                                      26
+                                  ],
+                        "max":  26
+                    },
+    "registry_only_t2":  {
+                             "stdev":  3.4,
+                             "min":  11,
+                             "avg":  15.67,
+                             "n":  3,
+                             "turns":  [
+                                           11,
+                                           17,
+                                           19
+                                       ],
+                             "max":  19
+                         },
+    "registry_only_t3":  {
+                             "stdev":  1.25,
+                             "min":  16,
+                             "avg":  17.33,
+                             "n":  3,
+                             "turns":  [
+                                           19,
+                                           17,
+                                           16
+                                       ],
+                             "max":  19
+                         },
+    "baseline_t2t3_sum":  {
+                              "stdev":  0.47,
+                              "min":  37,
+                              "avg":  37.67,
+                              "n":  3,
+                              "turns":  [
+                                            37,
+                                            38,
+                                            38
+                                        ],
+                              "max":  38
+                          },
+    "registry_only_t2t3_sum":  {
+                                   "stdev":  2.16,
+                                   "min":  30,
+                                   "avg":  33,
+                                   "n":  3,
+                                   "turns":  [
+                                                 30,
+                                                 34,
+                                                 35
+                                             ],
+                                   "max":  35
+                               },
+    "mean_delta_pct_on_sum":  -12.4,
+    "glm_ab_variance_ref":  {
+                                "dir":  "AB-variance-repeat-glm-5.2-20260716-164857",
+                                "note":  "compare: if C 螖 鈮?A+B 螖 then registry drives glm gain; if C 鈮?flat then md/channel preference supported",
+                                "mean_delta_pct_on_sum":  -24.6
+                            }
+}
