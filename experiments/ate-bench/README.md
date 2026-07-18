@@ -7,7 +7,7 @@
 
 **定位：** 初步验证（5 任务 × 1 模型 × 1 仓库），不是普遍结论。
 
-> **范围裁切（2026-07-18, ADR-009）**：不做 20 任务扩面、第二模型对照、本机 Docker build/smoke 实测。Dockerfile 仅作定义保留。
+> **范围裁切**：见 **ADR-009**（`memory/decisions-log.md`）。Dockerfile 仅作定义保留。
 
 ## 变量
 

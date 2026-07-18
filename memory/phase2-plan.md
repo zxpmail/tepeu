@@ -1,8 +1,9 @@
-# Phase 2 实现计划 — Agent 对话（SSE 流式）
+# DEV-PLAN Phase 2 实现计划 — Agent 对话（SSE 流式）【历史归档】
 
-> 2026-07-11 dev-builder Loading Phase 产出。DEV-PLAN Phase 2 为权威；本文件是其 Task 分解 + 关键决策。
-> **Foundation 已验证**：Spring AI 2.0.0 `ChatClient`/`StreamingChatModel`/`ChatModel` 在 classpath；app 带 starter 启动正常（Boot 4.0.7 无硬冲突）。版本对齐风险留 T1 首次真实流式调用验证。
-> **Nature**：Backend + UI；Standard size。**Dispatch**：Backend Task → implementer（无 git，无 worktree）；UI Task → 主 session 直接写。
+> **状态（2026-07-18）**：本切片已交付；勿与 Product-Spec §9「Phase 2 = Harness」混淆。  
+> 2026-07-11 dev-builder Loading Phase 产出。当时权威为 DEV-PLAN Phase 2；本文件为其 Task 分解快照。  
+> **Foundation 已验证**：Spring AI 2.0.0 `ChatClient`/`StreamingChatModel`/`ChatModel` 在 classpath；Boot 4.0.7 无硬冲突。  
+> **Dispatch（当时）**：Backend → implementer；UI → 主 session。**现已有 git**（`zxpmail/tepeu`）；下列「无 git」表述作废。
 
 ## 关键决策（需在 T1 前确认）
 - **Boot 版本**：保持 4.0.7（spring-boot-starter-parent）。若 T1 流式调用暴露 4.1.0 对齐冲突 → 升 Boot 到 4.1.x（依赖升级，需用户批准）。

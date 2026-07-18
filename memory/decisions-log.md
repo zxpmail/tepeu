@@ -46,7 +46,7 @@
 
 ## ADR-008: Vibe-Trading 参照边界与排期（2026-07-18）
 - **来源**: [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)（金融垂直 Agent 工作台，非通用 OS）
-- **Decision**: 只吸收 OS 级思想作设计约束；不复刻交易/因子/券商/IM 渠道等垂直功能；不因参照提前扩大 Phase 1 范围。
+- **Decision**: 只吸收 OS 级思想作设计约束；不复刻交易/因子/券商/IM 渠道等垂直功能；不因参照提前扩大 **Product-Spec §9 Phase 1** 已闭合后的范围（勿提前开 Spec Phase 2）。
 - **可吸的 7 条核心思想**:
   1. 证据路径（接地 → 执行 → 校验 → 可检查产物）
   2. 高风险默认关、授权才开（fail-closed）

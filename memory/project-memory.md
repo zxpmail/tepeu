@@ -18,18 +18,16 @@
 - React state management: useState（hooks 局部）+ props（原 EventLoop 计划已退役 ADR-003，eventLoop.ts 已删）
 - No authentication in Phase 1 (local-only mode)
 
-## Phase 2 — Agent 对话（SSE 流式）架构
-- **Chat 链路**：`controller/ChatController` `POST /api/chat/stream`（`SseEmitter`，事件名 `message`，data JSON `{type:token|final|error}`）→ `agent/AgentOrchestrator.streamTurn`（加载 session 历史→`Prompt`）→ `service/chat/ChatService.stream`（`Flux<ChatResponse>`）→ `service/chat/ChatModelFactory.getChatModel(providerId)`（**程序化**构建 Spring AI 2.0 `ChatModel`，从 DB 加密 key 解密注入；javap 验证 `OpenAiSetup.setupSyncClient`/`AnthropicSetup`/`OllamaApi` + `ChatModel.stream(Prompt)→Flux`）。错误码在 exception message：UNKNOWN_PROVIDER/UNSUPPORTED_PROVIDER/PROVIDER_DISABLED/MISSING_API_KEY/MISSING_MODEL。
-- **会话持久化**：`session` + `message` 表（role user/assistant/system），FK `ON DELETE CASCADE`。`SessionService` + `controller/SessionController`（`/api/session` GET/POST/DELETE）。
-- **前端**：`hooks/useChat`（**fetch + ReadableStream** 解析 POST SSE——`EventSource` 是 GET-only 不能用）+ `components/views/ChatView`（provider 下拉 + 消息流 + 输入）+ `ProviderSettingsView`（API key/baseUrl/model/enabled，`⚙` nav；key 留空保存=保留旧 key）。
-- **Spring AI 2.0 + Boot 4.0.7**：编译+运行**无冲突**（Phase 2 实测）。版本对齐风险排除。
-- **testConnection**：真实实现在 `ChatService.testConnection(providerId)`（build model + `model.call("ping")` + catch→false），非 `LlmProviderService` 占位（已移除，避免与 `ChatModelFactory` 循环依赖，见 ADR-007）。`ProviderController` 注入 `ChatService`。前端 `ProviderSettingsView` 有 Test Connection 按钮（`!maskedKey` 时 disabled）。`POST /api/provider/test/{id}` 实测返 500 CONNECTION_FAILED（无 key/无效 key）。
-- **streamWithTools 工具注册**：单次 per-request `.toolCallbacks(wrapped)`（M1 修复，原三重注册）。注：Spring AI 2.0 中 `defaultToolCallbacks` + `.toolCallbacks(ToolCallback...)` **均已 @Deprecated**；装饰器模式（工具事件可视化）暂不可避免走 deprecated API（carry-over，见 ADR-007）。
-- **对话/工具（已演进）**：真实 LLM e2e 曾用 DeepSeek（Anthropic 兼容端点）验证流式+工具。主线现含 `write_file`、`run_command`（`FileTools` / `ShellTools`）+ `ToolRegistry`；高危授权协议仍属 Phase 2 Hook。
+## 对话 / 工具运行时（DEV-PLAN「对话」切片，勿称 Spec Phase 2）
+- **Chat 链路**：`ChatController` → `AgentOrchestrator` → `ChatService` / `ChatModelFactory`（DB 解密 key → Spring AI `ChatModel`）。SSE `message`：`token|final|error` + 工具事件。
+- **会话**：`session` + `message`；`useChat` 用 fetch+ReadableStream（非 EventSource）。
+- **工具**：`ToolRegistry` + `FileTools`（含 `write_file`）+ `ShellTools`（`run_command`）；可视化装饰器仍走 deprecated `ToolCallback...`（ADR-007）。
+- **testConnection**：在 `ChatService`（避与 `ChatModelFactory` 循环依赖，ADR-007）。
+- **成本**：会话级用量已有；**workspace 累计**未做（Spec §3.5 缺口）。
+- **高危授权 / Hook / 多 Agent / MCP**：Product-Spec **§9 Phase 2**（Harness），见 ADR-008。
 
-## 外部参照（约束）
-- **Vibe-Trading**（ADR-008, 2026-07-18）：只作 OS 思想参照（证据路径、授权边界、同 runtime、可配置协作、外挂能力、失败可见、任务契约）。Phase 1 不实现其垂直功能；多 Agent / Hook / MCP / Goal 按 Product-Spec Phase 2。
-- **ATE**（ADR-009, 2026-07-18）：不做 20 任务扩面、第二模型对照、ate-bench Docker 实测；以现有小样本为终点。
+## 外部参照（权威在 ADR）
+- ADR-008（Vibe-Trading）· ADR-009（ATE 裁切）— 细节勿在此重复。
 
 ## 已知坑点 / Gotchas
 

@@ -3,6 +3,11 @@
 > This file records the project's development Phase breakdown, current progress, and remaining work.
 > A new session should read this file first to understand the project status before continuing development.
 
+> **命名注意（避免与 Product-Spec 混淆）**  
+> - **本文件 Phase 1–4** = v0.1.0 **交付切片**（骨架 → 对话 → 记忆/终端 → 发布）。  
+> - **Product-Spec §9 Phase 1–3** = **产品里程碑**（Phase 1≈v0.1 个人底座；Phase 2=Harness / 多 Agent·Hook·MCP；Phase 3=自主与生态）。  
+> 下文「远期 Phase」对应的是 **Spec §9 Phase 2/3**，不是本文件已完成的「Phase 2 对话」。
+
 ---
 
 ## Phase 1: 项目骨架 + Web 工作台 + Workspace MVP
@@ -181,24 +186,19 @@
 
 ---
 
-## 远期 Phase（v0.1.0 之外）
+## 远期（Product-Spec §9，v0.1.0 之外）
 
-> 对应 Product-Spec §9 Phase 2/3，非 v0.1.0 范围。
-> - 多 Agent 协作（Planner/Implementer/Reviewer）
-> - MCP 协议支持
-> - Hook 安全网（幻觉检测、危险操作拦截）
-> - 成本仪表盘
-> - WASM+V8 运行时（Phase 3 远期）
-> - 应用市场
-> - 移动端适配
+> **不是**本文件已完成的「Phase 2 对话」。下列为 Spec 里程碑：
+> - Spec Phase 2：多 Agent · MCP · Hook · 成本仪表盘（含 Spec §3.5 workspace 累计缺口）
+> - Spec Phase 3：WASM+V8 · 应用市场 · 移动端 · 自主 Agent 等
 
-## Phase 1 code-review carry-over（2026-07-11）
+## DEV-PLAN Phase 1 code-review carry-over（2026-07-11）— 状态更新 2026-07-18
 
-> Phase 1 code-review 发现、明确推迟到后续 Phase 的项（已在代码留 TODO/注释）：
-> - **M4 Workspace 文件隔离**（→ Phase 3 文件增强）：FileController 当前用单一全局 `<cwd>/workspace`，多 workspace 共享同一文件视图（违反 §3.4）。Phase 3 加 `workspace.root_path` 列、按工作区解析 basePath。
-> - **M3 Memory tags 过滤**（→ Phase 3 记忆 UI）：tags 过滤参数已从 API 全链路移除（原实现静默无效）。Phase 3 记忆面板实现真正的 tag 过滤。
-> - **C2 Terminal WebSocket**（→ Phase 3 终端）：已禁用端点（原实现 = 跨域无限制 shell / RCE）。Phase 3 启用时须：origin 锁 localhost + 显式 per-session enable + Jackson 序列化输出。
-> - **m3 `ApiResponse @JsonInclude`**：暂留 Jackson 2 注解（实测生效）；`tools.jackson.annotation.JsonInclude` 类路径确认后再迁移 Jackson 3。
+> 下列项在 07-11 审查时推迟；**均已在后续交付切片落地**，不再作为待办：
+> - ✅ **M4 Workspace 文件隔离**（DEV-PLAN Phase 3）：`workspace.root_path` + 按工作区解析 basePath。
+> - ✅ **M3 Memory tags 过滤**（DEV-PLAN Phase 3）：记忆面板 + API tags 过滤。
+> - ✅ **C2 Terminal WebSocket**（DEV-PLAN Phase 3）：origin 锁 localhost + 安全 handler + GBK 等。
+> - ⏳ **m3 `ApiResponse @JsonInclude`**：仍可用 Jackson 2 注解（Boot 4 / Jackson 3 兼容实测生效）；非阻塞，有需要再迁 `tools.jackson.annotation`。
 
 ---
 
