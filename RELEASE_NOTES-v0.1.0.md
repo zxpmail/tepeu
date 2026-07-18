@@ -84,15 +84,18 @@ cd frontend && npm run dev  # 开发模式（Vite HMR + 代理到 :30141）
 
 ## 已知限制 (v0.1.0)
 
+> 2026-07-18 对照主线代码校正（工具与仓库状态已变）。
+
 | # | 限制 | 影响 | 计划 |
 |---|------|------|------|
 | 1 | 单用户模式，无认证 | 本地机器可用，不支持多用户 | Phase 2 企业版 |
-| 2 | FileTools 仅 read-only | Agent 无法创建/修改文件 | 后续 Phase |
-| 3 | 机器离线时无法验证 LLM | 需用户提供可访问的 API Key | — |
+| 2 | Shell / 写文件缺统一高危授权协议 | 已有 `write_file` / `run_command`，尚无 mandate 级二次确认与 kill switch | Phase 2 Hook（M2.3） |
+| 3 | 部分网络环境无法直连公有 LLM | 需可访问的 API Key / 代理或本地 Ollama | — |
 | 4 | Spring AI 2.0 `ToolCallback` API deprecated | 工具可视化走 deprecated API，未来需迁移 | 跟进 Spring AI 更新 |
-| 5 | 无 git 仓库 | `/code-review` diff-based 不可用 | 建议 `git init` |
-| 6 | 前端无 toast 层 | 错误消息依赖内联显示 | 后续 Phase |
-| 7 | 无 CI/CD | 手动构建和发布 | 后续 Phase |
+| 5 | 尚无 git tag / GitHub Release | 源码在 GitHub，正式发版包未打 | 可选 `/release-builder` |
+| 6 | 前端无 toast 层 | 错误消息依赖内联显示 | 后续 |
+| 7 | 无 CI/CD | 手动构建和发布 | 后续 |
+| 8 | Workspace 累计 Token 未做满 | 现有会话级用量展示 | Phase 1 最小视图可补；仪表盘见 M2.4 |
 
 ---
 

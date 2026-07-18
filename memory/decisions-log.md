@@ -43,3 +43,30 @@
 - **Decision (streamWithTools M1)**: 原 `ChatService.streamWithTools` 三重注册工具（`defaultToolCallbacks(wrapped)` + `.tools(fileTools)` + `.toolCallbacks(wrapped)`）→ 改为单次 per-request `.toolCallbacks(wrapped)`。`wrapped` 已装饰 `ToolCallbacks.from(fileTools)`，`.tools()` 冗余；模型原本会收到重复 tool schema。
 - **Rationale**: 装饰器模式（`ToolEventEmittingCallback` 包 `ToolCallback` 做工具事件可视化）要求注册预构建 `ToolCallback[]`，而 Spring AI 2.0 中接受 `ToolCallback...` 的两个 API（`defaultToolCallbacks` + `toolCallbacks`）**均已 @Deprecated**；非 deprecated 的 `.tools(Object...)` 只接受裸 `@Tool` bean（内部 `ToolCallbacks.from`），无法注入 wrapped 回调。故装饰器路径暂不可避免地走 deprecated API（原代码即如此，本改动把 deprecated 调用从 2 处减到 1 处）。
 - **Carry-over**: 真实 LLM e2e 未验（机器离线）——工具循环是否实际触发/不重复执行，待用户提供 key 后验证。若 deprecated API 未来移除，需改用 `ToolCallingManager` 自定义或 Advisor 观察工具执行（更大重构）。
+
+## ADR-008: Vibe-Trading 参照边界与排期（2026-07-18）
+- **来源**: [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)（金融垂直 Agent 工作台，非通用 OS）
+- **Decision**: 只吸收 OS 级思想作设计约束；不复刻交易/因子/券商/IM 渠道等垂直功能；不因参照提前扩大 Phase 1 范围。
+- **可吸的 7 条核心思想**:
+  1. 证据路径（接地 → 执行 → 校验 → 可检查产物）
+  2. 高风险默认关、授权才开（fail-closed）
+  3. 一个 runtime、多个入口（Web/CLI/MCP 同状态与权限）
+  4. 多 Agent = 可配置分工 + 共享执行面 + 失败传播（非闲聊）
+  5. 内核薄、能力外挂（技能/预设挂在原语外）
+  6. 失败可见（禁静默成功）
+  7. 任务契约 Goal（验收标准，不只靠 Prompt）
+- **排期**:
+  - **底座阶段（已收口）**: 工具显式注册与失败可见、同 API runtime、证据路径薄版；ATE 评测以现有小样本为止（见 ADR-009）。
+  - **Phase 2（规格 M2.x）**: Hook/授权边界（M2.3）、多 Agent（M2.1）、MCP（M2.2）、Goal/run 契约与协作状态机、成本仪表盘（M2.4）。
+  - **Phase 3+**: 应用市场/技能生态厚版、自主定时等。
+- **明确不吸**: Alpha Zoo、Shadow Account 细节、行情 fallback 链、渠道堆叠、技能数量本身。
+- **Rationale**: 垂直产品的 Star/功能密度不能外推为 Tepeu 路线图；与 Product-Spec §9 / DEV-PLAN「远期 Phase」一致，避免 scope 蔓延。
+
+## ADR-009: ATE 扩面与 Docker 实测不做（2026-07-18）
+- **Decision**: 终止下列待办，不再列入当前阶段缺口：
+  1. ATE 20 任务扩面
+  2. ATE 第二模型对照
+  3. `experiments/ate-bench` Docker build / smoke 本机实测
+- **保留**: 已有小样本结果（含 glm×C×3、T1 注入等）与 Dockerfile 定义文件本身；文章结论维持「初步验证」表述，不声称更大样本。
+- **Rationale**: 用户明确裁切范围；继续扩面会占用底座/产品主线精力，且本机无 Docker 守护进程。
+- **Follow-up (同日)**: 交接与 RELEASE 已知限制已对齐；本阶段文档收口完成。

@@ -25,7 +25,11 @@
 - **Spring AI 2.0 + Boot 4.0.7**：编译+运行**无冲突**（Phase 2 实测）。版本对齐风险排除。
 - **testConnection**：真实实现在 `ChatService.testConnection(providerId)`（build model + `model.call("ping")` + catch→false），非 `LlmProviderService` 占位（已移除，避免与 `ChatModelFactory` 循环依赖，见 ADR-007）。`ProviderController` 注入 `ChatService`。前端 `ProviderSettingsView` 有 Test Connection 按钮（`!maskedKey` 时 disabled）。`POST /api/provider/test/{id}` 实测返 500 CONNECTION_FAILED（无 key/无效 key）。
 - **streamWithTools 工具注册**：单次 per-request `.toolCallbacks(wrapped)`（M1 修复，原三重注册）。注：Spring AI 2.0 中 `defaultToolCallbacks` + `.toolCallbacks(ToolCallback...)` **均已 @Deprecated**；装饰器模式（工具事件可视化）暂不可避免走 deprecated API（carry-over，见 ADR-007）。
-- **Phase 2 状态：[2026-07-11] 验收完成（5/6 过，1 已知偏差）。真实 LLM e2e 流式+工具调用已用 DeepSeek（via Anthropic 兼容端点 `api.deepseek.com/anthropic`）验证通过。** 偏差：验收标准 6（写/删文件工具）——FileTools 仅 read-only，有意为之（写操作属未来 Phase）。
+- **对话/工具（已演进）**：真实 LLM e2e 曾用 DeepSeek（Anthropic 兼容端点）验证流式+工具。主线现含 `write_file`、`run_command`（`FileTools` / `ShellTools`）+ `ToolRegistry`；高危授权协议仍属 Phase 2 Hook。
+
+## 外部参照（约束）
+- **Vibe-Trading**（ADR-008, 2026-07-18）：只作 OS 思想参照（证据路径、授权边界、同 runtime、可配置协作、外挂能力、失败可见、任务契约）。Phase 1 不实现其垂直功能；多 Agent / Hook / MCP / Goal 按 Product-Spec Phase 2。
+- **ATE**（ADR-009, 2026-07-18）：不做 20 任务扩面、第二模型对照、ate-bench Docker 实测；以现有小样本为终点。
 
 ## 已知坑点 / Gotchas
 
@@ -41,9 +45,9 @@
 - **`mvn spring-boot:run` fork 的子 JVM 不会被 `TaskStop` 杀掉**：停服务要 `taskkill //F //PID <java-pid>`（`netstat -ano | grep 30141` 找 PID），否则端口 30141 被占 → 下次启动报 "Port already in use"。
 - **gstack browse 多步流程必须用 `chain`**：单条 `$B <cmd>` 之间不保留页面状态（每次回到 about:blank）；`$B js` 不 await Promise（不能用它做延时）；用 `wait --networkidle` 做真实等待。
 - **FileBrowserView mount 自动加载已修复**（2026-07-11）：原 `useFileBrowser` 无 mount 触发，须点 `~` 面包屑才列文件；已给 `FileBrowserView` 加 `useEffect(() => loadFiles('/'), [loadFiles])`。开 Files 即列文件（gstack 验：`seed.txt` 自动出现，`GET /api/files/list` 自动 200）。
-- Phase 1 **全部验收已于 2026-07-11 通过**：API 全栈 + §7.4 加密 + 浏览器视觉（多面板布局/主题切换/文件浏览器，gstack 验）。**仅剩 `/code-review` 未做**。
-- **无 git 仓库**：`E:\work\tepeu` 非 git repo（`git rev-parse` 报 fatal，无 `.git`）。旧 handoff 称"first commit + push"不实——git 从未真正 init，或 .git 已丢失。后果：无 diff → 内置 `/code-review`（diff-based）不可用（Phase 2 review 走内联文件审查）；无法做原子 commit / worktree；HARD-GATE 的 worktree 强制不成立（无 git）。**建议**：若要恢复 commit 工作流 + 启用 diff-based code-review，需 `git init` + 初始 commit（历史已丢，无法找回 per-Phase commit）。未做（避免 scope 蔓延），待用户决定。
-- **机器离线**：本机无法访问 `api.openai.com`（curl HTTP 000/6s timeout）。真实 LLM e2e 验证需用户提供可访问的 key/endpoint 或本地起 ollama。
+- Phase 1 **功能验收已于 2026-07-11 通过**（API / 加密 / 浏览器视觉）。后续已合入工具写能力、ATE、远程 git。
+- **Git**：远程 `zxpmail/tepeu`，本地 `main` 跟踪 `origin/main`。尚无 v0.1.0 tag / GitHub Release（可选）。
+- **LLM 可达性**：视本机网络而定；公有云 API 可能需代理；可用兼容端点或本地 Ollama。
 - **Phase 3 新增前端依赖**：highlight.js、marked、xterm、xterm-addon-fit（Phase 3 构建验证通过）。
 - **FileController 端点更新（Phase 3）**：`GET /api/files/history`、`POST /api/files/restore/{id}`、`POST /api/files/version`。全部接受可选的 workspaceId 参数。基于 FileVersionService（新增）。
 - **MemoryController 搜索增强（Phase 3）**：`POST /api/memory/search` 新增可选的 `tags` 数组参数（SQLite `LIKE` 匹配 JSON 数组）。

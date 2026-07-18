@@ -2,6 +2,9 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-07-18 | stage-closeout | **本阶段文档收口** | 更新 handoff / RELEASE 已知限制 / CONTEXT；提交 ADR-008/009；阶段结束→下一刀 Phase 2 |
+| 2026-07-18 | scope-cut | **裁切 ATE 扩面与 Docker 实测** | ADR-009：不做 20 任务/第二模型/ate-bench Docker 实测；小样本即止 |
+| 2026-07-18 | vibe-trading-ref | **对照 Vibe-Trading 提炼可吸思想并定排期** | ADR-008：吸 7 条 OS 思想；不抄金融功能；Hook/多 Agent/MCP/Goal→Phase 2 |
 | 2026-07-11 | terminal-fix | **修终端一字一命令 / 无法执行** | 前端按行缓冲+本地回显；后端整行写 GBK stdin；AI CLI 加中文映射与直通命令；bootRun 重启验证 echo/dir PASS |
 | 2026-07-10 | product-spec-builder | Product-Spec.md creation & validation | Spring Boot 4.0 + Spring AI 2.0 GA; SQLite only; Web UI (pi-web ref) |
 | 2026-07-10 | dev-planner | DEV-PLAN.md generation | 4 phases for v0.1.0; Phase 1: skeleton + workspace MVP |
