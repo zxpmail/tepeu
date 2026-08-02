@@ -5,10 +5,8 @@ import java.time.LocalDateTime;
 /**
  * A single chat turn persisted under a {@link Session}.
  *
- * <p>{@code role} is one of {@code user|assistant|system} (constrained at the DB layer by a CHECK
- * on the {@code message} table). {@code content} is the verbatim message text; for the assistant
- * turn it is the fully-assembled reply (the streaming tokens are reassembled by the controller
- * before persistence — see {@code ChatController}).
+ * <p>{@code role} is {@code user|assistant|system}（DB CHECK）。工具过程以
+ * {@code system} + {@code TEPEU_TOOL_V1:} 前缀持久化，刷新后前端解码为工具卡片。
  */
 public class Message {
     private String id;

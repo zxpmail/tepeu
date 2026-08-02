@@ -8,6 +8,7 @@ import { useChat, type LastUsage } from '../../hooks/useChat'
 import ChatInput from '../chat/ChatInput'
 import MessageView from '../chat/MessageView'
 import ProcessDetails from '../chat/ProcessDetails'
+import ApprovalBanner from '../chat/ApprovalBanner'
 import ChatMinimap, { toMinimapSources, useItemRefs } from '../chat/ChatMinimap'
 import { groupChatMessages } from '../chat/groupMessages'
 import type { ProviderMetadata, Panel, SessionStats } from '../../types'
@@ -43,6 +44,7 @@ export default function ChatView({
     messages, streaming, error, sessionId,
     send, stop, reset, loadSession,
     lastUsage, sessionStats, queueLength,
+    pendingApprovals, decidingId, decideApproval,
   } = useChat()
   const [providers, setProviders] = useState<ProviderMetadata[]>([])
   const [provider, setProvider] = useState('')
@@ -236,6 +238,7 @@ export default function ChatView({
           {error && (
             <div className="max-w-[820px] mx-auto px-4">
               <div
+                data-testid="chat-error"
                 className="px-3 py-2 rounded-lg text-sm border"
                 style={{
                   borderColor: 'color-mix(in srgb, var(--color-danger) 35%, var(--color-border))',
@@ -247,6 +250,7 @@ export default function ChatView({
               </div>
             </div>
           )}
+
 
           {streaming && <div style={{ height: '20vh' }} />}
         </div>
@@ -260,6 +264,11 @@ export default function ChatView({
 
       <div className="shrink-0 px-4 pb-3 pt-1" style={{ paddingRight: 52 }}>
         <div className="max-w-[820px] mx-auto">
+          <ApprovalBanner
+            items={pendingApprovals}
+            decidingId={decidingId}
+            onDecide={decideApproval}
+          />
           <ChatInput
             value={input}
             onChange={setInput}

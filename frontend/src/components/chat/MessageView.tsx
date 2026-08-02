@@ -15,10 +15,31 @@ interface MessageViewProps {
   compact?: boolean
 }
 
+/** toolKind → 短标签色，便于过程区按类别扫读 */
+function toolKindStyle(kind?: string): { label: string; color: string } {
+  switch (kind) {
+    case 'file_list':
+    case 'file_read':
+    case 'file_search':
+      return { label: kind.replace('file_', ''), color: '#3b82f6' }
+    case 'file_write':
+      return { label: 'write', color: '#f59e0b' }
+    case 'shell':
+      return { label: 'shell', color: '#ef4444' }
+    case 'shell_output':
+      return { label: 'output', color: '#a855f7' }
+    case 'mcp':
+      return { label: 'mcp', color: '#14b8a6' }
+    default:
+      return { label: kind || 'tool', color: '#9ca3af' }
+  }
+}
+
 /** 工具调用/结果可折叠卡片 */
 function ToolCard({ message }: { message: ChatMessage }) {
   const [open, setOpen] = useState(false)
-  const isCall = message.toolKind === 'call'
+  const isCall = message.toolState === 'call'
+  const kind = toolKindStyle(message.toolKind)
   return (
     <div
       className="rounded-lg border text-xs overflow-hidden"
@@ -37,6 +58,16 @@ function ToolCard({ message }: { message: ChatMessage }) {
       >
         <span className="opacity-60">{open ? '▼' : '▶'}</span>
         <span>{isCall ? 'call' : 'result'}</span>
+        <span
+          className="px-1 rounded"
+          style={{
+            color: kind.color,
+            backgroundColor: `color-mix(in srgb, ${kind.color} 12%, transparent)`,
+            fontSize: 10,
+          }}
+        >
+          {kind.label}
+        </span>
         <span style={{ color: 'var(--color-text)' }}>{message.tool}</span>
       </button>
       {open && (

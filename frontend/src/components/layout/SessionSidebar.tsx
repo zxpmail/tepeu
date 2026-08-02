@@ -2,10 +2,11 @@
  * IDE 左栏 — 会话列表（可重命名/删除）+ 文件树 + 次级入口。
  * 关联：IdeShell、api.listSessions / renameSession / deleteSession、api.listFiles。
  */
-import { useEffect, useState, useCallback, useRef, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useState, useCallback, type KeyboardEvent, type ReactNode } from 'react'
 import { api } from '../../api/client'
 import { workspaceEventBus } from '../../context/WorkspaceEvents'
-import type { ChatSession, FileItem, Panel } from '../../types'
+import FileTree from '../common/FileTree'
+import type { ChatSession, Panel } from '../../types'
 
 interface SessionSidebarProps {
   workspaceId?: string
@@ -19,22 +20,15 @@ interface SessionSidebarProps {
 
 const SECONDARY: { id: Panel; label: string }[] = [
   { id: 'workspace', label: '工作区' },
+  { id: 'files', label: '文件' },
   { id: 'memory', label: '记忆' },
   { id: 'skills', label: '技能' },
+  { id: 'multi', label: '多 Agent' },
+  { id: 'schedule', label: '自主' },
+  { id: 'cost', label: '成本' },
   { id: 'terminal', label: '终端' },
   { id: 'provider', label: '服务商' },
 ]
-
-/** 按扩展名给文件列表一个轻量图标前缀 */
-function fileIcon(name: string): string {
-  const n = name.toLowerCase()
-  if (/\.(html?|htm)$/.test(n)) return '🌐 '
-  if (/\.pdf$/.test(n)) return '📕 '
-  if (/\.(pptx?|ppt)$/.test(n)) return '📊 '
-  if (/\.(png|jpe?g|gif|webp|svg)$/.test(n)) return '🖼 '
-  if (/\.(md|markdown)$/.test(n)) return '📝 '
-  return '📄 '
-}
 
 /** 侧栏小图标按钮用的 14px SVG */
 function IconBtn({
@@ -110,17 +104,14 @@ export default function SessionSidebar({
   onNavigate,
 }: SessionSidebarProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([])
-  const [files, setFiles] = useState<FileItem[]>([])
-  const [filePath, setFilePath] = useState('/')
+  const [selectedFilePath, setSelectedFilePath] = useState<string | undefined>()
   const [explorerOpen, setExplorerOpen] = useState(true)
-  const [loadingFiles, setLoadingFiles] = useState(false)
+  const [treeRefreshKey, setTreeRefreshKey] = useState(0)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
-  const filePathRef = useRef(filePath)
-  filePathRef.current = filePath
 
   const reloadSessions = useCallback(() => {
     if (!workspaceId) {
@@ -130,46 +121,21 @@ export default function SessionSidebar({
     api.listSessions(workspaceId).then(setSessions).catch(() => setSessions([]))
   }, [workspaceId])
 
-  const loadFiles = useCallback(async (path: string) => {
-    setLoadingFiles(true)
-    try {
-      const data = await api.listFiles(path, workspaceId)
-      setFiles(data.items)
-      setFilePath(data.path)
-    } catch {
-      setFiles([])
-    } finally {
-      setLoadingFiles(false)
-    }
-  }, [workspaceId])
-
-  /** 局部刷新当前文件目录（不刷新整页） */
+  /** 局部刷新文件树（不刷新整页） */
   const refreshFiles = useCallback(() => {
     setExplorerOpen(true)
-    void loadFiles(filePathRef.current)
-  }, [loadFiles])
+    setTreeRefreshKey(k => k + 1)
+  }, [])
 
   useEffect(() => { reloadSessions() }, [reloadSessions, sessionId])
-  useEffect(() => { void loadFiles('/') }, [loadFiles])
+  useEffect(() => { setTreeRefreshKey(k => k + 1) }, [workspaceId])
 
-  // 对话写文件 / 回合结束 → 只刷新文件列表
+  // 对话写文件 / 回合结束 → 刷新文件树
   useEffect(() => {
     return workspaceEventBus.subscribe(() => {
       refreshFiles()
     })
   }, [refreshFiles])
-
-  const joinPath = (base: string, name: string) => {
-    if (base === '/' || base === '') return `/${name}`
-    return `${base.replace(/\/$/, '')}/${name}`
-  }
-
-  const parentPath = (path: string) => {
-    if (path === '/' || !path) return '/'
-    const parts = path.replace(/\/$/, '').split('/')
-    parts.pop()
-    return parts.length <= 1 ? '/' : parts.join('/')
-  }
 
   const startRename = (s: ChatSession) => {
     setConfirmDeleteId(null)
@@ -244,6 +210,7 @@ export default function SessionSidebar({
           </span>
           <button
             type="button"
+            data-testid="btn-new-session"
             className="text-xs px-2 py-1 rounded border shrink-0"
             style={{
               borderColor: 'var(--color-border)',
@@ -392,40 +359,21 @@ export default function SessionSidebar({
         </button>
         {explorerOpen && (
           <div className="flex-1 overflow-y-auto px-1 pb-2 min-h-0">
-            <div className="flex items-center gap-1 px-1 mb-1">
-              <button
-                type="button"
-                className="text-[10px] px-1 rounded"
-                style={{ color: 'var(--color-text-dim)' }}
-                disabled={filePath === '/'}
-                onClick={() => void loadFiles(parentPath(filePath))}
-              >
-                ↑
-              </button>
-              <span className="text-[10px] truncate flex-1" style={{ color: 'var(--color-text-dim)', fontFamily: 'var(--font-mono)' }}>
-                {filePath}
-              </span>
-              {loadingFiles && (
-                <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>…</span>
-              )}
-            </div>
-            {files.map(f => {
-              const full = joinPath(filePath, f.name)
-              return (
-                <button
-                  key={full}
-                  type="button"
-                  className="w-full text-left px-2 py-1 rounded text-xs truncate"
-                  style={{ color: 'var(--color-sidebar-text)', fontFamily: 'var(--font-mono)' }}
-                  onClick={() => {
-                    if (f.isDirectory) void loadFiles(full)
-                    else onOpenFile(full)
-                  }}
-                >
-                  {f.isDirectory ? '📁 ' : fileIcon(f.name)}{f.name}
-                </button>
-              )
-            })}
+            {!workspaceId ? (
+              <div className="text-[10px] px-2" style={{ color: 'var(--color-text-dim)' }}>无工作区</div>
+            ) : (
+              <FileTree
+                workspaceId={workspaceId}
+                selectedPath={selectedFilePath}
+                refreshKey={treeRefreshKey}
+                showFiles
+                onSelectDir={(path) => setSelectedFilePath(path)}
+                onSelectFile={(path) => {
+                  setSelectedFilePath(path)
+                  onOpenFile(path)
+                }}
+              />
+            )}
           </div>
         )}
       </div>
@@ -438,6 +386,7 @@ export default function SessionSidebar({
           <button
             key={item.id}
             type="button"
+            data-testid={`nav-${item.id}`}
             className="text-[11px] py-1.5 rounded"
             style={{ color: 'var(--color-text-secondary)' }}
             onClick={() => onNavigate(item.id)}

@@ -433,7 +433,7 @@ public class SkillService {
             return Optional.empty();
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("用户通过 /技能 或 @技能 调用了以下技能。请严格遵循其指引，并结合可用工具（list_files、read_file、write_file、run_command）完成本轮任务。\n\n");
+        sb.append("用户通过 /技能 或 @技能 调用了以下技能。请严格遵循其指引，并结合可用工具（list_files、read_file、write_file、search_files、run_command、read_output）完成本轮任务。\n\n");
         int budget = MAX_ENABLED_CHARS;
         for (Skill s : invoked) {
             String block = "### Skill: " + s.getName() + " (/" + s.getSlug() + ")\n"
@@ -562,7 +562,9 @@ public class SkillService {
             - `list_files`：查看目录
             - `read_file`：读文件
             - `write_file`：创建或覆盖文件（路径相对工作区，如 `/hello.py`）
+            - `search_files`：按文件名或内容关键字搜索工作区
             - `run_command`：在工作区根目录执行命令（如 `python hello.py`、`npm test`、`dir`）
+            - `read_output`：按偏移续读最近一次命令输出（输出被截断时用）
 
             ## 工作方式
             1. 先弄清目标；不确定就问一句

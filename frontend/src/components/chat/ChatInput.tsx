@@ -365,6 +365,7 @@ export default function ChatInput({
         <div className="flex items-end gap-2 px-3 pt-2.5 pb-2">
           <textarea
             ref={textareaRef}
+            data-testid="chat-input"
             value={value}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -399,6 +400,7 @@ export default function ChatInput({
             )}
             <button
               type="button"
+              data-testid="chat-send"
               onClick={onSend}
               disabled={!value.trim() || disabled}
               className="px-3 py-1.5 text-xs rounded-md disabled:opacity-40"

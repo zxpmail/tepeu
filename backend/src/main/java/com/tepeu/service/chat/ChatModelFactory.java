@@ -67,7 +67,7 @@ public class ChatModelFactory {
      * Resolve and build a ready-to-use {@link ChatModel} for {@code providerId}.
      *
      * @throws IllegalArgumentException for {@code UNKNOWN_PROVIDER} (no DB row) or
-     *         {@code UNSUPPORTED_PROVIDER} (row exists but providerId is not openai/anthropic/ollama).
+     *         {@code UNSUPPORTED_PROVIDER}（非 openai / anthropic / deepseek / ollama）。
      * @throws IllegalStateException    for {@code PROVIDER_DISABLED}, {@code MISSING_API_KEY}, or
      *         {@code MISSING_MODEL}. The exception {@code getMessage()} carries the stable error
      *         code (no free text) so the controller layer can map it cleanly.
@@ -80,11 +80,14 @@ public class ChatModelFactory {
             throw new IllegalStateException("PROVIDER_DISABLED");
         }
         String apiKey = provider.getApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        boolean ollama = "ollama".equals(provider.getProviderId());
+        // Ollama 本地无需密钥；其它服务商必须配置
+        if (!ollama && (apiKey == null || apiKey.isBlank())) {
             throw new IllegalStateException("MISSING_API_KEY");
         }
-        if (apiKey.trim().toLowerCase().startsWith("http://")
-                || apiKey.trim().toLowerCase().startsWith("https://")) {
+        if (apiKey != null && !apiKey.isBlank()
+                && (apiKey.trim().toLowerCase().startsWith("http://")
+                || apiKey.trim().toLowerCase().startsWith("https://"))) {
             throw new IllegalStateException("API_KEY_LOOKS_LIKE_URL");
         }
         String modelName = provider.getDefaultModel();
@@ -96,9 +99,60 @@ public class ChatModelFactory {
         return switch (provider.getProviderId()) {
             case "openai"    -> buildOpenAi(apiKey, baseUrl, modelName);
             case "anthropic" -> buildAnthropic(apiKey, baseUrl, modelName);
+            // 与 cc-switch DeepSeek 预设一致：Anthropic 兼容端点（非 OpenAI /v1）
+            case "deepseek"  -> buildAnthropic(apiKey, resolveDeepSeekBaseUrl(baseUrl), modelName);
             case "ollama"    -> buildOllama(baseUrl, modelName);
             default -> throw new IllegalArgumentException("UNSUPPORTED_PROVIDER");
         };
+    }
+
+    /**
+     * 用草稿凭证测连（未保存前）。空覆盖项回落到库中已存配置。
+     */
+    public ChatModel getChatModelWithOverrides(
+            String providerId, String apiKeyOverride, String baseUrlOverride, String modelOverride) {
+        LlmProvider provider = providerService.getProvider(providerId)
+                .orElseThrow(() -> new IllegalArgumentException("UNKNOWN_PROVIDER"));
+        LlmProvider draft = new LlmProvider();
+        draft.setProviderId(provider.getProviderId());
+        draft.setEnabled(true);
+        draft.setApiKey(
+                apiKeyOverride != null && !apiKeyOverride.isBlank() ? apiKeyOverride : provider.getApiKey());
+        draft.setBaseUrl(
+                baseUrlOverride != null && !baseUrlOverride.isBlank() ? baseUrlOverride : provider.getBaseUrl());
+        draft.setDefaultModel(
+                modelOverride != null && !modelOverride.isBlank() ? modelOverride : provider.getDefaultModel());
+        // 临时走与 getChatModel 相同校验路径：注入一个只读假服务会太重，直接内联构建
+        String apiKey = draft.getApiKey();
+        boolean ollama = "ollama".equals(draft.getProviderId());
+        if (!ollama && (apiKey == null || apiKey.isBlank())) {
+            throw new IllegalStateException("MISSING_API_KEY");
+        }
+        if (apiKey != null && !apiKey.isBlank()
+                && (apiKey.trim().toLowerCase().startsWith("http://")
+                || apiKey.trim().toLowerCase().startsWith("https://"))) {
+            throw new IllegalStateException("API_KEY_LOOKS_LIKE_URL");
+        }
+        String modelName = draft.getDefaultModel();
+        if (modelName == null || modelName.isBlank()) {
+            throw new IllegalStateException("MISSING_MODEL");
+        }
+        String baseUrl = draft.getBaseUrl();
+        return switch (draft.getProviderId()) {
+            case "openai" -> buildOpenAi(apiKey, baseUrl, modelName);
+            case "anthropic" -> buildAnthropic(apiKey, baseUrl, modelName);
+            case "deepseek" -> buildAnthropic(apiKey, resolveDeepSeekBaseUrl(baseUrl), modelName);
+            case "ollama" -> buildOllama(baseUrl, modelName);
+            default -> throw new IllegalArgumentException("UNSUPPORTED_PROVIDER");
+        };
+    }
+
+    /** DeepSeek Anthropic 兼容默认根；用户可覆盖 baseUrl。 */
+    static String resolveDeepSeekBaseUrl(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return "https://api.deepseek.com/anthropic";
+        }
+        return baseUrl.trim();
     }
 
     /**

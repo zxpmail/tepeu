@@ -98,6 +98,8 @@ export default function MemoryView({ workspaceId }: MemoryViewProps) {
               }}
             />
             <button
+              type="button"
+              data-testid="memory-new"
               onClick={() => setShowCreate(!showCreate)}
               className="px-3 py-1.5 text-sm rounded"
               style={{ backgroundColor: 'var(--color-accent)', color: '#fff' }}
@@ -127,6 +129,7 @@ export default function MemoryView({ workspaceId }: MemoryViewProps) {
         {showCreate && (
           <div className="p-3 border-b" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}>
             <textarea
+              data-testid="memory-content-input"
               value={createContent}
               onChange={e => setCreateContent(e.target.value)}
               placeholder="记忆内容…"
@@ -142,7 +145,7 @@ export default function MemoryView({ workspaceId }: MemoryViewProps) {
               style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}
             />
             <div className="flex gap-2">
-              <button onClick={handleCreate} className="px-3 py-1 text-sm rounded" style={{ backgroundColor: 'var(--color-accent)', color: '#fff' }}>
+              <button type="button" data-testid="memory-save" onClick={handleCreate} className="px-3 py-1 text-sm rounded" style={{ backgroundColor: 'var(--color-accent)', color: '#fff' }}>
                 Save
               </button>
               <button onClick={() => { setShowCreate(false); setCreateContent(''); setCreateTagInput('') }}

@@ -39,16 +39,19 @@ export default function SetupWizard({ onComplete }: SetupWizardProps) {
   }, [])
 
   const meta = providers.find(p => p.id === selected)
+  /** Ollama 本地模型可不填 API Key */
+  const keyOptional = selected === 'ollama'
+  const canSaveProvider = Boolean(selected && (keyOptional || apiKey.trim()))
 
   // Step 1: API Key configuration
   const handleSaveAndTest = async () => {
-    if (!selected || !apiKey.trim()) return
+    if (!canSaveProvider) return
     setSaving(true)
     setMsg(null)
     try {
       await api.saveProviderConfig(selected, {
-        apiKey: apiKey.trim(),
-        baseUrl: baseUrl || undefined,
+        apiKey: apiKey.trim() || (keyOptional ? 'ollama-local' : undefined),
+        baseUrl: baseUrl || (keyOptional ? 'http://localhost:11434' : undefined),
         defaultModel: model || meta?.models[0]?.id,
         enabled: true,
       })
@@ -56,15 +59,15 @@ export default function SetupWizard({ onComplete }: SetupWizardProps) {
       setTesting(true)
       try {
         await api.testProviderConnection(selected)
-        setMsg({ ok: true, text: 'Key saved and connection verified!' })
+        setMsg({ ok: true, text: '已保存，连接测试通过' })
         setApiKey('')
         setTimeout(() => { setStep(1); setMsg(null) }, 1200)
       } catch {
-        setMsg({ ok: true, text: 'Key saved but connection test failed — you can fix this later in ⚙ Provider settings.' })
+        setMsg({ ok: true, text: '已保存，但连接测试失败 — 可稍后在 ⚙ 服务商设置中修复' })
         setTimeout(() => { setStep(1); setMsg(null) }, 2000)
       }
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof ApiError ? e.message : 'Save failed' })
+      setMsg({ ok: false, text: e instanceof ApiError ? e.message : '保存失败' })
     } finally {
       setSaving(false)
       setTesting(false)
@@ -96,13 +99,13 @@ export default function SetupWizard({ onComplete }: SetupWizardProps) {
   }
 
   return (
-    <div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg)' }}>
+    <div data-testid="setup-wizard" className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg)' }}>
       <div className="w-full max-w-lg mx-auto p-8">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🚀</div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Tepeu</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>智能体操作系统 — v0.1.0</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>智能体操作系统 — v0.2.0</p>
         </div>
 
         {/* Step indicator */}
@@ -204,7 +207,7 @@ export default function SetupWizard({ onComplete }: SetupWizardProps) {
             <div className="flex gap-2">
               <button
                 onClick={handleSaveAndTest}
-                disabled={saving || !apiKey.trim()}
+                disabled={saving || !canSaveProvider}
                 className="px-5 py-2 text-sm rounded disabled:opacity-50"
                 style={{ backgroundColor: 'var(--color-accent)', color: '#fff' }}
               >
@@ -281,28 +284,28 @@ export default function SetupWizard({ onComplete }: SetupWizardProps) {
                 <span className="text-lg shrink-0">💬</span>
                 <div>
                   <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>Agent 对话</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>选择对话面板开始聊天。Agent 可以读取文件、浏览网页等。</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>在对话面板开始聊天。Agent 可读写工作区文件、执行命令（高危操作需你批准）。</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-lg shrink-0">📁</span>
                 <div>
                   <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>工作区项目</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>每个工作区拥有独立的文件和记忆。创建多个工作区来组织工作。</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>每个工作区有独立的文件与记忆，可创建多个工作区组织不同项目。</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-lg shrink-0">🧠</span>
                 <div>
                   <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>白盒记忆</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>所有记忆可见可编辑。追溯每条记忆的来源——没有黑盒。</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>记忆可见、可编辑，并能追溯来源。</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-lg shrink-0">⚙</span>
                 <div>
                   <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>服务商设置</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>随时在 ⚙ 面板中添加或更换 API Key、切换模型、测试连接。</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>随时在服务商面板更换 API Key、切换模型、测试连接。</div>
                 </div>
               </div>
             </div>

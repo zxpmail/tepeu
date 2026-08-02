@@ -68,18 +68,24 @@ public class ProviderController {
     }
 
     @PostMapping("/test/{providerId}")
-    public ResponseEntity<ApiResponse<?>> testConnection(@PathVariable String providerId) {
-        String err = chatService.testConnection(providerId);
+    public ResponseEntity<ApiResponse<?>> testConnection(
+            @PathVariable String providerId,
+            @RequestBody(required = false) Map<String, String> body) {
+        String apiKey = body == null ? null : body.get("apiKey");
+        String baseUrl = body == null ? null : body.get("baseUrl");
+        String model = body == null ? null : body.get("defaultModel");
+        String err = chatService.testConnection(providerId, apiKey, baseUrl, model);
         if (err == null) {
-            return ResponseEntity.ok(ApiResponse.success("Connection successful", null));
+            return ResponseEntity.ok(ApiResponse.success("连接成功", null));
         }
         String message = switch (err) {
-            case "MISSING_API_KEY" -> "尚未配置 API Key，请先保存真正的密钥（不要填网址）";
-            case "API_KEY_LOOKS_LIKE_URL" -> "当前 API Key 被存成了网址；请重新粘贴智谱密钥到 API Key 栏后保存";
+            case "MISSING_API_KEY" -> "尚未配置 API Key（Ollama 可留空）；云服务商请先填写密钥";
+            case "API_KEY_LOOKS_LIKE_URL" -> "当前 API Key 被填成了网址；请粘贴真正的密钥";
             case "PROVIDER_DISABLED" -> "服务商未启用";
             case "MISSING_MODEL" -> "未配置默认模型";
             case "UNKNOWN_PROVIDER" -> "未知服务商";
-            default -> "Connection test failed";
+            case "UNSUPPORTED_PROVIDER" -> "不支持的服务商";
+            default -> "连接测试失败，请检查密钥、模型或 Base URL";
         };
         return ResponseEntity.status(500).body(ApiResponse.error(err, message));
     }

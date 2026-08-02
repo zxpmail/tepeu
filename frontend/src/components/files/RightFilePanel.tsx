@@ -1,12 +1,15 @@
 /**
- * 右栏文件预览 — HTML/PDF/图片/Markdown 渲染；支持全屏与下载（去掉源码切换）。
- * 关联：api.rawFileUrl、api.readFile、IdeShell、workspaceEventBus。
+ * 右栏文件预览 — HTML/PDF/图片/Markdown/PPTX/代码高亮；版本历史；支持全屏与下载。
+ * 关联：api.rawFileUrl、api.readFile、PptxPreview、VersionPanel、codeHighlight、IdeShell。
  */
 import { useEffect, useState, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { api } from '../../api/client'
 import { workspaceEventBus } from '../../context/WorkspaceEvents'
 import { marked } from 'marked'
+import { highlightCode } from '../../lib/codeHighlight'
+import PptxPreview from './PptxPreview'
+import VersionPanel from './VersionPanel'
 
 interface RightFilePanelProps {
   path: string | null
@@ -14,7 +17,7 @@ interface RightFilePanelProps {
   onClose: () => void
 }
 
-type PreviewKind = 'html' | 'pdf' | 'image' | 'markdown' | 'pptx' | 'text'
+type PreviewKind = 'html' | 'pdf' | 'image' | 'markdown' | 'pptx' | 'ppt-legacy' | 'text'
 
 function detectKind(filename: string): PreviewKind {
   const n = filename.toLowerCase()
@@ -22,7 +25,8 @@ function detectKind(filename: string): PreviewKind {
   if (/\.pdf$/.test(n)) return 'pdf'
   if (/\.(png|jpe?g|gif|webp|svg|bmp)$/.test(n)) return 'image'
   if (/\.(md|mkd|markdown)$/.test(n)) return 'markdown'
-  if (/\.(pptx|ppt)$/.test(n)) return 'pptx'
+  if (/\.pptx$/.test(n)) return 'pptx'
+  if (/\.ppt$/.test(n)) return 'ppt-legacy'
   return 'text'
 }
 
@@ -56,22 +60,6 @@ function ToolIcon({
   )
 }
 
-function IconExpand() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-    </svg>
-  )
-}
-
-function IconCompress() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
-    </svg>
-  )
-}
-
 function IconDownload() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -95,6 +83,7 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
+  const [showVersions, setShowVersions] = useState(false)
 
   const name = path ? (path.split('/').pop() || path) : ''
   const kind = path ? detectKind(name) : 'text'
@@ -104,6 +93,7 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
 
   useEffect(() => {
     setFullscreen(false)
+    setShowVersions(false)
   }, [path])
 
   useEffect(() => {
@@ -170,9 +160,24 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
       <span className="text-xs truncate flex-1 px-1" style={{ color: 'var(--color-text)', fontFamily: 'var(--font-mono)' }}>
         {path}
       </span>
-      <ToolIcon title={fullscreen ? '退出全屏 (Esc)' : '全屏'} onClick={toggleFullscreen}>
-        {fullscreen ? <IconCompress /> : <IconExpand />}
-      </ToolIcon>
+      <button
+        type="button"
+        title="版本历史"
+        onClick={() => setShowVersions(v => !v)}
+        className="preview-tool-btn text-[11px] px-2"
+        style={{ color: showVersions ? 'var(--color-accent)' : 'var(--color-text)' }}
+      >
+        版本
+      </button>
+      <button
+        type="button"
+        title={fullscreen ? '退出全屏 (Esc)' : '面板全屏'}
+        onClick={toggleFullscreen}
+        className="preview-tool-btn text-[11px] px-2"
+        style={{ color: 'var(--color-text)' }}
+      >
+        {fullscreen ? '退出' : '全屏'}
+      </button>
       <ToolIcon title="下载" href={downloadUrl} download={name}>
         <IconDownload />
       </ToolIcon>
@@ -186,6 +191,20 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
 
   const body = (
     <div className="flex-1 min-h-0 overflow-hidden" style={{ color: 'var(--color-text)' }}>
+      {showVersions && path ? (
+        <div className="h-full p-3 overflow-auto">
+          <VersionPanel
+            path={path}
+            workspaceId={workspaceId}
+            onRestore={() => {
+              setShowVersions(false)
+              setReloadKey(k => k + 1)
+            }}
+            onClose={() => setShowVersions(false)}
+          />
+        </div>
+      ) : (
+        <>
       {loading && (
         <div className="p-3 text-sm" style={{ color: 'var(--color-text-dim)' }}>加载中…</div>
       )}
@@ -231,12 +250,22 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
       )}
 
       {!loading && !error && kind === 'pptx' && (
+        <PptxPreview
+          key={`${rawUrl}-${reloadKey}`}
+          src={rawUrl}
+          filename={name}
+          reloadKey={reloadKey}
+        />
+      )}
+
+
+      {!loading && !error && kind === 'ppt-legacy' && (
         <div className="h-full flex flex-col items-center justify-center gap-3 p-6 text-center">
           <div className="text-sm" style={{ color: 'var(--color-text)' }}>
-            浏览器无法直接预览 PowerPoint 文件
+            旧版 .ppt 暂不支持在线预览
           </div>
           <div className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-            请下载后用本地软件打开；HTML 幻灯片可直接预览。
+            请下载后用 PowerPoint 打开，或另存为 .pptx 后再预览。
           </div>
           <a
             href={downloadUrl}
@@ -251,11 +280,12 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
 
       {!loading && !error && kind === 'text' && (
         <pre
-          className="m-0 h-full overflow-auto p-3 whitespace-pre-wrap break-words text-xs leading-relaxed"
+          className="m-0 h-full overflow-auto p-3 text-xs leading-relaxed hljs"
           style={{ fontFamily: 'var(--font-mono)' }}
-        >
-          {content}
-        </pre>
+          dangerouslySetInnerHTML={{ __html: highlightCode(content, name) }}
+        />
+      )}
+        </>
       )}
     </div>
   )

@@ -3,9 +3,13 @@ package com.tepeu.controller;
 import com.tepeu.agent.AgentOrchestrator;
 import com.tepeu.dto.ChatRequest;
 import com.tepeu.model.Session;
+import com.tepeu.agent.hook.HallucinationGuard;
+import com.tepeu.service.BudgetService;
 import com.tepeu.service.IdempotencyService;
 import com.tepeu.service.SessionService;
 import com.tepeu.service.TaskService;
+import com.tepeu.service.TokenCostEstimator;
+import com.tepeu.service.WorkspacePathResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -27,6 +31,7 @@ class ChatControllerTest {
     private AgentOrchestrator orchestrator;
     private SessionService sessionService;
     private TaskService taskService;
+    private BudgetService budgetService;
     private ChatController controller;
 
     @BeforeEach
@@ -34,8 +39,11 @@ class ChatControllerTest {
         orchestrator = mock(AgentOrchestrator.class);
         sessionService = mock(SessionService.class);
         taskService = mock(TaskService.class);
+        budgetService = mock(BudgetService.class);
+        when(budgetService.isBlocked(anyString())).thenReturn(false);
         controller = new ChatController(orchestrator, sessionService, taskService,
-                new IdempotencyService(), new ObjectMapper());
+                new IdempotencyService(), budgetService, new TokenCostEstimator(),
+                new HallucinationGuard(), mock(WorkspacePathResolver.class), new ObjectMapper());
     }
 
     @Test
@@ -62,7 +70,7 @@ class ChatControllerTest {
         String[] mapped = ChatController.mapError(
                 new RuntimeException("com.openai.AuthenticationException: 401 Invalid API key sk-leaked"));
         assertEquals("AUTH_FAILED", mapped[0]);
-        assertEquals("API key invalid or unauthorized", mapped[1]);
+        assertEquals("API Key 无效或未授权", mapped[1]);
         assertFalse(mapped[1].contains("sk-leaked"));
     }
 
@@ -71,14 +79,14 @@ class ChatControllerTest {
         String[] mapped = ChatController.mapError(
                 new RuntimeException("PermissionDeniedException: 403 Request not allowed"));
         assertEquals("FORBIDDEN", mapped[0]);
-        assertEquals("Provider refused the request (403)", mapped[1]);
+        assertEquals("服务商拒绝了请求（403）", mapped[1]);
     }
 
     @Test
     void mapError_unclassifiedExceptionCollapsesToGenericChatError() {
         String[] mapped = ChatController.mapError(new RuntimeException("weird internal boom"));
         assertEquals("CHAT_ERROR", mapped[0]);
-        assertEquals("Chat request failed", mapped[1], "internal detail must never leak");
+        assertEquals("对话请求失败", mapped[1], "internal detail must never leak");
     }
 
     @Test
@@ -121,14 +129,14 @@ class ChatControllerTest {
         session.setWorkspaceId("ws-1");
         when(sessionService.getSession("sess-1")).thenReturn(java.util.Optional.of(session));
         when(sessionService.listMessages("sess-1")).thenReturn(java.util.List.of());
-        when(orchestrator.streamTurn(eq("openai"), any(), any(), isNull(), any(), any()))
+        when(orchestrator.streamTurn(eq("openai"), any(), any(), isNull(), any(), any(), any()))
                 .thenReturn(Flux.error(new IllegalStateException("MISSING_API_KEY")));
 
         SseEmitter emitter = controller.stream(req);
 
         assertNotNull(emitter);
         verify(sessionService).appendMessage("sess-1", "user", "hello");
-        verify(orchestrator).streamTurn(eq("openai"), any(), any(), isNull(), any(), any());
+        verify(orchestrator).streamTurn(eq("openai"), any(), any(), isNull(), any(), any(), any());
         verify(sessionService, never()).appendMessage(eq("sess-1"), eq("assistant"), anyString());
     }
 
@@ -144,6 +152,18 @@ class ChatControllerTest {
     }
 
     @Test
+    void stream_budgetBlocked_skipsOrchestrator() {
+        when(budgetService.isBlocked("ws-1")).thenReturn(true);
+        ChatRequest req = chatReq("hello", "ws-1", null, "openai");
+
+        SseEmitter emitter = controller.stream(req);
+
+        assertNotNull(emitter);
+        verifyNoInteractions(orchestrator);
+        verify(sessionService, never()).createSession(anyString(), anyString());
+    }
+
+    @Test
     void stream_createsSessionWhenSessionIdAbsent() {
         ChatRequest req = chatReq("hello there", "ws-1", null, "openai");
         Session created = new Session();
@@ -151,7 +171,8 @@ class ChatControllerTest {
         created.setWorkspaceId("ws-1");
         when(sessionService.createSession(eq("ws-1"), anyString())).thenReturn(created);
         when(sessionService.listMessages("sess-new")).thenReturn(java.util.List.of());
-        when(orchestrator.streamTurn(eq("openai"), any(), any(), isNull(), any(), any())).thenReturn(Flux.empty());
+        when(orchestrator.streamTurn(eq("openai"), any(), any(), isNull(), any(), any(), any()))
+                .thenReturn(Flux.empty());
 
         controller.stream(req);
 

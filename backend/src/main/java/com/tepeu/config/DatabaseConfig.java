@@ -102,13 +102,49 @@ public class DatabaseConfig {
             FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
         );
 
+        CREATE TABLE IF NOT EXISTS workspace_budget (
+            workspace_id     TEXT PRIMARY KEY,
+            budget_usd       REAL,
+            hard_limit       INTEGER DEFAULT 0,
+            alert_threshold  REAL DEFAULT 0.8,
+            updated_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS agent_schedule (
+            id                TEXT PRIMARY KEY,
+            workspace_id      TEXT NOT NULL,
+            name              TEXT NOT NULL,
+            prompt            TEXT NOT NULL,
+            provider_id       TEXT NOT NULL,
+            enabled           INTEGER DEFAULT 1,
+            interval_minutes  INTEGER NOT NULL,
+            next_run_at       DATETIME,
+            last_run_at       DATETIME,
+            last_status       TEXT,
+            last_error        TEXT,
+            last_session_id   TEXT,
+            created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
+        );
+
         CREATE INDEX IF NOT EXISTS idx_memory_workspace ON memory(workspace_id);
         CREATE INDEX IF NOT EXISTS idx_memory_search ON memory(content);
+
+        CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts USING fts5(
+            id UNINDEXED,
+            workspace_id UNINDEXED,
+            content,
+            tokenize = 'unicode61'
+        );
         CREATE INDEX IF NOT EXISTS idx_session_workspace ON session(workspace_id);
         CREATE INDEX IF NOT EXISTS idx_task_workspace ON task(workspace_id);
         CREATE INDEX IF NOT EXISTS idx_file_version_path ON file_version(workspace_id, file_path);
         CREATE INDEX IF NOT EXISTS idx_message_session ON message(session_id);
         CREATE INDEX IF NOT EXISTS idx_skill_workspace ON skill(workspace_id);
+        CREATE INDEX IF NOT EXISTS idx_schedule_workspace ON agent_schedule(workspace_id);
+        CREATE INDEX IF NOT EXISTS idx_schedule_due ON agent_schedule(enabled, next_run_at);
         """;
 
     @Bean
@@ -140,6 +176,15 @@ public class DatabaseConfig {
             jt.execute("ALTER TABLE session ADD COLUMN fork_from_message_id TEXT");
         } catch (Exception ignored) {
             // column already exists — safe to ignore
+        }
+        // 已有记忆回填 FTS（新库为空操作；旧库补索引）
+        try {
+            jt.update(
+                    "INSERT INTO memory_fts(id, workspace_id, content) "
+                            + "SELECT id, workspace_id, content FROM memory "
+                            + "WHERE id NOT IN (SELECT id FROM memory_fts)");
+        } catch (Exception ignored) {
+            // FTS 表不可用时忽略；检索会回退 LIKE
         }
         return jt;
     }

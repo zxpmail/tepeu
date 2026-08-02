@@ -1,9 +1,15 @@
 package com.tepeu.service.chat;
 
-import com.tepeu.agent.tool.FileTools;
-import com.tepeu.agent.tool.ShellTools;
+import com.tepeu.agent.hook.ApprovalStore;
+import com.tepeu.agent.hook.DangerousToolHook;
+import com.tepeu.agent.mcp.McpToolBridge;
+import com.tepeu.agent.tool.ListDirTool;
+import com.tepeu.agent.tool.ReadFileTool;
+import com.tepeu.agent.tool.RunCommandTool;
 import com.tepeu.agent.tool.ToolEventEmitter;
 import com.tepeu.agent.tool.ToolRegistry;
+import com.tepeu.agent.tool.WriteFileTool;
+import org.springframework.beans.factory.ObjectProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.model.ChatModel;
@@ -30,14 +36,31 @@ class ChatServiceTest {
     @BeforeEach
     void setUp() {
         factory = mock(ChatModelFactory.class);
-        FileTools fileTools = FileTools.forTests(
+        ListDirTool listDirTool = ListDirTool.forTests(
                 java.nio.file.Path.of(System.getProperty("java.io.tmpdir"), "tepeu-chat-test"));
-        ShellTools shellTools = ShellTools.forTests(
+        ReadFileTool readFileTool = ReadFileTool.forTests(
+                java.nio.file.Path.of(System.getProperty("java.io.tmpdir"), "tepeu-chat-test"));
+        WriteFileTool writeFileTool = WriteFileTool.forTests(
+                java.nio.file.Path.of(System.getProperty("java.io.tmpdir"), "tepeu-chat-test"));
+        RunCommandTool runCommandTool = RunCommandTool.forTests(
                 java.nio.file.Path.of(System.getProperty("java.io.tmpdir"), "tepeu-chat-test"));
         ToolRegistry registry = new ToolRegistry()
-                .register("fileTools", fileTools)
-                .register("shellTools", shellTools);
-        service = new ChatService(factory, registry, new tools.jackson.databind.ObjectMapper());
+                .register("listDir", listDirTool)
+                .register("readFile", readFileTool)
+                .register("writeFile", writeFileTool)
+                .register("runCommand", runCommandTool);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<java.util.List<io.modelcontextprotocol.client.McpSyncClient>> clients =
+                mock(ObjectProvider.class);
+        when(clients.getIfAvailable(any())).thenReturn(java.util.List.of());
+        McpToolBridge mcpBridge = new McpToolBridge(clients, false, 0L);
+        service = new ChatService(
+                factory,
+                registry,
+                mcpBridge,
+                new tools.jackson.databind.ObjectMapper(),
+                new DangerousToolHook(),
+                new ApprovalStore(0L));
     }
 
     @Test
@@ -63,9 +86,9 @@ class ChatServiceTest {
 
     @Test
     void testConnection_unknownProvider_returnsCode() {
-        when(factory.getChatModel("deepseek"))
+        when(factory.getChatModel("missing-provider"))
                 .thenThrow(new IllegalArgumentException("UNKNOWN_PROVIDER"));
-        assertEquals("UNKNOWN_PROVIDER", service.testConnection("deepseek"));
+        assertEquals("UNKNOWN_PROVIDER", service.testConnection("missing-provider"));
     }
 
     @Test

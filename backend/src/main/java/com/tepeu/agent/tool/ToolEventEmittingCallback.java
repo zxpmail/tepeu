@@ -49,8 +49,8 @@ public final class ToolEventEmittingCallback implements ToolCallback {
 
     private static final Logger log = LoggerFactory.getLogger(ToolEventEmittingCallback.class);
 
-    /** Cap on the {@code tool_result.content} sent to the client (~1KB). The model sees the full result. */
-    static final int MAX_RESULT_CHARS = 1024;
+    /** Cap on the {@code tool_result.content} sent to the client. The model sees the full result. */
+    static final int MAX_RESULT_CHARS = 2048;
 
     private final ToolCallback delegate;
     private final ToolEventEmitter emitter;
@@ -109,15 +109,16 @@ public final class ToolEventEmittingCallback implements ToolCallback {
     /** write_file / run_command 成功后额外发 file_changed，供前端刷新文件树 */
     private void maybeEmitFileChanged(String name, String toolInput, String result) {
         if (result == null || result.startsWith("ERROR:")) return;
-        if ("write_file".equals(name)) {
+        if ("write_file".equals(name) || "delete_file".equals(name)) {
             if (!result.startsWith("OK:")) return;
             Map<?, ?> params = parseParams(toolInput);
             Object path = params.get("path");
             if (path == null || path.toString().isBlank()) return;
             Map<String, Object> event = new LinkedHashMap<>();
             event.put("type", "file_changed");
+            event.put("toolKind", ToolKinds.of(name));
             event.put("path", path.toString());
-            event.put("operation", "write");
+            event.put("operation", "write_file".equals(name) ? "write" : "delete");
             emitter.emit(event);
             return;
         }
@@ -125,6 +126,7 @@ public final class ToolEventEmittingCallback implements ToolCallback {
             // 命令可能生成/修改文件：通知文件树刷新（path 空串 = 整树刷新）
             Map<String, Object> event = new LinkedHashMap<>();
             event.put("type", "file_changed");
+            event.put("toolKind", ToolKinds.of(name));
             event.put("path", "");
             event.put("operation", "command");
             emitter.emit(event);
@@ -135,6 +137,7 @@ public final class ToolEventEmittingCallback implements ToolCallback {
         Map<String, Object> event = new LinkedHashMap<>();
         event.put("type", "tool_call");
         event.put("tool", name);
+        event.put("toolKind", ToolKinds.of(name));
         event.put("params", parseParams(toolInput));
         return event;
     }
@@ -143,6 +146,7 @@ public final class ToolEventEmittingCallback implements ToolCallback {
         Map<String, Object> event = new LinkedHashMap<>();
         event.put("type", "tool_result");
         event.put("tool", name);
+        event.put("toolKind", ToolKinds.of(name));
         event.put("content", truncate(result));
         return event;
     }

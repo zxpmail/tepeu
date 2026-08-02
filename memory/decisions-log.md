@@ -70,3 +70,15 @@
 - **保留**: 已有小样本结果（含 glm×C×3、T1 注入等）与 Dockerfile 定义文件本身；文章结论维持「初步验证」表述，不声称更大样本。
 - **Rationale**: 用户明确裁切范围；继续扩面会占用底座/产品主线精力，且本机无 Docker 守护进程。
 - **Follow-up (同日)**: 交接与 RELEASE 已知限制已对齐；本阶段文档收口完成。
+
+## ADR-010: Spec Phase 3 交付顺序（2026-07-18）
+- **Decision**: DEV-PLAN Phase 10–14 对应 Spec §9 Phase 3，顺序为 **自主 Agent（M3.1）→ 多端（M3.4）→ 应用市场（M3.3）→ WASM（M3.2）→ v1.0（M3.5）**。
+- **Rationale**: 定时/后台任务最先产生可见产品价值且复用现有 Orchestrator；响应式改动面小；市场与 WASM 依赖技能生态与隔离模型，靠后降低返工。
+- **Gate**: 须用户确认后写 plan-confirmed.json 再开 /dev-builder；WASM 阶段单独确认依赖选型。
+- **Out of scope for v0.3 首切片**: 集群高可用（Spec §8.2 远期）、交易/垂直业务复刻（ADR-008）。
+
+## ADR-011: 本机实例令牌保护危险宿主 API（2026-08-02）
+- **Decision**: 用本机生成的实例令牌（X-Tepeu-Token，文件 ~/.tepeu/instance.token）保护审批与写/删/上传/恢复文件 API，以及终端 WebSocket；仅 localhost 可拉取令牌。可用 	epeu.security.instance-token-enabled 关闭。
+- **Rationale**: Phase 1 无完整登录（ADR-005），但审批与危险操作不能完全裸奔；实例令牌是单机最小门禁。
+- **Not**: 多用户 OAuth/OIDC（仍属远期）。
+

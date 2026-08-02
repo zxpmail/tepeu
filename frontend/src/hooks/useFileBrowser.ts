@@ -1,8 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+/**
+ * 文件浏览器列表状态 — 按工作区隔离。
+ * 关联：FileBrowserView、App、api.listFiles。
+ */
+import { useState, useCallback, useEffect } from 'react'
 import { api } from '../api/client'
 import type { FileItem } from '../types'
 
-export function useFileBrowser() {
+export function useFileBrowser(workspaceId?: string) {
   const [files, setFiles] = useState<FileItem[]>([])
   const [currentPath, setCurrentPath] = useState('/')
   const [loading, setLoading] = useState(false)
@@ -12,7 +16,7 @@ export function useFileBrowser() {
     setLoading(true)
     setError(null)
     try {
-      const data = await api.listFiles(path)
+      const data = await api.listFiles(path, workspaceId)
       setFiles(data.items)
       setCurrentPath(data.path)
     } catch (e) {
@@ -20,20 +24,15 @@ export function useFileBrowser() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [workspaceId])
 
   const navigateTo = useCallback((path: string) => {
-    loadFiles(path)
+    void loadFiles(path)
   }, [loadFiles])
 
-  // Load the root listing exactly once. State is hoisted into App, so it persists across
-  // panel switches — FileBrowserView remounts do NOT reset the user's directory (fixes M12).
-  const loadedRef = useRef(false)
+  // 工作区切换或首次进入时重新加载根目录
   useEffect(() => {
-    if (!loadedRef.current) {
-      loadedRef.current = true
-      loadFiles('/')
-    }
+    void loadFiles('/')
   }, [loadFiles])
 
   return { files, currentPath, loading, error, loadFiles, navigateTo }

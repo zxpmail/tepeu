@@ -1,8 +1,13 @@
 package com.tepeu.agent;
 
-import com.tepeu.agent.tool.FileTools;
-import com.tepeu.agent.tool.ShellTools;
+import com.tepeu.agent.tool.DeleteFileTool;
+import com.tepeu.agent.tool.ListDirTool;
+import com.tepeu.agent.tool.ReadFileTool;
+import com.tepeu.agent.tool.ReadOutputTool;
+import com.tepeu.agent.tool.RunCommandTool;
+import com.tepeu.agent.tool.SearchFileTool;
 import com.tepeu.agent.tool.ToolEventEmitter;
+import com.tepeu.agent.tool.WriteFileTool;
 import com.tepeu.model.Message;
 import com.tepeu.service.SkillService;
 import com.tepeu.service.chat.ChatService;
@@ -33,24 +38,41 @@ public class AgentOrchestrator {
     private static final int MAX_FILE_REF_CHARS = 4000;
 
     private final ChatService chatService;
-    private final FileTools fileTools;
-    private final ShellTools shellTools;
+    private final ListDirTool listDirTool;
+    private final ReadFileTool readFileTool;
+    private final WriteFileTool writeFileTool;
+    private final DeleteFileTool deleteFileTool;
+    private final SearchFileTool searchFileTool;
+    private final RunCommandTool runCommandTool;
+    private final ReadOutputTool readOutputTool;
     private final SkillService skillService;
 
-    public AgentOrchestrator(ChatService chatService, FileTools fileTools, ShellTools shellTools,
+    public AgentOrchestrator(ChatService chatService,
+                             ListDirTool listDirTool,
+                             ReadFileTool readFileTool,
+                             WriteFileTool writeFileTool,
+                             DeleteFileTool deleteFileTool,
+                             SearchFileTool searchFileTool,
+                             RunCommandTool runCommandTool,
+                             ReadOutputTool readOutputTool,
                              SkillService skillService) {
         this.chatService = chatService;
-        this.fileTools = fileTools;
-        this.shellTools = shellTools;
+        this.listDirTool = listDirTool;
+        this.readFileTool = readFileTool;
+        this.writeFileTool = writeFileTool;
+        this.deleteFileTool = deleteFileTool;
+        this.searchFileTool = searchFileTool;
+        this.runCommandTool = runCommandTool;
+        this.readOutputTool = readOutputTool;
         this.skillService = skillService;
     }
 
     public Flux<ChatResponse> streamTurn(String providerId, List<Message> history) {
-        return streamTurn(providerId, history, ToolEventEmitter.NOOP, null, null, null);
+        return streamTurn(providerId, history, ToolEventEmitter.NOOP, null, null, null, null);
     }
 
     public Flux<ChatResponse> streamTurn(String providerId, List<Message> history, ToolEventEmitter emitter) {
-        return streamTurn(providerId, history, emitter, null, null, null);
+        return streamTurn(providerId, history, emitter, null, null, null, null);
     }
 
     /**
@@ -62,7 +84,7 @@ public class AgentOrchestrator {
             List<Message> history,
             ToolEventEmitter emitter,
             List<String> fileRefs) {
-        return streamTurn(providerId, history, emitter, fileRefs, null, null);
+        return streamTurn(providerId, history, emitter, fileRefs, null, null, null);
     }
 
     public Flux<ChatResponse> streamTurn(
@@ -71,7 +93,7 @@ public class AgentOrchestrator {
             ToolEventEmitter emitter,
             List<String> fileRefs,
             String workspaceId) {
-        return streamTurn(providerId, history, emitter, fileRefs, workspaceId, null);
+        return streamTurn(providerId, history, emitter, fileRefs, workspaceId, null, null);
     }
 
     public Flux<ChatResponse> streamTurn(
@@ -81,22 +103,50 @@ public class AgentOrchestrator {
             List<String> fileRefs,
             String workspaceId,
             List<String> skillRefs) {
-        fileTools.bindWorkspace(workspaceId);
-        shellTools.bindWorkspace(workspaceId);
+        return streamTurn(providerId, history, emitter, fileRefs, workspaceId, skillRefs, null);
+    }
+
+    /**
+     * @param sessionId 用于 Hook 审批会话授权（Spec M2.3）
+     */
+    public Flux<ChatResponse> streamTurn(
+            String providerId,
+            List<Message> history,
+            ToolEventEmitter emitter,
+            List<String> fileRefs,
+            String workspaceId,
+            List<String> skillRefs,
+            String sessionId) {
+        listDirTool.bindWorkspace(workspaceId);
+        readFileTool.bindWorkspace(workspaceId);
+        writeFileTool.bindWorkspace(workspaceId);
+        deleteFileTool.bindWorkspace(workspaceId);
+        searchFileTool.bindWorkspace(workspaceId);
+        runCommandTool.bindWorkspace(workspaceId);
+        runCommandTool.bindSession(sessionId);
+        readOutputTool.bindSession(sessionId);
         try {
             List<org.springframework.ai.chat.messages.Message> promptMessages =
                     toPromptMessages(history, fileRefs, workspaceId, skillRefs);
             Prompt prompt = new Prompt(promptMessages);
-            return chatService.streamWithTools(providerId, prompt, emitter)
-                    .doFinally(signal -> {
-                        fileTools.unbindWorkspace();
-                        shellTools.unbindWorkspace();
-                    });
+            return chatService.streamWithTools(providerId, prompt, emitter, sessionId)
+                    .doFinally(signal -> unbindAllTools());
         } catch (RuntimeException e) {
-            fileTools.unbindWorkspace();
-            shellTools.unbindWorkspace();
+            unbindAllTools();
             throw e;
         }
+    }
+
+    /** 解绑工作区与会话级工具状态 */
+    private void unbindAllTools() {
+        listDirTool.unbindWorkspace();
+        readFileTool.unbindWorkspace();
+        writeFileTool.unbindWorkspace();
+        deleteFileTool.unbindWorkspace();
+        searchFileTool.unbindWorkspace();
+        runCommandTool.unbindWorkspace();
+        runCommandTool.unbindSession();
+        readOutputTool.unbindSession();
     }
 
     /**
@@ -159,7 +209,7 @@ public class AgentOrchestrator {
         for (String ref : fileRefs) {
             if (ref == null || ref.isBlank()) continue;
             String path = ref.trim();
-            String body = fileTools.readFile(path);
+            String body = readFileTool.readFile(path);
             if (body.length() > MAX_FILE_REF_CHARS) {
                 body = body.substring(0, MAX_FILE_REF_CHARS) + "\n...[truncated]";
             }

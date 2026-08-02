@@ -3,6 +3,8 @@ package com.tepeu.repository;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import com.tepeu.model.Memory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -13,8 +15,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 记忆持久化；检索优先 FTS5，失败回退 LIKE。
+ * 关联：MemoryService、DatabaseConfig（memory_fts）。
+ */
 @Repository
 public class MemoryRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(MemoryRepository.class);
 
     private final JdbcTemplate jdbc;
     private final ObjectMapper objectMapper;
@@ -55,38 +63,94 @@ public class MemoryRepository {
     }
 
     public List<Memory> search(String workspaceId, String query, List<String> tags, int limit, String cursor) {
-        // SQLite FTS-like approach: use LIKE for simple text search
-        StringBuilder sql = new StringBuilder("SELECT * FROM memory WHERE workspace_id = ?");
-        List<Object> paramList = new ArrayList<>();
-        paramList.add(workspaceId);
-
-        boolean hasQuery = query != null && !query.isEmpty();
+        boolean hasQuery = query != null && !query.isBlank();
         if (hasQuery) {
-            sql.append(" AND content LIKE ?");
-            paramList.add("%" + query + "%");
-        }
-
-        boolean hasTags = tags != null && !tags.isEmpty();
-        if (hasTags) {
-            sql.append(" AND (");
-            for (int i = 0; i < tags.size(); i++) {
-                if (i > 0) sql.append(" OR ");
-                sql.append("tags LIKE ?");
-                // Match against JSON representation: wrap each tag in quotes
-                paramList.add("%\"" + tags.get(i) + "\"%");
+            try {
+                return searchFts(workspaceId, query.trim(), tags, limit, cursor);
+            } catch (RuntimeException e) {
+                log.debug("FTS search fallback to LIKE: {}", e.getMessage());
             }
-            sql.append(")");
         }
+        return searchLike(workspaceId, query, tags, limit, cursor);
+    }
 
+    /** FTS5 MATCH；按词前缀匹配 */
+    private List<Memory> searchFts(
+            String workspaceId, String query, List<String> tags, int limit, String cursor) {
+        String match = toFtsMatch(query);
+        StringBuilder sql = new StringBuilder(
+                "SELECT m.* FROM memory m "
+                        + "INNER JOIN memory_fts f ON m.id = f.id "
+                        + "WHERE f.workspace_id = ? AND memory_fts MATCH ?");
+        List<Object> params = new ArrayList<>();
+        params.add(workspaceId);
+        params.add(match);
+        appendTags(sql, params, tags, true);
+        if (cursor != null && !cursor.isEmpty()) {
+            sql.append(" AND m.created_at < ?");
+            params.add(cursor);
+        }
+        sql.append(" ORDER BY m.created_at DESC LIMIT ?");
+        params.add(limit);
+        return jdbc.query(sql.toString(), mapper, params.toArray());
+    }
+
+    private List<Memory> searchLike(
+            String workspaceId, String query, List<String> tags, int limit, String cursor) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM memory WHERE workspace_id = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(workspaceId);
+        if (query != null && !query.isEmpty()) {
+            sql.append(" AND content LIKE ?");
+            params.add("%" + query + "%");
+        }
+        appendTags(sql, params, tags, false);
         if (cursor != null && !cursor.isEmpty()) {
             sql.append(" AND created_at < ?");
-            paramList.add(cursor);
+            params.add(cursor);
         }
-
         sql.append(" ORDER BY created_at DESC LIMIT ?");
-        paramList.add(limit);
+        params.add(limit);
+        return jdbc.query(sql.toString(), mapper, params.toArray());
+    }
 
-        return jdbc.query(sql.toString(), mapper, paramList.toArray());
+    private static void appendTags(
+            StringBuilder sql, List<Object> params, List<String> tags, boolean aliased) {
+        if (tags == null || tags.isEmpty()) {
+            return;
+        }
+        String col = aliased ? "m.tags" : "tags";
+        sql.append(" AND (");
+        for (int i = 0; i < tags.size(); i++) {
+            if (i > 0) {
+                sql.append(" OR ");
+            }
+            sql.append(col).append(" LIKE ?");
+            params.add("%\"" + tags.get(i) + "\"%");
+        }
+        sql.append(")");
+    }
+
+    /** 将用户查询转为 FTS5 前缀表达式；特殊字符剥离 */
+    static String toFtsMatch(String query) {
+        String cleaned = query.replaceAll("[\"*():^\\[\\]{}]", " ").trim();
+        if (cleaned.isEmpty()) {
+            throw new IllegalArgumentException("empty FTS query");
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String part : cleaned.split("\\s+")) {
+            if (part.isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append('"').append(part).append('"').append('*');
+        }
+        if (sb.isEmpty()) {
+            throw new IllegalArgumentException("empty FTS query");
+        }
+        return sb.toString();
     }
 
     public Optional<Memory> findById(String id) {
@@ -104,9 +168,12 @@ public class MemoryRepository {
             String tagsJson = memory.getTags() != null
                     ? objectMapper.writeValueAsString(memory.getTags())
                     : "[]";
-            jdbc.update("INSERT INTO memory (id, workspace_id, source, content, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            jdbc.update(
+                    "INSERT INTO memory (id, workspace_id, source, content, tags, created_at, updated_at) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?)",
                     memory.getId(), memory.getWorkspaceId(), memory.getSource(),
                     memory.getContent(), tagsJson, memory.getCreatedAt(), memory.getUpdatedAt());
+            syncFtsInsert(memory);
         } catch (Exception e) {
             throw new RuntimeException("Failed to save memory", e);
         }
@@ -119,8 +186,10 @@ public class MemoryRepository {
             String tagsJson = memory.getTags() != null
                     ? objectMapper.writeValueAsString(memory.getTags())
                     : "[]";
-            jdbc.update("UPDATE memory SET content = ?, tags = ?, updated_at = ? WHERE id = ?",
+            jdbc.update(
+                    "UPDATE memory SET content = ?, tags = ?, updated_at = ? WHERE id = ?",
                     memory.getContent(), tagsJson, memory.getUpdatedAt(), memory.getId());
+            syncFtsUpdate(memory);
         } catch (Exception e) {
             throw new RuntimeException("Failed to update memory", e);
         }
@@ -129,5 +198,29 @@ public class MemoryRepository {
 
     public void deleteById(String id) {
         jdbc.update("DELETE FROM memory WHERE id = ?", id);
+        try {
+            jdbc.update("DELETE FROM memory_fts WHERE id = ?", id);
+        } catch (RuntimeException e) {
+            log.debug("FTS delete skipped: {}", e.getMessage());
+        }
+    }
+
+    private void syncFtsInsert(Memory memory) {
+        try {
+            jdbc.update(
+                    "INSERT INTO memory_fts(id, workspace_id, content) VALUES (?, ?, ?)",
+                    memory.getId(), memory.getWorkspaceId(), memory.getContent());
+        } catch (RuntimeException e) {
+            log.warn("FTS insert failed (search may fall back to LIKE): {}", e.getMessage());
+        }
+    }
+
+    private void syncFtsUpdate(Memory memory) {
+        try {
+            jdbc.update("DELETE FROM memory_fts WHERE id = ?", memory.getId());
+            syncFtsInsert(memory);
+        } catch (RuntimeException e) {
+            log.warn("FTS update failed: {}", e.getMessage());
+        }
     }
 }

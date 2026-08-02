@@ -1,0 +1,13 @@
+# Playwright E2E 专用配置 — 独立 SQLite，避免污染开发库
+spring:
+  datasource:
+    url: jdbc:sqlite:./target/e2e-tepeu.db
+    driver-class-name: org.sqlite.JDBC
+
+server:
+  port: 30141
+
+logging:
+  level:
+    root: WARN
+    com.tepeu: INFO

@@ -1,5 +1,7 @@
 package com.tepeu.controller;
 
+import com.tepeu.agent.hook.HallucinationGuard;
+import com.tepeu.agent.hook.HostChannelGuard;
 import com.tepeu.dto.ApiResponse;
 import com.tepeu.model.FileVersion;
 import com.tepeu.service.FileVersionService;
@@ -17,13 +19,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * File operations controller.
- * Phase 1: list, read, write (basic). Preview and version history added in Phase 4.
+ * Phase 1: list, read, write (basic). Preview / version history / DIFF 前端属 Phase 3。
  *
  * <p>File isolation per workspace (Spec §3.4): each workspace has its own {@code root_path}.
  * Endpoints accept an optional {@code workspaceId} parameter; when omitted, the first available
@@ -39,13 +42,19 @@ public class FileController {
     private final WorkspaceService workspaceService;
     private final FileVersionService fileVersionService;
     private final WorkspacePathResolver pathResolver;
+    private final HostChannelGuard hostChannelGuard;
+    private final HallucinationGuard hallucinationGuard;
 
     public FileController(WorkspaceService workspaceService,
                           FileVersionService fileVersionService,
-                          WorkspacePathResolver pathResolver) {
+                          WorkspacePathResolver pathResolver,
+                          HostChannelGuard hostChannelGuard,
+                          HallucinationGuard hallucinationGuard) {
         this.workspaceService = workspaceService;
         this.fileVersionService = fileVersionService;
         this.pathResolver = pathResolver;
+        this.hostChannelGuard = hostChannelGuard;
+        this.hallucinationGuard = hallucinationGuard;
     }
 
     /**
@@ -71,11 +80,11 @@ public class FileController {
             Path target = WorkspacePathResolver.resolveSafely(basePath, path);
             if (target == null) {
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("FORBIDDEN", "Path traversal denied"));
+                        .body(ApiResponse.error("FORBIDDEN", "禁止访问工作区外的路径"));
             }
             if (!Files.exists(target) || !Files.isDirectory(target)) {
                 return ResponseEntity.status(404)
-                        .body(ApiResponse.error("NOT_FOUND", "Directory not found"));
+                        .body(ApiResponse.error("NOT_FOUND", "目录不存在"));
             }
 
             List<Map<String, Object>> items;
@@ -99,9 +108,9 @@ public class FileController {
             return ResponseEntity.status(404)
                     .body(ApiResponse.error("NOT_FOUND", e.getMessage()));
         } catch (Exception e) {
-            log.error("Failed to list files", e);
+            log.error("列出文件失败", e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("IO_ERROR", "Failed to list files"));
+                    .body(ApiResponse.error("IO_ERROR", "列出文件失败"));
         }
     }
 
@@ -110,7 +119,7 @@ public class FileController {
         String filePath = body.get("path");
         if (filePath == null) {
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("VALIDATION_ERROR", "path is required"));
+                    .body(ApiResponse.error("VALIDATION_ERROR", "需要提供路径"));
         }
         String workspaceId = body.get("workspaceId");
         try {
@@ -118,14 +127,27 @@ public class FileController {
             Path target = WorkspacePathResolver.resolveSafely(basePath, filePath);
             if (target == null) {
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("FORBIDDEN", "Path traversal denied"));
+                        .body(ApiResponse.error("FORBIDDEN", "禁止访问工作区外的路径"));
             }
             if (!Files.exists(target) || Files.isDirectory(target)) {
                 return ResponseEntity.status(404)
-                        .body(ApiResponse.error("NOT_FOUND", "File not found"));
+                        .body(ApiResponse.error("NOT_FOUND", "文件不存在"));
+            }
+            String mimeType = Files.probeContentType(target);
+            if (mimeType != null && !isTextReadableMime(mimeType)) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("BINARY_FILE",
+                                "该文件为二进制，请使用 /api/files/raw 预览或下载"));
+            }
+            try (var in = Files.newInputStream(target)) {
+                byte[] sample = in.readNBytes(8192);
+                if (sample.length > 0 && looksBinary(sample)) {
+                    return ResponseEntity.badRequest()
+                            .body(ApiResponse.error("BINARY_FILE",
+                                    "该文件为二进制，请使用 /api/files/raw 预览或下载"));
+                }
             }
             String content = Files.readString(target);
-            String mimeType = Files.probeContentType(target);
             return ResponseEntity.ok(ApiResponse.success(Map.of(
                     "path", filePath, "content", content, "mimeType", mimeType != null ? mimeType : "text/plain"
             )));
@@ -133,9 +155,9 @@ public class FileController {
             return ResponseEntity.status(404)
                     .body(ApiResponse.error("NOT_FOUND", e.getMessage()));
         } catch (Exception e) {
-            log.error("Failed to read file", e);
+            log.error("读取文件失败", e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("IO_ERROR", "Failed to read file"));
+                    .body(ApiResponse.error("IO_ERROR", "读取文件失败"));
         }
     }
 
@@ -153,18 +175,29 @@ public class FileController {
             Path target = WorkspacePathResolver.resolveSafely(basePath, filePath);
             if (target == null) {
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("FORBIDDEN", "Path traversal denied"));
+                        .body(ApiResponse.error("FORBIDDEN", "禁止访问工作区外的路径"));
             }
-            Files.createDirectories(target.getParent());
+            String hallu = hallucinationGuard.checkWriteParent(target);
+            if (hallu != null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("HALLUCINATION", hallu));
+            }
+            String args = "{\"path\":\"" + filePath.replace("\"", "") + "\"}";
+            HostChannelGuard.GateResult gate = hostChannelGuard.check(
+                    "rest-" + (workspaceId == null ? "default" : workspaceId),
+                    "rest_write_file", args, false);
+            if (!gate.allowed()) {
+                return gateResponse(gate);
+            }
             Files.writeString(target, content);
             return ResponseEntity.ok(ApiResponse.success("File written", Map.of("path", filePath)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404)
                     .body(ApiResponse.error("NOT_FOUND", e.getMessage()));
         } catch (Exception e) {
-            log.error("Failed to write file", e);
+            log.error("写入文件失败", e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("IO_ERROR", "Failed to write file"));
+                    .body(ApiResponse.error("IO_ERROR", "写入文件失败"));
         }
     }
 
@@ -180,20 +213,27 @@ public class FileController {
         String filename = file.getOriginalFilename();
         if (!isSafeFilename(filename)) {
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("FORBIDDEN", "Invalid filename"));
+                    .body(ApiResponse.error("FORBIDDEN", "文件名无效"));
         }
         try {
             Path basePath = resolveBasePath(workspaceId);
             Path target = WorkspacePathResolver.resolveSafely(basePath, path);
             if (target == null) {
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("FORBIDDEN", "Path traversal denied"));
+                        .body(ApiResponse.error("FORBIDDEN", "禁止访问工作区外的路径"));
             }
             Files.createDirectories(target);
             Path filePath = target.resolve(filename).normalize();
             if (!filePath.startsWith(basePath)) {       // C1: re-check after resolving filename
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("FORBIDDEN", "Path traversal denied"));
+                        .body(ApiResponse.error("FORBIDDEN", "禁止访问工作区外的路径"));
+            }
+            String args = "{\"path\":\"" + (path + "/" + filename).replace("\"", "") + "\"}";
+            HostChannelGuard.GateResult gate = hostChannelGuard.check(
+                    "rest-" + (workspaceId == null ? "default" : workspaceId),
+                    "rest_upload_file", args, false);
+            if (!gate.allowed()) {
+                return gateResponse(gate);
             }
             file.transferTo(filePath.toFile());
             return ResponseEntity.ok(ApiResponse.success("File uploaded", Map.of(
@@ -204,18 +244,18 @@ public class FileController {
             return ResponseEntity.status(404)
                     .body(ApiResponse.error("NOT_FOUND", e.getMessage()));
         } catch (Exception e) {
-            log.error("Failed to upload file", e);
+            log.error("上传文件失败", e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("IO_ERROR", "Failed to upload file"));
+                    .body(ApiResponse.error("IO_ERROR", "上传文件失败"));
         }
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<ApiResponse<Void>> deleteFile(@RequestBody Map<String, String> body) {
+    public ResponseEntity<ApiResponse<?>> deleteFile(@RequestBody Map<String, String> body) {
         String filePath = body.get("path");
         if (filePath == null) {
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("VALIDATION_ERROR", "path is required"));
+                    .body(ApiResponse.error("VALIDATION_ERROR", "需要提供路径"));
         }
         String workspaceId = body.get("workspaceId");
         try {
@@ -223,18 +263,39 @@ public class FileController {
             Path target = WorkspacePathResolver.resolveSafely(basePath, filePath);
             if (target == null) {
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("FORBIDDEN", "Path traversal denied"));
+                        .body(ApiResponse.error("FORBIDDEN", "禁止访问工作区外的路径"));
+            }
+            String args = "{\"path\":\"" + filePath.replace("\"", "") + "\"}";
+            HostChannelGuard.GateResult gate = hostChannelGuard.check(
+                    "rest-" + (workspaceId == null ? "default" : workspaceId),
+                    "rest_delete_file", args, false);
+            if (!gate.allowed()) {
+                return gateResponse(gate);
             }
             Files.deleteIfExists(target);
-            return ResponseEntity.ok(ApiResponse.success("File deleted", null));
+            return ResponseEntity.ok(ApiResponse.success("文件已删除", null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404)
                     .body(ApiResponse.error("NOT_FOUND", e.getMessage()));
         } catch (Exception e) {
-            log.error("Failed to delete file", e);
+            log.error("删除文件失败", e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("IO_ERROR", "Failed to delete file"));
+                    .body(ApiResponse.error("IO_ERROR", "删除文件失败"));
         }
+    }
+
+    /** Hook 门禁未通过时的 HTTP 映射 */
+    private static ResponseEntity<ApiResponse<?>> gateResponse(HostChannelGuard.GateResult gate) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        if (gate.approvalId() != null) {
+            details.put("approvalId", gate.approvalId());
+        }
+        if ("APPROVAL_REQUIRED".equals(gate.code())) {
+            return ResponseEntity.status(409)
+                    .body(ApiResponse.error(gate.code(), gate.message(), details));
+        }
+        return ResponseEntity.status(403)
+                .body(ApiResponse.error(gate.code() == null ? "DENIED" : gate.code(), gate.message(), details));
     }
 
     /**
@@ -248,18 +309,18 @@ public class FileController {
             @RequestParam(required = false) String download,
             HttpServletResponse response) throws IOException {
         if (path == null || path.isBlank()) {
-            response.sendError(400, "path is required");
+            response.sendError(400, "需要提供路径");
             return;
         }
         try {
             Path basePath = resolveBasePath(workspaceId);
             Path target = WorkspacePathResolver.resolveSafely(basePath, path);
             if (target == null) {
-                response.sendError(403, "Path traversal denied");
+                response.sendError(403, "禁止访问工作区外的路径");
                 return;
             }
             if (!Files.exists(target) || Files.isDirectory(target)) {
-                response.sendError(404, "File not found: " + path);
+                response.sendError(404, "文件不存在: " + path);
                 return;
             }
             String mime = probeMime(target);
@@ -275,7 +336,7 @@ public class FileController {
             response.sendError(404, e.getMessage());
         } catch (Exception e) {
             log.error("Failed to serve raw file {}", path, e);
-            response.sendError(500, "Failed to read file");
+            response.sendError(500, "读取文件失败");
         }
     }
 
@@ -303,7 +364,7 @@ public class FileController {
     }
 
     // ---------------------------------------------------------------------------
-    // Version history & preview (Phase 4)
+    // Version history & preview（Phase 3）
     // ---------------------------------------------------------------------------
 
     /**
@@ -342,11 +403,11 @@ public class FileController {
             Path basePath = resolveBasePath(null);
             Path target = WorkspacePathResolver.resolveSafely(basePath, effectivePath);
             if (target == null) {
-                response.sendError(403, "Path traversal denied");
+                response.sendError(403, "禁止访问工作区外的路径");
                 return;
             }
             if (!Files.exists(target) || Files.isDirectory(target)) {
-                response.sendError(404, "File not found: " + effectivePath);
+                response.sendError(404, "文件不存在: " + effectivePath);
                 return;
             }
             String content = Files.readString(target);
@@ -374,12 +435,12 @@ public class FileController {
             @RequestParam(required = false) String workspaceId) {
         if (path == null || path.isBlank()) {
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("VALIDATION_ERROR", "path is required"));
+                    .body(ApiResponse.error("VALIDATION_ERROR", "需要提供路径"));
         }
         String effectiveWs = resolveWorkspaceId(workspaceId);
         if (effectiveWs == null) {
             return ResponseEntity.status(404)
-                    .body(ApiResponse.error("NOT_FOUND", "No workspace available"));
+                    .body(ApiResponse.error("NOT_FOUND", "没有可用的工作区"));
         }
         List<FileVersion> versions = fileVersionService.listVersions(effectiveWs, path);
         return ResponseEntity.ok(ApiResponse.success(Map.of("path", path, "versions", versions)));
@@ -396,6 +457,18 @@ public class FileController {
     @PostMapping("/restore/{id}")
     public ResponseEntity<ApiResponse<?>> restoreVersion(@PathVariable String id) {
         try {
+            var meta = fileVersionService.getVersion(id);
+            if (meta.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(ApiResponse.error("NOT_FOUND", "版本不存在: " + id));
+            }
+            FileVersion fv = meta.get();
+            String args = "{\"path\":\"" + fv.getFilePath().replace("\"", "") + "\"}";
+            HostChannelGuard.GateResult gate = hostChannelGuard.check(
+                    "rest-" + fv.getWorkspaceId(), "rest_restore_file", args, false);
+            if (!gate.allowed()) {
+                return gateResponse(gate);
+            }
             FileVersion restored = fileVersionService.restoreVersion(id);
             return ResponseEntity.ok(ApiResponse.success("Version restored", Map.of(
                     "id", restored.getId(),
@@ -413,7 +486,7 @@ public class FileController {
         } catch (Exception e) {
             log.error("Failed to restore version: {}", id, e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("IO_ERROR", "Failed to restore version"));
+                    .body(ApiResponse.error("IO_ERROR", "恢复版本失败"));
         }
     }
 
@@ -444,9 +517,9 @@ public class FileController {
                     "createdAt", fv.getCreatedAt().toString()
             )));
         } catch (Exception e) {
-            log.error("Failed to create version", e);
+            log.error("创建版本失败", e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("IO_ERROR", "Failed to create version"));
+                    .body(ApiResponse.error("IO_ERROR", "创建版本失败"));
         }
     }
 
@@ -479,5 +552,29 @@ public class FileController {
             return false;
         }
         return name.chars().allMatch(c -> c >= 0x20);
+    }
+
+    /** MIME 是否适合 JSON 文本读取 */
+    private static boolean isTextReadableMime(String mime) {
+        String m = mime.toLowerCase();
+        return m.startsWith("text/")
+                || m.contains("json")
+                || m.contains("xml")
+                || m.contains("javascript")
+                || m.contains("yaml")
+                || m.contains("x-sh")
+                || m.contains("markdown");
+    }
+
+    /** 样本含 NUL 或控制字符占比过高则视为二进制 */
+    private static boolean looksBinary(byte[] sample) {
+        int n = Math.min(sample.length, 8192);
+        int ctrl = 0;
+        for (int i = 0; i < n; i++) {
+            int b = sample[i] & 0xff;
+            if (b == 0) return true;
+            if (b < 0x09 || (b > 0x0d && b < 0x20)) ctrl++;
+        }
+        return n > 0 && ctrl * 10 > n;
     }
 }

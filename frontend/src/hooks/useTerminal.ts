@@ -1,29 +1,59 @@
 /**
  * 终端 WebSocket 连接与 AI 命令翻译。
- * 关联：TerminalView、后端 TerminalWebSocketHandler。
- * 输入按行缓冲：本地回显，回车后才发给后端执行。
+ * 关联：TerminalView、后端 TerminalWebSocketHandler、instanceToken、ApprovalBanner。
+ * 输入按行缓冲：本地回显，回车后才发给后端执行；危险命令经审批后继续。
  */
 import { useEffect, useRef, useCallback, useState } from 'react'
+import { api } from '../api/client'
+import type { PendingApproval } from '../components/chat/ApprovalBanner'
+import { ensureInstanceToken, getInstanceTokenSync } from '../security/instanceToken'
 
 export interface UseTerminalReturn {
   terminalRef: React.RefObject<HTMLDivElement | null>
   connected: boolean
   aiInput: string
   aiSuggestion: string | null
+  /** 最近一次命令失败的白话解释 */
+  errorHint: string | null
   setAiInput: (v: string) => void
   translateAndExec: () => void
+  pendingApprovals: PendingApproval[]
+  decidingId: string | null
+  decideApproval: (approvalId: string, decision: 'approve' | 'deny') => Promise<void>
 }
 
-const WS_URL = `ws://${location.hostname}:30141/api/terminal/ws`
+/** 根据终端错误输出给出简短解释（非 LLM） */
+function explainShellError(msg: string): string | null {
+  if (!msg) return null
+  if (/不是内部或外部命令|not recognized as an internal|command not found/i.test(msg)) {
+    return '命令未找到：请检查拼写。Windows 下用 dir / type / cd，而不是 ls / cat / pwd。'
+  }
+  if (/找不到文件|cannot find|No such file|系统找不到指定的/i.test(msg)) {
+    return '路径不存在：先用 dir 确认目录与文件名是否正确。'
+  }
+  if (/拒绝访问|Access is denied|Permission denied/i.test(msg)) {
+    return '权限不足：文件可能被占用，或当前目录无写入权限。'
+  }
+  if (/APPROVAL|DENIED|未获批准|命令被拒绝|Missing or invalid token/i.test(msg)) {
+    return '被安全策略拦截：在上方审批条中批准，或改用不危险的命令。'
+  }
+  if (/语法不正确|syntax error|不正确的语法/i.test(msg)) {
+    return '命令语法有误：检查引号、路径空格（可用双引号包裹路径）。'
+  }
+  return null
+}
+
+const WS_BASE = `ws://${location.hostname}:30141/api/terminal/ws`
 
 const COMMAND_MAP: Record<string, string> = {
   'list files': 'dir',
   'list directory': 'dir',
   'show files': 'dir',
   'current directory': 'cd',
-  'show current directory': 'cd',
+  'show current directory': 'dir',
   'where am i': 'cd',
   'print working directory': 'cd',
+  'list current directory': 'dir',
   'clear screen': 'cls',
   'clear': 'cls',
   'date': 'date /t',
@@ -42,7 +72,8 @@ const COMMAND_MAP: Record<string, string> = {
   '显示文件': 'dir',
   '列目录': 'dir',
   '当前目录': 'cd',
-  '显示当前目录': 'cd',
+  '显示当前目录': 'dir',
+  '列出当前目录': 'dir',
   '我在哪': 'cd',
   '清屏': 'cls',
   '清除屏幕': 'cls',
@@ -93,7 +124,7 @@ function findCommand(nl: string): string | null {
   return null
 }
 
-export function useTerminal(): UseTerminalReturn {
+export function useTerminal(workspaceId?: string): UseTerminalReturn {
   const terminalRef = useRef<HTMLDivElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const xtermRef = useRef<import('xterm').Terminal | null>(null)
@@ -101,6 +132,9 @@ export function useTerminal(): UseTerminalReturn {
   const [connected, setConnected] = useState(false)
   const [aiInput, setAiInput] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
+  const [errorHint, setErrorHint] = useState<string | null>(null)
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([])
+  const [decidingId, setDecidingId] = useState<string | null>(null)
 
   /** 发送整行命令；未连接时给出明确提示 */
   const sendCommand = useCallback((line: string) => {
@@ -112,6 +146,26 @@ export function useTerminal(): UseTerminalReturn {
     }
     ws.send(line)
     return true
+  }, [])
+
+  const decideApproval = useCallback(async (approvalId: string, decision: 'approve' | 'deny') => {
+    setDecidingId(approvalId)
+    try {
+      await api.decideApproval(approvalId, decision)
+      setPendingApprovals(prev => prev.filter(p => p.approvalId !== approvalId))
+      const term = xtermRef.current
+      if (decision === 'approve') {
+        term?.write('\r\n\x1b[32m已批准，命令继续执行…\x1b[0m\r\n')
+      } else {
+        term?.write('\r\n\x1b[31m已拒绝该命令\x1b[0m\r\n')
+      }
+    } catch (e) {
+      xtermRef.current?.write(
+        `\r\n\x1b[31m审批失败：${e instanceof Error ? e.message : 'unknown'}\x1b[0m\r\n`,
+      )
+    } finally {
+      setDecidingId(null)
+    }
   }, [])
 
   // 初始化 xterm 与 WebSocket（cancelled + 局部句柄，防止 StrictMode 竞态泄漏）
@@ -135,6 +189,9 @@ export function useTerminal(): UseTerminalReturn {
     }
 
     const init = async () => {
+      await ensureInstanceToken()
+      if (cancelled) return
+
       const { Terminal } = await import('xterm')
       const { FitAddon } = await import('xterm-addon-fit')
       if (cancelled) return
@@ -171,7 +228,13 @@ export function useTerminal(): UseTerminalReturn {
         fitAddon.fit()
       }
 
-      const nextWs = new WebSocket(WS_URL)
+      const token = getInstanceTokenSync()
+      const qs = new URLSearchParams()
+      if (token) qs.set('token', token)
+      if (workspaceId) qs.set('workspaceId', workspaceId)
+      const q = qs.toString()
+      const wsUrl = q ? `${WS_BASE}?${q}` : WS_BASE
+      const nextWs = new WebSocket(wsUrl)
       if (cancelled) {
         nextWs.close()
         tearDown()
@@ -205,8 +268,32 @@ export function useTerminal(): UseTerminalReturn {
           const msg = JSON.parse(event.data)
           if (msg.type === 'output') {
             nextTerm.write(msg.data + '\r\n')
+            const hint = explainShellError(String(msg.data ?? ''))
+            if (hint) setErrorHint(hint)
           } else if (msg.type === 'error') {
             nextTerm.write(`\r\n\x1b[31m${msg.message}\x1b[0m\r\n`)
+            const hint = explainShellError(String(msg.message ?? ''))
+            if (hint) setErrorHint(hint)
+            if (typeof msg.message === 'string'
+                && (msg.message.includes('APPROVAL_TIMEOUT') || msg.message.includes('DENIED'))) {
+              setPendingApprovals([])
+            }
+          } else if (msg.type === 'approval_required' && msg.approvalId) {
+            nextTerm.write(
+              `\r\n\x1b[33m需要批准命令：${msg.command || ''}\x1b[0m\r\n`,
+            )
+            setPendingApprovals(prev => {
+              if (prev.some(p => p.approvalId === msg.approvalId)) return prev
+              return [
+                ...prev,
+                {
+                  approvalId: msg.approvalId,
+                  tool: msg.tool || 'terminal_shell',
+                  params: msg.command || '',
+                  sessionId: msg.sessionId,
+                },
+              ]
+            })
           }
         } catch {
           nextTerm.write(event.data + '\r\n')
@@ -256,11 +343,12 @@ export function useTerminal(): UseTerminalReturn {
       tearDown()
       setConnected(false)
     }
-  }, [])
+  }, [workspaceId])
 
   /** 翻译自然语言并执行命令 */
   const translateAndExec = useCallback(() => {
     const cmd = findCommand(aiInput)
+    setErrorHint(null)
     if (cmd) {
       setAiSuggestion(cmd)
       xtermRef.current?.write(cmd + '\r\n')
@@ -276,7 +364,11 @@ export function useTerminal(): UseTerminalReturn {
     connected,
     aiInput,
     aiSuggestion,
+    errorHint,
     setAiInput,
     translateAndExec,
+    pendingApprovals,
+    decidingId,
+    decideApproval,
   }
 }

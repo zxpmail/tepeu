@@ -42,6 +42,9 @@ public class TaskRepository {
     /** 会话级聚合：总 token、总费用、回合数。 */
     public record SessionTokenStats(long totalTokens, double totalCostUsd, int turnCount) {}
 
+    /** 工作区级聚合：总 token、总费用、回合数。 */
+    public record WorkspaceTokenStats(long totalTokens, double totalCostUsd, int turnCount) {}
+
     public Task save(Task task) {
         if (task.getId() == null) {
             task.setId(UUID.randomUUID().toString());
@@ -83,5 +86,26 @@ public class TaskRepository {
                             rs.getInt("turn_count"));
                 },
                 sessionId);
+    }
+
+    /** 按 workspace_id 汇总 tokens / cost / 回合数（Spec §3.5 Phase 1 最小视图）。 */
+    public WorkspaceTokenStats findWorkspaceStats(String workspaceId) {
+        return jdbc.query(
+                """
+                SELECT COALESCE(SUM(tokens_used), 0) AS total_tokens,
+                       COALESCE(SUM(cost_usd), 0.0) AS total_cost,
+                       COUNT(*) AS turn_count
+                FROM task WHERE workspace_id = ?
+                """,
+                rs -> {
+                    if (!rs.next()) {
+                        return new WorkspaceTokenStats(0L, 0.0, 0);
+                    }
+                    return new WorkspaceTokenStats(
+                            rs.getLong("total_tokens"),
+                            rs.getDouble("total_cost"),
+                            rs.getInt("turn_count"));
+                },
+                workspaceId);
     }
 }

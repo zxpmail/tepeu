@@ -1,0 +1,29 @@
+# MCP 客户端配置示例（Spring AI / Tepeu）
+# 用法：将下方片段合并进 application.yml（或 application-local.yml），并设 enabled: true。
+# 不要使用 Claude Desktop 的 mcpServers JSON 格式——本项目只认 spring.ai.mcp.client.*。
+
+spring:
+  ai:
+    mcp:
+      client:
+        enabled: true
+        type: SYNC
+        toolcallback:
+          enabled: false
+        stdio:
+          connections:
+            filesystem:
+              command: npx
+              args:
+                - "-y"
+                - "@modelcontextprotocol/server-filesystem"
+                - "."
+        # sse:
+        #   connections:
+        #     remote:
+        #       url: http://127.0.0.1:3100/sse
+
+# 可选：工具列表缓存
+tepeu:
+  mcp:
+    cache-ttl-seconds: 30

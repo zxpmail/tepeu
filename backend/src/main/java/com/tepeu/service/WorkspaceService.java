@@ -2,14 +2,28 @@ package com.tepeu.service;
 
 import com.tepeu.model.Workspace;
 import com.tepeu.repository.WorkspaceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+/**
+ * 工作区生命周期：创建时建盘、删除时清库并尽量清盘。
+ * 关联：WorkspaceRepository、WorkspacePathResolver、WorkspaceController。
+ */
 @Service
 public class WorkspaceService {
+
+    private static final Logger log = LoggerFactory.getLogger(WorkspaceService.class);
 
     private final WorkspaceRepository repository;
 
@@ -34,11 +48,10 @@ public class WorkspaceService {
         Workspace saved = repository.save(workspace);
         // 立刻创建磁盘目录，避免「工作区有了但文件树是空的且写不进去」
         try {
-            java.nio.file.Path dir = java.nio.file.Paths.get(
-                    System.getProperty("user.dir"), rootPath).normalize();
-            java.nio.file.Files.createDirectories(dir);
-        } catch (java.io.IOException e) {
-            throw new RuntimeException("Failed to create workspace directory: " + rootPath, e);
+            Path dir = Paths.get(System.getProperty("user.dir"), rootPath).normalize();
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new RuntimeException("无法创建工作区目录: " + rootPath, e);
         }
         return saved;
     }
@@ -55,11 +68,48 @@ public class WorkspaceService {
         return Optional.of(repository.update(w));
     }
 
+    /**
+     * 删除工作区：先读 root_path，再删库（级联会话/记忆等），最后安全删除磁盘目录。
+     * 仅删除位于 {@code user.dir} 下的路径，防止误删任意绝对路径。
+     */
     public boolean deleteWorkspace(String id) {
-        if (repository.findById(id).isEmpty()) {
+        Optional<Workspace> existing = repository.findById(id);
+        if (existing.isEmpty()) {
             return false;
         }
+        String rootPath = existing.get().getRootPath();
+        if (rootPath == null || rootPath.isBlank()) {
+            rootPath = "workspaces/" + id;
+        }
         repository.deleteById(id);
+        deleteWorkspaceDirectorySafely(rootPath);
         return true;
+    }
+
+    /** 仅当目录落在 user.dir 内时递归删除；失败只记日志，不回滚 DB。 */
+    void deleteWorkspaceDirectorySafely(String rootPath) {
+        Path userDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
+        Path target = userDir.resolve(rootPath).normalize();
+        if (!target.startsWith(userDir) || target.equals(userDir)) {
+            log.warn("Skip disk cleanup: path outside user.dir or is user.dir itself: {}", target);
+            return;
+        }
+        if (!Files.exists(target)) {
+            return;
+        }
+        try {
+            try (Stream<Path> walk = Files.walk(target)) {
+                walk.sorted(Comparator.reverseOrder()).forEach(p -> {
+                    try {
+                        Files.deleteIfExists(p);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+            log.info("Deleted workspace directory: {}", target);
+        } catch (Exception e) {
+            log.warn("Failed to delete workspace directory {}: {}", target, e.toString());
+        }
     }
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { api, ApiError } from '../../api/client'
-import type { ProviderMetadata, LlmProvider } from '../../types'
+import type { ProviderMetadata, LlmProvider, McpStatus } from '../../types'
 
 /**
  * LLM Provider configuration (§7.4).
@@ -18,13 +18,32 @@ export default function ProviderSettingsView() {
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [mcp, setMcp] = useState<McpStatus | null>(null)
+  const [mcpError, setMcpError] = useState<string | null>(null)
+  const [mcpLoading, setMcpLoading] = useState(false)
+  const [mcpResourcePreview, setMcpResourcePreview] = useState<{ uri: string; content: string } | null>(null)
+  const [mcpResourceLoading, setMcpResourceLoading] = useState(false)
   const apiKeyRef = useRef<HTMLInputElement>(null)
+
+  const loadMcp = useCallback(async (refresh = false) => {
+    setMcpLoading(true)
+    setMcpError(null)
+    try {
+      const s = refresh ? await api.refreshMcpStatus() : await api.getMcpStatus()
+      setMcp(s)
+    } catch (e) {
+      setMcpError(e instanceof Error ? e.message : '加载 MCP 状态失败')
+    } finally {
+      setMcpLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     api.getAvailableProviders()
       .then(list => { setProviders(list); if (list.length > 0) setSelected(list[0]!.id) })
       .catch(() => setMsg({ ok: false, text: '加载服务商失败' }))
-  }, [])
+    void loadMcp(false)
+  }, [loadMcp])
 
   const loadConfig = (id: string) => {
     setMsg(null); setApiKey(''); setMaskedKey(null)
@@ -60,7 +79,8 @@ export default function ProviderSettingsView() {
     // 明文框：以 React state 为准；再兜底读 DOM
     const keyToSave = (apiKey.trim() || apiKeyRef.current?.value?.trim() || '')
     const urlToSave = baseUrl.trim()
-    if (!keyToSave && !maskedKey) {
+    const ollama = selected === 'ollama'
+    if (!ollama && !keyToSave && !maskedKey) {
       setMsg({ ok: false, text: '请先填写 API Key' })
       setSaving(false)
       return
@@ -77,8 +97,8 @@ export default function ProviderSettingsView() {
     }
     try {
       const saved = await api.saveProviderConfig(selected, {
-        apiKey: keyToSave || undefined,
-        baseUrl: urlToSave || undefined,
+        apiKey: keyToSave || (ollama && !maskedKey ? 'ollama-local' : undefined),
+        baseUrl: urlToSave || (ollama ? 'http://localhost:11434' : undefined),
         defaultModel: model,
         enabled,
       })
@@ -102,7 +122,12 @@ export default function ProviderSettingsView() {
     if (!selected) return
     setTesting(true); setMsg(null)
     try {
-      await api.testProviderConnection(selected)
+      const draftKey = (apiKey.trim() || apiKeyRef.current?.value?.trim() || '')
+      await api.testProviderConnection(selected, {
+        apiKey: draftKey || undefined,
+        baseUrl: baseUrl.trim() || undefined,
+        defaultModel: model || undefined,
+      })
       setMsg({ ok: true, text: '连接成功' })
     } catch (e) {
       setMsg({ ok: false, text: e instanceof ApiError ? e.message : '连接失败' })
@@ -147,7 +172,8 @@ export default function ProviderSettingsView() {
 
           <label className="block">
             <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              API Key（明文可核对；保存后加密存储）{maskedKey ? ' — 留空则保留当前' : ''}
+              API Key（明文可核对；保存后加密存储）
+              {selected === 'ollama' ? ' — Ollama 可留空' : maskedKey ? ' — 留空则保留当前' : ''}
             </span>
             <div className="flex gap-2 mt-1">
               <input
@@ -239,6 +265,94 @@ export default function ProviderSettingsView() {
         智谱 Anthropic 兼容：Base URL = <code>https://open.bigmodel.cn/api/anthropic</code>，模型 = <code>glm-5.2</code>。
         API Key 栏只能是密钥本身；若回显 <code>htt••••opic</code> 说明又存成了网址。
       </p>
+
+      <section
+        data-testid="mcp-status-panel"
+        className="mt-8 p-4 rounded-lg border space-y-2"
+        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>MCP 集成</h2>
+          <button
+            type="button"
+            data-testid="mcp-refresh"
+            disabled={mcpLoading}
+            onClick={() => void loadMcp(true)}
+            className="text-xs px-2 py-1 rounded border"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
+          >
+            {mcpLoading ? '刷新中…' : '刷新'}
+          </button>
+        </div>
+        {mcpError && (
+          <div className="text-xs" style={{ color: 'var(--color-danger)' }}>{mcpError}</div>
+        )}
+        {mcp && (
+          <>
+            <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+              状态：{mcp.enabled ? '已启用' : '未启用'}
+              {' · '}连接 {mcp.clientCount}
+              {' · '}工具 {mcp.toolCount}
+              {' · '}资源 {mcp.resourceCount}
+            </div>
+            <p className="text-xs" style={{ color: 'var(--color-text-dim)' }}>{mcp.note}</p>
+            {mcp.warning && (
+              <p className="text-xs" style={{ color: 'var(--color-danger)' }}>{mcp.warning}</p>
+            )}
+            {mcp.tools.length > 0 && (
+              <ul className="text-xs font-mono max-h-28 overflow-auto space-y-0.5" style={{ color: 'var(--color-text)' }}>
+                {mcp.tools.map(t => <li key={t}>{t}</li>)}
+              </ul>
+            )}
+            {mcp.resources.length > 0 && (
+              <ul className="text-xs max-h-28 overflow-auto space-y-1" style={{ color: 'var(--color-text-dim)' }}>
+                {mcp.resources.map(r => (
+                  <li key={`${r.server}:${r.uri}`} className="flex items-center gap-2">
+                    <span className="truncate flex-1">{r.server} · {r.name || r.uri}</span>
+                    <button
+                      type="button"
+                      data-testid="mcp-resource-read"
+                      disabled={mcpResourceLoading}
+                      className="text-[11px] px-1.5 py-0.5 rounded shrink-0"
+                      style={{ color: 'var(--color-accent)' }}
+                      onClick={() => {
+                        void (async () => {
+                          setMcpResourceLoading(true)
+                          setMcpError(null)
+                          try {
+                            const data = await api.readMcpResource(r.uri)
+                            setMcpResourcePreview({ uri: data.uri || r.uri, content: data.content })
+                          } catch (e) {
+                            setMcpError(e instanceof Error ? e.message : '读取资源失败')
+                          } finally {
+                            setMcpResourceLoading(false)
+                          }
+                        })()
+                      }}
+                    >
+                      读取
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {mcpResourcePreview && (
+              <div className="mt-2 p-2 rounded border text-xs" style={{ borderColor: 'var(--color-border)' }}>
+                <div className="flex justify-between gap-2 mb-1">
+                  <span className="truncate font-mono" style={{ color: 'var(--color-text)' }}>{mcpResourcePreview.uri}</span>
+                  <button type="button" className="shrink-0 opacity-70" onClick={() => setMcpResourcePreview(null)}>关闭</button>
+                </div>
+                <pre className="max-h-40 overflow-auto whitespace-pre-wrap" style={{ color: 'var(--color-text-secondary)' }}>
+                  {mcpResourcePreview.content}
+                </pre>
+              </div>
+            )}
+            <p className="text-[11px]" style={{ color: 'var(--color-text-dim)' }}>
+              启用方式见后端 <code>mcp-servers.example.yml</code>（Spring 配置，非 Claude Desktop JSON）。
+            </p>
+          </>
+        )}
+      </section>
     </div>
   )
 }

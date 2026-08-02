@@ -36,11 +36,11 @@ class ChatModelFactoryTest {
 
     @Test
     void getChatModel_unknownProvider_throws() {
-        when(providerService.getProvider("deepseek")).thenReturn(Optional.empty());
+        when(providerService.getProvider("missing-provider")).thenReturn(Optional.empty());
         ChatModelFactory factory = new ChatModelFactory(providerService);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> factory.getChatModel("deepseek"));
+                () -> factory.getChatModel("missing-provider"));
         assertEquals("UNKNOWN_PROVIDER", ex.getMessage());
     }
 
@@ -103,6 +103,19 @@ class ChatModelFactoryTest {
 
         assertEquals("anthropic", factory.lastBranch);
         assertEquals("claude-sonnet-4-20250514", factory.lastModelName);
+    }
+
+    @Test
+    void getChatModel_deepseek_usesAnthropicCompatWithDefaultBaseUrl() {
+        when(providerService.getProvider("deepseek"))
+                .thenReturn(Optional.of(provider("deepseek", "sk-ds-test", null, "deepseek-v4-flash", true)));
+
+        CapturingFactory factory = new CapturingFactory(providerService);
+        factory.getChatModel("deepseek");
+
+        assertEquals("anthropic", factory.lastBranch);
+        assertEquals("deepseek-v4-flash", factory.lastModelName);
+        assertEquals("https://api.deepseek.com/anthropic", factory.lastBaseUrl);
     }
 
     @Test
@@ -175,6 +188,7 @@ class ChatModelFactoryTest {
     static class CapturingFactory extends ChatModelFactory {
         String lastBranch;
         String lastModelName;
+        String lastBaseUrl;
 
         CapturingFactory(LlmProviderService providerService) {
             super(providerService);
@@ -184,6 +198,7 @@ class ChatModelFactoryTest {
         protected ChatModel buildOpenAi(String apiKey, String baseUrl, String modelName) {
             lastBranch = "openai";
             lastModelName = modelName;
+            lastBaseUrl = baseUrl;
             return stubModel("stub-openai");
         }
 
@@ -191,6 +206,7 @@ class ChatModelFactoryTest {
         protected ChatModel buildAnthropic(String apiKey, String baseUrl, String modelName) {
             lastBranch = "anthropic";
             lastModelName = modelName;
+            lastBaseUrl = baseUrl;
             return stubModel("stub-anthropic");
         }
 
@@ -198,6 +214,7 @@ class ChatModelFactoryTest {
         protected ChatModel buildOllama(String baseUrl, String modelName) {
             lastBranch = "ollama";
             lastModelName = modelName;
+            lastBaseUrl = baseUrl;
             return stubModel("stub-ollama");
         }
 

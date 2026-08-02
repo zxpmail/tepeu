@@ -1,8 +1,16 @@
+/**
+ * 终端面板 — xterm + AI 命令助手 + 危险命令审批条。
+ * 关联：useTerminal、ApprovalBanner。
+ */
 import { useTerminal } from '../../hooks/useTerminal'
+import ApprovalBanner from '../chat/ApprovalBanner'
 import 'xterm/css/xterm.css'
 
-export default function TerminalView() {
-  const { terminalRef, connected, aiInput, aiSuggestion, setAiInput, translateAndExec } = useTerminal()
+export default function TerminalView({ workspaceId }: { workspaceId?: string }) {
+  const {
+    terminalRef, connected, aiInput, aiSuggestion, errorHint, setAiInput, translateAndExec,
+    pendingApprovals, decidingId, decideApproval,
+  } = useTerminal(workspaceId)
 
   return (
     <div className="flex flex-col h-full">
@@ -13,8 +21,21 @@ export default function TerminalView() {
         <span style={{ color: 'var(--color-text-secondary)' }}>
           {connected ? '已连接' : '已断开'}
         </span>
-        <span className="ml-auto" style={{ color: 'var(--color-text-secondary)' }}>Windows 终端</span>
+        <span className="ml-auto truncate max-w-[50%]" style={{ color: 'var(--color-text-secondary)' }}
+          title={workspaceId}>
+          Windows 终端{workspaceId ? ' · 当前工作区' : ''}
+        </span>
       </div>
+
+      {pendingApprovals.length > 0 && (
+        <div className="px-3 pt-2 shrink-0">
+          <ApprovalBanner
+            items={pendingApprovals}
+            decidingId={decidingId}
+            onDecide={(id, d) => void decideApproval(id, d)}
+          />
+        </div>
+      )}
 
       {/* Terminal */}
       <div ref={terminalRef as React.RefObject<HTMLDivElement>} className="flex-1" style={{ backgroundColor: '#1a1a1a' }} />
@@ -53,6 +74,14 @@ export default function TerminalView() {
         {aiSuggestion && (
           <div className="mt-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
             ↪ {aiSuggestion}
+          </div>
+        )}
+        {errorHint && (
+          <div className="mt-1 text-xs p-2 rounded" style={{
+            color: 'var(--color-text)',
+            backgroundColor: 'color-mix(in srgb, var(--color-danger) 12%, var(--color-bg-secondary))',
+          }}>
+            💡 {errorHint}
           </div>
         )}
       </div>

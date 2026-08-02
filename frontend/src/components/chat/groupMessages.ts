@@ -36,7 +36,7 @@ export function groupChatMessages(messages: ChatMessage[]): DisplayItem[] {
       }
 
       if (lastAssistant < 0) {
-        const toolCalls = batch.filter(b => b.toolKind === 'call').length
+        const toolCalls = batch.filter(b => b.toolState === 'call').length
         if (batch.length > 0) {
           items.push({ kind: 'process', messages: batch, toolCalls, key: nextKey() })
         }
@@ -45,7 +45,7 @@ export function groupChatMessages(messages: ChatMessage[]): DisplayItem[] {
 
       const processMsgs = [...batch.slice(0, lastAssistant), ...batch.slice(lastAssistant + 1)]
       const answer = batch[lastAssistant]!
-      const toolCalls = processMsgs.filter(b => b.toolKind === 'call').length
+      const toolCalls = processMsgs.filter(b => b.toolState === 'call').length
       if (processMsgs.length > 0) {
         items.push({ kind: 'process', messages: processMsgs, toolCalls, key: nextKey() })
       }

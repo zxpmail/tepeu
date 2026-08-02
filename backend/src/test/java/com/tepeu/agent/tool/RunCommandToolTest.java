@@ -16,18 +16,18 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * ShellTools 单测 — 工作区 cwd、危险命令拦截、工具注册名。
+ * Unit tests for {@link RunCommandTool} — shell command execution in workspace.
  */
-class ShellToolsTest {
+class RunCommandToolTest {
 
     @TempDir
     Path tempDir;
 
-    private ShellTools tools;
+    private RunCommandTool tools;
 
     @BeforeEach
     void setUp() {
-        tools = new ShellTools(tempDir);
+        tools = new RunCommandTool(tempDir);
     }
 
     @Test
@@ -58,5 +58,13 @@ class ShellToolsTest {
                 .map(cb -> cb.getToolDefinition().name())
                 .collect(Collectors.toSet());
         assertTrue(names.contains("run_command"), "run_command must be registered: " + names);
+    }
+
+    @Test
+    void toolCallbacks_haveNonEmptyDescriptions() {
+        ToolCallback[] callbacks = ToolCallbacks.from(tools);
+        for (ToolCallback c : callbacks) {
+            assertFalse(c.getToolDefinition().description().isBlank());
+        }
     }
 }

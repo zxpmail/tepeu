@@ -1,43 +1,18 @@
+/**
+ * 全屏文件管理器：列表、预览（高亮/Markdown/图片）、版本历史+DIFF、拖拽上传。
+ * 关联：useFileBrowser、VersionPanel、codeHighlight、api。
+ */
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { api } from '../../api/client'
+import { api, ApiError } from '../../api/client'
 import { useWorkspaceEvents } from '../../context/WorkspaceEvents'
-import type { FileItem, FileVersion } from '../../types'
-import hljs from 'highlight.js/lib/core'
-import javascript from 'highlight.js/lib/languages/javascript'
-import typescript from 'highlight.js/lib/languages/typescript'
-import xml from 'highlight.js/lib/languages/xml'
-import css from 'highlight.js/lib/languages/css'
-import json from 'highlight.js/lib/languages/json'
-import python from 'highlight.js/lib/languages/python'
-import java from 'highlight.js/lib/languages/java'
-import bash from 'highlight.js/lib/languages/bash'
-import markdown from 'highlight.js/lib/languages/markdown'
-import 'highlight.js/styles/github.css'
+import FileTree from '../common/FileTree'
+import PptxPreview from '../files/PptxPreview'
+import VersionPanel from '../files/VersionPanel'
+import { ensureHljsLanguages, detectLanguage } from '../../lib/codeHighlight'
+import type { FileItem } from '../../types'
 import { marked } from 'marked'
 
-// Register languages for highlight.js
-hljs.registerLanguage('javascript', javascript)
-hljs.registerLanguage('typescript', typescript)
-hljs.registerLanguage('xml', xml)
-hljs.registerLanguage('css', css)
-hljs.registerLanguage('json', json)
-hljs.registerLanguage('python', python)
-hljs.registerLanguage('java', java)
-hljs.registerLanguage('bash', bash)
-hljs.registerLanguage('markdown', markdown)
-
-function detectLanguage(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase() || ''
-  const map: Record<string, string> = {
-    ts: 'typescript', tsx: 'typescript', js: 'javascript', jsx: 'javascript',
-    html: 'xml', htm: 'xml', svg: 'xml', css: 'css', scss: 'css',
-    json: 'json', py: 'python', java: 'java',
-    md: 'markdown', mkd: 'markdown',
-    sh: 'bash', bash: 'bash', zsh: 'bash',
-    yml: 'yaml', yaml: 'yaml',
-  }
-  return map[ext] || ''
-}
+ensureHljsLanguages()
 
 function isImageFile(filename: string): boolean {
   return /\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(filename)
@@ -47,49 +22,71 @@ function isMarkdownFile(filename: string): boolean {
   return /\.(md|mkd|markdown)$/i.test(filename)
 }
 
+function isPptxFile(filename: string): boolean {
+  return /\.pptx$/i.test(filename)
+}
+
 interface FilePreviewProps {
   path: string
   content: string
   mimeType: string
+  workspaceId?: string
   onClose: () => void
 }
 
-function FilePreview({ path, content, mimeType, onClose }: FilePreviewProps) {
+function FilePreview({ path, content, mimeType, onClose, workspaceId }: FilePreviewProps) {
   const filename = path.split('/').pop() || path
   const codeRef = useRef<HTMLElement>(null)
+  const hljs = ensureHljsLanguages()
 
   useEffect(() => {
     if (codeRef.current) {
       const lang = detectLanguage(filename)
       if (lang) codeRef.current.dataset.lang = lang
+      codeRef.current.removeAttribute('data-highlighted')
       hljs.highlightElement(codeRef.current)
     }
-  }, [content, filename])
+  }, [content, filename, hljs])
 
-  // Image preview
-  if (mimeType?.startsWith('image/') || isImageFile(filename)) {
+  if (isPptxFile(filename) || mimeType?.includes('presentationml')) {
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between mb-3 shrink-0">
           <span className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{path}</span>
-          <button onClick={onClose} className="text-xs px-2 py-1 rounded shrink-0" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
+          <button type="button" onClick={onClose} className="text-xs px-2 py-1 rounded shrink-0" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
         </div>
-        <div className="flex-1 flex items-center justify-center overflow-auto bg-[#f0f0f0] dark:bg-[#111] rounded">
-          <img src={`/api/files/preview/image?path=${encodeURIComponent(path)}`} alt={filename}
-            className="max-w-full max-h-full object-contain" />
+        <div className="flex-1 min-h-0">
+          <PptxPreview src={api.rawFileUrl(path, workspaceId)} filename={filename} />
         </div>
       </div>
     )
   }
 
-  // Markdown rendering
+  if (mimeType?.startsWith('image/') || isImageFile(filename)) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between mb-3 shrink-0">
+          <span className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{path}</span>
+          <button type="button" onClick={onClose} className="text-xs px-2 py-1 rounded shrink-0" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
+        </div>
+        <div className="flex-1 flex items-center justify-center overflow-auto bg-[#f0f0f0] dark:bg-[#111] rounded">
+          <img
+            src={api.rawFileUrl(path, workspaceId)}
+            alt={filename}
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
+      </div>
+    )
+  }
+
   if (mimeType?.includes('markdown') || isMarkdownFile(filename)) {
     const html = marked.parse(content) as string
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between mb-3 shrink-0">
           <span className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{path}</span>
-          <button onClick={onClose} className="text-xs px-2 py-1 rounded shrink-0" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
+          <button type="button" onClick={onClose} className="text-xs px-2 py-1 rounded shrink-0" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
         </div>
         <div
           className="flex-1 overflow-auto p-4 rounded prose prose-sm dark:prose-invert max-w-none"
@@ -100,83 +97,15 @@ function FilePreview({ path, content, mimeType, onClose }: FilePreviewProps) {
     )
   }
 
-  // Code / text
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-3 shrink-0">
         <span className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{path}</span>
-        <button onClick={onClose} className="text-xs px-2 py-1 rounded shrink-0" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
+        <button type="button" onClick={onClose} className="text-xs px-2 py-1 rounded shrink-0" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
       </div>
       <pre className="flex-1 overflow-auto text-sm p-4 rounded" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
         <code ref={codeRef} className="hljs">{content}</code>
       </pre>
-    </div>
-  )
-}
-
-interface VersionPanelProps {
-  path: string
-  onRestore: () => void
-  onClose: () => void
-}
-
-function VersionPanel({ path, onRestore, onClose }: VersionPanelProps) {
-  const [versions, setVersions] = useState<FileVersion[]>([])
-  const [loading, setLoading] = useState(true)
-  const [restoring, setRestoring] = useState<string | null>(null)
-
-  useEffect(() => {
-    setLoading(true)
-    api.getFileHistory(path)
-      .then((data: { path: string; versions: FileVersion[] }) => setVersions(data.versions || []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [path])
-
-  const handleRestore = async (versionId: string) => {
-    setRestoring(versionId)
-    try {
-      await api.restoreFileVersion(versionId)
-      onRestore()
-    } catch { /* ignore */ }
-    setRestoring(null)
-  }
-
-  const formatDate = (d: string) => {
-    try { return new Date(d).toLocaleString() } catch { return d }
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-3 shrink-0">
-        <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>版本历史：{path.split('/').pop()}</span>
-        <button onClick={onClose} className="text-xs px-2 py-1 rounded" style={{ color: 'var(--color-text-secondary)' }}>✕</button>
-      </div>
-      {loading ? (
-        <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>加载版本中…</div>
-      ) : versions.length === 0 ? (
-        <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>暂无版本历史。</div>
-      ) : (
-        <div className="flex-1 overflow-auto space-y-1">
-          {versions.map(v => (
-            <div key={v.id} className="flex items-center justify-between p-2 rounded text-sm"
-              style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
-              <div>
-                <span className="font-medium">v{v.versionNo}</span>
-                <span className="ml-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>{formatDate(v.createdAt)}</span>
-              </div>
-              <button
-                onClick={() => handleRestore(v.id)}
-                disabled={restoring === v.id}
-                className="text-xs px-2 py-1 rounded"
-                style={{ backgroundColor: 'var(--color-accent)', color: '#fff', opacity: restoring === v.id ? 0.6 : 1 }}
-              >
-                {restoring === v.id ? '恢复中…' : '恢复'}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
@@ -200,14 +129,14 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
   const [showVersions, setShowVersions] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [treeRefreshKey, setTreeRefreshKey] = useState(0)
   const previewPathRef = useRef<string | null>(null)
 
-  // 保持预览路径 ref，供 file_changed 回调比对
   useEffect(() => {
     previewPathRef.current = previewFile?.path ?? null
   }, [previewFile?.path])
 
-  // 订阅 agent 写文件事件：若正在预览该文件则重新读取
   useEffect(() => {
     return subscribe((path: string) => {
       const current = previewPathRef.current
@@ -226,17 +155,29 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
       navigateTo(newPath)
     } else {
       try {
+        setActionError(null)
         const path = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`
         setShowVersions(null)
+        if (isPptxFile(item.name)) {
+          setPreviewFile({
+            path,
+            content: '',
+            mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          })
+          return
+        }
+        if (isImageFile(item.name)) {
+          setPreviewFile({ path, content: '', mimeType: 'image/*' })
+          return
+        }
         const data = await api.readFile(path, workspaceId)
         setPreviewFile(data)
-      } catch {
-        // ApiError is thrown
+      } catch (e) {
+        setActionError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : '打开文件失败')
       }
     }
   }
 
-  // Drag-and-drop upload
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -256,16 +197,19 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
     const fileList = Array.from(e.dataTransfer.files)
     if (fileList.length === 0) return
     setUploading(true)
+    setActionError(null)
     try {
       for (const file of fileList) {
-        await api.uploadFile(file, currentPath)
+        await api.uploadFile(file, currentPath, workspaceId)
       }
       loadFiles(currentPath)
-    } catch {
-      // ApiError
+      setTreeRefreshKey(k => k + 1)
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : '上传失败')
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
-  }, [currentPath, loadFiles])
+  }, [currentPath, loadFiles, workspaceId])
 
   if (loading) {
     return <div className="p-4" style={{ color: 'var(--color-text-secondary)' }}>加载中...</div>
@@ -288,15 +232,32 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* File tree */}
+      <aside
+        className="w-52 shrink-0 border-r overflow-auto p-2"
+        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}
+      >
+        <div className="text-[10px] uppercase tracking-wide px-1 mb-1" style={{ color: 'var(--color-text-dim)' }}>
+          目录树
+        </div>
+        <FileTree
+          workspaceId={workspaceId}
+          selectedPath={currentPath}
+          refreshKey={treeRefreshKey}
+          onSelectDir={(path) => {
+            navigateTo(path)
+            setPreviewFile(null)
+            setShowVersions(null)
+          }}
+        />
+      </aside>
       <div className="flex-1 p-4 overflow-auto relative" style={{ borderColor: 'var(--color-border)' }}>
-        {/* Breadcrumb */}
         <div className="flex items-center gap-1 mb-3 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          <button onClick={() => navigateTo('/')} className="hover:underline">~</button>
+          <button type="button" onClick={() => navigateTo('/')} className="hover:underline">~</button>
           {currentPath.split('/').filter(Boolean).map((segment, i, arr) => (
             <span key={i}>
               <span className="mx-1">/</span>
               <button
+                type="button"
                 onClick={() => {
                   const path = '/' + arr.slice(0, i + 1).join('/')
                   navigateTo(path)
@@ -309,16 +270,21 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
           ))}
         </div>
 
-        {/* Empty state */}
-        {files.length === 0 && (
-          <div className="p-8 text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            空目录
+        {actionError && (
+          <div className="mb-3 p-2 rounded text-xs" style={{ color: 'var(--color-danger)', backgroundColor: 'color-mix(in srgb, var(--color-danger) 10%, transparent)' }}>
+            {actionError}
           </div>
         )}
 
-        {/* File list */}
+        {files.length === 0 && (
+          <div className="p-8 text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            空目录 — 可拖放文件到此处上传
+          </div>
+        )}
+
         <div className="space-y-0.5">
           <button
+            type="button"
             onClick={() => {
               const parent = currentPath.split('/').slice(0, -1).join('/') || '/'
               navigateTo(parent)
@@ -332,7 +298,8 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
           {files.map((item, i) => (
             <div key={i} className="flex items-center gap-1 group">
               <button
-                onClick={() => handleItemClick(item)}
+                type="button"
+                onClick={() => void handleItemClick(item)}
                 className="flex items-center gap-2 px-2 py-1 text-sm rounded hover:opacity-80 flex-1 text-left"
                 style={{ color: 'var(--color-text)' }}
               >
@@ -345,30 +312,56 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
                 )}
               </button>
               {!item.isDirectory && (
-                <button
-                  onClick={async () => {
-                    const path = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`
-                    setPreviewFile(null)
-                    setShowVersions(showVersions === path ? null : path)
-                  }}
-                  className="text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                  title="版本历史"
-                >
-                  🕐
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const path = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`
+                      setPreviewFile(null)
+                      setShowVersions(showVersions === path ? null : path)
+                    }}
+                    className="text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                    title="版本历史"
+                  >
+                    🕐
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="file-delete"
+                    onClick={() => {
+                      const path = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`
+                      void (async () => {
+                        if (!window.confirm(`确定删除 ${item.name}？`)) return
+                        try {
+                          setActionError(null)
+                          await api.deleteFile(path, workspaceId)
+                          if (previewFile?.path === path) setPreviewFile(null)
+                          if (showVersions === path) setShowVersions(null)
+                          loadFiles(currentPath)
+                          setTreeRefreshKey(k => k + 1)
+                        } catch (e) {
+                          setActionError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : '删除失败')
+                        }
+                      })()
+                    }}
+                    className="text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ color: 'var(--color-danger)' }}
+                    title="删除文件"
+                  >
+                    ✕
+                  </button>
+                </>
               )}
             </div>
           ))}
         </div>
 
-        {/* Drag overlay */}
         {dragOver && (
           <div className="absolute inset-0 rounded-lg border-2 border-dashed z-10 flex items-center justify-center"
             style={{
               borderColor: 'var(--color-accent)',
               backgroundColor: 'rgba(37, 99, 235, 0.08)',
-              top: 0, left: 0, right: 0, bottom: 0,
             }}
           >
             <div className="text-center">
@@ -381,7 +374,6 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
         )}
       </div>
 
-      {/* Right panel: preview or versions */}
       {(previewFile || showVersions) && (
         <div className="w-1/2 border-l overflow-auto p-4" style={{
           borderColor: 'var(--color-border)',
@@ -392,12 +384,14 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
               path={previewFile.path}
               content={previewFile.content}
               mimeType={previewFile.mimeType}
+              workspaceId={workspaceId}
               onClose={() => setPreviewFile(null)}
             />
           )}
           {showVersions && (
             <VersionPanel
               path={showVersions}
+              workspaceId={workspaceId}
               onRestore={() => { setShowVersions(null); loadFiles(currentPath) }}
               onClose={() => setShowVersions(null)}
             />

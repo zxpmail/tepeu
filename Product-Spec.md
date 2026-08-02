@@ -91,8 +91,8 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 - 按项目/按用户/按时间段汇总统计
 - 智能路由：简单任务用轻量模型，复杂任务用旗舰模型
 - 提供预算告警机制
-- **Phase 1 最小视图**：每个 workspace 提供累计 Token/成本显示（完整成本仪表盘见 M2.4，Phase 2）
-  - **实现状态（2026-07-18）**：会话级用量已展示；**workspace 累计尚未实现**（Spec Phase 1 缺口，补做或并入 M2.4 前须闭合）
+- **Phase 1 最小视图**：每个 workspace 提供累计 Token/成本显示（完整成本仪表盘见 M2.4）
+  - **实现状态（2026-08-02）**：会话级用量 + workspace 累计（`GET /api/workspace/:id/stats`）+ **成本仪表盘/预算告警/硬门禁**（`GET /api/workspace/:id/cost`、`PUT .../budget`，顶栏告警徽章）已落地（M2.4 / Phase 8）
 
 ---
 
@@ -138,7 +138,7 @@ Tepeu 基于成熟的七层 Agent Harness 架构设计：
 | Workspace 管理 | 项目创建/切换/删除、文件隔离、记忆隔离 | P0 |
 | 记忆系统 | 记忆 CRUD、来源追溯、搜索检索 | P0 |
 | 文件管理器 | 目录树、文件预览、拖拽上传、版本历史 | P0 |
-| 终端 | Unix-like 命令、AI 辅助命令行 | P0 |
+| 终端 | 宿主 Shell 命令、本地词典辅助命令行 | P0 |
 | 多 Agent 协作 | Planner/Implementer/Reviewer 角色分工 | P1 |
 | MCP 协议支持 | 标准化 Agent-系统通信 | P1 |
 | 成本仪表盘 | Token 使用统计、预算告警、模型路由 | P1 |
@@ -155,12 +155,12 @@ Tepeu 基于成熟的七层 Agent Harness 架构设计：
 |------|---------|------|------|
 | 前端框架 | React | 18.x | 组件化生态成熟 |
 | 前端语言 | TypeScript | 5.x | 类型安全，降低维护成本 |
-| UI 样式 | Tailwind CSS | 3.x | 快速定制，方便"换肤" |
+| UI 样式 | Tailwind CSS | 4.x | 快速定制，方便"换肤"（`@tailwindcss/vite`） |
 | UI 框架 | Web UI（SPA，参考 pi-web 设计） | — | 浏览器访问，无需安装客户端 |
 | 运行时 | Java | 21 | 虚线程（Virtual Threads）支持 |
 | 后端框架 | Spring Boot | 4.0+ | 支持 Spring AI 2.0，企业级 Java 生态 |
 | AI 集成 | Spring AI | 2.0.0 (GA) | 官方 MCP 协议支持，需 Spring Boot 4.0 |
-| Agent 工具 | spring-ai-agent-utils | 0.10.0 | 社区项目（org.springaicommunity），文件/Shell/Web 工具 |
+| Agent 工具 | 自研 `@Tool`（FileTools / ShellTools） | — | Spring AI 2.0 ToolCallback 装饰器路径；未接入 agent-utils |
 | Agent 运行时 | WebAssembly + V8（规划中，见 Phase 3） | — | ~6ms 冷启动，进程隔离 |
 | 数据库 | SQLite + 文件系统 | — | 开箱即用，无需额外部署 |
 | 协议 | MCP + SSE + REST | — | 标准化 + 实时通信 |
@@ -200,10 +200,9 @@ Tepeu 基于成熟的七层 Agent Harness 架构设计：
 │  │  └────┬────────────┬──────────────┬────────────┘  │  │
 │  │       │            │              │               │  │
 │  │  ┌────▼────┐ ┌────▼────┐  ┌──────▼──────┐       │  │
-│  │  │ Memory  │ │ Skills  │  │ spring-ai-  │       │  │
-│  │  │ Manager │ │ Registry│  │ agent-utils │       │  │
-│  │  └─────────┘ └─────────┘  │ (File/Shell │       │  │
-│  │                           │  /Web 工具)  │       │  │
+│  │  │ Memory  │ │ Skills  │  │ FileTools / │       │  │
+│  │  │ Manager │ │ Registry│  │ ShellTools  │       │  │
+│  │  └─────────┘ └─────────┘  │ (@Tool)     │       │  │
 │  │                           └─────────────┘       │  │
 │  │                        │                        │  │
 │  │  ┌─────────────────────▼──────────────────────┐ │  │
@@ -267,7 +266,7 @@ Request:
 
 Response (Server-Sent Events):
 event: message
-data: {"type": "thinking", "content": "分析用户需求..."}
+data: {"type": "token", "content": "..."}
 
 event: message
 data: {"type": "tool_call", "tool": "write_file", "params": {...}}
@@ -276,8 +275,13 @@ event: message
 data: {"type": "tool_result", "content": "文件已创建"}
 
 event: message
-data: {"type": "final", "content": "已完成 REST API 创建"}
+data: {"type": "usage", "totalTokens": 123, "costUsd": 0.001}
+
+event: message
+data: {"type": "final"}
 ```
+
+> **Phase 1 推理展示**：以工具调用过程可视化（`tool_call` / `tool_result` + 前端 ProcessDetails）为准；原生 `thinking` 事件待模型/SDK 稳定提供推理字段后再补。
 
 #### 5.3.2 Workspace 管理
 
@@ -285,8 +289,9 @@ data: {"type": "final", "content": "已完成 REST API 创建"}
 GET    /api/workspace              — 列出所有项目
 POST   /api/workspace              — 创建项目
 GET    /api/workspace/:id          — 项目详情
+GET    /api/workspace/:id/stats    — 工作区累计 Token/费用（§3.5）
 PUT    /api/workspace/:id          — 更新项目配置
-DELETE /api/workspace/:id          — 删除项目
+DELETE /api/workspace/:id          — 删除项目（库级联 + 安全清盘）
 POST   /api/workspace/:id/switch   — 切换当前项目
 ```
 
@@ -303,14 +308,14 @@ GET    /api/memory/:id             — 获取单条记忆详情
 #### 5.3.4 文件操作
 
 ```
-GET    /api/files/list?path=...    — 列出目录
-POST   /api/files/read             — 读取文件内容
+GET    /api/files/list?path=...&workspaceId=...  — 列出目录
+POST   /api/files/read             — 读取文件内容（body: path, workspaceId）
 POST   /api/files/write            — 写入文件
 POST   /api/files/upload           — 上传文件（multipart）
-GET    /api/files/download/:id     — 下载文件
+GET    /api/files/raw?path=...&download=1        — 原始文件 / 下载
 POST   /api/files/delete           — 删除文件/目录
-GET    /api/files/preview/:id      — 预览文件
-GET    /api/files/history/:id      — 文件版本历史
+GET    /api/files/preview?path=... — 预览文件
+GET    /api/files/history?path=... — 文件版本历史
 ```
 
 #### 5.3.5 终端
@@ -324,7 +329,7 @@ WebSocket /api/terminal/ws         — 终端会话
 ### 5.4 编码规范
 
 1. **流式优先**：所有 Agent 输出采用 SSE 流式传输，前端逐 Token 渲染，不等待完整响应
-2. **Agent 原语**：优先使用 `spring-ai-agent-utils` 提供的原语，不重复造轮子
+2. **Agent 工具**：Phase 1 使用自研 `FileTools` / `ShellTools`（`@Tool` + 事件装饰器）；若未来接入 `spring-ai-agent-utils` 须保持同 API 语义
 3. **库优先**：能用现有库实现的功能，不手写函数
 4. **函数参数**：参数超过 4 个必须使用实体类（DTO/Record）
 5. **虚线程**：充分利用 Java 21 Virtual Threads 处理并发任务，减少显式线程池管理
@@ -429,11 +434,11 @@ task {
 ### 7.3 数据加密
 
 - **传输加密**：HTTPS / WSS (WebSocket Secure)
-- **存储加密**：本地模式（Phase 1）用 SQLite 加密扩展（SEE）；企业模式（远期）可选 AWS KMS 集成
+- **存储加密**：本地模式（Phase 1）对 LLM API Key 使用应用层 AES-256-GCM（见 ADR-006；非整库 SEE）；企业模式（远期）可选 AWS KMS / 整库加密
 
 ### 7.4 LLM 凭证管理（Phase 1）
 
-- **存储**：API Key 本地加密存储（SQLite SEE）
+- **存储**：API Key 本地加密存储（AES-256-GCM，`enc:v1:` 前缀；主密钥文件见 ADR-006）
 - **配置 UI**：设置页提供 Provider 选择（OpenAI / Anthropic / 本地 Ollama）、API Key 录入、默认模型、连接测试
 - **前置依赖**：M1.2 Agent 对话依赖此项完成
 
@@ -497,24 +502,24 @@ task {
 | 里程碑 | 功能 | 交付物 |
 |--------|------|--------|
 | M1.1 | Web 工作台 | 多面板布局、文件浏览、主题切换 |
-| M1.2 | Agent 对话（SSE 流式） | 聊天界面 + 工具调用可视化 + 推理过程展示 |
-| M1.3 | Workspace 隔离 | 项目创建/切换/删除、数据隔离 |
+| M1.2 | Agent 对话（SSE 流式） | 聊天界面 + 工具调用可视化（ProcessDetails；原生 thinking 事件后续） |
+| M1.3 | Workspace 隔离 | 项目创建/切换/删除、数据隔离（库级联 + 磁盘清盘） |
 | M1.4 | 记忆系统 | 记忆 CRUD、搜索、来源追溯 |
-| M1.5 | 文件操作（spring-ai-agent-utils） | 文件读写、上传下载、预览、版本历史 |
-| M1.6 | 终端（WebSocket） | Unix-like 命令执行、AI 辅助命令行 |
-| M1.7 | v0.1.0 发布 | Docker 镜像 + GitHub Release |
+| M1.5 | 文件操作（自研 FileTools） | 文件读写、上传下载、预览、版本历史 |
+| M1.6 | 终端（WebSocket） | 宿主 Shell（Windows=`cmd.exe`）+ 本地词典辅助命令行 |
+| M1.7 | v0.1.0 发布 | Docker 镜像 + RELEASE_NOTES；正式 GitHub Release/tag 可选 |
 
 ### Phase 2 — Harness 能力（2026 Q4）
 
 **目标**：企业级能力，多 Agent 协作。
 
-| 里程碑 | 功能 | 交付物 |
-|--------|------|--------|
-| M2.1 | 多 Agent 协作 | Planner/Implementer/Reviewer |
-| M2.2 | MCP 协议支持 | Agent 与系统标准化通信 |
-| M2.3 | Hook 安全网 | 幻觉检测、危险操作拦截 |
-| M2.4 | 成本仪表盘 | Token 统计、预算告警 |
-| M2.5 | v0.2.0 发布 | 企业功能可用 |
+| 里程碑 | 功能 | 交付物 | 状态（2026-07-18） |
+|--------|------|--------|-------------------|
+| M2.1 | 多 Agent 协作 | Planner/Implementer/Reviewer | ✅ DEV-PLAN Phase 6 |
+| M2.2 | MCP 协议支持 | Agent 与系统标准化通信（工具+资源列表；默认关闭） | ✅ DEV-PLAN Phase 7 |
+| M2.3 | Hook 安全网 | 危险操作拦截（审批）；幻觉检测后续 | ✅ DEV-PLAN Phase 5 |
+| M2.4 | 成本仪表盘 | Token 统计、预算告警/门禁 | ✅ DEV-PLAN Phase 8 |
+| M2.5 | v0.2.0 发布 | RELEASE_NOTES + Docker 定义；tag 可选 | ✅ 说明/版本收口；⏳ 本机 docker build 待补验 |
 
 ### Phase 3 — 自主与生态（2027 Q1-Q2）
 

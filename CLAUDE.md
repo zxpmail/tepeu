@@ -91,16 +91,24 @@ description: Comprehensive CLAUDE.md template — 通用行为规则 + 项目填
 所有版本锁定到精确 patch 版本。不要猜，不要 `latest`，不要范围。
 
 ```
-Runtime: [语言] [精确版本]
-Framework: [框架] [精确版本]
-Package Manager: [管理器] [精确版本]
-Database: [数据库] [精确版本]
+Runtime: Java 21
+Framework: Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18 + Vite 6 + Tailwind CSS 4
+Package Manager: Maven 3.9.x（backend）/ npm 11.x（frontend）
+Database: SQLite（WAL，JdbcTemplate）
 ```
 
 ## ✏️ 项目结构
 
 ```
-[填写项目目录树]
+backend/          Spring Boot 后端（Java 21）
+frontend/         Vite + React SPA
+docs/             文章与长文
+memory/           项目记忆与交接
+experiments/      ATE 等实验（非主线）
+Dockerfile        多阶段构建
+Product-Spec.md   产品规格
+DEV-PLAN.md       交付切片计划
+CONTEXT.md        进度快照
 ```
 
 规则：agent 生成的代码必须遵循上述结构。不得在列出的目录之外放置文件，除非先询问。
@@ -108,16 +116,16 @@ Database: [数据库] [精确版本]
 ## ✏️ 行为边界
 
 ### 绿灯（无需确认直接执行）
-- [变量命名、代码风格、测试、明显 bug 修复]
-- [文档更新、开发依赖变更]
+- 变量命名、代码风格、测试、明显 bug 修复
+- 文档更新、开发依赖变更
 
 ### 黄灯（执行前确认）
-- [外部依赖、数据库 schema 变更]
-- [核心业务逻辑、新路由、API 变更]
+- 外部依赖、数据库 schema 变更
+- 核心业务逻辑、新路由、API 变更
 
 ### 红灯（始终需明确批准）
-- [删除数据、force push、生产配置]
-- [认证/授权变更]
+- 删除数据、force push、生产配置
+- 认证/授权变更
 
 ## 跨客户端交接
 

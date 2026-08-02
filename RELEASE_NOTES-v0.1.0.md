@@ -92,13 +92,13 @@ cd frontend && npm run dev  # 开发模式（Vite HMR + 代理到 :30141）
 | # | 限制 | 影响 | 计划 |
 |---|------|------|------|
 | 1 | 单用户模式，无认证 | 本地机器可用，不支持多用户 | Phase 2 企业版 |
-| 2 | Shell / 写文件缺统一高危授权协议 | 已有 `write_file` / `run_command`，尚无 mandate 级二次确认与 kill switch | Phase 2 Hook（M2.3） |
+| 2 | ~~Shell / 写文件缺统一高危授权~~ | ~~已闭合（v0.2.0 Hook）~~ | 见 RELEASE_NOTES-v0.2.0 |
 | 3 | 部分网络环境无法直连公有 LLM | 需可访问的 API Key / 代理或本地 Ollama | — |
 | 4 | Spring AI 2.0 `ToolCallback` API deprecated | 工具可视化走 deprecated API，未来需迁移 | 跟进 Spring AI 更新 |
 | 5 | 尚无 git tag / GitHub Release | 源码在 GitHub，正式发版包未打 | 可选 `/release-builder` |
 | 6 | 前端无 toast 层 | 错误消息依赖内联显示 | 后续 |
 | 7 | 无 CI/CD | 手动构建和发布 | 后续 |
-| 8 | Workspace 累计 Token 未做满 | Spec §3.5 Phase 1 最小视图未达标；仅有会话级用量 | 补 workspace 累计，或并入 Spec Phase 2 M2.4 |
+| 8 | ~~Workspace 累计 Token~~ | ~~已闭合~~：`GET /api/workspace/:id/stats` + 顶栏/工作区列表 | 完整仪表盘仍属 Spec Phase 2 M2.4 |
 
 ---
 
@@ -106,18 +106,20 @@ cd frontend && npm run dev  # 开发模式（Vite HMR + 代理到 :30141）
 
 ### Spec Phase 2 — Harness 能力（v0.2.0）
 
+> **进度更新（2026-08-02）**：下列 M2.x 已在主线交付，详见 [RELEASE_NOTES-v0.2.0.md](./RELEASE_NOTES-v0.2.0.md)。下表保留 v0.1.0 冻结时的「规划」快照含义，状态栏已按现状校正。
+
 | 里程碑 | 功能 | 状态 |
 |--------|------|------|
-| M2.1 | 多 Agent 协作（Planner/Implementer/Reviewer） | ⏳ 规划 |
-| M2.2 | MCP 协议支持 | ⏳ 规划 |
-| M2.3 | Hook 安全网（幻觉检测、危险操作拦截） | ⏳ 规划 |
-| M2.4 | 成本仪表盘（Token 统计、预算告警） | ⏳ 规划 |
+| M2.1 | 多 Agent 协作（Planner/Implementer/Reviewer） | ✅ 见 v0.2.0 |
+| M2.2 | MCP 协议支持 | ✅ 见 v0.2.0 |
+| M2.3 | Hook 安全网（幻觉检测、危险操作拦截） | ✅ 见 v0.2.0 |
+| M2.4 | 成本仪表盘（Token 统计、预算告警） | ✅ 见 v0.2.0 |
 
 ### Spec Phase 3 — 自主与生态（v1.0.0）
 
 | 里程碑 | 功能 | 状态 |
 |--------|------|------|
-| M3.1 | 自主 Agent（定时运行、Hands 能力包） | ⏳ 规划 |
+| M3.1 | 自主 Agent（定时运行、Hands 能力包） | ✅ 定时调度已交（Hands 包未做） |
 | M3.2 | WASM+V8 运行时（轻量级 Agent 隔离） | ⏳ 规划 |
 | M3.3 | 应用市场（社区技能/工具分享） | ⏳ 规划 |
 | M3.4 | 多端适配（移动端响应式） | ⏳ 规划 |
@@ -154,10 +156,9 @@ cd frontend && npm run dev  # 开发模式（Vite HMR + 代理到 :30141）
 │  │  └────┬────────────┬──────────────┬────────────┘  │  │
 │  │       │            │              │               │  │
 │  │  ┌────▼────┐ ┌────▼────┐  ┌──────▼──────┐       │  │
-│  │  │ Memory  │ │ Skills  │  │ spring-ai-  │       │  │
-│  │  │ Manager │ │ Registry│  │ agent-utils │       │  │
-│  │  └─────────┘ └─────────┘  │ (File/Shell │       │  │
-│  │                           │  /Web 工具)  │       │  │
+│  │  │ Memory  │ │ Skills  │  │ FileTools / │       │  │
+│  │  │ Manager │ │ Registry│  │ ShellTools  │       │  │
+│  │  └─────────┘ └─────────┘  │ (@Tool)     │       │  │
 │  │                           └─────────────┘       │  │
 │  │                        │                        │  │
 │  │  ┌─────────────────────▼──────────────────────┐ │  │
@@ -177,8 +178,9 @@ cd frontend && npm run dev  # 开发模式（Vite HMR + 代理到 :30141）
 
 ### Assets
 
-- Docker image: `tepeu:v0.1.0`
-- Source code: [GitHub Repository](https://github.com/tepeu/tepeu)
+- Docker image（本地构建）: `docker build -t tepeu:v0.1.0 .`
+- Source code: [GitHub Repository](https://github.com/zxpmail/tepeu)
+- 正式 GitHub Release / tag：**尚未发布**（可选，见上文已知限制 #5）
 
 ### 升级说明
 
@@ -186,7 +188,7 @@ v0.1.0 是首个发布版本，无需从旧版本升级。
 
 ### 贡献
 
-欢迎贡献！请参阅项目 README 了解开发指南。
+欢迎贡献。开发入口见仓库根目录文档（`CONTEXT.md` / `Product-Spec.md` / `DEV-PLAN.md`）。
 
 ---
 

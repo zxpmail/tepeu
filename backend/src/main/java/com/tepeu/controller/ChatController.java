@@ -1,12 +1,17 @@
 package com.tepeu.controller;
 
 import com.tepeu.agent.AgentOrchestrator;
+import com.tepeu.agent.hook.HallucinationGuard;
 import com.tepeu.agent.tool.ToolEventEmitter;
 import com.tepeu.dto.ChatRequest;
 import com.tepeu.model.Message;
+import com.tepeu.service.BudgetService;
 import com.tepeu.service.IdempotencyService;
 import com.tepeu.service.SessionService;
 import com.tepeu.service.TaskService;
+import com.tepeu.service.TokenCostEstimator;
+import com.tepeu.service.ToolTraceCodec;
+import com.tepeu.service.WorkspacePathResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.metadata.Usage;
@@ -26,7 +31,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Streaming chat endpoint: {@code POST /api/chat/stream} → {@link SseEmitter}.
- * Emits token / tool_call / tool_result / file_changed / usage / final / error.
+ * Emits token / tool_call / tool_result / tool_approval_required / tool_denied /
+ * file_changed / usage / final / error.
  */
 @RestController
 @RequestMapping("/api/chat")
@@ -35,29 +41,33 @@ public class ChatController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
     private static final Long SSE_TIMEOUT_MS = 5L * 60 * 1000;
 
-    /** 粗略单价（USD / 1M tokens），未知 provider 时 cost 为 0 */
-    private static final Map<String, double[]> PRICE_PER_MILLION = Map.of(
-            "openai", new double[]{0.15, 0.60},
-            "anthropic", new double[]{0.80, 4.00},
-            "deepseek", new double[]{0.14, 0.28},
-            "ollama", new double[]{0.0, 0.0}
-    );
-
     private final AgentOrchestrator orchestrator;
     private final SessionService sessionService;
     private final TaskService taskService;
     private final IdempotencyService idempotencyService;
+    private final BudgetService budgetService;
+    private final TokenCostEstimator costEstimator;
+    private final HallucinationGuard hallucinationGuard;
+    private final WorkspacePathResolver pathResolver;
     private final ObjectMapper objectMapper;
 
     public ChatController(AgentOrchestrator orchestrator,
                           SessionService sessionService,
                           TaskService taskService,
                           IdempotencyService idempotencyService,
+                          BudgetService budgetService,
+                          TokenCostEstimator costEstimator,
+                          HallucinationGuard hallucinationGuard,
+                          WorkspacePathResolver pathResolver,
                           ObjectMapper objectMapper) {
         this.orchestrator = orchestrator;
         this.sessionService = sessionService;
         this.taskService = taskService;
         this.idempotencyService = idempotencyService;
+        this.budgetService = budgetService;
+        this.costEstimator = costEstimator;
+        this.hallucinationGuard = hallucinationGuard;
+        this.pathResolver = pathResolver;
         this.objectMapper = objectMapper;
     }
 
@@ -75,9 +85,25 @@ public class ChatController {
 
         String sessionId = req.getSessionId();
         String workspaceId = req.getWorkspaceId();
+
+        // 先解析 workspace，硬门禁通过后再建会话，避免空会话堆积
+        if ((workspaceId == null || workspaceId.isBlank())
+                && sessionId != null && !sessionId.isBlank()) {
+            var existingForBudget = sessionService.getSession(sessionId);
+            if (existingForBudget.isPresent()) {
+                workspaceId = existingForBudget.get().getWorkspaceId();
+            }
+        }
+        if (workspaceId != null && !workspaceId.isBlank() && budgetService.isBlocked(workspaceId)) {
+            sendErrorEvent(emitter, sendLock, "BUDGET_EXCEEDED",
+                    "工作区预算已用尽：请提高限额或关闭硬门禁后再试");
+            emitter.complete();
+            return emitter;
+        }
+
         if (sessionId == null || sessionId.isBlank()) {
             if (workspaceId == null || workspaceId.isBlank()) {
-                sendErrorEvent(emitter, sendLock, "VALIDATION_ERROR", "workspaceId is required when sessionId is absent");
+                sendErrorEvent(emitter, sendLock, "VALIDATION_ERROR", "新建对话需要指定工作区");
                 emitter.complete();
                 return emitter;
             }
@@ -85,12 +111,17 @@ public class ChatController {
         } else {
             var existing = sessionService.getSession(sessionId);
             if (existing.isEmpty()) {
-                sendErrorEvent(emitter, sendLock, "NOT_FOUND", "Session not found: " + sessionId);
+                sendErrorEvent(emitter, sendLock, "NOT_FOUND", "会话不存在：" + sessionId);
                 emitter.complete();
                 return emitter;
             }
             if (workspaceId == null || workspaceId.isBlank()) {
                 workspaceId = existing.get().getWorkspaceId();
+            } else if (!workspaceId.equals(existing.get().getWorkspaceId())) {
+                sendErrorEvent(emitter, sendLock, "WORKSPACE_MISMATCH",
+                        "会话不属于该工作区，请切换到正确工作区或新建对话");
+                emitter.complete();
+                return emitter;
             }
         }
         final String resolvedSessionId = sessionId;
@@ -102,7 +133,7 @@ public class ChatController {
         IdempotencyService.AcquireResult acquire = idempotencyService.tryAcquire(idemKey);
         if (acquire.status() == IdempotencyService.AcquireStatus.IN_PROGRESS) {
             sendErrorEvent(emitter, sendLock, "IDEMPOTENCY_IN_PROGRESS",
-                    "A request with the same idempotencyKey is already running");
+                    "相同请求正在处理中，请稍候");
             emitter.complete();
             return emitter;
         }
@@ -124,11 +155,15 @@ public class ChatController {
         final AtomicReference<Usage> lastUsage = new AtomicReference<>();
         final AtomicReference<String> lastModel = new AtomicReference<>();
 
-        final ToolEventEmitter toolEvents = ToolEventEmitter.forSse(emitter, sendLock, objectMapper);
+        final ToolEventEmitter sseTools = ToolEventEmitter.forSse(emitter, sendLock, objectMapper);
+        final ToolEventEmitter toolEvents = event -> {
+            sseTools.emit(event);
+            persistToolTrace(resolvedSessionId, event);
+        };
 
         reactor.core.publisher.Flux<ChatResponse> flux =
                 orchestrator.streamTurn(providerId, history, toolEvents, req.getFileRefs(),
-                        resolvedWorkspaceId, req.getSkillRefs());
+                        resolvedWorkspaceId, req.getSkillRefs(), resolvedSessionId);
 
         subscription.set(flux.subscribe(
                 chunk -> {
@@ -143,6 +178,7 @@ public class ChatController {
                     log.error("Chat stream failed provider={} session={}: {}",
                             providerId, resolvedSessionId, error.toString(), error);
                     idempotencyService.release(idemKey);
+                    persistPartialAssistant(resolvedSessionId, assistantText.toString());
                     String[] mapped = mapError(error);
                     sendErrorEvent(emitter, sendLock, mapped[0], mapped[1]);
                     emitter.complete();
@@ -159,6 +195,7 @@ public class ChatController {
                     idempotencyService.complete(idemKey, reply);
                     emitAndRecordUsage(emitter, sendLock, resolvedWorkspaceId, resolvedSessionId,
                             providerId, lastUsage.get(), lastModel.get());
+                    emitHallucinationWarnings(emitter, sendLock, resolvedWorkspaceId, reply);
                     sendEvent(emitter, sendLock, Map.of("type", "final"));
                     emitter.complete();
                 }
@@ -167,11 +204,59 @@ public class ChatController {
         emitter.onCompletion(() -> disposeQuietly(subscription.get()));
         emitter.onTimeout(() -> {
             disposeQuietly(subscription.get());
+            idempotencyService.release(idemKey);
+            persistPartialAssistant(resolvedSessionId, assistantText.toString());
+            sendErrorEvent(emitter, sendLock, "SSE_TIMEOUT", "对话超时（5 分钟），请重试");
             emitter.complete();
         });
-        emitter.onError(t -> disposeQuietly(subscription.get()));
+        emitter.onError(t -> {
+            disposeQuietly(subscription.get());
+            idempotencyService.release(idemKey);
+            persistPartialAssistant(resolvedSessionId, assistantText.toString());
+        });
 
         return emitter;
+    }
+
+    /** 持久化工具过程（system 行，刷新后可恢复卡片） */
+    private void persistToolTrace(String sessionId, Map<String, Object> event) {
+        String encoded = ToolTraceCodec.encode(event, objectMapper);
+        if (encoded == null) return;
+        try {
+            sessionService.appendMessage(sessionId, "system", encoded);
+        } catch (RuntimeException e) {
+            log.debug("Tool trace persist skipped: {}", e.getMessage());
+        }
+    }
+
+    /** 错误/超时时尽量保存已生成的助手片段 */
+    private void persistPartialAssistant(String sessionId, String reply) {
+        if (reply == null || reply.isBlank()) return;
+        try {
+            sessionService.appendMessage(sessionId, "assistant", reply + "\n\n（回复未完整结束）");
+        } catch (RuntimeException e) {
+            log.debug("Partial assistant persist skipped: {}", e.getMessage());
+        }
+    }
+
+    /** 扫描助手声称已写入但不存在的文件路径，发出幻觉警告。 */
+    private void emitHallucinationWarnings(
+            SseEmitter emitter, Object sendLock, String workspaceId, String reply) {
+        if (reply == null || reply.isBlank() || workspaceId == null) {
+            return;
+        }
+        try {
+            var missing = hallucinationGuard.findMissingClaimedPaths(
+                    reply, pathResolver.resolveBasePath(workspaceId));
+            if (!missing.isEmpty()) {
+                sendEvent(emitter, sendLock, Map.of(
+                        "type", "hallucination_warning",
+                        "message", "助手声称已写入但工作区中未找到的文件",
+                        "missingPaths", missing));
+            }
+        } catch (RuntimeException e) {
+            log.debug("Hallucination scan skipped: {}", e.getMessage());
+        }
     }
 
     /** 从 chunk metadata 捕获 usage（流式结束块通常才有完整数字） */
@@ -200,7 +285,7 @@ public class ChatController {
         int completion = usage != null && usage.getCompletionTokens() != null ? usage.getCompletionTokens() : 0;
         int total = usage != null && usage.getTotalTokens() != null
                 ? usage.getTotalTokens() : prompt + completion;
-        double cost = estimateCost(providerId, prompt, completion);
+        double cost = costEstimator.estimate(providerId, prompt, completion);
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("type", "usage");
@@ -220,23 +305,17 @@ public class ChatController {
         }
     }
 
-    private static double estimateCost(String providerId, int prompt, int completion) {
-        double[] price = PRICE_PER_MILLION.getOrDefault(
-                providerId == null ? "" : providerId.toLowerCase(),
-                new double[]{0.0, 0.0});
-        return (prompt * price[0] + completion * price[1]) / 1_000_000.0;
-    }
-
     private static String validate(ChatRequest req) {
-        if (req == null) return "Request body is required";
-        if (req.getMessage() == null || req.getMessage().isBlank()) return "message is required";
-        if (req.getProvider() == null || req.getProvider().isBlank()) return "provider is required";
+        if (req == null) return "请求体不能为空";
+        if (req.getMessage() == null || req.getMessage().isBlank()) return "请输入消息";
+        if (req.getProvider() == null || req.getProvider().isBlank()) return "请选择模型服务商";
         return null;
     }
 
     private static String deriveTitle(String message) {
-        if (message == null) return "New Chat";
+        if (message == null) return "新对话";
         String oneLine = message.replaceAll("\\s+", " ").trim();
+        if (oneLine.isEmpty()) return "新对话";
         return oneLine.length() <= 40 ? oneLine : oneLine.substring(0, 40) + "…";
     }
 
@@ -258,7 +337,7 @@ public class ChatController {
                 return classified;
             }
         }
-        return new String[]{"CHAT_ERROR", "Chat request failed"};
+        return new String[]{"CHAT_ERROR", "对话请求失败"};
     }
 
     private static boolean isKnownCode(String code) {
@@ -271,13 +350,13 @@ public class ChatController {
 
     private static String describe(String code) {
         return switch (code) {
-            case "UNKNOWN_PROVIDER" -> "Unknown provider";
-            case "UNSUPPORTED_PROVIDER" -> "Provider is not supported";
-            case "PROVIDER_DISABLED" -> "Provider is disabled";
-            case "MISSING_API_KEY" -> "Provider API key is not configured";
-            case "MISSING_MODEL" -> "Provider model is not configured";
-            case "API_KEY_LOOKS_LIKE_URL" -> "API Key was saved as a URL; paste the real key into API Key field";
-            default -> "Chat request failed";
+            case "UNKNOWN_PROVIDER" -> "未知服务商";
+            case "UNSUPPORTED_PROVIDER" -> "不支持的服务商";
+            case "PROVIDER_DISABLED" -> "服务商未启用";
+            case "MISSING_API_KEY" -> "尚未配置 API Key";
+            case "MISSING_MODEL" -> "尚未配置默认模型";
+            case "API_KEY_LOOKS_LIKE_URL" -> "API Key 被存成了网址，请重新粘贴真正的密钥";
+            default -> "对话请求失败";
         };
     }
 
@@ -290,25 +369,25 @@ public class ChatController {
         if (blob.contains("401") || blob.contains("unauthorized")
                 || blob.contains("authentication") || blob.contains("invalid api key")
                 || blob.contains("incorrect api key")) {
-            return new String[]{"AUTH_FAILED", "API key invalid or unauthorized"};
+            return new String[]{"AUTH_FAILED", "API Key 无效或未授权"};
         }
         if (blob.contains("403") || blob.contains("forbidden") || blob.contains("not allowed")) {
-            return new String[]{"FORBIDDEN", "Provider refused the request (403)"};
+            return new String[]{"FORBIDDEN", "服务商拒绝了请求（403）"};
         }
         if (blob.contains("404") && blob.contains("model")) {
-            return new String[]{"MODEL_NOT_FOUND", "Configured model was not found"};
+            return new String[]{"MODEL_NOT_FOUND", "配置的模型不存在"};
         }
         if (blob.contains("model") && (blob.contains("not found") || blob.contains("does not exist")
                 || blob.contains("does not support"))) {
-            return new String[]{"MODEL_NOT_FOUND", "Configured model was not found"};
+            return new String[]{"MODEL_NOT_FOUND", "配置的模型不存在"};
         }
         if (blob.contains("connection refused") || blob.contains("timed out")
                 || blob.contains("timeout") || blob.contains("unknown host")
                 || blob.contains("failed to connect")) {
-            return new String[]{"NETWORK_ERROR", "Cannot reach the provider endpoint"};
+            return new String[]{"NETWORK_ERROR", "无法连接服务商，请检查网络或 Base URL"};
         }
         if (blob.contains("credential source must be specified")) {
-            return new String[]{"PROVIDER_MISCONFIGURED", "Provider client is missing credentials"};
+            return new String[]{"PROVIDER_MISCONFIGURED", "服务商凭证配置不完整"};
         }
         return null;
     }

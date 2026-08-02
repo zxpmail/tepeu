@@ -3,11 +3,11 @@
 ## Tech Stack
 - **Runtime**: Java 21 (virtual threads)
 - **Backend**: Spring Boot 4.0+ + Spring AI 2.0.0 GA
-- **Agent tools**: spring-ai-agent-utils 0.10.0 (community, org.springaicommunity)
+- **Agent tools**: 自研细粒度 `*Tool`（`@Tool`；未接 agent-utils）
 - **Database**: SQLite (WAL mode)
 - **Frontend**: React 18 + TypeScript 5 + Tailwind CSS 4 + Vite 6
 - **Build**: Maven 3.9 (backend) + npm (frontend)
-- **Deploy**: Docker multi-stage, single JAR
+- **Deploy**: Docker multi-stage, single JAR；应用版本 **0.2.0**（Harness）
 
 ## Architecture
 - Monorepo: `backend/` (Spring Boot) + `frontend/` (Vite/React)
@@ -21,10 +21,14 @@
 ## 对话 / 工具运行时（DEV-PLAN「对话」切片，勿称 Spec Phase 2）
 - **Chat 链路**：`ChatController` → `AgentOrchestrator` → `ChatService` / `ChatModelFactory`（DB 解密 key → Spring AI `ChatModel`）。SSE `message`：`token|final|error` + 工具事件。
 - **会话**：`session` + `message`；`useChat` 用 fetch+ReadableStream（非 EventSource）。
-- **工具**：`ToolRegistry` + `FileTools`（含 `write_file`）+ `ShellTools`（`run_command`）；可视化装饰器仍走 deprecated `ToolCallback...`（ADR-007）。
+- **工具（Phase 11）**：`ToolRegistry` + `ListDirTool`/`ReadFileTool`/`WriteFileTool`/`SearchFileTool`/`RunCommandTool`/`ReadOutputTool` 各自独立注册；`CommandOutputStore` 供同轮续读命令输出。可视化装饰器仍走 deprecated `ToolCallback...`（ADR-007）。SSE `toolKind`：`file_list`/`file_read`/`file_write`/`file_search`/`shell`/`shell_output`/`mcp`/`other`。共享基类 `WorkspaceBoundTool` 处理 workspace 绑定与路径安全解析。
 - **testConnection**：在 `ChatService`（避与 `ChatModelFactory` 循环依赖，ADR-007）。
-- **成本**：会话级用量已有；**workspace 累计**未做（Spec §3.5 缺口）。
-- **高危授权 / Hook / 多 Agent / MCP**：Product-Spec **§9 Phase 2**（Harness），见 ADR-008。
+- **成本**：会话级 + **workspace 累计**（`GET /api/workspace/:id/stats`，顶栏/工作区列表）；完整仪表盘属 Spec Phase 2 M2.4。
+- **Hook（Phase 5 / M2.3）**：`HookingToolCallback`；按 `toolKind` 审批（`shell`/`mcp`/`file_delete` 需批；`file_write`/`shell_output` 免批）；同会话同工具+参数授权；`HostChannelGuard` 覆盖 REST/终端；`HallucinationGuard`；本机实例令牌 `X-Tepeu-Token`；`ApprovalStore.enableAutonomous` 供自主调度免人工批。
+- **自主调度（Phase 10）**：`ScheduleService` ticker；卡死 RUNNING 超时恢复；用量经 `TokenCostEstimator` 入 task；空回复状态 `EMPTY`。
+- **多 Agent（Phase 6 / M2.1）**：`MultiAgentOrchestrator` 三角色流水线 + `Goal`；`POST /api/multi-agent/stream`；`MultiAgentView`。
+- **MCP（Phase 7 / M2.2）**：`McpToolBridge` 并入 ChatService；工具名 `mcp_*`；默认 `spring.ai.mcp.client.enabled=false`；`GET /api/mcp/status`。
+- **成本（Phase 8 / M2.4）**：`workspace_budget` + `BudgetService`；告警阈值 + 可选硬门禁；`CostDashboardView`；超预算阻断 chat/multi-agent。
 
 ## 外部参照（权威在 ADR）
 - ADR-008（Vibe-Trading）· ADR-009（ATE 裁切）— 细节勿在此重复。

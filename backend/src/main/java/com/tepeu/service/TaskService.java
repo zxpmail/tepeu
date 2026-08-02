@@ -33,6 +33,9 @@ public class TaskService {
             int messageCount,
             int maxHistoryMessages) {}
 
+    /** 工作区累计用量（Spec §3.5 Phase 1 最小视图）。 */
+    public record WorkspaceStats(long totalTokens, double totalCostUsd, int turnCount) {}
+
     /** 记录一次完成的对话回合（prompt+completion token 合计写入 tokens_used）。 */
     public Task recordTurn(
             String workspaceId,
@@ -65,5 +68,11 @@ public class TaskService {
                 agg.turnCount(),
                 messageCount,
                 MAX_HISTORY_MESSAGES);
+    }
+
+    /** 聚合工作区累计 token/费用/回合数。 */
+    public WorkspaceStats getWorkspaceStats(String workspaceId) {
+        TaskRepository.WorkspaceTokenStats agg = taskRepository.findWorkspaceStats(workspaceId);
+        return new WorkspaceStats(agg.totalTokens(), agg.totalCostUsd(), agg.turnCount());
     }
 }

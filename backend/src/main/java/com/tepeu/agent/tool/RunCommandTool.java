@@ -20,15 +20,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
- * 智能体 Shell 工具 — 在当前绑定工作区目录执行命令（改代码后可编译/测试/运行）。
- * 关联：WorkspacePathResolver、AgentOrchestrator、ChatService、FileTools。
- *
- * <p>与人工 WebSocket 终端独立；Agent 不经终端面板，直接 ProcessBuilder。
+ * Agent 工具 — 在当前绑定工作区目录执行 Shell 命令。
+ * 工具名 {@code run_command}；完整输出按会话写入 {@link CommandOutputStore}，
+ * 模型即时回传有上限，超出部分用 {@link ReadOutputTool} 续读。
  */
 @Component
-public class ShellTools {
+public class RunCommandTool extends WorkspaceBoundTool {
 
-    private static final Logger log = LoggerFactory.getLogger(ShellTools.class);
+    private static final Logger log = LoggerFactory.getLogger(RunCommandTool.class);
 
     /** 默认超时（秒） */
     static final int DEFAULT_TIMEOUT_SEC = 60;
@@ -36,81 +35,70 @@ public class ShellTools {
     static final int MAX_TIMEOUT_SEC = 300;
     /** 回传模型的输出上限（字节，合并 stdout+stderr） */
     static final int MAX_OUTPUT_BYTES = 32 * 1024;
+    /** 采集并缓存的上限（字节），供 read_output 续读 */
+    static final int MAX_STORE_BYTES = CommandOutputStore.MAX_STORED_CHARS;
 
     /** 明显危险操作的简单拦截（不追求完美，只挡常见误伤） */
     private static final Pattern DENY = Pattern.compile(
             "(?i)(\\bformat\\s+[a-z]:|\\bshutdown\\b|\\bdel\\s+/[sf]|\\brmdir\\s+/s|\\brm\\s+-rf\\s+/|"
                     + ":\\s*\\(\\s*\\)\\s*\\{|\\bmkfs\\b|\\bdiskpart\\b)");
 
-    private final WorkspacePathResolver pathResolver;
-    private final Path fixedBasePath;
-    private final AtomicReference<Path> activeBasePath = new AtomicReference<>();
+    private final CommandOutputStore outputStore;
+    private final AtomicReference<String> activeSessionId = new AtomicReference<>();
 
     @Autowired
-    public ShellTools(WorkspacePathResolver pathResolver) {
-        this.pathResolver = pathResolver;
-        this.fixedBasePath = null;
+    public RunCommandTool(WorkspacePathResolver pathResolver, CommandOutputStore outputStore) {
+        super(pathResolver);
+        this.outputStore = outputStore;
     }
 
     /** 测试缝：固定 cwd */
-    ShellTools(Path basePath) {
-        this.pathResolver = null;
-        this.fixedBasePath = basePath.toAbsolutePath().normalize();
+    RunCommandTool(Path basePath) {
+        this(basePath, new CommandOutputStore());
+    }
+
+    RunCommandTool(Path basePath, CommandOutputStore outputStore) {
+        super(basePath);
+        this.outputStore = outputStore;
     }
 
     /** 跨包单测工厂 */
-    public static ShellTools forTests(Path basePath) {
-        return new ShellTools(basePath);
+    public static RunCommandTool forTests(Path basePath) {
+        return new RunCommandTool(basePath);
     }
 
-    /** 与 FileTools 同步：本轮对话绑定工作区根目录 */
-    public void bindWorkspace(String workspaceId) {
-        if (fixedBasePath != null) {
-            activeBasePath.set(fixedBasePath);
-            return;
-        }
-        if (workspaceId == null || workspaceId.isBlank()) {
-            activeBasePath.set(null);
-            log.warn("ShellTools.bindWorkspace: workspaceId 为空");
-            return;
-        }
-        Path base = pathResolver.resolveBasePath(workspaceId);
-        activeBasePath.set(base);
-        log.debug("ShellTools 已绑定 workspaceId={} → {}", workspaceId, base);
+    /** 供单测注入共享输出缓存 */
+    public static RunCommandTool forTests(Path basePath, CommandOutputStore outputStore) {
+        return new RunCommandTool(basePath, outputStore);
     }
 
-    public void unbindWorkspace() {
-        activeBasePath.set(null);
+    /** 本轮对话绑定会话 id，并清空该会话旧输出 */
+    public void bindSession(String sessionId) {
+        activeSessionId.set(sessionId);
+        outputStore.clear(sessionId);
     }
 
-    Path currentBasePath() {
-        if (fixedBasePath != null) {
-            return fixedBasePath;
-        }
-        Path bound = activeBasePath.get();
-        if (bound != null) {
-            return bound;
-        }
-        log.warn("ShellTools 在未 bindWorkspace 时被调用，回退到默认工作区根目录");
-        return pathResolver.resolveBasePath(null);
+    public void unbindSession() {
+        activeSessionId.set(null);
     }
 
     @Tool(name = "run_command", description =
             "Run a shell command inside the current workspace directory and return exit code plus output. "
                     + "Use after writing or editing code to compile, test, or run programs "
                     + "(e.g. `mvn test`, `npm test`, `python main.py`, `dir`). "
-                    + "Working directory is the workspace root. Prefer short commands; output is capped.")
+                    + "Working directory is the workspace root. Immediate output is capped at ~32KB; "
+                    + "use read_output to fetch later slices of longer output.")
     public String runCommand(
             @ToolParam(description = "Shell command to run in the workspace root.")
             String command,
             @ToolParam(description = "Optional timeout in seconds (default 60, max 300). Omit to use 60.")
             Integer timeoutSec) {
         if (command == null || command.isBlank()) {
-            return "ERROR: empty command";
+            return storeAndReturnToModel("", "ERROR: empty command");
         }
         String trimmed = command.trim();
         if (DENY.matcher(trimmed).find()) {
-            return "ERROR: command blocked by safety policy";
+            return storeAndReturnToModel(trimmed, "ERROR: command blocked by safety policy");
         }
         int timeout = timeoutSec == null ? DEFAULT_TIMEOUT_SEC : timeoutSec;
         if (timeout < 1) timeout = 1;
@@ -126,34 +114,54 @@ public class ShellTools {
         try {
             process = pb.start();
             ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            Thread reader = drainAsync(process.getInputStream(), buf);
+            Thread reader = drainAsync(process.getInputStream(), buf, MAX_STORE_BYTES);
             boolean finished = process.waitFor(timeout, TimeUnit.SECONDS);
             if (!finished) {
                 process.destroyForcibly();
                 reader.join(2000);
                 String partial = decodeOutput(buf.toByteArray());
-                return "ERROR: timed out after " + timeout + "s\n--- output so far ---\n" + partial;
+                String full = "ERROR: timed out after " + timeout + "s\n--- output so far ---\n" + partial;
+                return storeAndReturnToModel(trimmed, full);
             }
             reader.join(5000);
             int exit = process.exitValue();
-            String out = decodeOutput(buf.toByteArray());
-            boolean truncated = buf.size() >= MAX_OUTPUT_BYTES;
-            StringBuilder sb = new StringBuilder();
-            sb.append("exit_code=").append(exit).append('\n');
-            if (truncated) {
-                sb.append("[output truncated to ").append(MAX_OUTPUT_BYTES).append(" bytes]\n");
+            String fullOut = decodeOutput(buf.toByteArray());
+            boolean storeCapped = buf.size() >= MAX_STORE_BYTES;
+            StringBuilder stored = new StringBuilder();
+            stored.append("exit_code=").append(exit).append('\n');
+            if (storeCapped) {
+                stored.append("[stored output truncated to ").append(MAX_STORE_BYTES).append(" bytes]\n");
             }
-            sb.append(out);
-            return sb.toString();
+            stored.append(fullOut);
+            return storeAndReturnToModel(trimmed, stored.toString());
         } catch (IOException e) {
-            return "ERROR: failed to start process: " + e.getMessage();
+            return storeAndReturnToModel(trimmed, "ERROR: failed to start process: " + e.getMessage());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             if (process != null) {
                 process.destroyForcibly();
             }
-            return "ERROR: interrupted while waiting for command";
+            return storeAndReturnToModel(trimmed, "ERROR: interrupted while waiting for command");
         }
+    }
+
+    /**
+     * 完整结果写入会话缓存；返回给模型的副本可能截断，并提示用 read_output。
+     */
+    private String storeAndReturnToModel(String command, String fullResult) {
+        // 优先 ThreadLocal（Hook 执行线程）；否则用 bindSession 的回退值（单测）
+        String sid = CommandOutputStore.currentKey();
+        if (CommandOutputStore.ANON_KEY.equals(sid) && activeSessionId.get() != null) {
+            sid = activeSessionId.get();
+        }
+        outputStore.put(sid, command, fullResult);
+        if (fullResult.length() <= MAX_OUTPUT_BYTES) {
+            return fullResult;
+        }
+        String head = fullResult.substring(0, MAX_OUTPUT_BYTES);
+        return head + "\n...[truncated for model: showing first " + MAX_OUTPUT_BYTES
+                + " of " + fullResult.length()
+                + " chars; call read_output with offset=" + MAX_OUTPUT_BYTES + " for more]";
     }
 
     /** Windows → cmd /c；其它 → sh -c */
@@ -165,23 +173,21 @@ public class ShellTools {
         return new String[]{"sh", "-c", command};
     }
 
-    private static Thread drainAsync(InputStream in, ByteArrayOutputStream buf) {
+    private static Thread drainAsync(InputStream in, ByteArrayOutputStream buf, int maxBytes) {
         Thread t = new Thread(() -> {
             byte[] chunk = new byte[4096];
             try {
                 int n;
                 while ((n = in.read(chunk)) >= 0) {
                     synchronized (buf) {
-                        int room = MAX_OUTPUT_BYTES - buf.size();
+                        int room = maxBytes - buf.size();
                         if (room <= 0) {
-                            // 读尽但不再写入，避免塞满管道
                             continue;
                         }
                         buf.write(chunk, 0, Math.min(n, room));
                     }
                 }
             } catch (IOException ignored) {
-                // 进程结束时流关闭属正常
             }
         }, "tepeu-shell-drain");
         t.setDaemon(true);
@@ -204,7 +210,7 @@ public class ShellTools {
     private static int countReplacement(String s) {
         int n = 0;
         for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '\uFFFD') n++;
+            if (s.charAt(i) == '�') n++;
         }
         return n;
     }

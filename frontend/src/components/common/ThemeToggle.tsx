@@ -16,6 +16,8 @@ export default function ThemeToggle({ theme, onToggle }: ThemeToggleProps) {
 
   return (
     <button
+      type="button"
+      data-testid="theme-toggle"
       onClick={cycle}
       className="text-sm px-2 py-1 rounded hover:opacity-80"
       style={{ color: 'var(--color-text-secondary)' }}

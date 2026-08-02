@@ -4,9 +4,11 @@
 > A new session should read this file first to understand the project status before continuing development.
 
 > **命名注意（避免与 Product-Spec 混淆）**  
-> - **本文件 Phase 1–4** = v0.1.0 **交付切片**（骨架 → 对话 → 记忆/终端 → 发布）。  
-> - **Product-Spec §9 Phase 1–3** = **产品里程碑**（Phase 1≈v0.1 个人底座；Phase 2=Harness / 多 Agent·Hook·MCP；Phase 3=自主与生态）。  
-> 下文「远期 Phase」对应的是 **Spec §9 Phase 2/3**，不是本文件已完成的「Phase 2 对话」。
+> - **本文件 Phase 1–4** = v0.1.0 **交付切片**（骨架 → 对话 → 记忆/终端 → 发布）。**已完成。**  
+> - **本文件 Phase 5–9** = Product-Spec §9 **Phase 2（Harness / v0.2.0）** 交付切片（Hook → 多 Agent → MCP → 成本 → 发布）。**已完成。**  
+> - **本文件 Phase 10–18** = Product-Spec §9 **Phase 3（自主与生态 / v0.3→v1.0）** 交付切片（见下）。**Phase 10–11 已完成；下一刀 Phase 12（fs-notify）。**  
+> - **Product-Spec §9 Phase 1–3** = **产品里程碑**（Phase 1≈v0.1；Phase 2=Harness；Phase 3=自主与生态）。  
+> 勿将本文件「Phase 2 对话」与 Spec §9 Phase 2（Harness）混称。
 
 ---
 
@@ -14,54 +16,41 @@
 
 **Difficulty**: 🟡 中
 **Nature**: Backend + UI
+**Status**: ✅ 完成（FileTree、switch API、FTS5 记忆检索、加密/异常/REST 删除收口）
 
 **Deliverables**:
 - Spring Boot 4.0 + Java 21（虚线程）后端项目初始化（Maven，pom.xml）
-- SQLite 数据库（WAL 模式），全部数据表：workspace、session、memory、task（含 outcome）、file_version
+- SQLite 数据库（WAL 模式），全部数据表：workspace、session、memory、task（含 outcome）、file_version；`memory_fts`（FTS5）
 - Spring AI 2.0.0 GA 集成 + LLM Provider 凭证管理（§7.4：API Key 本地加密存储）
-- agent-utils 依赖集成（spring-ai-agent-utils 0.10.0，工具适配层）
-- 统一错误响应 `{code, message, details}` + SSE error event 骨架
+- Agent 工具：自研细粒度 `*Tool`（`@Tool` 适配层）
+- 统一错误响应 `{code, message, details}`（中文友好）+ SSE error event 骨架
 - Vite + React 18 + TypeScript 5 + Tailwind CSS 4 前端项目初始化
 - 多面板布局（标题栏 + 左侧 sidebar + 主内容区 + 右侧面板）
 - 主题切换（深色/浅色，跟随系统）
-- Workspace CRUD 全栈（REST API + UI：创建、列表、切换、删除）
-- 文件浏览器面板（目录树 + 文件列表，基于文件操作 API）
+- Workspace CRUD 全栈（REST API + UI：创建、列表、`POST /switch` 切换、删除）
+- 文件浏览器：可展开 `FileTree` + 文件列表；REST 删除沙箱免批；二进制 `/read` 明确错误
 - 开发模式 Vite 代理到后端；生产构建输出到 `resources/static/`
-- 状态管理框架（Netty EventLoop 模式：dispatch→统一调度器→state）
+- 状态管理：React `useState`（hooks 局部）+ props（EventLoop 计划已退役，见 ADR-003）
 
 **Key Files**:
-- `src/main/java/com/tepeu/TepeuApplication.java` — 应用入口
-- `src/main/java/com/tepeu/config/` — 数据源、LLM Provider、WebSocket 配置
-- `src/main/java/com/tepeu/model/` — Entity（Workspace, Session, Memory, Task, FileVersion）
-- `src/main/java/com/tepeu/repository/` — SQLite Repository 层
-- `src/main/java/com/tepeu/service/` — WorkspaceService, MemoryService, FileService（骨架）
-- `src/main/java/com/tepeu/controller/` — REST 端点（workspace, memory, files 骨架）
-- `src/main/java/com/tepeu/dto/` — Request/Response DTO，统一错误格式
-- `src/main/java/com/tepeu/agent/` — Agent Orchestrator 骨架 + LLM Provider 管理
-- `src/main/resources/application.yml` — Spring Boot 配置
-- `pom.xml` — 依赖管理
-- `frontend/package.json` — 前端依赖
-- `frontend/vite.config.ts` — Vite 配置 + 代理设置
-- `frontend/src/main.tsx` — 应用入口
-- `frontend/src/App.tsx` — 根组件 + 路由
-- `frontend/src/components/layout/` — AppShell, TitleBar, Sidebar, PanelContainer
-- `frontend/src/components/views/WorkspaceView.tsx` — Workspace 管理页
-- `frontend/src/components/views/FileBrowserView.tsx` — 文件浏览页
-- `frontend/src/components/common/` — ThemeToggle, FileTree, Panel
-- `frontend/src/api/` — API 客户端（fetch 封装）
-- `frontend/src/store/` — 状态管理（EventLoop 模式）
-- `frontend/src/hooks/` — useWorkspace, useTheme, useFileBrowser
-- `frontend/src/styles/index.css` — Tailwind 4 语义色值（CSS-first 配置，经 `@tailwindcss/vite` 插件，无 tailwind.config）
+- `backend/src/main/java/com/tepeu/TepeuApplication.java` — 应用入口
+- `backend/src/main/java/com/tepeu/config/` — DatabaseConfig（含 FTS）、GlobalExceptionHandler
+- `backend/src/main/java/com/tepeu/model/` — Entity（Workspace, Session, Memory, Task, FileVersion）
+- `backend/src/main/java/com/tepeu/repository/MemoryRepository.java` — FTS5 + LIKE 回退
+- `backend/src/main/java/com/tepeu/service/CryptoService.java` / WorkspaceService / MemoryService
+- `backend/src/main/java/com/tepeu/controller/` — workspace、memory（含 GET 列表）、files
+- `frontend/src/components/common/FileTree.tsx` — 可展开目录树
+- `frontend/src/components/layout/` — IdeShell, SessionSidebar
+- `frontend/src/components/views/WorkspaceView.tsx` / `FileBrowserView.tsx`
+- `frontend/src/hooks/useWorkspace.ts` — `switchWorkspace` 接后端
+- `frontend/src/api/client.ts` / `styles/index.css`
 
 **Acceptance Criteria**:
-- `mvn spring-boot:run` 启动成功，SQLite 自动建表，后端 API 可用
-- 浏览器打开 `http://localhost:30141` 显示多面板布局
-- 深色/浅色主题切换工作
-- 创建 Workspace → 出现在列表 → 切换 → 删除，全栈可用
-- 文件浏览器列出当前 workspace 目录文件
-- `curl POST /api/memory` + `curl POST /api/memory/search` 正常
-- LLM API Key 加密存储到 SQLite，可读回
-- 统一错误响应在 400/404 时返回
+- ✅ `mvn spring-boot:run` 启动成功，SQLite 自动建表，后端 API 可用
+- ✅ 浏览器多面板布局；深色/浅色主题
+- ✅ 创建 Workspace → 列表 → `switch` 切换 → 删除
+- ✅ FileTree + 文件列表；记忆 GET/POST search（FTS，失败 LIKE）
+- ✅ LLM API Key 加密往返；统一错误 400/404；`mvn test` + `npm run typecheck`
 
 **Primary metric**:
 - `cd frontend && npm run build && cd ../backend && mvn -q test` exit 0 + 浏览器可见多面板布局
@@ -74,39 +63,36 @@
 
 **Difficulty**: 🔴 高
 **Nature**: Backend + UI
+**Status**: ✅ 完成（工具过程可刷新回放、delete_file、超时提示、Ollama/草稿测连、中文错误、幂等键）
 
 **Deliverables**:
-- SSE 流式聊天 API（`POST /api/chat/stream`）：Agent Orchestrator 执行 Plan→Tool Call→Observe→Loop
-- 多模型支持：OpenAI、Anthropic、本地 Ollama（通过 Spring AI 2.0）
-- 工具调用集成：spring-ai-agent-utils（FileTool, ShellTool, WebTool）
-- 推理过程展示：思考步骤 → 工具选择 → 工具结果 → 最终回答
-- Chat UI：消息列表、流式逐 Token 渲染、工具调用可视化卡片
-- LLM Provider 配置 UI（API Key 填写、模型选择、连接测试）
-- Session 管理 UI（对话列表、新建、切换），数据持久化到 session 表
-- 首次 LLM Key 配置引导
+- SSE 流式聊天 API（`POST /api/chat/stream`）：Agent Orchestrator + 工具循环
+- 多模型：OpenAI、Anthropic、Ollama、DeepSeek（Spring AI 2.0）
+- 细粒度 `*Tool`（含 `delete_file`）+ ToolEventEmittingCallback + toolKind
+- 工具过程：ProcessDetails 折叠；工具事件持久化为 `TEPEU_TOOL_V1` system 行，刷新可回放
+- Chat UI：流式 Token、工具卡片；原生 model thinking 仍属后续
+- Provider 配置：Key/模型/连接测试（支持草稿凭证；Ollama 可无密钥）
+- Session：侧栏列表 + 新建/切换；消息持久化
+- 首次 LLM Key 引导（SetupWizard）
 
 **Key Files**:
-- `src/main/java/com/tepeu/controller/ChatController.java` — SSE 流式端点
-- `src/main/java/com/tepeu/agent/AgentOrchestrator.java` — Plan→Tool→Observe→Loop 循环
-- `src/main/java/com/tepeu/agent/tools/` — 工具适配层（FileTool, ShellTool, WebTool）
-- `src/main/java/com/tepeu/service/` — ChatService, SessionService
-- `frontend/src/components/views/ChatView.tsx` — 对话主视图
-- `frontend/src/components/chat/` — MessageList, MessageBubble, StreamRenderer, ToolCallCard, ReasoningDisplay
-- `frontend/src/components/views/ProviderSettingsView.tsx` — LLM 配置页
-- `frontend/src/components/views/SessionListView.tsx` — 会话列表
-- `frontend/src/hooks/useChat.ts` — SSE 流式状态管理
-- `frontend/src/hooks/useSessions.ts` — 会话 CRUD
+- `backend/.../ChatController.java` / `AgentOrchestrator.java` / `agent/tool/*`
+- `backend/.../service/chat/ChatService.java` / `SessionService.java` / `ToolTraceCodec.java`
+- `frontend/src/components/views/ChatView.tsx` / `ProviderSettingsView.tsx`
+- `frontend/src/components/layout/SessionSidebar.tsx`
+- `frontend/src/hooks/useChat.ts` / `components/chat/ProcessDetails.tsx`
 
 **Acceptance Criteria**:
-- Provider 设置页填入 OpenAI API Key → 连接测试成功
-- 新建对话 → 发送消息 → SSE 流式显示 Agent 回复（思考 + 工具调用 + 回答）
-- 工具调用结果显示（如创建文件后显示文件内容）
-- 切换模型（OpenAI ↔ Anthropic ↔ Ollama）后对话正常
-- 对话历史持久化，刷新页面后恢复
-- 输入"删除这个文件" → Agent 调用文件工具删除并告知结果
+- ✅ Provider 页保存 Key → 连接测试（可用表单草稿）
+- ✅ 新建对话 → SSE 流式：工具过程 + 最终回答（ProcessDetails；非原生 thinking）
+- ✅ write_file 结果含内容预览；刷新后工具卡片可恢复
+- ✅ 切换 OpenAI/Anthropic/Ollama 可用；Ollama 无密钥可保存
+- ✅ session/workspace 不一致时拒绝；超时/中断有中文提示并可落部分回复
+- ✅ `delete_file` 工具（需审批）满足删除验收
+- ✅ 前端发送 `idempotencyKey`；`mvn test` + `npm run typecheck`
 
 **Primary metric**:
-- `cd backend && mvn -q test && cd ../frontend && npm run typecheck` exit 0 + 端到端 SSE 流式对话可用
+- 单测/类型检查绿 + 端到端 SSE 对话可用
 
 **Behavior**: 🔴 高（SSE 流式 + 工具循环较复杂，每段代码后自我评审，动刀甚微）
 
@@ -116,39 +102,36 @@
 
 **Difficulty**: 🟡 中
 **Nature**: Backend + UI
+**Status**: ✅ 完成（workspaceId 贯通、图片 raw、版本 DIFF、侧栏文件入口、AI 错误解释；Windows cmd）
 
 **Deliverables**:
-- 记忆管理面板：搜索（全文检索）、浏览、编辑、删除、来源追溯（memory.source 字段）
-- 记忆标签过滤（tags JSON array → tag filter，按 workspace 过滤）
-- 文件预览：文本/代码语法高亮、Markdown 渲染、图片预览
-- 文件版本历史：版本列表、回滚、差异对比（file_version 表）
-- 拖拽上传：前端 drag-drop → /api/files/upload
-- WebSocket 终端 UI：xterm.js 集成（/api/terminal/ws）
-- AI 辅助命令行：自然语言 → Shell 命令翻译、错误解释
+- 记忆管理面板：搜索（FTS5，失败回退 LIKE）、浏览、编辑、删除、来源追溯（memory.source）
+- 记忆标签过滤（tags → tag filter，按 workspace 过滤）
+- 文件预览：语法高亮（含 yaml）、Markdown、图片（`/api/files/raw`）、PPTX
+- 文件版本历史：列表、回滚、与当前文件 DIFF（`FileDiff` + `VersionPanel`）
+- 拖拽上传：`FileBrowserView` → `/api/files/upload`（带 workspaceId）
+- WebSocket 终端 UI：xterm.js（`/api/terminal/ws`）
+- AI 辅助命令行：NL → Windows 命令词典；常见错误白话解释
 
 **Key Files**:
-- `frontend/src/components/views/MemoryView.tsx` — 记忆面板
-- `frontend/src/components/memory/` — MemorySearch, MemoryCard, MemoryEditor, SourceTrace
-- `src/main/java/com/tepeu/controller/FileController.java` — 预览/版本历史端点
-- `src/main/java/com/tepeu/service/FileVersionService.java` — 版本管理
-- `frontend/src/components/views/FilesView.tsx` — 文件管理器主视图
-- `frontend/src/components/file/` — FilePreview, FileDiff, VersionList, DragUpload, CodeViewer
-- `frontend/src/components/views/TerminalView.tsx` — 终端视图（xterm.js）
-- `frontend/src/hooks/useFileOps.ts` — 文件操作状态
-- `frontend/src/hooks/useTerminal.ts` — WebSocket 终端连接管理
-- `frontend/src/hooks/useMemory.ts` — 记忆检索与编辑
+- `frontend/src/components/views/MemoryView.tsx` / `hooks/useMemory.ts`
+- `frontend/src/components/views/FileBrowserView.tsx` / `hooks/useFileBrowser.ts`
+- `frontend/src/components/files/` — `RightFilePanel`、`VersionPanel`、`FileDiff`、`PptxPreview`
+- `frontend/src/lib/codeHighlight.ts`
+- `backend/.../FileController.java` / `FileVersionService.java`
+- `frontend/src/components/views/TerminalView.tsx` / `hooks/useTerminal.ts`
 
 **Acceptance Criteria**:
-- 记忆搜索 → 结果列表 → 展开查看详情 → 编辑 → 删除, 来源标注可见
-- tag 过滤 + workspace 过滤正确
-- 拖拽文件到浏览器 → 上传成功，目录树刷新
-- 文本文件点击 → 语法高亮预览；Markdown → 渲染；图片 → 缩略图
-- 文件版本列表可展开 → 回滚到旧版本
-- 终端连接 → 执行 `ls`、`cat`、`pwd` 等基础命令
-- 输入"显示当前目录" → AI 翻译为 `ls -la` 并执行，输出可见
+- ✅ 记忆搜索/标签/来源/编辑删除
+- ✅ 拖拽上传成功并刷新；多工作区传 workspaceId
+- ✅ 文本高亮 / Markdown / 图片（raw URL）
+- ✅ 版本列表 + 回滚 + DIFF
+- ✅ 终端 Windows：`dir` / `type` / `cd`；「显示当前目录」→ `dir`；错误有解释提示
+- ✅ 侧栏「文件」入口；IDE 右栏版本 + 代码高亮
+- ✅ `npm run typecheck` exit 0
 
 **Primary metric**:
-- `cd backend && mvn -q test && cd ../frontend && npm run typecheck` exit 0 + 记忆面板搜索 + 文件预览 + 终端命令执行可用
+- typecheck 绿 + 上述验收
 
 **Behavior**: 🟡 中（Terminal WS + AI CLI 需关注边界条件）
 
@@ -158,14 +141,15 @@
 
 **Difficulty**: 🟢 低
 **Nature**: Integration
+**Status**: ✅ 引导/发布说明已完成；⏳ Docker 持久化路径与 compose 实测挂账（本机无 CLI / 用户暂缓）
 
 **Deliverables**:
 - 首次启动引导流程：LLM Key 配置 → 默认 workspace 创建 → 欢迎消息
-- Dockerfile（多阶段构建：frontend build → Spring Boot JAR）
+- Dockerfile（多阶段构建：frontend build → Spring Boot JAR）定义就绪
 - `.dockerignore`
-- `docker-compose.yml`（单服务 + SQLite 数据持久化卷）
-- 全面自检：列出已知限制 + Phase 2/3 路线图（清晰对齐 spec §9）
-- v0.1.0 版本发布（Git tag + GitHub Release + 发布说明）
+- `docker-compose.yml`（单服务 + 数据卷定义；**卷路径与应用 `workspaces/`、`tepeu.db` 对齐待修**）
+- 全面自检：已知限制 + 路线图（Harness 进展见 `RELEASE_NOTES-v0.2.0.md`）
+- v0.1.0 发布说明（`RELEASE_NOTES-v0.1.0.md`）；正式 Git tag / GitHub Release 可选
 
 **Key Files**:
 - `frontend/src/components/views/SetupWizard.tsx` — 首次启动引导
@@ -174,23 +158,418 @@
 - `RELEASE_NOTES-v0.1.0.md` — 发布说明
 
 **Acceptance Criteria**:
-- 容器首次启动 → 引导界面出现 → 配置 API Key → 进入对话
-- `docker build -t tepeu:v0.1.0 .` 成功，镜像 < 300MB
-- `docker compose up` → 浏览器打开 → 全功能可用：workspace → chat → memory → file ops → terminal
-- GitHub Release 发布（Docker image tag + release notes）
+- ✅ 本地首次启动 → 引导界面 → 配置 API Key（Ollama 可无密钥）→ 进入主界面
+- ⏳ `docker build` / `compose up` / 数据持久化：定义文件存在，实测与卷路径修复暂缓
+- ✅ 正式 GitHub Release 可选（见 RELEASE_NOTES）
 
 **Primary metric**:
-- `docker compose up` → 浏览器访问 → 创建 workspace → 发消息 → 完整可用
+- 本地引导可用；Docker 全链路验收挂账至有 CLI 时
 
 **Behavior**: 🟢 低（标准流程）
 
 ---
 
-## 远期（Product-Spec §9，v0.1.0 之外）
+## Phase 5: Hook 安全网（Spec M2.3）
 
-> **不是**本文件已完成的「Phase 2 对话」。下列为 Spec 里程碑：
-> - Spec Phase 2：多 Agent · MCP · Hook · 成本仪表盘（含 Spec §3.5 workspace 累计缺口）
-> - Spec Phase 3：WASM+V8 · 应用市场 · 移动端 · 自主 Agent 等
+**Difficulty**: 🔴 高
+**Nature**: Backend + UI
+**Status**: ✅ 完成（Agent 工具 + REST/终端宿主通道；幻觉门禁；本机实例令牌鉴权）
+
+**Deliverables**:
+- `ToolHook` + `DangerousToolHook`（`run_command` / `mcp_*` / 未知工具 → NEED_APPROVAL；灾难 shell → DENY；`write_file` 免批）
+- `HookingToolCallback` 装饰链（可视化装饰器内侧）；可选阻塞等待批准（`tepeu.hook.approval-wait-seconds`）
+- `ApprovalStore`：pending + **工具+参数** 会话授权；超时 → EXPIRED
+- `HostChannelGuard`：REST 写/删/上传/恢复 + 终端 WS 走同一 Hook
+- `HallucinationGuard`：写父目录须存在；回合结束扫描「已写入」声称路径
+- 本机实例令牌（`X-Tepeu-Token`）：保护审批与危险宿主 API；localhost 可拉取
+- SSE：`tool_approval_required` / `tool_denied` / `hallucination_warning`；前端审批条 Approve/Deny
+- `POST /api/chat/approvals/{id}/decide`
+
+**Key Files**:
+- `backend/src/main/java/com/tepeu/agent/hook/*`
+- `backend/src/main/java/com/tepeu/security/*`
+- `backend/src/main/java/com/tepeu/controller/ApprovalController.java`
+- `frontend/src/hooks/useChat.ts` / `useTerminal.ts` / `ApprovalBanner.tsx`
+
+**Acceptance Criteria**:
+- ✅ `run_command` / `mcp_*` / 未登记工具需 UI 审批；`write_file` 与只读工具免批
+- ✅ Approve 后同会话**相同参数**可再执行；Deny/超时失败可见并清审批条
+- ✅ 灾难性 shell 命令直接 DENY；终端安全命令免批，其余需批
+- ✅ REST 删除沙箱免批（`file_rest`）；Agent `delete_file` 需批；写文件经幻觉父目录检查
+- ✅ 审批/危险文件 API 要求实例令牌
+- ✅ `mvn -q test` + `npm run typecheck` exit 0
+
+**Primary metric**:
+- 单测规则矩阵绿 + 上述验收
+
+**Behavior**: 🔴 高
+
+---
+
+## Phase 6: 多 Agent 协作（Spec M2.1）
+
+**Difficulty**: 🔴 高
+**Nature**: Backend + UI
+**Status**: ✅ 完成（审批面板、费用入账、VERDICT 严格解析、Reviewer 可读工具、提示可覆盖、会话打开、流水线锁）
+
+**Deliverables**:
+- Planner / Implementer / Reviewer（提示可 `tepeu.multi-agent.prompts.*` 覆盖）与共享执行面
+- 失败可见传播（非闲聊式多 Agent）
+- Goal/run 薄契约（验收标准挂任务，不只靠 Prompt）
+- 多 Agent 面板工具审批（Hook 可阻塞等待批准）
+
+**Key Files**:
+- `backend/src/main/java/com/tepeu/agent/multi/`（角色编排）
+- `frontend/src/components/views/MultiAgentView.tsx`
+- `frontend/src/hooks/useMultiAgent.ts`
+
+**Acceptance Criteria**:
+- ✅ 可发起多角色一轮协作任务；失败步骤对用户可见
+- ✅ 高危工具可在多 Agent 页批准；费用入账；会话可打开
+- ✅ `mvn -q test` + `npm run typecheck` exit 0
+
+**Primary metric**: 端到端多角色任务演示可用
+
+**Behavior**: 🔴 高
+
+---
+
+## Phase 7: MCP 协议（Spec M2.2）
+
+**Difficulty**: 🔴 高
+**Nature**: Backend
+**Status**: ✅ 完成（工具桥接+资源列表/读取、命名空间、缓存、状态 UI、自主会话 MCP 仍审批；真实 stdio server 联调需本机自行启用）
+
+**Deliverables**:
+- MCP 客户端接入（工具 + 资源列表/读取）
+- 与 ToolRegistry / Hook 同 runtime、同权限边界
+- `GET /api/mcp/status` + 服务商页 MCP 区块
+
+**Key Files**:
+- `backend/src/main/java/com/tepeu/agent/mcp/`
+- `backend/src/main/resources/mcp-servers.example.yml`
+- `frontend/src/components/views/ProviderSettingsView.tsx`
+
+**Acceptance Criteria**:
+- ✅ 可配置至少一个 MCP server 并被 Agent 调用；`mcp_*` 走 Hook（自主调度也不免批）
+- ✅ 启用但无连接时状态 API 给出明确 warning/note
+- ✅ `mvn -q test` + `npm run typecheck` exit 0
+
+**Primary metric**: MCP 工具调用 + Hook 拦截联调通过
+
+**Behavior**: 🔴 高
+
+---
+
+## Phase 8: 成本仪表盘（Spec M2.4）
+
+**Difficulty**: 🟡 中
+**Nature**: Backend + UI
+**Status**: ✅ 完成（顶栏告警、硬门禁中文文案、零预算语义、未知模型回退估价、单测/E2E）
+
+**Deliverables**:
+- 复用 session/workspace stats；预算阈值配置
+- 超预算告警 + 可选门禁（阻断新对话回合）
+- 顶栏软告警/硬门禁徽章（不限于成本面板）
+
+**Key Files**:
+- `backend/src/main/java/com/tepeu/service/BudgetService.java`
+- `backend/src/main/java/com/tepeu/service/TokenCostEstimator.java`
+- `frontend/src/components/views/CostDashboardView.tsx`
+- `frontend/src/components/layout/IdeShell.tsx`
+
+**Acceptance Criteria**:
+- ✅ 工作区可见累计与预算条；超阈值有告警（含顶栏）
+- ✅ 硬门禁阻断聊天/多 Agent，中文错误提示
+- ✅ `mvn -q test` + `npm run typecheck` exit 0
+
+**Primary metric**: 仪表盘展示 + 告警路径可用
+
+**Behavior**: 🟡 中
+
+---
+
+## Phase 9: v0.2.0 发布（Spec M2.5）
+
+**Difficulty**: 🟢 低
+**Nature**: Integration
+**Status**: ✅ 文档/版本收口完成；⏳ 本机 `docker build` 待有 Docker CLI 时补验（可选 tag 未打）
+
+**Deliverables**:
+- `RELEASE_NOTES-v0.2.0.md`
+- Docker 镜像构建验证
+- 正式 Git tag / GitHub Release（可选）
+- 根目录 `README.md`（运行/部署入口）
+
+**Key Files**:
+- `RELEASE_NOTES-v0.2.0.md`、`README.md`
+- `Dockerfile` / `docker-compose.yml` / `.dockerignore`
+
+**Acceptance Criteria**:
+- ✅ 发布说明列出 Harness 能力与已知限制；版本号 0.2.0
+- ⏳ `docker build` 成功（环境无 Docker CLI 时挂账，定义文件已就绪）
+- ⏳ git tag / GitHub Release（可选，未执行）
+
+**Primary metric**: 发布说明 + 镜像可构建
+
+**Behavior**: 🟢 低
+
+---
+
+## Spec Phase 3 排期原则（ADR-010）
+
+原始 Spec M3 顺序：**M3.1 自主 Agent → M3.4 多端 → M3.3 应用市场 → M3.2 WASM → M3.5 v1.0**  
+理由：先交付「定时/后台跑任务」可见价值；响应式成本低；市场与 WASM 依赖技能/隔离模型成熟后再上。
+
+**2026-07-20 新增 Phase 11–14（基础设施层）** 插入在自主 Agent 之后、多端适配之前：
+- Phase 11 工具分类细化（权限/成本/UI 粒度）
+- Phase 12 文件变更通知（fs-notify，修 FileBrowserView 不自动刷新）
+- Phase 13 后台任务通知（Phase 10 自主调度补齐体验）
+- Phase 14 Slash 命令框架（不调 LLM 的快速系统入口）
+
+理由：这些是低投入高 ROI 的 cross-cutting 改进，趁 Phase 10 刚交付、代码还热的时候做，比拖到 v1.0 之后划算。
+
+---
+
+## Phase 10: 自主 Agent（Spec M3.1）
+
+**Difficulty**: 🟡 中
+**Nature**: Backend + UI
+**Status**: ✅ 已完成（2026-08-02 收口：RUNNING 恢复、自主免批范围、费用入账）
+
+**Deliverables**:
+- 定时任务表 `agent_schedule`（间隔分钟、workspace、prompt、启用开关、上次运行/会话）
+- 调度器（Spring `@Scheduled` ticker）触发既有 `AgentOrchestrator`
+- REST：CRUD 日程 + 手动「立即运行」+ 结果落在 session
+- 自主会话：`shell` 免批；`delete_file` / MCP 仍须批（无人值守则失败）
+- RUNNING 卡死恢复、Token/费用入账、EMPTY、预算拦截
+- UI：侧栏「自主」面板 — 列表/新建/编辑/启停/打开会话/最近结果与错误
+
+**Key Files**:
+- `backend/.../model/AgentSchedule.java`、`.../service/ScheduleService.java`、`.../controller/ScheduleController.java`
+- `backend/.../config/DatabaseConfig.java`（建表）
+- `frontend/src/components/views/ScheduleView.tsx`、`App.tsx`、`SessionSidebar.tsx`
+
+**Acceptance Criteria**:
+- ✅ 可创建「每 N 分钟」任务并在到期时自动开会话跑一轮
+- ✅ 启停与手动触发可用；失败在 UI 可见（不静默）
+- ✅ RUNNING 卡死可恢复；费用入账；预算超限中文失败
+- ✅ 自主会话：shell 免批；delete_file / MCP 仍须批
+- ✅ `mvn test` + `npm run typecheck` 通过
+
+**Primary metric**: 至少一种周期触发路径端到端可用
+**Behavior**: 🟡 中
+
+---
+
+## Phase 11: 工具分类细化（cross-cutting）
+
+**Difficulty**: 🟢 低
+**Nature**: Backend
+**Status**: ✅ 已完成（2026-08-02）
+
+**背景**：原粗颗粒 `FileTools` / `ShellTools` 已拆细；权限/成本/UI 按 `toolKind` 控制。
+
+**Deliverables**:
+- 独立工具：`ReadFileTool`, `WriteFileTool`, `ListDirTool`, `SearchFileTool`, `DeleteFileTool`
+- `RunCommandTool`, `ReadOutputTool`（经 `CommandOutputStore` 续读）
+- 各工具独立注册；SSE 携带 `toolKind`；`ToolKinds` 映射 `file_delete` / `file_rest`
+
+**Key Files**:
+- `backend/src/main/java/com/tepeu/agent/tool/*Tool.java`、`ToolKinds.java`、`CommandOutputStore.java`
+- `backend/src/main/java/com/tepeu/agent/Tools.java`、`hook/DangerousToolHook.java`
+- `frontend/src/hooks/useChat.ts`、`components/chat/MessageView.tsx`
+
+**Acceptance Criteria**:
+- ✅ 既有 `mvn test` 不破
+- ✅ 同一 `ToolEventEmitter` 可按工具类型 emit 不同 `toolKind`
+- ✅ Hook 按 `toolKind`：`shell`/`mcp`/`file_delete` 需批；`shell_output`/`file_list|read|write|search`/`file_rest` 免批
+
+**Primary metric**: 所有 tool 调用路径端到端正常
+**Behavior**: 🟢 低
+
+---
+
+## Phase 12: 文件变更通知（fs-notify）
+
+**Difficulty**: 🟢 低
+**Nature**: Backend
+**Status**: ⏳ 待确认
+
+**背景**：`FileBrowserView` 不自动刷新（project-memory 已记录），外部修改文件后用户须手动操作才能看到变化。
+
+**Deliverables**:
+- `FileWatcherService`（JDK `WatchService`）监听 workspace 目录变更
+- 收到 `ENTRY_CREATE/MODIFY/DELETE` 后经现有 SSE/WS 推 `file_changed` 事件
+- 前端 `FileBrowserView` 订阅事件自动刷新
+
+**Key Files**:
+- `backend/.../service/FileWatcherService.java`
+- `backend/.../config/DatabaseConfig.java` 或独立配置注册 watcher
+- `frontend/src/hooks/useFileBrowser.ts`（订阅 file_changed 事件）
+- `frontend/src/components/views/FileBrowserView.tsx`
+
+**Acceptance Criteria**:
+- 在工作区目录创建/修改/删除文件后前端 5 秒内自动反映
+- watcher 随 workspace 切换启停，不泄漏到其他工作区
+- 桌面布局回归不破
+
+**Primary metric**: 外部文件变更自动出现在文件列表中
+**Behavior**: 🟢 低
+
+---
+
+## Phase 13: 后台任务通知
+
+**Difficulty**: 🟢 低
+**Nature**: Backend + UI
+**Status**: ⏳ 待确认
+
+**背景**：Phase 10 自主调度可周期性运行任务，但完成后用户无从知晓——须主动打开 Schedule 面板查看。
+
+**Deliverables**:
+- `ScheduleService` 任务完成后经 SSE 推 `task_completed` / `task_failed` 事件
+- 前端监听事件：通知栏 badge + 浏览器 Notification API（可选）
+- `ScheduleView` 新增完成/失败状态标记与时间戳
+
+**Key Files**:
+- `backend/.../service/ScheduleService.java`（事件推送）
+- `frontend/src/hooks/useNotifications.ts`（新建）
+- `frontend/src/components/views/ScheduleView.tsx`（状态标记）
+
+**Acceptance Criteria**:
+- 自主任务完成后前端可见通知提示
+- 失败通知区别于成功通知
+- 既有 `mvn test` + `npm run typecheck` 不破
+
+**Primary metric**: 任务完成后 5 秒内前端可见通知
+**Behavior**: 🟢 低
+
+---
+
+## Phase 14: Slash 命令框架
+
+**Difficulty**: 🟡 中
+**Nature**: Backend + UI
+**Status**: ⏳ 待确认
+
+**背景**：当前聊天输入框纯文本→LLM，无法直接调用系统功能。Slash 命令为用户提供不经过 LLM 的内置操作入口。
+
+**Deliverables**:
+- 后端 `SlashCommandRegistry` + `SlashCommand` 接口
+- 首批内置命令：`/help`、`/tasks`、`/schedule`、`/compact`、`/status`
+- 前端输入框检测 `/` 弹出候选列表 + 参数提示
+- 命令分两类：纯前端（如 `/help`）和后端委派（如 `/schedule list`）
+
+**Key Files**:
+- `backend/.../agent/slash/SlashCommandRegistry.java` + `SlashCommand.java`
+- `backend/.../agent/slash/commands/`（各命令实现）
+- `backend/.../controller/SlashController.java`
+- `frontend/src/components/chat/ChatInput.tsx`（/ 检测 + 候选浮层）
+- `frontend/src/hooks/useSlashCommands.ts`（新建）
+
+**Acceptance Criteria**:
+- `/help` 返回内置命令清单，不调 LLM
+- `/schedule list` 返回当前工作区日程，不调 LLM
+- 输入 `/` 200ms 内弹出候选列表
+- 既有 `mvn test` + `npm run typecheck` 不破
+
+**Primary metric**: 至少 3 个命令端到端可用（不消耗 LLM token）
+**Behavior**: 🟡 中
+
+---
+
+## Phase 15: 多端适配（Spec M3.4）
+
+**Difficulty**: 🟢 低  
+**Nature**: UI  
+**Status**: ⏳ 待确认
+
+**Deliverables**:
+- 窄屏布局：侧栏可折叠为底栏/抽屉；对话主区优先
+- 触控目标 ≥ 44px；断点与 `IdeShell` 对齐
+- Playwright 增补 mobile viewport 冒烟（chromium）
+
+**Key Files**:
+- `frontend/src/components/layout/IdeShell.tsx`、`SessionSidebar.tsx`、`src/styles/index.css`
+- `frontend/e2e/mobile-shell.spec.ts`
+
+**Acceptance Criteria**:
+- 375×667 下可完成：开工作区入口、发一条消息、打开文件预览
+- 桌面布局回归不破（既有 e2e）
+
+**Primary metric**: 移动冒烟绿  
+**Behavior**: 🟢 低
+
+---
+
+## Phase 16: 应用市场（Spec M3.3）
+
+**Difficulty**: 🟡 中  
+**Nature**: Backend + UI  
+**Status**: ⏳ 待确认
+
+**Deliverables**:
+- 技能目录源：本地索引 + 可选远程清单 URL（默认 ReqForge / 配置项）
+- 「市场」面板：浏览/搜索/一键安装到当前 workspace（复用现有 Skill API）
+- 安装来源与版本记入 skill 元数据；失败可见
+
+**Key Files**:
+- `backend/.../service/SkillMarketplaceService.java`、`.../controller/MarketplaceController.java`
+- `frontend/src/components/views/MarketplaceView.tsx`
+
+**Acceptance Criteria**:
+- 不配远程 URL 时仍可用内置/本地目录安装
+- 安装后 `/技能名` 可调用
+
+**Primary metric**: 从市场安装 ≥1 个技能成功  
+**Behavior**: 🟡 中
+
+---
+
+## Phase 17: WASM+V8 运行时（Spec M3.2）
+
+**Difficulty**: 🔴 高  
+**Nature**: Backend  
+**Status**: ⏳ 待确认
+
+**Deliverables**:
+- 选型落地（优先评估 GraalJS / wasmtime-java 与现有 JDK21 兼容性）
+- 最小「技能脚本」沙箱：限时、无任意主机 FS（仅当前 workspace 显式 API）
+- 与 Tool 注册桥接一条 demo 技能
+
+**Key Files**:
+- `backend/.../runtime/*`、`pom.xml` 依赖锁定精确版本
+- ADR：运行时选型与威胁模型
+
+**Acceptance Criteria**:
+- Demo 脚本可读写 workspace 内约定路径，不能读 `user.home` 外路径
+- 超时强制中断
+
+**Primary metric**: 隔离边界测试绿  
+**Behavior**: 🔴 高（须单独确认依赖与威胁模型）
+
+---
+
+## Phase 18: v1.0.0 发布（Spec M3.5）
+
+**Difficulty**: 🟢 低  
+**Nature**: Integration  
+**Status**: ⏳ 待确认
+
+**Deliverables**:
+- `RELEASE_NOTES-v1.0.0.md`
+- 版本号 1.0.0；Docker 定义校验（有守护进程则实测）
+- 对照 Spec §10 成功指标做基线记录（能测则测，不能测则标明）
+
+**Acceptance Criteria**:
+- 发布说明覆盖 Phase 10–17 能力与已知限制
+- tag / GitHub Release 仍可选（须你批准）
+
+**Primary metric**: 发布说明 + 可构建  
+**Behavior**: 🟢 低
+
+---
 
 ## DEV-PLAN Phase 1 code-review carry-over（2026-07-11）— 状态更新 2026-07-18
 
@@ -209,7 +588,7 @@
 | 运行时 | Java | 21 LTS | 虚线程（Virtual Threads） |
 | 后端框架 | Spring Boot | 4.0+ | 支持 Spring AI 2.0 |
 | AI 集成 | Spring AI | 2.0.0 (GA) | 2026-06-12 发布，需 Boot 4.0 |
-| Agent 工具 | spring-ai-agent-utils | 0.10.0 | 社区项目 (org.springaicommunity)，代理隔离 |
+| Agent 工具 | 自研细粒度 `*Tool` | — | Spring AI `@Tool` + toolKind 事件装饰器 |
 | 数据库 | SQLite | — | WAL 模式，单机嵌入 |
 | 前端框架 | React | 18.x | 组件化生态 |
 | 前端语言 | TypeScript | 5.x | 类型安全 |
@@ -228,8 +607,10 @@
 | `workspace` | Phase 1 | 项目定义，type: personal/enterprise |
 | `session` | Phase 1 | 对话会话 |
 | `memory` | Phase 1 | 记忆条目，全文索引 |
+| `memory_fts` | Phase 1 | 记忆 FTS5 虚拟表 |
 | `task` | Phase 1 | 任务记录，含 outcome |
 | `file_version` | Phase 1 | 文件版本历史 |
+| `agent_schedule` | Phase 10 | 自主 Agent 定时任务 |
 
 ## Development Rules
 
@@ -238,7 +619,7 @@
 - **包管理器**：Maven（后端）/ npm（前端）
 - **开发模式**：`cd frontend && npm run dev`（Vite 代理 `localhost:30141` → 后端）
 - **生产构建**：`cd frontend && npm run build` → 产物到 `src/main/resources/static/`
-- **Agent 原语优先**：引用 spring-ai-agent-utils，不重复造轮子
+- **Agent 工具**：自研细粒度 `*Tool`；保持与 REST 文件 API 同语义
 - **参数规范**：函数参数 > 4 个用 DTO/Record
 - **状态管理**：React `useState`（hooks 局部）+ props（EventLoop 模式已退役，见 ADR-003；统一调度器推迟到确有需要时）
 - **流式优先**：所有 Agent 输出 SSE 流式，前端逐 Token 渲染

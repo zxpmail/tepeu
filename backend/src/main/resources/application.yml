@@ -36,6 +36,15 @@ spring:
         options:
           model: llama3
 
+    # MCP Client（Spec M2.2）— 默认关闭；完整示例见 classpath:mcp-servers.example.yml
+    # 工具经 McpToolBridge 并入 ChatService，再走 Hook（toolcallback 关闭避免双重注入）
+    mcp:
+      client:
+        enabled: false
+        type: SYNC
+        toolcallback:
+          enabled: false
+
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
@@ -53,6 +62,25 @@ management:
 
 # LLM Provider metadata (which providers are available)
 tepeu:
+  security:
+    # 本机实例令牌：保护审批与危险宿主 API（localhost 可拉取）
+    instance-token-enabled: true
+    # 可选覆盖令牌文件路径；默认 ~/.tepeu/instance.token
+    # token-file:
+    # AES-256-GCM 主密钥文件（§7.4）；首启自动生成，丢失则已存密钥不可恢复
+    master-key-file: ${user.home}/.tepeu/master.key
+  hook:
+    # 高危工具审批等待秒数；>0 时 Hook 阻塞至批准/拒绝（多 Agent 可在面板批准后继续）
+    approval-wait-seconds: 540
+  multi-agent:
+    # 可选覆盖角色提示，占位符：{objective} {acceptance} {plan} {implementerReport}
+    prompts:
+      planner: ""
+      implementer: ""
+      reviewer: ""
+  mcp:
+    # MCP 工具/资源列表缓存秒数（0=不缓存）
+    cache-ttl-seconds: 30
   reqforge:
     # 本机 ReqForge 根目录（GitHub 不可达时一键安装回退）；也可用环境变量 TEPEU_REQFORGE_PATH
     local-path: ${TEPEU_REQFORGE_PATH:E:/work/ReqForge}
@@ -72,6 +100,15 @@ tepeu:
             name: Claude Sonnet 4
           - id: claude-haiku-3-5-20241022
             name: Claude Haiku 3.5
+      - id: deepseek
+        name: DeepSeek
+        models:
+          - id: deepseek-v4-flash
+            name: DeepSeek V4 Flash
+          - id: deepseek-chat
+            name: DeepSeek Chat
+          - id: deepseek-reasoner
+            name: DeepSeek Reasoner
       - id: ollama
         name: Ollama (Local)
         models:
@@ -79,7 +116,11 @@ tepeu:
             name: Llama 3
           - id: qwen2.5
             name: Qwen 2.5
-  security:
-    # AES-256-GCM master key file for at-rest secret encryption (§7.4).
-    # Auto-generated on first run if absent. Back this file up — losing it makes stored keys unrecoverable.
-    master-key-file: ${user.home}/.tepeu/master.key
+
+  # 自主 Agent 调度（Spec M3.1 / DEV-PLAN Phase 10）
+  schedule:
+    enabled: true
+    tick-ms: 30000
+    initial-delay-ms: 15000
+    # RUNNING 超过该分钟数视为卡死并自动恢复
+    stale-running-minutes: 30

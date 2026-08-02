@@ -2,7 +2,8 @@
  * API client — fetch wrapper with unified error handling.
  * Returns the unwrapped `data` payload for all endpoints; throws ApiError on non-2xx / non-OK.
  */
-import type { Workspace, Memory, FileItem, FileVersion, LlmProvider, ChatSession, ChatMessageBE, ProviderMetadata, SessionStats, Skill } from '../types'
+import type { Workspace, Memory, FileItem, FileVersion, LlmProvider, ChatSession, ChatMessageBE, ProviderMetadata, SessionStats, WorkspaceStats, BudgetStatus, McpStatus, Skill, AgentSchedule } from '../types'
+import { ensureInstanceToken, getInstanceTokenSync } from '../security/instanceToken'
 
 const BASE_URL = '/api'
 
@@ -26,10 +27,16 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  await ensureInstanceToken()
   const url = `${BASE_URL}${path}`;
+  const token = getInstanceTokenSync()
   const res = await fetch(url, {
     ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers as Record<string, string> },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'X-Tepeu-Token': token } : {}),
+      ...options.headers as Record<string, string>,
+    },
   });
 
   const body: ApiResponse<T> = await res.json();
@@ -59,8 +66,40 @@ export const api = {
     request<void>(`/workspace/${id}`, { method: 'DELETE' }),
   switchWorkspace: (id: string) =>
     request<Workspace>(`/workspace/${id}/switch`, { method: 'POST' }),
+  /** 工作区累计 token/费用（Spec §3.5） */
+  getWorkspaceStats: (id: string) =>
+    request<WorkspaceStats>(`/workspace/${id}/stats`),
+  /** 成本仪表盘（用量 + 预算状态，Spec M2.4） */
+  getWorkspaceCost: (id: string) =>
+    request<BudgetStatus>(`/workspace/${id}/cost`),
+  updateWorkspaceBudget: (
+    id: string,
+    body: { budgetUsd?: number | null; hardLimit?: boolean; alertThreshold?: number },
+  ) =>
+    request<BudgetStatus>(`/workspace/${id}/budget`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
 
   /** Memory */
+  listMemories: (params: {
+    workspaceId: string
+    query?: string
+    tags?: string[]
+    limit?: number
+    cursor?: string
+  }) => {
+    const q = new URLSearchParams({ workspaceId: params.workspaceId })
+    if (params.query) q.set('query', params.query)
+    if (params.limit != null) q.set('limit', String(params.limit))
+    if (params.cursor) q.set('cursor', params.cursor)
+    if (params.tags) {
+      for (const t of params.tags) q.append('tags', t)
+    }
+    return request<{ items: Memory[]; hasMore: boolean; nextCursor?: string }>(
+      `/memory?${q.toString()}`,
+    )
+  },
   searchMemories: (params: { workspaceId: string; query?: string; tags?: string[]; limit?: number; cursor?: string }) =>
     request<{ items: Memory[]; hasMore: boolean; nextCursor?: string }>('/memory/search', {
       method: 'POST',
@@ -107,6 +146,13 @@ export const api = {
   getSessionStats: (id: string) =>
     request<SessionStats>(`/session/${id}/stats`),
 
+  /** 高危工具审批裁决（Spec M2.3） */
+  decideApproval: (id: string, decision: 'approve' | 'deny') =>
+    request<{ id: string; sessionId: string; tool: string; status: string }>(
+      `/chat/approvals/${id}/decide`,
+      { method: 'POST', body: JSON.stringify({ decision }) },
+    ),
+
   /** Files */
   listFiles: (path: string = '/', workspaceId?: string) => {
     const qs = new URLSearchParams({ path })
@@ -124,32 +170,50 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(workspaceId ? { path, workspaceId } : { path }),
     }),
-  writeFile: (path: string, content: string) =>
+  writeFile: (path: string, content: string, workspaceId?: string) =>
     request<{ path: string }>('/files/write', {
       method: 'POST',
-      body: JSON.stringify({ path, content }),
+      body: JSON.stringify(workspaceId ? { path, content, workspaceId } : { path, content }),
     }),
-  uploadFile: async (file: File, path: string = '/'): Promise<{ path: string; size: number }> => {
+  uploadFile: async (file: File, path: string = '/', workspaceId?: string): Promise<{ path: string; size: number }> => {
     // FormData must NOT set Content-Type (browser sets the multipart boundary). Bypass request().
+    await ensureInstanceToken()
     const formData = new FormData();
     formData.append('file', file);
     formData.append('path', path);
-    const res = await fetch(`${BASE_URL}/files/upload`, { method: 'POST', body: formData });
+    if (workspaceId) formData.append('workspaceId', workspaceId);
+    const token = getInstanceTokenSync()
+    const res = await fetch(`${BASE_URL}/files/upload`, {
+      method: 'POST',
+      body: formData,
+      headers: token ? { 'X-Tepeu-Token': token } : {},
+    });
     const body: ApiResponse<{ path: string; size: number }> = await res.json();
     if (!res.ok || body.code !== 'OK') {
       throw new ApiError(body.code, body.message, body.details);
     }
     return body.data;
   },
-  deleteFile: (path: string) =>
+  /**
+   * 删除工作区内文件（REST 沙箱免批；需实例令牌）。Agent delete_file 仍走审批。
+   */
+  deleteFile: (path: string, workspaceId?: string) =>
     request<void>('/files/delete', {
       method: 'POST',
-      body: JSON.stringify({ path }),
+      body: JSON.stringify(workspaceId ? { path, workspaceId } : { path }),
     }),
 
   /** File versions */
   getFileHistory: (path: string, workspaceId?: string) =>
     request<{ path: string; versions: FileVersion[] }>(`/files/history?path=${encodeURIComponent(path)}${workspaceId ? `&workspaceId=${workspaceId}` : ''}`),
+  /** 读取某版本快照原文（GET /files/preview/{id}） */
+  getVersionContent: async (versionId: string): Promise<string> => {
+    const res = await fetch(`${BASE_URL}/files/preview/${encodeURIComponent(versionId)}`)
+    if (!res.ok) {
+      throw new ApiError('IO_ERROR', `读取版本失败 HTTP ${res.status}`)
+    }
+    return res.text()
+  },
   restoreFileVersion: (versionId: string) =>
     request<{ id: string; workspaceId: string; filePath: string; versionNo: number; createdAt: string }>(`/files/restore/${versionId}`, { method: 'POST' }),
   createFileVersion: (workspaceId: string, path: string, content: string, sessionId?: string) =>
@@ -169,8 +233,14 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ providerId, ...config }),
     }),
-  testProviderConnection: (providerId: string) =>
-    request<void>(`/provider/test/${providerId}`, { method: 'POST' }),
+  /** 连接测试；可传草稿凭证（未保存也可测） */
+  testProviderConnection: (providerId: string, draft?: {
+    apiKey?: string; baseUrl?: string; defaultModel?: string
+  }) =>
+    request<void>(`/provider/test/${providerId}`, {
+      method: 'POST',
+      body: JSON.stringify(draft ?? {}),
+    }),
 
   /** Skills */
   listSkills: (workspaceId: string) =>
@@ -212,4 +282,49 @@ export const api = {
     }),
   deleteSkill: (id: string) =>
     request<void>(`/skills/${id}`, { method: 'DELETE' }),
+
+  /** 自主 Agent 定时任务（Spec M3.1） */
+  listSchedules: (workspaceId: string) =>
+    request<AgentSchedule[]>(`/schedules?workspaceId=${encodeURIComponent(workspaceId)}`),
+  createSchedule: (body: {
+    workspaceId: string
+    name: string
+    prompt: string
+    providerId: string
+    intervalMinutes: number
+    enabled?: boolean
+  }) =>
+    request<AgentSchedule>('/schedules', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  updateSchedule: (
+    id: string,
+    body: {
+      name?: string
+      prompt?: string
+      providerId?: string
+      intervalMinutes?: number
+      enabled?: boolean
+    },
+  ) =>
+    request<AgentSchedule>(`/schedules/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  deleteSchedule: (id: string) =>
+    request<void>(`/schedules/${id}`, { method: 'DELETE' }),
+  runSchedule: (id: string) =>
+    request<AgentSchedule>(`/schedules/${id}/run`, { method: 'POST' }),
+
+  /** MCP 状态（Spec M2.2） */
+  getMcpStatus: () => request<McpStatus>('/mcp/status'),
+  refreshMcpStatus: () =>
+    request<McpStatus>('/mcp/refresh', { method: 'POST' }),
+  /** 读取 MCP 资源正文 */
+  readMcpResource: (uri: string) =>
+    request<{ uri: string; content: string }>('/mcp/resources/read', {
+      method: 'POST',
+      body: JSON.stringify({ uri }),
+    }),
 };

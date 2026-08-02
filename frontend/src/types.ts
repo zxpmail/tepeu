@@ -53,10 +53,49 @@ export interface SessionStats {
   maxHistoryMessages: number
 }
 
+/** 工作区累计 token/费用（Spec §3.5） */
+export interface WorkspaceStats {
+  totalTokens: number
+  totalCostUsd: number
+  turnCount: number
+}
+
+/** MCP 状态（Spec M2.2） */
+export interface McpStatus {
+  enabled: boolean
+  clientCount: number
+  toolCount: number
+  tools: string[]
+  resourceCount: number
+  resources: Array<{
+    server: string
+    uri: string
+    name: string
+    description?: string
+    mimeType?: string
+  }>
+  warning?: string | null
+  note: string
+}
+
+/** 成本仪表盘 / 预算状态（Spec M2.4） */
+export interface BudgetStatus {
+  workspaceId: string
+  totalTokens: number
+  totalCostUsd: number
+  turnCount: number
+  budgetUsd: number | null
+  hardLimit: boolean
+  alertThreshold: number
+  usageRatio: number
+  alert: boolean
+  blocked: boolean
+}
+
 export interface ChatMessageBE {
   id: string
   sessionId: string
-  role: 'user' | 'assistant' | 'system'
+  role: 'user' | 'assistant' | 'system' | 'tool'
   content: string
   createdAt?: string
 }
@@ -83,7 +122,25 @@ export interface FileVersion {
   createdAt: string
 }
 
-export type Panel = 'workspace' | 'files' | 'chat' | 'memory' | 'terminal' | 'provider' | 'skills'
+export type Panel = 'workspace' | 'files' | 'chat' | 'memory' | 'terminal' | 'provider' | 'skills' | 'multi' | 'cost' | 'schedule'
+
+/** 自主 Agent 定时任务 */
+export interface AgentSchedule {
+  id: string
+  workspaceId: string
+  name: string
+  prompt: string
+  providerId: string
+  enabled: boolean
+  intervalMinutes: number
+  nextRunAt?: string | null
+  lastRunAt?: string | null
+  lastStatus?: string | null
+  lastError?: string | null
+  lastSessionId?: string | null
+  createdAt?: string
+  updatedAt?: string
+}
 
 /** 工作区技能 */
 export interface Skill {

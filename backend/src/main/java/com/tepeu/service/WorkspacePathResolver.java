@@ -1,6 +1,6 @@
 /**
- * 工作区磁盘路径解析 — FileController / FileTools 共用，避免写到不同目录。
- * 关联：WorkspaceService、FileTools、FileController。
+ * 工作区磁盘路径解析 — FileController / 文件工具共用，避免写到不同目录。
+ * 关联：WorkspaceService、ReadFileTool、WriteFileTool、ListDirTool、FileController。
  */
 package com.tepeu.service;
 
@@ -42,7 +42,7 @@ public class WorkspacePathResolver {
         try {
             Files.createDirectories(path);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create workspace directory: " + path, e);
+            throw new RuntimeException("无法创建工作区目录: " + path, e);
         }
         return path;
     }
@@ -52,7 +52,7 @@ public class WorkspacePathResolver {
         if (workspaceId != null && !workspaceId.isBlank()) {
             var workspace = workspaceService.getWorkspace(workspaceId);
             if (workspace.isEmpty()) {
-                throw new IllegalArgumentException("Workspace not found: " + workspaceId);
+                throw new IllegalArgumentException("工作区不存在：" + workspaceId);
             }
             return rootOf(workspace.get(), workspaceId);
         }

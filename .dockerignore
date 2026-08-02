@@ -7,3 +7,14 @@
 **/.env
 **/workspaces
 frontend/node_modules
+.claude
+.forge
+.cursor
+memory
+docs
+experiments
+agent-transcripts
+**/*.md
+!README.md
+!RELEASE_NOTES-v0.1.0.md
+!RELEASE_NOTES-v0.2.0.md
