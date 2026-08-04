@@ -88,3 +88,9 @@
 - **Rationale**: Phase 1 无完整登录（ADR-005），但审批与危险操作不能完全裸奔；实例令牌是单机最小门禁。
 - **Not**: 多用户 OAuth/OIDC（仍属远期）。
 
+## ADR-013: 后台任务通知用独立 `/api/task-events` SSE 通道（2026-08-05）
+- **Decision**: Phase 13 自主任务完成/失败通知走**独立** `GET /api/task-events` 常驻 SSE（`TaskEventNotifier` hub + `TaskEventController`），不复用 Phase 12 的 `/api/events` 文件事件通道。
+- **Rationale**: ADR-012 forward 提出「可复用 `/api/events` 或在 FileWatcherService 上加通用 listener 总线」，但两类事件特性不同：文件事件高频、需 250ms 合并 + 跨 tab leader 选举共享一条连接；任务通知低频、需每个 tab 都能即时弹出徽章/浏览器通知，且 `sharedFileEvents.ts` 已按 `file_changed` 专型化（parse + BroadcastChannel），塞入 task 事件会把它变成多职责模块。独立通道使后端（TaskEventNotifier 镜像 FileWatcherService 的 subscribe/sendJson/broadcast，~60 行）与前端（`useNotifications` 单例 EventSource，无需 leader 选举）都保持单一职责。事件同样走 `{type, ...}` 形状 + `SseEmitter.event().name("message")`，与 Phase 12 一致。
+- **Implied**: 任务事件低频 → 每 tab 直连一条 SSE 可接受（不上 BroadcastChannel/leader）。`GET /api/task-events` 只读，免实例令牌。
+- **Forward**: 后续其他低频后台事件（如 MCP 状态变化提示）可并入 `TaskEventNotifier` 或再开独立通道，按事件频率与职责划分。
+

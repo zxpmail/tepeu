@@ -7,6 +7,7 @@ import SessionSidebar from './SessionSidebar'
 import RightFilePanel from '../files/RightFilePanel'
 import ChatView from '../views/ChatView'
 import ThemeToggle from '../common/ThemeToggle'
+import NotificationBell from './NotificationBell'
 import { api } from '../../api/client'
 import { sessionNavBus } from '../../context/sessionNav'
 import type { BudgetStatus, Panel, Theme, Workspace, SessionStats, WorkspaceStats } from '../../types'
@@ -155,6 +156,7 @@ export default function IdeShell({
           >
             ▥
           </button>
+          <NotificationBell onNavigate={onNavigate} />
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
       </header>

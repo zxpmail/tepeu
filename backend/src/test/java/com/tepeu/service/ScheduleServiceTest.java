@@ -16,6 +16,7 @@ import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +33,7 @@ class ScheduleServiceTest {
     private AgentOrchestrator orchestrator;
     private ApprovalStore approvalStore;
     private TaskService taskService;
+    private TaskEventNotifier taskEvents;
     private ScheduleService service;
 
     @BeforeEach
@@ -43,6 +45,7 @@ class ScheduleServiceTest {
         orchestrator = mock(AgentOrchestrator.class);
         approvalStore = new ApprovalStore(0L);
         taskService = mock(TaskService.class);
+        taskEvents = mock(TaskEventNotifier.class);
         TokenCostEstimator costEstimator = new TokenCostEstimator();
         LlmProviderConfig providerConfig = new LlmProviderConfig();
         LlmProviderConfig.Provider deepseek = new LlmProviderConfig.Provider();
@@ -52,7 +55,7 @@ class ScheduleServiceTest {
 
         service = new ScheduleService(
                 repository, workspaceService, sessionService, budgetService, orchestrator,
-                approvalStore, taskService, costEstimator, providerConfig, false, 30);
+                approvalStore, taskService, costEstimator, providerConfig, taskEvents, false, 30);
         when(workspaceService.getWorkspace("ws-1"))
                 .thenReturn(Optional.of(new Workspace("ws-1", "W", null, "personal", "local")));
     }
@@ -103,6 +106,7 @@ class ScheduleServiceTest {
         assertTrue(approvalStore.isAutonomous("sess-1"));
         verify(sessionService).appendMessage("sess-1", "user", "写一份摘要");
         verify(sessionService).appendMessage("sess-1", "assistant", "摘要完成");
+        verify(taskEvents).publish(eventOfType("task_completed"));
     }
 
     @Test
@@ -122,6 +126,7 @@ class ScheduleServiceTest {
         assertEquals("EMPTY", s.getLastStatus());
         assertNotNull(s.getLastError());
         verify(sessionService, never()).appendMessage(eq("sess-1"), eq("assistant"), anyString());
+        verify(taskEvents).publish(eventOfType("task_failed"));
     }
 
     @Test
@@ -136,6 +141,7 @@ class ScheduleServiceTest {
         assertEquals("FAILED", s.getLastStatus());
         assertTrue(s.getLastError().contains("预算"));
         verify(sessionService, never()).createSession(anyString(), anyString());
+        verify(taskEvents).publish(eventOfType("task_failed"));
     }
 
     @Test
@@ -150,6 +156,7 @@ class ScheduleServiceTest {
 
         assertEquals("FAILED", s.getLastStatus());
         assertTrue(s.getLastError().contains("Recovered"));
+        verify(taskEvents).publish(eventOfType("task_failed"));
     }
 
     @Test
@@ -171,6 +178,11 @@ class ScheduleServiceTest {
 
     private static ChatResponse textChunk(String text) {
         return new ChatResponse(List.of(new Generation(new AssistantMessage(text))));
+    }
+
+    /** 匹配 type 字段等于给定值的任务事件 payload。 */
+    private static Map<String, Object> eventOfType(String type) {
+        return argThat(p -> p != null && type.equals(p.get("type")));
     }
 
     private static AgentSchedule baseSchedule() {

@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api, ApiError } from '../../api/client'
+import { onTaskEvent } from '../../hooks/useNotifications'
 import type { AgentSchedule, ProviderMetadata } from '../../types'
 
 interface ScheduleViewProps {
@@ -76,6 +77,13 @@ export default function ScheduleView({ workspaceId, onOpenSession }: ScheduleVie
     const t = window.setInterval(() => { void reload() }, 4000)
     return () => window.clearInterval(t)
   }, [items, workspaceId, reload])
+
+  // 后台任务完成/失败事件（Phase 13）：按当前工作区精确刷新，任务结束即见结果
+  useEffect(() => {
+    return onTaskEvent((n) => {
+      if (!workspaceId || n.workspaceId === workspaceId) void reload()
+    })
+  }, [workspaceId, reload])
 
   const resetForm = () => {
     setEditingId(null)
@@ -283,7 +291,9 @@ export default function ScheduleView({ workspaceId, onOpenSession }: ScheduleVie
                     style={{
                       color: (s.lastStatus === 'FAILED' || s.lastStatus === 'EMPTY')
                         ? 'var(--color-danger, #c44)'
-                        : 'var(--color-text-secondary)',
+                        : s.lastStatus === 'SUCCESS'
+                          ? 'var(--color-accent)'
+                          : 'var(--color-text-secondary)',
                     }}
                   >
                     {STATUS_LABEL[s.lastStatus ?? ''] ?? s.lastStatus ?? '—'}
@@ -293,6 +303,11 @@ export default function ScheduleView({ workspaceId, onOpenSession }: ScheduleVie
                 <div className="text-xs mt-2 space-y-0.5" style={{ color: 'var(--color-text-dim)' }}>
                   <div>下次：{formatTime(s.nextRunAt)}</div>
                   <div>上次：{formatTime(s.lastRunAt)}</div>
+                  {(s.lastStatus === 'SUCCESS' || s.lastStatus === 'FAILED' || s.lastStatus === 'EMPTY') && (
+                    <div>
+                      {s.lastStatus === 'SUCCESS' ? '完成' : '失败'}：{formatTime(s.updatedAt)}
+                    </div>
+                  )}
                   {s.lastSessionId && (
                     <div>
                       会话：

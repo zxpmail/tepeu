@@ -6,7 +6,7 @@
 > **命名注意（避免与 Product-Spec 混淆）**  
 > - **本文件 Phase 1–4** = v0.1.0 **交付切片**（骨架 → 对话 → 记忆/终端 → 发布）。**已完成。**  
 > - **本文件 Phase 5–9** = Product-Spec §9 **Phase 2（Harness / v0.2.0）** 交付切片（Hook → 多 Agent → MCP → 成本 → 发布）。**已完成。**  
-> - **本文件 Phase 10–18** = Product-Spec §9 **Phase 3（自主与生态 / v0.3→v1.0）** 交付切片（见下）。**Phase 10–12 已完成；下一刀 Phase 13（后台任务通知）。**  
+> - **本文件 Phase 10–18** = Product-Spec §9 **Phase 3（自主与生态 / v0.3→v1.0）** 交付切片（见下）。**Phase 10–13 已完成；下一刀 Phase 14（Slash 命令框架）。**  
 > - **Product-Spec §9 Phase 1–3** = **产品里程碑**（Phase 1≈v0.1；Phase 2=Harness；Phase 3=自主与生态）。  
 > 勿将本文件「Phase 2 对话」与 Spec §9 Phase 2（Harness）混称。
 
@@ -425,7 +425,7 @@
 
 **Difficulty**: 🟢 低
 **Nature**: Backend + UI
-**Status**: ⏳ 待确认
+**Status**: ✅ 已完成（2026-08-05：TaskEventNotifier + `GET /api/task-events` 常驻 SSE；前端 useNotifications + NotificationBell 徽章/下拉；ScheduleView 状态标记与时间戳；mvn 246 全绿 + typecheck + gstack E2E 双路径）
 
 **背景**：Phase 10 自主调度可周期性运行任务，但完成后用户无从知晓——须主动打开 Schedule 面板查看。
 
@@ -435,16 +435,18 @@
 - `ScheduleView` 新增完成/失败状态标记与时间戳
 
 **Key Files**:
+- `backend/.../service/TaskEventNotifier.java`（新建，SSE hub）、`controller/TaskEventController.java`（新建，`GET /api/task-events`）
 - `backend/.../service/ScheduleService.java`（事件推送）
-- `frontend/src/hooks/useNotifications.ts`（新建）
+- `frontend/src/hooks/useNotifications.ts`（新建，store + EventSource + 浏览器通知）
+- `frontend/src/components/layout/NotificationBell.tsx`（新建，徽章 + 下拉）
 - `frontend/src/components/views/ScheduleView.tsx`（状态标记）
 
 **Acceptance Criteria**:
-- 自主任务完成后前端可见通知提示
-- 失败通知区别于成功通知
-- 既有 `mvn test` + `npm run typecheck` 不破
+- ✅ 自主任务完成后前端可见通知提示（gstack E2E：task_completed → 徽章 + 下拉「完成」）
+- ✅ 失败通知区别于成功通知（task_failed → 下拉「失败」+ 原因）
+- ✅ 既有 `mvn test`（246 绿）+ `npm run typecheck` 不破
 
-**Primary metric**: 任务完成后 5 秒内前端可见通知
+**Primary metric**: 任务完成后 5 秒内前端可见通知（E2E 实测徽章出现）
 **Behavior**: 🟢 低
 
 ---

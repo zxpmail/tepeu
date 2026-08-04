@@ -17,7 +17,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,6 +45,7 @@ public class ScheduleService {
     private final TaskService taskService;
     private final TokenCostEstimator costEstimator;
     private final LlmProviderConfig providerConfig;
+    private final TaskEventNotifier taskEvents;
     private final boolean tickerEnabled;
     private final int staleRunningMinutes;
     /** 防止同一任务并发重入 */
@@ -58,6 +61,7 @@ public class ScheduleService {
             TaskService taskService,
             TokenCostEstimator costEstimator,
             LlmProviderConfig providerConfig,
+            TaskEventNotifier taskEvents,
             @Value("${tepeu.schedule.enabled:true}") boolean tickerEnabled,
             @Value("${tepeu.schedule.stale-running-minutes:30}") int staleRunningMinutes) {
         this.repository = repository;
@@ -69,6 +73,7 @@ public class ScheduleService {
         this.taskService = taskService;
         this.costEstimator = costEstimator;
         this.providerConfig = providerConfig;
+        this.taskEvents = taskEvents;
         this.tickerEnabled = tickerEnabled;
         this.staleRunningMinutes = Math.max(5, staleRunningMinutes);
     }
@@ -258,6 +263,7 @@ public class ScheduleService {
                 s.setUpdatedAt(LocalDateTime.now());
                 repository.update(s);
                 log.warn("Schedule {} finished with empty reply session={}", id, session.getId());
+                publishFailed(s, session.getId(), "Model returned empty response");
                 return;
             }
             sessionService.appendMessage(session.getId(), "assistant", reply);
@@ -266,6 +272,7 @@ public class ScheduleService {
             s.setUpdatedAt(LocalDateTime.now());
             repository.update(s);
             log.info("Schedule {} finished session={}", id, session.getId());
+            publishCompleted(s, session.getId());
         } catch (RuntimeException e) {
             log.warn("Schedule {} failed: {}", id, e.toString());
             s.setLastSessionId(session.getId());
@@ -351,6 +358,38 @@ public class ScheduleService {
             }
         }
         repository.update(s);
+        publishFailed(s, s.getLastSessionId(), msg);
+    }
+
+    // ---- 后台任务事件推送（Phase 13） ----
+
+    /** 完成：task_completed。 */
+    private void publishCompleted(AgentSchedule s, String sessionId) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("type", "task_completed");
+        payload.put("scheduleId", s.getId());
+        payload.put("scheduleName", s.getName());
+        payload.put("workspaceId", s.getWorkspaceId());
+        if (sessionId != null) {
+            payload.put("sessionId", sessionId);
+        }
+        payload.put("message", "自主任务「" + s.getName() + "」完成");
+        taskEvents.publish(payload);
+    }
+
+    /** 失败/空回复：task_failed，message 携带原因。 */
+    private void publishFailed(AgentSchedule s, String sessionId, String error) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("type", "task_failed");
+        payload.put("scheduleId", s.getId());
+        payload.put("scheduleName", s.getName());
+        payload.put("workspaceId", s.getWorkspaceId());
+        if (sessionId != null) {
+            payload.put("sessionId", sessionId);
+        }
+        String reason = error == null || error.isBlank() ? "" : "：" + (error.length() > 200 ? error.substring(0, 200) : error);
+        payload.put("message", "自主任务「" + s.getName() + "」失败" + reason);
+        taskEvents.publish(payload);
     }
 
     private boolean isLocked(String id) {

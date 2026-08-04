@@ -4,15 +4,16 @@
   "confirmed_by": "user",
   "plan_version": "v0.3.0-phase3",
   "total_phases": 18,
-  "active_phase": 13,
+  "active_phase": 14,
   "phase_9_status": "complete_docs_pending_docker_build",
   "phase_10_status": "complete",
   "phase_11_status": "complete",
   "phase_12_status": "complete",
+  "phase_13_status": "complete",
   "phase_3_plan_status": "confirmed",
   "proposed_order": "10=M3.1 schedule → 11=tool-split → 12=fs-notify → 13=task-notify → 14=slash-cmd → 15=M3.4 mobile → 16=M3.3 marketplace → 17=M3.2 wasm → 18=M3.5 v1.0",
   "v0.1.0_scope": "Phase 1–4 complete",
   "v0.2.0_scope": "Phase 5–9 (notes+version done; docker build pending CLI)",
   "v0.3_scope": "Phase 10–18 Spec Phase 3",
-  "notes": "Phase 12 complete 2026-08-04 (fs-notify + /api/events SSE); Docker still deferred; next Phase 13 task-notify"
+  "notes": "Phase 13 complete 2026-08-05 (task notify: /api/task-events SSE + NotificationBell, ADR-013); Docker still deferred; next Phase 14 slash-cmd"
 }

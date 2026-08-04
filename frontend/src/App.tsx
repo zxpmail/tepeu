@@ -16,6 +16,7 @@ import CostDashboardView from './components/views/CostDashboardView'
 import ScheduleView from './components/views/ScheduleView'
 import SetupWizard from './components/views/SetupWizard'
 import ThemeToggle from './components/common/ThemeToggle'
+import NotificationBell from './components/layout/NotificationBell'
 import { sessionNavBus } from './context/sessionNav'
 import { ensureInstanceToken } from './security/instanceToken'
 import type { Panel } from './types'
@@ -134,7 +135,8 @@ export default function App() {
                 {activePanel === 'terminal' && '终端'}
                 {activePanel === 'provider' && '服务商'}
               </span>
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-2">
+                <NotificationBell onNavigate={setActivePanel} />
                 <ThemeToggle theme={theme} onToggle={setTheme} />
               </div>
             </header>
