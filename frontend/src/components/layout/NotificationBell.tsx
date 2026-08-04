@@ -1,6 +1,6 @@
 /**
  * 后台任务通知铃铛 — 未读徽章 + 下拉事件列表。
- * 点击事件项：有 sessionId → 直接打开会话；否则 → 跳转「自主」面板。
+ * 点击事件项：有 sessionId → 打开会话（可切工作区）；否则 → 跳转「自主」面板。
  * 首次打开时请求浏览器 Notification 权限（可选系统通知）。
  * 关联：useNotifications、/api/task-events（TaskEventController）、sessionNavBus。
  */
@@ -15,6 +15,8 @@ import type { Panel } from '../../types'
 
 interface NotificationBellProps {
   onNavigate: (panel: Panel) => void
+  /** 优先使用：切工作区 + pending 安全打开会话；缺省回退 sessionNavBus */
+  onOpenSession?: (sessionId: string, workspaceId?: string) => void | Promise<void>
 }
 
 function formatAt(at: number): string {
@@ -25,10 +27,12 @@ function formatAt(at: number): string {
   }
 }
 
-export default function NotificationBell({ onNavigate }: NotificationBellProps) {
+export default function NotificationBell({ onNavigate, onOpenSession }: NotificationBellProps) {
   const { notifications, unreadCount, markAllRead, clearAll } = useTaskNotifications()
   const [open, setOpen] = useState(false)
   const boxRef = useRef<HTMLDivElement | null>(null)
+
+  const unreadHasFailed = notifications.slice(0, unreadCount).some(n => n.kind === 'failed')
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -54,8 +58,12 @@ export default function NotificationBell({ onNavigate }: NotificationBellProps) 
   const handleItem = (n: TaskNotification) => {
     setOpen(false)
     if (n.sessionId) {
-      sessionNavBus.openSession(n.sessionId)
-      onNavigate('chat')
+      if (onOpenSession) {
+        void onOpenSession(n.sessionId, n.workspaceId)
+      } else {
+        sessionNavBus.openSession(n.sessionId, n.workspaceId)
+        onNavigate('chat')
+      }
     } else {
       onNavigate('schedule')
     }
@@ -80,7 +88,9 @@ export default function NotificationBell({ onNavigate }: NotificationBellProps) 
             data-testid="notification-badge"
             className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-0.5 rounded-full text-[10px] leading-[15px] text-center"
             style={{
-              backgroundColor: 'var(--color-danger, #c44)',
+              backgroundColor: unreadHasFailed
+                ? 'var(--color-danger, #c44)'
+                : 'var(--color-accent)',
               color: '#fff',
             }}
           >

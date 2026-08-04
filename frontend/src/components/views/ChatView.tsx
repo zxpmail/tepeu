@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { api } from '../../api/client'
 import { useChat, type LastUsage } from '../../hooks/useChat'
+import { parseSlashLine, useSlashCommands } from '../../hooks/useSlashCommands'
 import ChatInput from '../chat/ChatInput'
 import MessageView from '../chat/MessageView'
 import ProcessDetails from '../chat/ProcessDetails'
@@ -42,15 +43,17 @@ export default function ChatView({
 }: ChatViewProps) {
   const {
     messages, streaming, error, sessionId,
-    send, stop, reset, loadSession,
+    send, stop, reset, loadSession, appendLocalTurn,
     lastUsage, sessionStats, queueLength,
     pendingApprovals, decidingId, decideApproval,
   } = useChat()
+  const { catalog, isSystemCommand, execute: executeSlash } = useSlashCommands()
   const [providers, setProviders] = useState<ProviderMetadata[]>([])
   const [provider, setProvider] = useState('')
   const [input, setInput] = useState('')
   const [sessions, setSessions] = useState<{ id: string; title: string | null }[]>([])
   const [forking, setForking] = useState<string | null>(null)
+  const [slashBusy, setSlashBusy] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const displayItems = useMemo(() => groupChatMessages(messages), [messages])
@@ -90,7 +93,28 @@ export default function ChatView({
     onRegisterActions?.({ reset, loadSession })
   }, [reset, loadSession, onRegisterActions])
 
-  const handleSend = () => {
+  const handleSend = async () => {
+    const trimmed = input.trim()
+    if (!trimmed) return
+
+    const parsed = parseSlashLine(trimmed)
+    if (parsed && parsed.name && isSystemCommand(parsed.name)) {
+      setSlashBusy(true)
+      setInput('')
+      try {
+        const result = await executeSlash(trimmed, workspaceId, sessionId)
+        if (result.action === 'compact') {
+          reset()
+        }
+        appendLocalTurn(trimmed, result.text)
+      } catch (e) {
+        appendLocalTurn(trimmed, e instanceof Error ? e.message : '命令执行失败')
+      } finally {
+        setSlashBusy(false)
+      }
+      return
+    }
+
     if (!workspaceId) return
     send(input, workspaceId, provider)
     setInput('')
@@ -102,6 +126,33 @@ export default function ChatView({
     } else if (cmd === 'files') {
       onNavigate?.('files')
     }
+  }
+
+  /** 点选系统命令：无参直接执行，有可选参数则填入输入框 */
+  const handleSystemSlashPick = (name: string, usage: string) => {
+    const needsArgs = usage.includes('[') || usage.includes('<')
+    if (needsArgs) {
+      setInput(`/${name} `)
+      return
+    }
+    setInput(`/${name}`)
+    // 下一帧发送，复用 handleSend 路径
+    requestAnimationFrame(() => {
+      void (async () => {
+        const line = `/${name}`
+        setSlashBusy(true)
+        setInput('')
+        try {
+          const result = await executeSlash(line, workspaceId, sessionId)
+          if (result.action === 'compact') reset()
+          appendLocalTurn(line, result.text)
+        } catch (e) {
+          appendLocalTurn(line, e instanceof Error ? e.message : '命令执行失败')
+        } finally {
+          setSlashBusy(false)
+        }
+      })()
+    })
   }
 
   const handleFork = async (messageId: string) => {
@@ -272,13 +323,17 @@ export default function ChatView({
           <ChatInput
             value={input}
             onChange={setInput}
-            onSend={handleSend}
+            onSend={() => { void handleSend() }}
             onStop={stop}
-            streaming={streaming}
-            disabled={!canChat}
-            placeholder={canChat ? '输入消息… /技能名 调用技能，@ 也可提技能或文件' : '请先配置服务商…'}
+            streaming={streaming || slashBusy}
+            disabled={!canChat && catalog.length === 0}
+            placeholder={canChat
+              ? '输入消息… /help 内置命令，/技能名 调用技能'
+              : '可先试 /help；配置服务商后可对话'}
             workspaceId={workspaceId}
             onSlashCommand={handleSlashCommand}
+            systemSlashCommands={catalog}
+            onSystemSlashPick={handleSystemSlashPick}
             providers={ideMode ? providers : undefined}
             provider={provider}
             onProviderChange={ideMode ? setProvider : undefined}

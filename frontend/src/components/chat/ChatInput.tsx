@@ -18,7 +18,14 @@ const UI_SLASH_COMMANDS = [
 
 type SlashItem =
   | { name: string; label: string; kind: 'ui' }
+  | { name: string; label: string; kind: 'system'; usage: string }
   | { name: string; label: string; kind: 'skill'; slug: string }
+
+export interface SystemSlashHint {
+  name: string
+  description: string
+  usage: string
+}
 
 type AtItem =
   | { kind: 'skill'; key: string; label: string; insert: string }
@@ -37,6 +44,10 @@ interface ChatInputProps {
   placeholder?: string
   workspaceId?: string
   onSlashCommand?: (cmd: string) => void
+  /** 后端内置 Slash 目录（Phase 14） */
+  systemSlashCommands?: SystemSlashHint[]
+  /** 选中系统命令时：填入 usage 或立即执行（无参命令） */
+  onSystemSlashPick?: (name: string, usage: string) => void
   /** 底栏服务商选择 */
   providers?: { id: string; name: string }[]
   provider?: string
@@ -53,6 +64,8 @@ export default function ChatInput({
   placeholder,
   workspaceId,
   onSlashCommand,
+  systemSlashCommands = [],
+  onSystemSlashPick,
   providers,
   provider,
   onProviderChange,
@@ -100,12 +113,22 @@ export default function ChatInput({
     return m ? m[1]! : null
   }, [])
 
+  /** 仅首词补全阶段弹出（允许 `/schedule ` 仍保持打开直到输入空格后的第二词开始） */
   const detectSlash = useCallback((text: string) => {
-    return /^\/\S*$/.test(text.trim()) || text === '/'
+    const t = text.trimStart()
+    if (!t.startsWith('/')) return false
+    // `/` 或 `/hel` 或恰好 `/help`；已有参数时关闭菜单（交给发送执行）
+    return /^\/\S*$/.test(t.trim())
   }, [])
 
   const slashItems: SlashItem[] = [
     ...UI_SLASH_COMMANDS,
+    ...systemSlashCommands.map(c => ({
+      name: c.name,
+      label: c.description,
+      kind: 'system' as const,
+      usage: c.usage,
+    })),
     ...[...skills]
       .sort((a, b) => Number(b.enabled) - Number(a.enabled) || a.slug.localeCompare(b.slug))
       .map(s => ({
@@ -218,6 +241,17 @@ export default function ChatInput({
   const pickSlash = (item: SlashItem) => {
     if (item.kind === 'ui') {
       runUiSlash(item.name)
+    } else if (item.kind === 'system') {
+      if (onSystemSlashPick) {
+        onSystemSlashPick(item.name, item.usage)
+      } else {
+        onChange(item.usage.endsWith(']') ? `/${item.name} ` : item.usage)
+      }
+      setSlashOpen(false)
+      requestAnimationFrame(() => {
+        const el = textareaRef.current
+        el?.focus()
+      })
     } else {
       insertSkillSlash(item.slug)
     }
@@ -354,7 +388,11 @@ export default function ChatInput({
             >
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>/{cmd.name}</span>
               <span className="text-xs truncate" style={{ color: 'var(--color-text-dim)' }}>
-                {cmd.kind === 'skill' ? `技能 · ${cmd.label}` : cmd.label}
+                {cmd.kind === 'skill'
+                  ? `技能 · ${cmd.label}`
+                  : cmd.kind === 'system'
+                    ? `命令 · ${cmd.label}`
+                    : cmd.label}
               </span>
             </button>
           ))}

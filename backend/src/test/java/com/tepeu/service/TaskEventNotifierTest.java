@@ -1,13 +1,17 @@
 package com.tepeu.service;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 /** 后台任务事件通知广播（Phase 13）。 */
 class TaskEventNotifierTest {
@@ -51,5 +55,23 @@ class TaskEventNotifierTest {
         TaskEventNotifier notifier = new TaskEventNotifier(objectMapper);
         // 不应抛异常
         assertDoesNotThrow(() -> notifier.publish(Map.of("type", "task_completed")));
+    }
+
+    @Test
+    void subscribe_removesListenerWhenSendFails() throws Exception {
+        TaskEventNotifier notifier = new TaskEventNotifier(objectMapper);
+        SseEmitter broken = mock(SseEmitter.class);
+        doThrow(new IOException("gone")).when(broken).send(any(SseEmitter.SseEventBuilder.class));
+
+        notifier.subscribe(broken);
+        assertEquals(1, notifier.listenerCount());
+
+        notifier.publish(Map.of(
+                "type", "task_failed",
+                "scheduleId", "s1",
+                "workspaceId", "ws-1"));
+
+        assertEquals(0, notifier.listenerCount(), "推送失败应摘除死连接");
+        verify(broken, atLeastOnce()).complete();
     }
 }

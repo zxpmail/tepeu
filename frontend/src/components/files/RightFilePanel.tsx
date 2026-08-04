@@ -132,12 +132,13 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
 
   useEffect(() => {
     if (!path) return
-    return workspaceEventBus.subscribe((changed) => {
+    return workspaceEventBus.subscribe((changed, eventWorkspaceId) => {
+      if (eventWorkspaceId != null && eventWorkspaceId !== workspaceId) return
       if (!changed || changed === path || changed.endsWith(path) || path.endsWith(changed.replace(/^\//, ''))) {
         setReloadKey(k => k + 1)
       }
     })
-  }, [path])
+  }, [path, workspaceId])
 
   const toggleFullscreen = useCallback(() => setFullscreen(f => !f), [])
 

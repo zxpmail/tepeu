@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -18,6 +19,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class WorkspaceBoundTool {
 
     private static final Logger log = LoggerFactory.getLogger(WorkspaceBoundTool.class);
+
+    /**
+     * 进程级工具绑定互斥：工具 bean 为单例、activeBasePath 为共享可变状态，
+     * 单 Agent / 多 Agent / 自主调度必须共用此锁，防止并发对话交叉读写错误工作区。
+     */
+    public static final ReentrantLock BIND_LOCK = new ReentrantLock();
 
     protected final WorkspacePathResolver pathResolver;
     /** 测试注入固定根；生产为 null */

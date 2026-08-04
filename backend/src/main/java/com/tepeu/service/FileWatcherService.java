@@ -68,7 +68,7 @@ public class FileWatcherService {
     /** 待广播事件（合并窗口内按 (workspaceId, path) 去重） */
     private final Map<PathKey, PendingFileEvent> pending = new ConcurrentHashMap<>();
 
-    /** 待广播事件：同一路径取最后一次 operation。 */
+    /** 待广播事件：同一路径在合并窗口内保留「最显著」operation（delete > create > modify）。 */
     private record PendingFileEvent(String workspaceId, String path, String operation) {}
 
     /** 合并去重键（复合，免分隔符字符串）。 */
@@ -82,6 +82,8 @@ public class FileWatcherService {
     /** 启动：注册既有 workspace + 启动守护线程。建表（jdbcTemplate Bean）先于本方法执行。 */
     @PostConstruct
     void start() {
+        // 无 workspace 时也先建 WatchService，避免守护线程对 null 调用 take()
+        watchService();
         for (var w : workspaceRepository.findAll()) {
             String root = w.getRootPath();
             if (root == null || root.isBlank()) {
@@ -174,16 +176,18 @@ public class FileWatcherService {
         });
     }
 
-    /** 注册目录及其所有子目录（跳过忽略目录名）。 */
+    /** 注册目录及其所有子目录；相对工作区根的任意路径段落在忽略名单则整棵子树跳过。 */
     private void registerRecursive(Path dir) {
-        if (shouldIgnore(dir.getFileName())) {
+        Path wsRoot = findWorkspaceRoot(dir);
+        Path ignoreRoot = wsRoot != null ? wsRoot : dir;
+        if (isUnderIgnored(ignoreRoot, dir)) {
             return;
         }
         register(dir);
         try (Stream<Path> walk = Files.walk(dir)) {
             walk.filter(Files::isDirectory)
                     .filter(p -> !p.equals(dir))
-                    .filter(p -> !shouldIgnore(p.getFileName()))
+                    .filter(p -> !isUnderIgnored(ignoreRoot, p))
                     .forEach(this::register);
         } catch (IOException e) {
             log.debug("递归注册目录失败 {}: {}", dir, e.getMessage());
@@ -207,6 +211,48 @@ public class FileWatcherService {
         return name != null && IGNORED_DIRS.contains(name.toString());
     }
 
+    /**
+     * 相对 {@code root} 的路径中任一段目录名在忽略名单内则视为忽略
+     * （避免只跳过 {@code .git} 本身却仍注册 {@code .git/objects}）。
+     */
+    private static boolean isUnderIgnored(Path root, Path path) {
+        if (root == null || path == null) {
+            return shouldIgnore(path != null ? path.getFileName() : null);
+        }
+        Path normalizedRoot = root.toAbsolutePath().normalize();
+        Path normalizedPath = path.toAbsolutePath().normalize();
+        if (!normalizedPath.startsWith(normalizedRoot)) {
+            return shouldIgnore(normalizedPath.getFileName());
+        }
+        Path rel = normalizedRoot.relativize(normalizedPath);
+        if (rel.toString().isEmpty()) {
+            return false;
+        }
+        for (Path part : rel) {
+            if (shouldIgnore(part)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 最长前缀匹配已注册工作区根；无匹配返回 null。 */
+    private Path findWorkspaceRoot(Path full) {
+        Path best = null;
+        int bestLen = -1;
+        Path normalized = full.toAbsolutePath().normalize();
+        for (Path root : workspaceRoots.values()) {
+            if (normalized.startsWith(root)) {
+                int len = root.getNameCount();
+                if (len > bestLen) {
+                    bestLen = len;
+                    best = root;
+                }
+            }
+        }
+        return best;
+    }
+
     private synchronized WatchService watchService() {
         if (watchService == null) {
             try {
@@ -221,10 +267,15 @@ public class FileWatcherService {
     // ---- 监听循环 ----
 
     private void watchLoop() {
+        WatchService ws = watchService;
+        if (ws == null) {
+            log.warn("文件监听守护线程退出：WatchService 未初始化");
+            return;
+        }
         while (running) {
             WatchKey key;
             try {
-                key = watchService.take();
+                key = ws.take();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
@@ -245,20 +296,25 @@ public class FileWatcherService {
         for (WatchEvent<?> event : key.pollEvents()) {
             WatchEvent.Kind<?> kind = event.kind();
             if (kind == StandardWatchEventKinds.OVERFLOW) {
+                // 丢事件后无法精确重放；下一轮真实变更仍会刷新 UI
                 continue;
             }
             Path full = dir.resolve((Path) event.context()).toAbsolutePath().normalize();
-            if (kind == StandardWatchEventKinds.ENTRY_CREATE
-                    && Files.isDirectory(full)
-                    && !shouldIgnore(full.getFileName())) {
-                // 新建子目录：注册它（含其已有子目录）
-                registerRecursive(full);
-            }
             String workspaceId = findWorkspaceId(full);
             if (workspaceId == null) {
                 continue;
             }
-            accumulate(workspaceId, toRelPath(workspaceRoots.get(workspaceId), full), operationName(kind));
+            Path wsRoot = workspaceRoots.get(workspaceId);
+            if (wsRoot != null && isUnderIgnored(wsRoot, full)) {
+                continue;
+            }
+            if (kind == StandardWatchEventKinds.ENTRY_CREATE
+                    && Files.isDirectory(full)
+                    && !isUnderIgnored(wsRoot != null ? wsRoot : full, full)) {
+                // 新建子目录：注册它（含其已有子目录；忽略树不会注册）
+                registerRecursive(full);
+            }
+            accumulate(workspaceId, toRelPath(wsRoot, full), operationName(kind));
         }
         boolean valid = key.reset();
         if (!valid) {
@@ -346,19 +402,34 @@ public class FileWatcherService {
      * 关联：FileEventsController（GET /api/events）。
      */
     public void subscribe(SseEmitter emitter) {
-        Consumer<Map<String, Object>> listener = payload -> sendJson(emitter, payload);
+        Consumer<Map<String, Object>> listener = new Consumer<>() {
+            @Override
+            public void accept(Map<String, Object> payload) {
+                if (!sendJson(emitter, payload)) {
+                    listeners.remove(this);
+                    try {
+                        emitter.complete();
+                    } catch (RuntimeException ignored) {
+                        // 已断开
+                    }
+                }
+            }
+        };
         listeners.add(listener);
         emitter.onCompletion(() -> listeners.remove(listener));
         emitter.onTimeout(() -> listeners.remove(listener));
         emitter.onError(t -> listeners.remove(listener));
     }
 
-    private void sendJson(SseEmitter emitter, Map<String, Object> payload) {
+    /** @return true 推送成功；false 客户端已断开 */
+    private boolean sendJson(SseEmitter emitter, Map<String, Object> payload) {
         try {
             String json = objectMapper.writeValueAsString(payload);
             emitter.send(SseEmitter.event().name("message").data(json));
+            return true;
         } catch (IOException | RuntimeException e) {
             log.debug("SSE 推送失败（客户端断开?）: {}", e.getMessage());
+            return false;
         }
     }
 

@@ -58,7 +58,10 @@ export function openSharedFileEvents(
     es = new EventSource('/api/events')
     es.onmessage = (e) => {
       const ev = parseEvent(e.data)
-      if (ev) channel.postMessage(ev)
+      if (!ev) return
+      // BroadcastChannel 不会把消息回传给发送者 → leader tab 必须本地消费，否则自己收不到
+      onEvent(ev.path, ev.workspaceId)
+      channel.postMessage(ev)
     }
     // EventSource 断线自动重连，无需额外处理
   }

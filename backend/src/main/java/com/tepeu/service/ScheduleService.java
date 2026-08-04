@@ -259,11 +259,11 @@ public class ScheduleService {
             s.setLastSessionId(session.getId());
             if (reply.isBlank()) {
                 s.setLastStatus("EMPTY");
-                s.setLastError("Model returned empty response");
+                s.setLastError("模型返回空回复");
                 s.setUpdatedAt(LocalDateTime.now());
                 repository.update(s);
                 log.warn("Schedule {} finished with empty reply session={}", id, session.getId());
-                publishFailed(s, session.getId(), "Model returned empty response");
+                publishFailed(s, session.getId(), "模型返回空回复");
                 return;
             }
             sessionService.appendMessage(session.getId(), "assistant", reply);
@@ -296,8 +296,8 @@ public class ScheduleService {
         for (AgentSchedule s : repository.findStaleRunning(cutoff)) {
             log.warn("Recovering stale RUNNING schedule {} lastRunAt={}", s.getId(), s.getLastRunAt());
             running.remove(s.getId());
-            fail(s, "Recovered: stuck in RUNNING (interrupted or timeout after "
-                    + staleRunningMinutes + "m)");
+            fail(s, "已恢复：任务卡在运行中（中断或超时超过 "
+                    + staleRunningMinutes + " 分钟）");
         }
     }
 

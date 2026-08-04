@@ -130,12 +130,13 @@ export default function SessionSidebar({
   useEffect(() => { reloadSessions() }, [reloadSessions, sessionId])
   useEffect(() => { setTreeRefreshKey(k => k + 1) }, [workspaceId])
 
-  // 对话写文件 / 回合结束 → 刷新文件树
+  // 对话写文件 / 外部变更 / 回合结束 → 刷新文件树（按工作区过滤，ADR-012）
   useEffect(() => {
-    return workspaceEventBus.subscribe(() => {
+    return workspaceEventBus.subscribe((_path, eventWorkspaceId) => {
+      if (eventWorkspaceId != null && eventWorkspaceId !== workspaceId) return
       refreshFiles()
     })
-  }, [refreshFiles])
+  }, [refreshFiles, workspaceId])
 
   const startRename = (s: ChatSession) => {
     setConfirmDeleteId(null)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from './hooks/useTheme'
 import { useWorkspace } from './hooks/useWorkspace'
 import { useFileBrowser } from './hooks/useFileBrowser'
@@ -51,6 +51,16 @@ export default function App() {
 
   const handleSetupComplete = () => setShowSetup(false)
 
+  /** 打开会话：必要时先切工作区，再投递 sessionNav（无 IdeShell 时进 pending）并回到对话 */
+  const openChatSession = useCallback(async (sessionId: string, workspaceId?: string) => {
+    if (workspaceId && workspace.current?.id !== workspaceId) {
+      const ws = await workspace.switchWorkspace(workspaceId)
+      if (!ws) return
+    }
+    sessionNavBus.openSession(sessionId, workspaceId)
+    setActivePanel('chat')
+  }, [workspace])
+
   if (showSetup === null) {
     return (
       <div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg)' }}>
@@ -83,10 +93,7 @@ export default function App() {
         return (
           <MultiAgentView
             workspaceId={workspace.current?.id}
-            onOpenSession={(id) => {
-              sessionNavBus.openSession(id)
-              setActivePanel('chat')
-            }}
+            onOpenSession={(id) => { void openChatSession(id, workspace.current?.id) }}
           />
         )
       case 'cost':
@@ -95,10 +102,7 @@ export default function App() {
         return (
           <ScheduleView
             workspaceId={workspace.current?.id}
-            onOpenSession={(id) => {
-              sessionNavBus.openSession(id)
-              setActivePanel('chat')
-            }}
+            onOpenSession={(id) => { void openChatSession(id, workspace.current?.id) }}
           />
         )
       default:
@@ -136,7 +140,7 @@ export default function App() {
                 {activePanel === 'provider' && '服务商'}
               </span>
               <div className="ml-auto flex items-center gap-2">
-                <NotificationBell onNavigate={setActivePanel} />
+                <NotificationBell onOpenSession={openChatSession} onNavigate={setActivePanel} />
                 <ThemeToggle theme={theme} onToggle={setTheme} />
               </div>
             </header>
@@ -150,6 +154,7 @@ export default function App() {
             theme={theme}
             onToggleTheme={setTheme}
             onNavigate={setActivePanel}
+            onOpenSession={openChatSession}
           />
         )}
       </div>

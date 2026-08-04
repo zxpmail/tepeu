@@ -7,6 +7,7 @@ import com.tepeu.agent.tool.ReadOutputTool;
 import com.tepeu.agent.tool.RunCommandTool;
 import com.tepeu.agent.tool.SearchFileTool;
 import com.tepeu.agent.tool.ToolEventEmitter;
+import com.tepeu.agent.tool.WorkspaceBoundTool;
 import com.tepeu.agent.tool.WriteFileTool;
 import com.tepeu.service.SessionService;
 import com.tepeu.service.TaskService;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
@@ -53,8 +53,6 @@ public class MultiAgentOrchestrator {
     private final DeleteFileTool deleteFileTool;
     private final RunCommandTool runCommandTool;
     private final ReadOutputTool readOutputTool;
-    /** 全局工具绑定互斥（WorkspaceBoundTool 为进程单例） */
-    private final ReentrantLock pipelineLock = new ReentrantLock();
 
     public MultiAgentOrchestrator(
             ChatService chatService,
@@ -94,11 +92,12 @@ public class MultiAgentOrchestrator {
             String sessionId,
             ToolEventEmitter toolEmitter,
             Consumer<Map<String, Object>> emit) {
-        pipelineLock.lock();
+        // 与单 Agent / 自主调度共用进程级绑定锁，防止工具交叉绑定工作区
+        WorkspaceBoundTool.BIND_LOCK.lock();
         try {
             return runLocked(providerId, goal, workspaceId, sessionId, toolEmitter, emit);
         } finally {
-            pipelineLock.unlock();
+            WorkspaceBoundTool.BIND_LOCK.unlock();
         }
     }
 

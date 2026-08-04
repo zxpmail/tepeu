@@ -328,8 +328,8 @@ export function useChat() {
               return prev
             })
           } else if (evt.type === 'file_changed' && evt.path != null) {
-            // path 为空字符串时刷整棵树（如 run_command）
-            workspaceEventBus.emitFileChanged(evt.path || '/')
+            // path 为空字符串时刷整棵树（如 run_command）；带上 workspaceId 供侧栏/预览过滤
+            workspaceEventBus.emitFileChanged(evt.path || '/', workspaceId)
           } else if (evt.type === 'hallucination_warning') {
             const paths = Array.isArray(evt.missingPaths) ? evt.missingPaths.join(', ') : ''
             const msg = evt.message || '助手声称已写入但工作区中未找到文件'
@@ -343,7 +343,7 @@ export function useChat() {
             })
           } else if (evt.type === 'final') {
             // 回合结束再刷一次文件树，避免漏掉 file_changed
-            workspaceEventBus.emitFileChanged('')
+            workspaceEventBus.emitFileChanged('', workspaceId)
           } else if (evt.type === 'error') {
             throw new Error(evt.message || evt.code || 'Chat error')
           }
@@ -433,6 +433,15 @@ export function useChat() {
     }
   }, [])
 
+  /** 本地插入一轮对话（Slash 命令结果，不经 LLM） */
+  const appendLocalTurn = useCallback((userText: string, assistantText: string) => {
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', content: userText },
+      { role: 'assistant', content: assistantText },
+    ])
+  }, [])
+
   return {
     messages,
     streaming,
@@ -442,6 +451,7 @@ export function useChat() {
     stop,
     reset,
     loadSession,
+    appendLocalTurn,
     setSessionId: syncSessionId,
     lastUsage,
     sessionStats,

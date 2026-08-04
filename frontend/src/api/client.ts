@@ -327,4 +327,18 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ uri }),
     }),
+
+  /** Slash 命令（Phase 14，不经 LLM） */
+  listSlashCommands: () =>
+    request<Array<{
+      name: string
+      description: string
+      usage: string
+      requiresWorkspace: boolean
+    }>>('/slash/commands'),
+  executeSlash: (command: string, workspaceId?: string, sessionId?: string) =>
+    request<{ command: string; text: string; action?: string }>('/slash', {
+      method: 'POST',
+      body: JSON.stringify({ command, workspaceId, sessionId }),
+    }),
 };

@@ -7,6 +7,7 @@ import com.tepeu.agent.tool.ReadOutputTool;
 import com.tepeu.agent.tool.RunCommandTool;
 import com.tepeu.agent.tool.SearchFileTool;
 import com.tepeu.agent.tool.ToolEventEmitter;
+import com.tepeu.agent.tool.WorkspaceBoundTool;
 import com.tepeu.agent.tool.WriteFileTool;
 import com.tepeu.model.Message;
 import com.tepeu.service.SkillService;
@@ -117,22 +118,34 @@ public class AgentOrchestrator {
             String workspaceId,
             List<String> skillRefs,
             String sessionId) {
-        listDirTool.bindWorkspace(workspaceId);
-        readFileTool.bindWorkspace(workspaceId);
-        writeFileTool.bindWorkspace(workspaceId);
-        deleteFileTool.bindWorkspace(workspaceId);
-        searchFileTool.bindWorkspace(workspaceId);
-        runCommandTool.bindWorkspace(workspaceId);
-        runCommandTool.bindSession(sessionId);
-        readOutputTool.bindSession(sessionId);
+        // 持有共享绑定锁直到流终止：工具 bean 为单例，防止并发对话交叉绑定工作区
+        WorkspaceBoundTool.BIND_LOCK.lock();
+        try {
+            listDirTool.bindWorkspace(workspaceId);
+            readFileTool.bindWorkspace(workspaceId);
+            writeFileTool.bindWorkspace(workspaceId);
+            deleteFileTool.bindWorkspace(workspaceId);
+            searchFileTool.bindWorkspace(workspaceId);
+            runCommandTool.bindWorkspace(workspaceId);
+            runCommandTool.bindSession(sessionId);
+            readOutputTool.bindSession(sessionId);
+        } catch (RuntimeException e) {
+            unbindAllTools();
+            WorkspaceBoundTool.BIND_LOCK.unlock();
+            throw e;
+        }
         try {
             List<org.springframework.ai.chat.messages.Message> promptMessages =
                     toPromptMessages(history, fileRefs, workspaceId, skillRefs);
             Prompt prompt = new Prompt(promptMessages);
             return chatService.streamWithTools(providerId, prompt, emitter, sessionId)
-                    .doFinally(signal -> unbindAllTools());
+                    .doFinally(signal -> {
+                        unbindAllTools();
+                        WorkspaceBoundTool.BIND_LOCK.unlock();
+                    });
         } catch (RuntimeException e) {
             unbindAllTools();
+            WorkspaceBoundTool.BIND_LOCK.unlock();
             throw e;
         }
     }
@@ -154,9 +167,12 @@ public class AgentOrchestrator {
      */
     private List<org.springframework.ai.chat.messages.Message> toPromptMessages(
             List<Message> history, List<String> fileRefs, String workspaceId, List<String> skillRefs) {
-        List<Message> trimmed = history;
-        if (history.size() > MAX_HISTORY_MESSAGES) {
-            trimmed = history.subList(history.size() - MAX_HISTORY_MESSAGES, history.size());
+        // 先滤掉 system 工具追踪行，再按上限截断——否则 TEPEU_TOOL_V1 行会挤占真实对话窗口
+        List<Message> trimmed = history.stream()
+                .filter(m -> !"system".equals(m.getRole()))
+                .toList();
+        if (trimmed.size() > MAX_HISTORY_MESSAGES) {
+            trimmed = trimmed.subList(trimmed.size() - MAX_HISTORY_MESSAGES, trimmed.size());
         }
         String lastUserText = null;
         for (int i = trimmed.size() - 1; i >= 0; i--) {

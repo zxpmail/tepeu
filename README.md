@@ -58,5 +58,5 @@ cd frontend && npm run typecheck
 ## 已完成 / 进行中（摘要）
 
 - ✅ v0.1.0 个人工作台 · ✅ v0.2.0 Harness（Hook / 多 Agent / MCP / 成本）
-- ✅ Phase 10 自主调度 · ✅ Phase 11 工具细粒度
-- ⏳ 下一刀：Phase 12 文件变更通知（见 `DEV-PLAN.md`）
+- ✅ Phase 10–14（自主调度 / 工具细粒度 / 文件变更 / 任务通知 / Slash 命令）
+- ⏳ 下一刀：Phase 15 多端适配（见 `DEV-PLAN.md`）

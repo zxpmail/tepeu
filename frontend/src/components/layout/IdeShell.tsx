@@ -18,6 +18,8 @@ interface IdeShellProps {
   theme: Theme
   onToggleTheme: (t: Theme) => void
   onNavigate: (panel: Panel) => void
+  /** 通知铃打开会话（可切工作区）；缺省则仅 bus + 回对话 */
+  onOpenSession?: (sessionId: string, workspaceId?: string) => void | Promise<void>
 }
 
 export default function IdeShell({
@@ -25,6 +27,7 @@ export default function IdeShell({
   theme,
   onToggleTheme,
   onNavigate,
+  onOpenSession,
 }: IdeShellProps) {
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(false)
@@ -48,9 +51,10 @@ export default function IdeShell({
     setRightOpen(true)
   }, [])
 
-  // 自主面板等请求打开历史会话
+  // 自主面板 / 通知铃等请求打开历史会话（含次级面板挂载后的 pending 冲刷）
   useEffect(() => {
-    return sessionNavBus.subscribe((id) => {
+    return sessionNavBus.subscribe((req) => {
+      const id = req.sessionId
       setSessionId(id)
       if (chatActions) {
         void chatActions.loadSession(id)
@@ -156,7 +160,7 @@ export default function IdeShell({
           >
             ▥
           </button>
-          <NotificationBell onNavigate={onNavigate} />
+          <NotificationBell onOpenSession={onOpenSession} onNavigate={onNavigate} />
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
       </header>

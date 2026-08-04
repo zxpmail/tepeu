@@ -78,10 +78,10 @@ export default function ScheduleView({ workspaceId, onOpenSession }: ScheduleVie
     return () => window.clearInterval(t)
   }, [items, workspaceId, reload])
 
-  // 后台任务完成/失败事件（Phase 13）：按当前工作区精确刷新，任务结束即见结果
+  // 后台任务完成/失败事件（Phase 13）：仅刷新当前工作区
   useEffect(() => {
     return onTaskEvent((n) => {
-      if (!workspaceId || n.workspaceId === workspaceId) void reload()
+      if (workspaceId && n.workspaceId === workspaceId) void reload()
     })
   }, [workspaceId, reload])
 

@@ -31,9 +31,21 @@ public class TaskEventNotifier {
         this.objectMapper = objectMapper;
     }
 
-    /** 注册一个 SSE 订阅；连接完成/超时/出错时自动移除。关联：TaskEventController。 */
+    /** 注册一个 SSE 订阅；连接完成/超时/出错/推送失败时自动移除。关联：TaskEventController。 */
     public void subscribe(SseEmitter emitter) {
-        Consumer<Map<String, Object>> listener = payload -> sendJson(emitter, payload);
+        Consumer<Map<String, Object>> listener = new Consumer<>() {
+            @Override
+            public void accept(Map<String, Object> payload) {
+                if (!sendJson(emitter, payload)) {
+                    listeners.remove(this);
+                    try {
+                        emitter.complete();
+                    } catch (RuntimeException ignored) {
+                        // 已断开
+                    }
+                }
+            }
+        };
         listeners.add(listener);
         emitter.onCompletion(() -> listeners.remove(listener));
         emitter.onTimeout(() -> listeners.remove(listener));
@@ -51,17 +63,25 @@ public class TaskEventNotifier {
         }
     }
 
-    private void sendJson(SseEmitter emitter, Map<String, Object> payload) {
+    /** @return true 推送成功；false 客户端已断开，调用方应摘除监听 */
+    private boolean sendJson(SseEmitter emitter, Map<String, Object> payload) {
         try {
             String json = objectMapper.writeValueAsString(payload);
             emitter.send(SseEmitter.event().name("message").data(json));
+            return true;
         } catch (IOException | RuntimeException e) {
             log.debug("SSE 推送失败（客户端断开?）: {}", e.getMessage());
+            return false;
         }
     }
 
     /** 测试钩子（包内可见，供 TaskEventNotifierTest 断言广播）。 */
     void addListener(Consumer<Map<String, Object>> listener) {
         listeners.add(listener);
+    }
+
+    /** 测试钩子：当前订阅数。 */
+    int listenerCount() {
+        return listeners.size();
     }
 }

@@ -129,6 +129,37 @@ class FileWatcherServiceTest {
     }
 
     @Test
+    void preExistingIgnoredTree_nestedDirsNotRegistered() throws Exception {
+        // 注册前已有 .git/objects、node_modules/pkg —— 子目录名不在黑名单，旧逻辑会误注册
+        Path ws = tempDir.resolve("ws1");
+        Files.createDirectories(ws.resolve(".git").resolve("objects"));
+        Files.createDirectories(ws.resolve("node_modules").resolve("pkg"));
+        Files.createDirectories(ws.resolve("src"));
+        service.registerWorkspace("ws1", "ws1");
+
+        Files.writeString(ws.resolve(".git").resolve("objects").resolve("ab"), "x");
+        Files.writeString(ws.resolve("node_modules").resolve("pkg").resolve("index.js"), "y");
+        Files.writeString(ws.resolve("src").resolve("ok.txt"), "z");
+        drain();
+
+        assertFalse(hasEvent("create", "/.git/objects/ab", "ws1"), "events=" + events);
+        assertFalse(hasEvent("create", "/node_modules/pkg/index.js", "ws1"), "events=" + events);
+        assertTrue(hasEvent("create", "/src/ok.txt", "ws1"), "events=" + events);
+    }
+
+    @Test
+    void startWithNoWorkspaces_doesNotCrashWatcherThread() throws Exception {
+        // 模拟 @PostConstruct start：零 workspace 时 WatchService 仍可用，后续 register 正常
+        service.start();
+        Path ws = tempDir.resolve("ws-late");
+        Files.createDirectories(ws);
+        service.registerWorkspace("ws-late", "ws-late");
+        Files.writeString(ws.resolve("late.txt"), "ok");
+        drain();
+        assertTrue(hasEvent("create", "/late.txt", "ws-late"), "events=" + events);
+    }
+
+    @Test
     void unregisterWorkspace_stopsBroadcasting() throws Exception {
         Path ws = tempDir.resolve("ws1");
         Files.createDirectories(ws);

@@ -155,7 +155,7 @@ class ScheduleServiceTest {
         service.recoverStaleRunning();
 
         assertEquals("FAILED", s.getLastStatus());
-        assertTrue(s.getLastError().contains("Recovered"));
+        assertTrue(s.getLastError().contains("已恢复"));
         verify(taskEvents).publish(eventOfType("task_failed"));
     }
 

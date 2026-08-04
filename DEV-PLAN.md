@@ -455,7 +455,7 @@
 
 **Difficulty**: 🟡 中
 **Nature**: Backend + UI
-**Status**: ⏳ 待确认
+**Status**: ✅ 已完成（2026-08-05：Registry + 5 内置命令 + `/api/slash`；ChatInput 候选；ChatView 拦截发送不经 LLM）
 
 **背景**：当前聊天输入框纯文本→LLM，无法直接调用系统功能。Slash 命令为用户提供不经过 LLM 的内置操作入口。
 
@@ -463,7 +463,7 @@
 - 后端 `SlashCommandRegistry` + `SlashCommand` 接口
 - 首批内置命令：`/help`、`/tasks`、`/schedule`、`/compact`、`/status`
 - 前端输入框检测 `/` 弹出候选列表 + 参数提示
-- 命令分两类：纯前端（如 `/help`）和后端委派（如 `/schedule list`）
+- 命令分两类：纯前端（`/clear` `/new` `/files`）和后端委派（`/help` `/schedule list` 等）
 
 **Key Files**:
 - `backend/.../agent/slash/SlashCommandRegistry.java` + `SlashCommand.java`
@@ -473,10 +473,10 @@
 - `frontend/src/hooks/useSlashCommands.ts`（新建）
 
 **Acceptance Criteria**:
-- `/help` 返回内置命令清单，不调 LLM
-- `/schedule list` 返回当前工作区日程，不调 LLM
-- 输入 `/` 200ms 内弹出候选列表
-- 既有 `mvn test` + `npm run typecheck` 不破
+- ✅ `/help` 返回内置命令清单，不调 LLM
+- ✅ `/schedule list` 返回当前工作区日程，不调 LLM
+- ✅ 输入 `/` 弹出候选列表（系统命令 + UI + 技能）
+- ✅ 既有 `mvn test` + `npm run typecheck` 不破
 
 **Primary metric**: 至少 3 个命令端到端可用（不消耗 LLM token）
 **Behavior**: 🟡 中
