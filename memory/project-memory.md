@@ -26,6 +26,7 @@
 - **成本**：会话级 + **workspace 累计**（`GET /api/workspace/:id/stats`，顶栏/工作区列表）；完整仪表盘属 Spec Phase 2 M2.4。
 - **Hook（Phase 5 / M2.3）**：`HookingToolCallback`；按 `toolKind` 审批（`shell`/`mcp`/`file_delete` 需批；`file_write`/`shell_output` 免批）；同会话同工具+参数授权；`HostChannelGuard` 覆盖 REST/终端；`HallucinationGuard`；本机实例令牌 `X-Tepeu-Token`；`ApprovalStore.enableAutonomous` 供自主调度免人工批。
 - **自主调度（Phase 10）**：`ScheduleService` ticker；卡死 RUNNING 超时恢复；用量经 `TokenCostEstimator` 入 task；空回复状态 `EMPTY`。
+- **文件变更通知（Phase 12）**：`FileWatcherService`（JDK WatchService）递归监听全部 workspace 根目录；`GET /api/events` 常驻 SSE 推 `file_changed`（含 workspaceId，operation=create/modify/delete）；前端 `WorkspaceEventsProvider` 用 `EventSource('/api/events')` 喂 `workspaceEventBus`；`useFileBrowser` 按当前工作区过滤 + 300ms 防抖重载，`FileBrowserView` 同时刷目录树。忽略目录名：`.git/node_modules/target/dist/.claude/.forge`。设计见 ADR-012。
 - **多 Agent（Phase 6 / M2.1）**：`MultiAgentOrchestrator` 三角色流水线 + `Goal`；`POST /api/multi-agent/stream`；`MultiAgentView`。
 - **MCP（Phase 7 / M2.2）**：`McpToolBridge` 并入 ChatService；工具名 `mcp_*`；默认 `spring.ai.mcp.client.enabled=false`；`GET /api/mcp/status`。
 - **成本（Phase 8 / M2.4）**：`workspace_budget` + `BudgetService`；告警阈值 + 可选硬门禁；`CostDashboardView`；超预算阻断 chat/multi-agent。
@@ -47,6 +48,7 @@
 - **`mvn spring-boot:run` fork 的子 JVM 不会被 `TaskStop` 杀掉**：停服务要 `taskkill //F //PID <java-pid>`（`netstat -ano | grep 30141` 找 PID），否则端口 30141 被占 → 下次启动报 "Port already in use"。
 - **gstack browse 多步流程必须用 `chain`**：单条 `$B <cmd>` 之间不保留页面状态（每次回到 about:blank）；`$B js` 不 await Promise（不能用它做延时）；用 `wait --networkidle` 做真实等待。
 - **FileBrowserView mount 自动加载已修复**（2026-07-11）：原 `useFileBrowser` 无 mount 触发，须点 `~` 面包屑才列文件；已给 `FileBrowserView` 加 `useEffect(() => loadFiles('/'), [loadFiles])`。开 Files 即列文件（gstack 验：`seed.txt` 自动出现，`GET /api/files/list` 自动 200）。
+- **FileBrowserView 外部变更自动刷新**（2026-08-04，Phase 12）：外部/后台进程修改工作区文件后 5 秒内自动反映（FileWatcherService + `/api/events` SSE）。注意：常驻 SSE 连接会让 gstack `wait --networkidle` 永不触发，浏览器 E2E 用 `wait text=` 代替。
 - Phase 1 **功能验收已于 2026-07-11 通过**（API / 加密 / 浏览器视觉）。后续已合入工具写能力、ATE、远程 git。
 - **Git**：远程 `zxpmail/tepeu`，本地 `main` 跟踪 `origin/main`。尚无 v0.1.0 tag / GitHub Release（可选）。
 - **LLM 可达性**：视本机网络而定；公有云 API 可能需代理；可用兼容端点或本地 Ollama。

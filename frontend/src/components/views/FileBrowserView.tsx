@@ -138,7 +138,11 @@ export default function FileBrowserView({ fileBrowser, workspaceId }: FileBrowse
   }, [previewFile?.path])
 
   useEffect(() => {
-    return subscribe((path: string) => {
+    return subscribe((path: string, eventWorkspaceId?: string) => {
+      // 带 workspaceId 的事件必须匹配当前工作区；缺省视为当前工作区
+      if (eventWorkspaceId != null && eventWorkspaceId !== workspaceId) return
+      // 目录树已展开节点重载（Phase 12 外部文件变更自动反映）
+      setTreeRefreshKey(k => k + 1)
       const current = previewPathRef.current
       if (!current) return
       const norm = (p: string) => p.replace(/\\/g, '/').replace(/^\/+/, '')

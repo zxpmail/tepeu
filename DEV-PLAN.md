@@ -6,7 +6,7 @@
 > **命名注意（避免与 Product-Spec 混淆）**  
 > - **本文件 Phase 1–4** = v0.1.0 **交付切片**（骨架 → 对话 → 记忆/终端 → 发布）。**已完成。**  
 > - **本文件 Phase 5–9** = Product-Spec §9 **Phase 2（Harness / v0.2.0）** 交付切片（Hook → 多 Agent → MCP → 成本 → 发布）。**已完成。**  
-> - **本文件 Phase 10–18** = Product-Spec §9 **Phase 3（自主与生态 / v0.3→v1.0）** 交付切片（见下）。**Phase 10–11 已完成；下一刀 Phase 12（fs-notify）。**  
+> - **本文件 Phase 10–18** = Product-Spec §9 **Phase 3（自主与生态 / v0.3→v1.0）** 交付切片（见下）。**Phase 10–12 已完成；下一刀 Phase 13（后台任务通知）。**  
 > - **Product-Spec §9 Phase 1–3** = **产品里程碑**（Phase 1≈v0.1；Phase 2=Harness；Phase 3=自主与生态）。  
 > 勿将本文件「Phase 2 对话」与 Spec §9 Phase 2（Harness）混称。
 
@@ -393,26 +393,28 @@
 ## Phase 12: 文件变更通知（fs-notify）
 
 **Difficulty**: 🟢 低
-**Nature**: Backend
-**Status**: ⏳ 待确认
+**Nature**: Backend + Frontend
+**Status**: ✅ 已完成（2026-08-04：FileWatcherService 递归监听 + `GET /api/events` 常驻 SSE + 前端事件源自动刷新；mvn 242 测试全绿 + tsc + gstack E2E）
 
 **背景**：`FileBrowserView` 不自动刷新（project-memory 已记录），外部修改文件后用户须手动操作才能看到变化。
 
 **Deliverables**:
-- `FileWatcherService`（JDK `WatchService`）监听 workspace 目录变更
-- 收到 `ENTRY_CREATE/MODIFY/DELETE` 后经现有 SSE/WS 推 `file_changed` 事件
-- 前端 `FileBrowserView` 订阅事件自动刷新
+- `FileWatcherService`（JDK `WatchService`）监听 workspace 目录变更（递归注册子目录；忽略 `.git/node_modules/target/dist/.claude/.forge` 等）
+- 收到 `ENTRY_CREATE/MODIFY/DELETE` 后经 `GET /api/events` 常驻 SSE 推 `file_changed`（带 workspaceId）
+- 前端 `WorkspaceEventsProvider` 打开 `EventSource('/api/events')` 喂事件总线；`useFileBrowser` 订阅按当前工作区过滤防抖刷新；`FileBrowserView` 订阅同时刷新目录树
+- workspace 创建/删除时经 `WorkspaceService` 动态注册/注销监听
 
 **Key Files**:
-- `backend/.../service/FileWatcherService.java`
-- `backend/.../config/DatabaseConfig.java` 或独立配置注册 watcher
-- `frontend/src/hooks/useFileBrowser.ts`（订阅 file_changed 事件）
-- `frontend/src/components/views/FileBrowserView.tsx`
+- `backend/.../service/FileWatcherService.java` / `controller/FileEventsController.java`
+- `backend/.../service/WorkspaceService.java`（create/delete 接线）
+- `frontend/src/context/WorkspaceEvents.tsx`（事件源 + workspaceId 签名）
+- `frontend/src/hooks/useFileBrowser.ts`（订阅防抖重载）
+- `frontend/src/components/views/FileBrowserView.tsx`（树刷新）
 
 **Acceptance Criteria**:
-- 在工作区目录创建/修改/删除文件后前端 5 秒内自动反映
-- watcher 随 workspace 切换启停，不泄漏到其他工作区
-- 桌面布局回归不破
+- ✅ 在工作区目录创建/修改/删除文件后前端 5 秒内自动反映（gstack E2E：REST 写文件后 `watcher-e2e-*.txt` 无手动操作自动出现在列表）
+- ✅ 事件带 workspaceId、前端按当前工作区过滤，不泄漏到其他工作区（监听全部 + 前端过滤，见 ADR-012）
+- ✅ 桌面布局回归不破（mvn test + typecheck 全绿）
 
 **Primary metric**: 外部文件变更自动出现在文件列表中
 **Behavior**: 🟢 低

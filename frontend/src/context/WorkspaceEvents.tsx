@@ -1,10 +1,11 @@
 /**
- * 工作区文件变更事件总线 — 供 useChat 发出 file_changed，FileBrowserView 订阅刷新预览。
+ * 工作区文件变更事件总线 — 供 useChat / 全局 SSE 发出 file_changed，FileBrowserView 订阅刷新预览。
  * 同时提供 React Context（subscribe / emitFileChanged）。
+ * Phase 12：事件可携带 workspaceId；缺省视为「当前工作区」，订阅者按自身工作区过滤。
  */
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
 
-export type FileChangedHandler = (path: string) => void
+export type FileChangedHandler = (path: string, workspaceId?: string) => void
 
 /** 模块级事件总线，供非 React 调用方（如 useChat）直接 emit */
 const listeners = new Set<FileChangedHandler>()
@@ -15,27 +16,43 @@ export const workspaceEventBus = {
     listeners.add(fn)
     return () => { listeners.delete(fn) }
   },
-  /** 广播文件路径已变更 */
-  emitFileChanged(path: string): void {
+  /** 广播文件路径已变更（workspaceId 缺省 = 当前工作区） */
+  emitFileChanged(path: string, workspaceId?: string): void {
     for (const fn of listeners) {
-      try { fn(path) } catch { /* 单个订阅者异常不影响其他 */ }
+      try { fn(path, workspaceId) } catch { /* 单个订阅者异常不影响其他 */ }
     }
   },
 }
 
 interface WorkspaceEventsValue {
   subscribe: (fn: FileChangedHandler) => () => void
-  emitFileChanged: (path: string) => void
+  emitFileChanged: (path: string, workspaceId?: string) => void
 }
 
 const WorkspaceEventsContext = createContext<WorkspaceEventsValue | null>(null)
 
-/** 提供文件变更订阅/广播能力 */
+/** 提供文件变更订阅/广播能力；同时打开全局文件事件 SSE（GET /api/events）。 */
 export function WorkspaceEventsProvider({ children }: { children: ReactNode }) {
   const value = useMemo<WorkspaceEventsValue>(() => ({
     subscribe: workspaceEventBus.subscribe,
     emitFileChanged: workspaceEventBus.emitFileChanged,
   }), [])
+
+  // 常驻事件通道：后端 FileWatcherService 推送 file_changed → 模块级总线
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    es.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data as string) as
+          { type?: string; path?: string; workspaceId?: string }
+        if (data?.type === 'file_changed' && typeof data.path === 'string') {
+          workspaceEventBus.emitFileChanged(data.path, data.workspaceId)
+        }
+      } catch { /* 非 JSON 帧忽略 */ }
+    }
+    // EventSource 断线自动重连；卸载时关闭
+    return () => es.close()
+  }, [])
 
   return (
     <WorkspaceEventsContext.Provider value={value}>

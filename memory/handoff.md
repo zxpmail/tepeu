@@ -2,7 +2,7 @@
 
 > 到达后阅读序：本文件 → `CONTEXT.md` → `decisions-log.md`（ADR-008/009/010）→ DEV-PLAN Phase 12+。
 
-**Last updated**: 2026-08-02
+**Last updated**: 2026-08-04
 
 ## 当前阶段
 
@@ -14,9 +14,18 @@
 - ✅ **DEV-PLAN Phase 8 成本仪表盘审查项已收口**（顶栏告警、零预算、回退估价、中文门禁）
 - ✅ **DEV-PLAN Phase 10 自主 Agent 已完成**
 - ✅ **DEV-PLAN Phase 11 工具分类细化已完成**
-- ✅ Phase 1–11 审查项收口（**不含 Docker**）：DeleteFileTool 多 Agent 绑定、自主 delete 仍要批、终端工作区 CWD、文件删除 UI、Reviewer 只读白名单、MCP 资源读取、中文错误、DEV-PLAN 对齐
+- ✅ **DEV-PLAN Phase 12 文件变更通知已完成**（fs-notify）
+- ✅ Phase 1–12 审查项收口（**不含 Docker**）：DeleteFileTool 多 Agent 绑定、自主 delete 仍要批、终端工作区 CWD、文件删除 UI、Reviewer 只读白名单、MCP 资源读取、中文错误、DEV-PLAN 对齐
 - ✅ Phase 4/9：**Docker 卷路径与实测暂缓**（按你要求先不做）
-- ⏳ 下一刀：**Phase 12**（fs-notify），或你指定阶段号
+- ⏳ 下一刀：**Phase 13**（后台任务通知），或你指定阶段号
+
+## Phase 12 交付要点（2026-08-04）
+
+- `FileWatcherService`（JDK WatchService）：启动注册全部 workspace 根 + 递归子目录；忽略 `.git/node_modules/target/dist/.claude/.forge`；`WorkspaceService` create/delete 时动态注册/注销
+- 新 `GET /api/events` 常驻 SSE（`SseEmitter(0L)`，GET 只读免令牌）；事件 `{type:"file_changed", path, workspaceId, operation}`
+- 前端 `WorkspaceEventsProvider` 打开 `EventSource('/api/events')` 喂事件总线；`useFileBrowser` 订阅按当前工作区过滤 + 300ms 防抖重载；`FileBrowserView` 订阅同时刷目录树
+- 设计决策（ADR-012）：监听全部 + 前端过滤（等价「只对当前工作区生效、不泄漏」），而非随切换启停
+- 验证：`mvn test` 242 全绿 + `npm run typecheck` + gstack E2E（REST 写文件后自动出现在列表）
 
 ## Phase 11 交付要点
 

@@ -77,6 +77,12 @@
 - **Gate**: 须用户确认后写 plan-confirmed.json 再开 /dev-builder；WASM 阶段单独确认依赖选型。
 - **Out of scope for v0.3 首切片**: 集群高可用（Spec §8.2 远期）、交易/垂直业务复刻（ADR-008）。
 
+## ADR-012: 文件监听范围 — 监听全部 + 前端过滤（2026-08-04）
+- **Decision**: `FileWatcherService` 监听**全部** workspace 根目录（启动时经 `WorkspaceRepository` 枚举注册，`WorkspaceService` create/delete 时动态注册/注销）；`GET /api/events` 常驻 SSE 事件带 `workspaceId`；前端 `useFileBrowser` 按当前工作区过滤 + 防抖刷新。**不**做「随 workspace 切换启停」。
+- **Rationale**: DEV-PLAN Phase 12 原文「watcher 随 workspace 切换启停」实为「不泄漏到其他工作区」的意图；监听全部 + 前端过滤在效果上等价（非当前工作区的树不刷新），但实现更简单健壮——无重连窗口、无每工作区引用计数边角、workspace 数量少（单机个人工具）资源可忽略。
+- **Implied**: WatchService 不递归，需手动递归注册子目录并在新建目录时补注册；跳过 `.git/node_modules/target/dist/.claude/.forge` 等噪声目录，防 SSE 刷屏。
+- **Forward**: Phase 13（后台任务通知）可复用 `/api/events` 通道或在 `FileWatcherService` 上加通用 listener 总线。
+
 ## ADR-011: 本机实例令牌保护危险宿主 API（2026-08-02）
 - **Decision**: 用本机生成的实例令牌（X-Tepeu-Token，文件 ~/.tepeu/instance.token）保护审批与写/删/上传/恢复文件 API，以及终端 WebSocket；仅 localhost 可拉取令牌。可用 	epeu.security.instance-token-enabled 关闭。
 - **Rationale**: Phase 1 无完整登录（ADR-005），但审批与危险操作不能完全裸奔；实例令牌是单机最小门禁。

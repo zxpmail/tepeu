@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 class WorkspaceServiceTest {
 
     private WorkspaceRepository repository;
+    private FileWatcherService fileWatcherService;
     private WorkspaceService service;
 
     @TempDir
@@ -27,8 +28,20 @@ class WorkspaceServiceTest {
     @BeforeEach
     void setUp() {
         repository = mock(WorkspaceRepository.class);
-        service = new WorkspaceService(repository);
+        fileWatcherService = mock(FileWatcherService.class);
+        service = new WorkspaceService(repository, fileWatcherService);
         System.setProperty("user.dir", tempDir.toAbsolutePath().toString());
+    }
+
+    @Test
+    void createWorkspace_registersRootWithWatcher() throws Exception {
+        when(repository.save(any(Workspace.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Workspace saved = service.createWorkspace("新建", null, "personal", null);
+
+        assertNotNull(saved.getId());
+        verify(repository).save(any(Workspace.class));
+        verify(fileWatcherService).registerWorkspace(saved.getId(), "workspaces/" + saved.getId());
     }
 
     @Test
@@ -44,6 +57,7 @@ class WorkspaceServiceTest {
 
         assertTrue(service.deleteWorkspace(id));
         verify(repository).deleteById(id);
+        verify(fileWatcherService).unregisterWorkspace(id);
         assertFalse(Files.exists(dir));
     }
 

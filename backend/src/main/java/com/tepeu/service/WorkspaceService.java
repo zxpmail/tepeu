@@ -26,9 +26,11 @@ public class WorkspaceService {
     private static final Logger log = LoggerFactory.getLogger(WorkspaceService.class);
 
     private final WorkspaceRepository repository;
+    private final FileWatcherService fileWatcherService;
 
-    public WorkspaceService(WorkspaceRepository repository) {
+    public WorkspaceService(WorkspaceRepository repository, FileWatcherService fileWatcherService) {
         this.repository = repository;
+        this.fileWatcherService = fileWatcherService;
     }
 
     public List<Workspace> listWorkspaces() {
@@ -53,6 +55,8 @@ public class WorkspaceService {
         } catch (IOException e) {
             throw new RuntimeException("无法创建工作区目录: " + rootPath, e);
         }
+        // 新工作区目录加入文件监听（Phase 12）
+        fileWatcherService.registerWorkspace(id, rootPath);
         return saved;
     }
 
@@ -82,6 +86,8 @@ public class WorkspaceService {
             rootPath = "workspaces/" + id;
         }
         repository.deleteById(id);
+        // 先摘监听再清盘，避免删除过程产生 file_changed 事件（Phase 12）
+        fileWatcherService.unregisterWorkspace(id);
         deleteWorkspaceDirectorySafely(rootPath);
         return true;
     }
