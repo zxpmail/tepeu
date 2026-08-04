@@ -145,10 +145,34 @@ class FileWatcherServiceTest {
         assertFalse(hasEvent("create", "/b.txt", "ws1"), "events=" + events);
     }
 
-    private void drain() throws Exception {
-        // WatchService 事件由 OS 异步投递，稍等再排空
+    @Test
+    void repeatedWritesWithinWindow_areCoalescedToSingleEvent() throws Exception {
+        Path ws = tempDir.resolve("ws1");
+        Files.createDirectories(ws);
+        service.registerWorkspace("ws1", "ws1");
+        Files.writeString(ws.resolve("a.txt"), "hi");
+        drain();
+        events.clear();
+
+        // 同一合并窗口内多次写同一文件 → 只广播一条，取最后一次 operation（modify）
+        Files.writeString(ws.resolve("a.txt"), "v1");
+        Files.writeString(ws.resolve("a.txt"), "v2");
+        Files.writeString(ws.resolve("a.txt"), "v3");
         Thread.sleep(200);
         service.pollPendingEvents();
+        service.flushPending();
+
+        long modifies = events.stream()
+                .filter(e -> "modify".equals(e.get("operation"))).count();
+        assertEquals(1, modifies, "events=" + events);
+        assertEquals(1, events.size(), "events=" + events);
+    }
+
+    private void drain() throws Exception {
+        // WatchService 事件由 OS 异步投递，稍等再排空；合并窗口手动 flush
+        Thread.sleep(200);
+        service.pollPendingEvents();
+        service.flushPending();
     }
 
     private boolean hasEvent(String op, String path, String wsId) {

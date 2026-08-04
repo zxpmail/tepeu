@@ -4,6 +4,7 @@
  * Phase 12：事件可携带 workspaceId；缺省视为「当前工作区」，订阅者按自身工作区过滤。
  */
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
+import { openSharedFileEvents } from '../lib/sharedFileEvents'
 
 export type FileChangedHandler = (path: string, workspaceId?: string) => void
 
@@ -38,20 +39,11 @@ export function WorkspaceEventsProvider({ children }: { children: ReactNode }) {
     emitFileChanged: workspaceEventBus.emitFileChanged,
   }), [])
 
-  // 常驻事件通道：后端 FileWatcherService 推送 file_changed → 模块级总线
+  // 常驻事件通道：跨 tab 共享一条 SSE（仅 leader tab 持有连接），推送 file_changed → 模块级总线
   useEffect(() => {
-    const es = new EventSource('/api/events')
-    es.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data as string) as
-          { type?: string; path?: string; workspaceId?: string }
-        if (data?.type === 'file_changed' && typeof data.path === 'string') {
-          workspaceEventBus.emitFileChanged(data.path, data.workspaceId)
-        }
-      } catch { /* 非 JSON 帧忽略 */ }
-    }
-    // EventSource 断线自动重连；卸载时关闭
-    return () => es.close()
+    return openSharedFileEvents((path, workspaceId) => {
+      workspaceEventBus.emitFileChanged(path, workspaceId)
+    })
   }, [])
 
   return (

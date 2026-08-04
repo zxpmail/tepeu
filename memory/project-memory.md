@@ -26,7 +26,9 @@
 - **成本**：会话级 + **workspace 累计**（`GET /api/workspace/:id/stats`，顶栏/工作区列表）；完整仪表盘属 Spec Phase 2 M2.4。
 - **Hook（Phase 5 / M2.3）**：`HookingToolCallback`；按 `toolKind` 审批（`shell`/`mcp`/`file_delete` 需批；`file_write`/`shell_output` 免批）；同会话同工具+参数授权；`HostChannelGuard` 覆盖 REST/终端；`HallucinationGuard`；本机实例令牌 `X-Tepeu-Token`；`ApprovalStore.enableAutonomous` 供自主调度免人工批。
 - **自主调度（Phase 10）**：`ScheduleService` ticker；卡死 RUNNING 超时恢复；用量经 `TokenCostEstimator` 入 task；空回复状态 `EMPTY`。
-- **文件变更通知（Phase 12）**：`FileWatcherService`（JDK WatchService）递归监听全部 workspace 根目录；`GET /api/events` 常驻 SSE 推 `file_changed`（含 workspaceId，operation=create/modify/delete）；前端 `WorkspaceEventsProvider` 用 `EventSource('/api/events')` 喂 `workspaceEventBus`；`useFileBrowser` 按当前工作区过滤 + 300ms 防抖重载，`FileBrowserView` 同时刷目录树。忽略目录名：`.git/node_modules/target/dist/.claude/.forge`。设计见 ADR-012。
+- **文件变更通知（Phase 12）**：`FileWatcherService`（JDK WatchService）递归监听全部 workspace 根目录；`GET /api/events` 常驻 SSE 推 `file_changed`（含 workspaceId，operation=create/modify/delete）；前端 `WorkspaceEventsProvider` 用事件源喂 `workspaceEventBus`；`useFileBrowser` 按当前工作区过滤 + 300ms 防抖重载，`FileBrowserView` 同时刷目录树。忽略目录名：`.git/node_modules/target/dist/.claude/.forge`。设计见 ADR-012。
+  - **事件合并（2026-08-04 后补）**：`FileWatcherService` 250ms 窗口内同 (workspace,path) 只广播一条，保留「最显著」operation（delete > create > modify），降低频繁 MODIFY 刷屏。
+  - **多 tab 共享连接（2026-08-04 后补）**：`frontend/src/lib/sharedFileEvents.ts` 用 BroadcastChannel + localStorage 心跳做 leader 选举，**仅 leader tab 持有** EventSource('/api/events')，收到后经 channel 广播给所有 tab（含自己）；leader 失效后其他 tab 接管；无 BroadcastChannel 时回退直连。
 - **多 Agent（Phase 6 / M2.1）**：`MultiAgentOrchestrator` 三角色流水线 + `Goal`；`POST /api/multi-agent/stream`；`MultiAgentView`。
 - **MCP（Phase 7 / M2.2）**：`McpToolBridge` 并入 ChatService；工具名 `mcp_*`；默认 `spring.ai.mcp.client.enabled=false`；`GET /api/mcp/status`。
 - **成本（Phase 8 / M2.4）**：`workspace_budget` + `BudgetService`；告警阈值 + 可选硬门禁；`CostDashboardView`；超预算阻断 chat/multi-agent。

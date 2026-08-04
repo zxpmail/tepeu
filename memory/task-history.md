@@ -2,6 +2,7 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-04 | phase12-fixup | **Phase 12 风险修复：合并+多tab共享** | FileWatcherService 250ms 合并去重（delete>create>modify）；sharedFileEvents.ts BroadcastChannel+localStorage leader 多 tab 共享 SSE；mvn 243 全绿 + 双 tab E2E |
 | 2026-08-04 | phase12-fsnotify | **DEV-PLAN Phase 12 文件变更通知** | FileWatcherService 递归监听 + `GET /api/events` 常驻 SSE + 前端事件源自动刷新；监听全部+前端过滤（ADR-012）；mvn 242 全绿 + tsc + gstack E2E |
 | 2026-08-03 | p1-11-polish | **复查剩余项收口** | 中文错误扫尾、审批/审查文案、ToolKindsTest、handoff自主免批口径；Docker仍暂缓；mvn+tsc |
 | 2026-08-03 | p1-11-fixup | **Phase 1–11 审查项修改（无 Docker）** | 多Agent删工具绑定、自主delete仍批、终端CWD、删文件UI、Reviewer白名单、MCP读资源；Docker暂缓；mvn+tsc |

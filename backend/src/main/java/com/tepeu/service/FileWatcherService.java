@@ -18,11 +18,16 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -43,12 +48,16 @@ public class FileWatcherService {
     private static final Set<String> IGNORED_DIRS = Set.of(
             ".git", "node_modules", "target", "dist", ".claude", ".forge", ".idea", ".vscode");
 
+    /** 事件合并窗口：同一 (workspace, path) 在一个窗口内只广播一条，降低频繁 MODIFY 的 SSE 量。 */
+    private static final long FLUSH_INTERVAL_MS = 250;
+
     private final WorkspaceRepository workspaceRepository;
     private final ObjectMapper objectMapper;
 
     private volatile WatchService watchService;
     private volatile Thread watcherThread;
     private volatile boolean running;
+    private volatile ScheduledExecutorService scheduler;
 
     /** workspaceId → 已监听根目录（绝对路径） */
     private final Map<String, Path> workspaceRoots = new ConcurrentHashMap<>();
@@ -56,6 +65,14 @@ public class FileWatcherService {
     private final Map<WatchKey, Path> keyDirs = new ConcurrentHashMap<>();
     /** SSE 适配器 + 测试监听 */
     private final CopyOnWriteArrayList<Consumer<Map<String, Object>>> listeners = new CopyOnWriteArrayList<>();
+    /** 待广播事件（合并窗口内按 (workspaceId, path) 去重） */
+    private final Map<PathKey, PendingFileEvent> pending = new ConcurrentHashMap<>();
+
+    /** 待广播事件：同一路径取最后一次 operation。 */
+    private record PendingFileEvent(String workspaceId, String path, String operation) {}
+
+    /** 合并去重键（复合，免分隔符字符串）。 */
+    private record PathKey(String workspaceId, String path) {}
 
     public FileWatcherService(WorkspaceRepository workspaceRepository, ObjectMapper objectMapper) {
         this.workspaceRepository = workspaceRepository;
@@ -81,11 +98,22 @@ public class FileWatcherService {
         t.setDaemon(true);
         t.start();
         watcherThread = t;
+        ScheduledExecutorService s = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread st = new Thread(r, "tepeu-file-watcher-flush");
+            st.setDaemon(true);
+            return st;
+        });
+        scheduler = s;
+        s.scheduleAtFixedRate(this::flushPending, FLUSH_INTERVAL_MS, FLUSH_INTERVAL_MS, TimeUnit.MILLISECONDS);
     }
 
     @PreDestroy
     void shutdown() {
         running = false;
+        ScheduledExecutorService s = scheduler;
+        if (s != null) {
+            s.shutdownNow();
+        }
         WatchService ws = watchService;
         if (ws != null) {
             try {
@@ -230,12 +258,7 @@ public class FileWatcherService {
             if (workspaceId == null) {
                 continue;
             }
-            Map<String, Object> payload = new LinkedHashMap<>();
-            payload.put("type", "file_changed");
-            payload.put("path", toRelPath(workspaceRoots.get(workspaceId), full));
-            payload.put("workspaceId", workspaceId);
-            payload.put("operation", operationName(kind));
-            broadcast(payload);
+            accumulate(workspaceId, toRelPath(workspaceRoots.get(workspaceId), full), operationName(kind));
         }
         boolean valid = key.reset();
         if (!valid) {
@@ -273,6 +296,47 @@ public class FileWatcherService {
         if (kind == StandardWatchEventKinds.ENTRY_MODIFY) return "modify";
         if (kind == StandardWatchEventKinds.ENTRY_DELETE) return "delete";
         return "other";
+    }
+
+    // ---- 事件合并 ----
+
+    /** 合并窗口内同一 (workspace, path) 的事件，保留「最显著」operation（delete > create > modify）。 */
+    private void accumulate(String workspaceId, String path, String operation) {
+        synchronized (pending) {
+            PathKey key = new PathKey(workspaceId, path);
+            PendingFileEvent current = pending.get(key);
+            if (current == null || significance(operation) > significance(current.operation())) {
+                pending.put(key, new PendingFileEvent(workspaceId, path, operation));
+            }
+        }
+    }
+
+    private static int significance(String operation) {
+        return switch (operation) {
+            case "delete" -> 3;
+            case "create" -> 2;
+            default -> 1; // modify
+        };
+    }
+
+    /** 周期刷新（生产由 scheduler 调用；测试可手动调用）：把待发事件批量广播，每路径一条。 */
+    void flushPending() {
+        List<PendingFileEvent> batch;
+        synchronized (pending) {
+            if (pending.isEmpty()) {
+                return;
+            }
+            batch = new ArrayList<>(pending.values());
+            pending.clear();
+        }
+        for (PendingFileEvent e : batch) {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("type", "file_changed");
+            payload.put("path", e.path());
+            payload.put("workspaceId", e.workspaceId());
+            payload.put("operation", e.operation());
+            broadcast(payload);
+        }
     }
 
     // ---- 广播 / SSE ----

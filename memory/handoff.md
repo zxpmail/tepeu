@@ -26,6 +26,7 @@
 - 前端 `WorkspaceEventsProvider` 打开 `EventSource('/api/events')` 喂事件总线；`useFileBrowser` 订阅按当前工作区过滤 + 300ms 防抖重载；`FileBrowserView` 订阅同时刷目录树
 - 设计决策（ADR-012）：监听全部 + 前端过滤（等价「只对当前工作区生效、不泄漏」），而非随切换启停
 - 验证：`mvn test` 242 全绿 + `npm run typecheck` + gstack E2E（REST 写文件后自动出现在列表）
+- **后补两项风险修复（2026-08-04）**：① `FileWatcherService` 250ms 合并窗口去重（同路径保留 delete>create>modify）；② 多 tab 共享一条 SSE（`sharedFileEvents.ts` BroadcastChannel+localStorage leader，仅 leader 持有连接）。`mvn test` 243 全绿 + gstack 双 tab E2E（leader tab 写、non-leader tab 经 channel 自动看到）
 
 ## Phase 11 交付要点
 
