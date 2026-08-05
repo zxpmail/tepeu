@@ -60,22 +60,41 @@ public class MultiAgentController {
 
         String workspaceId = req.getWorkspaceId().trim();
         String provider = req.getProvider().trim();
-        if (budgetService.isBlocked(workspaceId)) {
-            send(emitter, sendLock, Map.of(
-                    "type", "error",
-                    "code", "BUDGET_EXCEEDED",
-                    "message", "工作区预算已用尽：请提高限额或关闭硬门禁后再试"));
+        try {
+            if (budgetService.isBlocked(workspaceId)) {
+                send(emitter, sendLock, Map.of(
+                        "type", "error",
+                        "code", "BUDGET_EXCEEDED",
+                        "message", "工作区预算已用尽：请提高限额或关闭硬门禁后再试"));
+                emitter.complete();
+                return emitter;
+            }
+        } catch (IllegalArgumentException e) {
+            // 不存在的 workspaceId：SSE error 事件，而非 JSON 400（前端按 SSE 解析）
+            send(emitter, sendLock, Map.of("type", "error", "code", "NOT_FOUND",
+                    "message", e.getMessage() == null ? "工作区不存在" : e.getMessage()));
             emitter.complete();
             return emitter;
         }
         String sessionId = req.getSessionId();
         if (sessionId == null || sessionId.isBlank()) {
             sessionId = sessionService.createSession(workspaceId, "Multi: " + trimTitle(req.getGoal())).getId();
-        } else if (sessionService.getSession(sessionId).isEmpty()) {
-            send(emitter, sendLock, Map.of("type", "error", "code", "NOT_FOUND",
-                    "message", "会话不存在：" + sessionId));
-            emitter.complete();
-            return emitter;
+        } else {
+            var existing = sessionService.getSession(sessionId);
+            if (existing.isEmpty()) {
+                send(emitter, sendLock, Map.of("type", "error", "code", "NOT_FOUND",
+                        "message", "会话不存在：" + sessionId));
+                emitter.complete();
+                return emitter;
+            }
+            // 会话↔工作区归属校验：工具根与消息归属必须一致（对齐 ChatController）
+            if (workspaceId != null && !workspaceId.isBlank()
+                    && !workspaceId.equals(existing.get().getWorkspaceId())) {
+                send(emitter, sendLock, Map.of("type", "error", "code", "WORKSPACE_MISMATCH",
+                        "message", "会话不属于该工作区，请切换到正确工作区或新建会话"));
+                emitter.complete();
+                return emitter;
+            }
         }
         final String resolvedSessionId = sessionId;
 

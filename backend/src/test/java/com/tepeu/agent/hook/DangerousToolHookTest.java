@@ -58,6 +58,26 @@ class DangerousToolHookTest {
     }
 
     @Test
+    void terminalShell_escapeIndicators_needApproval() {
+        // 越出工作区特征：重定向写盘 / 路径穿越 / 盘符绝对路径 → 不因「无害命令」免批
+        assertEquals(ToolHook.Verdict.NEED_APPROVAL,
+                hook.evaluate("terminal_shell", "{\"command\":\"echo hi > C:/evil.txt\"}"));
+        assertEquals(ToolHook.Verdict.NEED_APPROVAL,
+                hook.evaluate("terminal_shell", "{\"command\":\"type ..\\..\\secret.txt\"}"));
+        assertEquals(ToolHook.Verdict.NEED_APPROVAL,
+                hook.evaluate("terminal_shell", "{\"command\":\"dir C:\\\"}"));
+        assertEquals(ToolHook.Verdict.NEED_APPROVAL,
+                hook.evaluate("terminal_shell", "{\"command\":\"dir \\windows\"}"));
+        assertEquals(ToolHook.Verdict.NEED_APPROVAL,
+                hook.evaluate("terminal_shell", "{\"command\":\"dir | findstr x\"}"));
+        // 无越界特征的无害命令仍免批
+        assertEquals(ToolHook.Verdict.ALLOW,
+                hook.evaluate("terminal_shell", "{\"command\":\"echo hello\"}"));
+        assertEquals(ToolHook.Verdict.ALLOW,
+                hook.evaluate("terminal_shell", "{\"command\":\"dir workspace\"}"));
+    }
+
+    @Test
     void restDelete_andWrite_allowedInSandbox() {
         assertEquals(ToolHook.Verdict.ALLOW,
                 hook.evaluate("rest_delete_file", "{\"path\":\"/a\"}"));

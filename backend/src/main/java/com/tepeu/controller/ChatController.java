@@ -94,9 +94,17 @@ public class ChatController {
                 workspaceId = existingForBudget.get().getWorkspaceId();
             }
         }
-        if (workspaceId != null && !workspaceId.isBlank() && budgetService.isBlocked(workspaceId)) {
-            sendErrorEvent(emitter, sendLock, "BUDGET_EXCEEDED",
-                    "工作区预算已用尽：请提高限额或关闭硬门禁后再试");
+        try {
+            if (workspaceId != null && !workspaceId.isBlank() && budgetService.isBlocked(workspaceId)) {
+                sendErrorEvent(emitter, sendLock, "BUDGET_EXCEEDED",
+                        "工作区预算已用尽：请提高限额或关闭硬门禁后再试");
+                emitter.complete();
+                return emitter;
+            }
+        } catch (IllegalArgumentException e) {
+            // 不存在的 workspaceId：以 SSE error 事件回给前端（而非 JSON 400，破坏流解析）
+            sendErrorEvent(emitter, sendLock, "NOT_FOUND",
+                    e.getMessage() == null ? "工作区不存在" : e.getMessage());
             emitter.complete();
             return emitter;
         }
@@ -147,7 +155,8 @@ public class ChatController {
             return emitter;
         }
 
-        sessionService.appendMessage(resolvedSessionId, "user", req.getMessage());
+        var userMsg = sessionService.appendMessage(resolvedSessionId, "user", req.getMessage());
+        String userMessageId = userMsg == null ? null : userMsg.getId();
 
         List<Message> history = sessionService.listMessages(resolvedSessionId);
         final StringBuilder assistantText = new StringBuilder();
@@ -177,6 +186,7 @@ public class ChatController {
                 error -> {
                     log.error("Chat stream failed provider={} session={}: {}",
                             providerId, resolvedSessionId, error.toString(), error);
+                    rollbackUserMessage(resolvedSessionId, userMessageId);
                     idempotencyService.release(idemKey);
                     persistPartialAssistant(resolvedSessionId, assistantText.toString());
                     String[] mapped = mapError(error);
@@ -204,6 +214,7 @@ public class ChatController {
         emitter.onCompletion(() -> disposeQuietly(subscription.get()));
         emitter.onTimeout(() -> {
             disposeQuietly(subscription.get());
+            rollbackUserMessage(resolvedSessionId, userMessageId);
             idempotencyService.release(idemKey);
             persistPartialAssistant(resolvedSessionId, assistantText.toString());
             sendErrorEvent(emitter, sendLock, "SSE_TIMEOUT", "对话超时（5 分钟），请重试");
@@ -211,6 +222,7 @@ public class ChatController {
         });
         emitter.onError(t -> {
             disposeQuietly(subscription.get());
+            rollbackUserMessage(resolvedSessionId, userMessageId);
             idempotencyService.release(idemKey);
             persistPartialAssistant(resolvedSessionId, assistantText.toString());
         });
@@ -226,6 +238,16 @@ public class ChatController {
             sessionService.appendMessage(sessionId, "system", encoded);
         } catch (RuntimeException e) {
             log.debug("Tool trace persist skipped: {}", e.getMessage());
+        }
+    }
+
+    /** stream 失败/超时时回滚刚插入的 user 消息，避免同幂等键重试产生重复消息。 */
+    private void rollbackUserMessage(String sessionId, String messageId) {
+        if (messageId == null) return;
+        try {
+            sessionService.deleteMessage(messageId);
+        } catch (RuntimeException e) {
+            log.debug("Rollback user message skipped session={}: {}", sessionId, e.getMessage());
         }
     }
 

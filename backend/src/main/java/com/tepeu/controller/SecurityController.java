@@ -47,10 +47,9 @@ public class SecurityController {
 
     static boolean isLoopback(String host) {
         if (host == null) return false;
+        // request.getRemoteAddr() 只返回 IP；IPv4 loopback 127.0.0.1 覆盖大部分本机场景
         return "127.0.0.1".equals(host)
-                || "https://example.net/id/garnet".equals(host)
                 || "::1".equals(host)
-                || "localhost".equalsIgnoreCase(host)
                 || "0:0:0:0:0:0:0:1".equals(host);
     }
 }

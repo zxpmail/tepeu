@@ -55,6 +55,23 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("NOT_FOUND", "资源不存在"));
     }
 
+    /** DB 约束违反（如 workspace.type CHECK）：以 400 而非 500 返回，避免泄露 SQL 细节。 */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(
+            org.springframework.dao.DataIntegrityViolationException e) {
+        log.warn("Data integrity violation: {}", e.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error("VALIDATION_ERROR", "数据不符合约束，请检查输入字段"));
+    }
+
+    /** 上传超过 multipart 大小限制：413 而非 500（/api/files/upload、/api/skills/upload）。 */
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUploadTooLarge(
+            org.springframework.web.multipart.MaxUploadSizeExceededException e) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiResponse.error("FILE_TOO_LARGE", "文件超过上传大小限制"));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleRuntime(RuntimeException e) {
         log.error("Unhandled exception", e);

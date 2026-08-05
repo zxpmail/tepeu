@@ -2,7 +2,7 @@
  * IDE 三栏主壳 — 左会话/文件、中对话、右预览。
  * 关联：SessionSidebar、ChatView、RightFilePanel、App；顶栏展示会话用量与工作区累计。
  */
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import SessionSidebar from './SessionSidebar'
 import RightFilePanel from '../files/RightFilePanel'
 import ChatView from '../views/ChatView'
@@ -10,6 +10,7 @@ import ThemeToggle from '../common/ThemeToggle'
 import NotificationBell from './NotificationBell'
 import { api } from '../../api/client'
 import { sessionNavBus } from '../../context/sessionNav'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import type { BudgetStatus, Panel, Theme, Workspace, SessionStats, WorkspaceStats } from '../../types'
 import type { LastUsage } from '../../hooks/useChat'
 
@@ -29,7 +30,8 @@ export default function IdeShell({
   onNavigate,
   onOpenSession,
 }: IdeShellProps) {
-  const [leftOpen, setLeftOpen] = useState(true)
+  const isMobile = useIsMobile()
+  const [leftOpen, setLeftOpen] = useState(() => !isMobile)
   const [rightOpen, setRightOpen] = useState(false)
   const [openFile, setOpenFile] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | undefined>()
@@ -46,10 +48,22 @@ export default function IdeShell({
   const [budgetStatus, setBudgetStatus] = useState<BudgetStatus | null>(null)
   const pendingSessionRef = useRef<string | null>(null)
 
+  // 移动端默认抽屉/预览收起（useLayoutEffect 避免 resize 越界后一帧抽屉盖屏）；
+  // 移回桌面断点后恢复侧栏展开
+  useLayoutEffect(() => {
+    if (isMobile) {
+      setLeftOpen(false)
+      setRightOpen(false)
+    } else {
+      setLeftOpen(true)
+    }
+  }, [isMobile])
+
   const handleOpenFile = useCallback((path: string) => {
     setOpenFile(path)
     setRightOpen(true)
-  }, [])
+    if (isMobile) setLeftOpen(false)
+  }, [isMobile])
 
   // 自主面板 / 通知铃等请求打开历史会话（含次级面板挂载后的 pending 冲刷）
   useEffect(() => {
@@ -100,13 +114,18 @@ export default function IdeShell({
       {/* 顶栏 */}
       <header
         className="ide-topbar shrink-0 h-10 flex items-center gap-2 px-3 border-b select-none"
-        style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}
+        style={{ height: 'var(--ide-topbar-h, 40px)', borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}
       >
         <button
           type="button"
+          data-testid="sidebar-toggle"
           className="text-xs px-1.5 py-1 rounded"
           style={{ color: 'var(--color-text-secondary)' }}
-          onClick={() => setLeftOpen(o => !o)}
+          onClick={() => setLeftOpen(o => {
+            const next = !o
+            if (isMobile && next) setRightOpen(false)
+            return next
+          })}
           title={leftOpen ? '收起侧栏' : '展开侧栏'}
         >
           ☰
@@ -117,9 +136,13 @@ export default function IdeShell({
         </span>
 
         <div className="ml-auto flex items-center gap-2 text-[11px]" style={{ color: 'var(--color-text-dim)' }}>
-          <span title="本轮输入/输出 Token">↑{prompt} ↓{comp}</span>
-          <span title="当前会话费用">会话 ${sessionCost.toFixed(4)}</span>
-          <span title="当前工作区累计 Token/费用">区 {wsTokens} · ${wsCost.toFixed(4)}</span>
+          {!isMobile && (
+            <>
+              <span title="本轮输入/输出 Token">↑{prompt} ↓{comp}</span>
+              <span title="当前会话费用">会话 ${sessionCost.toFixed(4)}</span>
+              <span title="当前工作区累计 Token/费用">区 {wsTokens} · ${wsCost.toFixed(4)}</span>
+            </>
+          )}
           {budgetStatus?.blocked && (
             <button
               type="button"
@@ -150,12 +173,17 @@ export default function IdeShell({
               预算告警 {Math.min(100, Math.round((budgetStatus.usageRatio || 0) * 100))}%
             </button>
           )}
-          {chatStats.queueLength > 0 && <span>排队{chatStats.queueLength}</span>}
+          {!isMobile && chatStats.queueLength > 0 && <span>排队{chatStats.queueLength}</span>}
           <button
             type="button"
+            data-testid="preview-toggle"
             className="text-xs px-1.5 py-1 rounded"
             style={{ color: 'var(--color-text-secondary)' }}
-            onClick={() => setRightOpen(o => !o)}
+            onClick={() => setRightOpen(o => {
+              const next = !o
+              if (isMobile && next) setLeftOpen(false)
+              return next
+            })}
             title={rightOpen ? '收起预览' : '展开预览'}
           >
             ▥
@@ -166,6 +194,14 @@ export default function IdeShell({
       </header>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* 移动端抽屉遮罩（点按收起） */}
+        {isMobile && leftOpen && (
+          <div
+            data-testid="drawer-backdrop"
+            className="ide-backdrop"
+            onClick={() => setLeftOpen(false)}
+          />
+        )}
         {/* 左栏 */}
         <aside
           className={`ide-left border-r shrink-0 overflow-hidden ${leftOpen ? 'ide-panel-open' : 'ide-panel-closed'}`}
@@ -209,7 +245,10 @@ export default function IdeShell({
             <RightFilePanel
               path={openFile}
               workspaceId={workspace?.id}
-              onClose={() => setOpenFile(null)}
+              onClose={() => {
+                setOpenFile(null)
+                setRightOpen(false)
+              }}
             />
           </div>
         </aside>

@@ -119,14 +119,16 @@ public class MemoryRepository {
         if (tags == null || tags.isEmpty()) {
             return;
         }
+        // json_each 精确匹配数组元素：避免旧 LIKE 子串匹配误命中（如 "ai" 命中 "ai-coding"）
         String col = aliased ? "m.tags" : "tags";
         sql.append(" AND (");
         for (int i = 0; i < tags.size(); i++) {
             if (i > 0) {
                 sql.append(" OR ");
             }
-            sql.append(col).append(" LIKE ?");
-            params.add("%\"" + tags.get(i) + "\"%");
+            sql.append("EXISTS (SELECT 1 FROM json_each(").append(col)
+                    .append(") WHERE json_each.value = ?)");
+            params.add(tags.get(i));
         }
         sql.append(")");
     }

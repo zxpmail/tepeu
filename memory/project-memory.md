@@ -31,6 +31,7 @@
 - **文件变更通知（Phase 12）**：`FileWatcherService`（JDK WatchService）递归监听全部 workspace 根目录；`GET /api/events` 常驻 SSE 推 `file_changed`（含 workspaceId，operation=create/modify/delete）；前端 `WorkspaceEventsProvider` 用事件源喂 `workspaceEventBus`；`useFileBrowser` 按当前工作区过滤 + 300ms 防抖重载，`FileBrowserView` 同时刷目录树。忽略目录名：`.git/node_modules/target/dist/.claude/.forge`。设计见 ADR-012。
   - **事件合并（2026-08-04 后补）**：`FileWatcherService` 250ms 窗口内同 (workspace,path) 只广播一条，保留「最显著」operation（delete > create > modify），降低频繁 MODIFY 刷屏。
   - **多 tab 共享连接（2026-08-04 后补）**：`frontend/src/lib/sharedFileEvents.ts` 用 BroadcastChannel + localStorage 心跳做 leader 选举，**仅 leader tab 持有** EventSource('/api/events')，收到后经 channel 广播给所有 tab（含自己）；leader 失效后其他 tab 接管；无 BroadcastChannel 时回退直连。
+- **响应式 / 移动端（Phase 15）**：`useMediaQuery` hook（`useIsMobile`，断点 `max-width: 767px` 与 index.css 对齐）。左栏移动端变抽屉 overlay、右预览变全屏 overlay、顶栏 48px/44px 触控、token 统计折叠；`mobile-shell.spec.ts` 375×667 冒烟。设计见 ADR-014。
 - **多 Agent（Phase 6 / M2.1）**：`MultiAgentOrchestrator` 三角色流水线 + `Goal`；`POST /api/multi-agent/stream`；`MultiAgentView`。
 - **MCP（Phase 7 / M2.2）**：`McpToolBridge` 并入 ChatService；工具名 `mcp_*`；默认 `spring.ai.mcp.client.enabled=false`；`GET /api/mcp/status`。
 - **成本（Phase 8 / M2.4）**：`workspace_budget` + `BudgetService`；告警阈值 + 可选硬门禁；`CostDashboardView`；超预算阻断 chat/multi-agent。
@@ -39,6 +40,9 @@
 - ADR-008（Vibe-Trading）· ADR-009（ATE 裁切）— 细节勿在此重复。
 
 ## 已知坑点 / Gotchas
+
+- **`useChat.send` 对空 provider 静默早退（不追加用户消息）**（2026-08-05 修复）：`send()` 里 `if (!trimmed || !workspaceId || !provider) return`——若 provider 尚未加载完成就发送，消息被无声丢弃。`ChatView` 现用 `providerReadyRef`（effect 暴露的就绪 promise）在 `handleSend` 中 await 后再发；确无服务商则本地回合提示「暂无可用的模型服务商」。**不要在发送路径再次引入「空态早退」**，要 wait-then-send 或显式提示。
+- **Slash 目录是异步加载的**（`useSlashCommands`）：`isSystemCommand` 依赖已加载目录；未就绪时 slash 形式输入一律走后端（`handleSend` 用 `ready` guard），避免把已知命令误送 LLM。后端 `/api/slash` 本身就是权威目录，未知命令会返回「未知命令」。
 
 - **构建工具是 Maven（pom.xml），不是 Gradle**。`backend/gradle/` 是空目录残留，无 gradlew。后端命令用 `mvn`。DEV-PLAN/dev-map 曾误写 Gradle，已于 2026-07-11 修正。
 - **Spring AI 2.0 GA starter 命名为 `spring-ai-starter-model-*`**（openai/anthropic/ollama）。旧名 `spring-ai-*-spring-boot-starter` 在 2.0 已废弃，BOM `spring-ai-bom:2.0.0` 不再管理——用了会报 "version is missing"。

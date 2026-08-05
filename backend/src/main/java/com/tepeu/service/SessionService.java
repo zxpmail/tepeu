@@ -83,6 +83,12 @@ public class SessionService {
         return saved;
     }
 
+    /** 删除单条消息（stream 失败回滚 user 消息用，避免幂等重试重复插入）。 */
+    public void deleteMessage(String messageId) {
+        messageRepository.deleteById(messageId);
+        // 不 touch updatedAt：回滚不应改变会话的「最后活动」时间
+    }
+
     /** All messages for a session in chronological order — used by the orchestrator to build the
      *  prompt history. */
     public List<Message> listMessages(String sessionId) {

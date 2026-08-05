@@ -30,6 +30,18 @@ public class DangerousToolHook implements ToolHook {
     private static final Pattern SAFE_TERMINAL = Pattern.compile(
             "(?i)^\\s*(dir|cd|cls|type|echo|date|time|whoami|hostname|ver|help|pwd)\\b");
 
+    /**
+     * 使「无害命令」可能越出工作区的特征：重定向/管道写盘、路径穿越、盘符或根绝对路径。
+     * 匹配则即使命中 SAFE_TERMINAL 也不免批（与 agent run_command 一致走审批）。
+     */
+    private static final Pattern TERMINAL_ESCAPE = Pattern.compile(
+            "(?i)(?:"
+                    + "[<>|]"                          // 重定向 / 管道
+                    + "|\\.\\.(?:[\\\\/\\s]|$)"        // 路径穿越 ..
+                    + "|[a-z]:[\\\\/]"                 // 盘符绝对路径 C:\
+                    + "|(?:^|[\\s])[\\\\/]"            // 根相对路径 \xxx（盘根，非工作区）
+                    + ")");
+
     @Override
     public Verdict evaluate(String toolName, String argsJson) {
         if (toolName == null) {
@@ -39,7 +51,8 @@ public class DangerousToolHook implements ToolHook {
                 && isCatastrophic(argsJson)) {
             return Verdict.DENY;
         }
-        if ("terminal_shell".equals(toolName) && isSafeTerminal(argsJson)) {
+        if ("terminal_shell".equals(toolName)
+                && isSafeTerminal(argsJson) && !hasEscapePattern(argsJson)) {
             return Verdict.ALLOW;
         }
         String kind = ToolKinds.of(toolName);
@@ -49,19 +62,27 @@ public class DangerousToolHook implements ToolHook {
         return Verdict.ALLOW;
     }
 
-    static boolean isSafeTerminal(String argsJson) {
-        if (argsJson == null) return false;
-        // 粗提取 "command":"..."
+    /** 从 argsJson 粗提取 command 字段文本；无该字段时回退整个参数串。 */
+    private static String extractCommand(String argsJson) {
+        if (argsJson == null) return "";
         int i = argsJson.indexOf("\"command\"");
         if (i < 0) {
-            return SAFE_TERMINAL.matcher(argsJson.trim()).find();
+            return argsJson.trim();
         }
         int colon = argsJson.indexOf(':', i);
         int q1 = argsJson.indexOf('"', colon + 1);
         int q2 = argsJson.indexOf('"', q1 + 1);
-        if (q1 < 0 || q2 < 0) return false;
-        String cmd = argsJson.substring(q1 + 1, q2);
-        return SAFE_TERMINAL.matcher(cmd).find();
+        if (q1 < 0 || q2 < 0) return "";
+        return argsJson.substring(q1 + 1, q2);
+    }
+
+    static boolean isSafeTerminal(String argsJson) {
+        return SAFE_TERMINAL.matcher(extractCommand(argsJson)).find();
+    }
+
+    /** 命令含越界特征（重定向/管道/路径穿越/盘符或根绝对路径）。 */
+    static boolean hasEscapePattern(String argsJson) {
+        return TERMINAL_ESCAPE.matcher(extractCommand(argsJson)).find();
     }
 
     static boolean isCatastrophic(String argsJson) {

@@ -33,6 +33,8 @@ export function parseSlashLine(raw: string): { name: string; args: string[]; lin
 export function useSlashCommands() {
   const [catalog, setCatalog] = useState<SlashCatalogItem[]>([])
   const [loading, setLoading] = useState(false)
+  /** 首次目录加载是否完成（成功或失败）——目录未就绪时 slash 输入一律走后端，避免误送 LLM */
+  const [ready, setReady] = useState(false)
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -42,6 +44,7 @@ export function useSlashCommands() {
       setCatalog([])
     } finally {
       setLoading(false)
+      setReady(true)
     }
   }, [])
 
@@ -67,5 +70,5 @@ export function useSlashCommands() {
     }
   }, [])
 
-  return { catalog, loading, reload, isSystemCommand, execute, parseSlashLine }
+  return { catalog, loading, ready, reload, isSystemCommand, execute, parseSlashLine }
 }

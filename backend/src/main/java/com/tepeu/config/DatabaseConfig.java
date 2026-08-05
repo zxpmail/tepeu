@@ -64,6 +64,7 @@ public class DatabaseConfig {
             content_ref   TEXT NOT NULL,
             created_by_session TEXT,
             created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(workspace_id, file_path, version_no),
             FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
         );
 
@@ -75,7 +76,8 @@ public class DatabaseConfig {
             default_model TEXT,
             enabled       INTEGER DEFAULT 1,
             created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+            updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(provider_id)
         );
 
         CREATE TABLE IF NOT EXISTS message (
@@ -140,6 +142,7 @@ public class DatabaseConfig {
         );
         CREATE INDEX IF NOT EXISTS idx_session_workspace ON session(workspace_id);
         CREATE INDEX IF NOT EXISTS idx_task_workspace ON task(workspace_id);
+        CREATE INDEX IF NOT EXISTS idx_task_session ON task(session_id);
         CREATE INDEX IF NOT EXISTS idx_file_version_path ON file_version(workspace_id, file_path);
         CREATE INDEX IF NOT EXISTS idx_message_session ON message(session_id);
         CREATE INDEX IF NOT EXISTS idx_skill_workspace ON skill(workspace_id);

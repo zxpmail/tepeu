@@ -8,8 +8,28 @@
 
 - ✅ DEV-PLAN Phase 5–13（含复查修复）
 - ✅ **DEV-PLAN Phase 14 Slash 命令框架已完成**（2026-08-05）
-- ⏳ 下一刀：**Phase 15 多端适配**
+- ✅ **DEV-PLAN Phase 15 多端适配已完成**（2026-08-05）
+- ⏳ 下一刀：**Phase 16 应用市场（Spec M3.3）**
 - ⏳ Docker 暂缓
+
+## Phase 15 交付要点（2026-08-05）
+
+- 移动断点统一 `max-width: 767px`：`useMediaQuery` hook + CSS media query 混合实现
+- 左栏 → 抽屉 overlay（84vw≤320px，遮罩点击收起）；右预览 → 全屏 overlay
+- 顶栏 40→48px 容纳 ≥44px 触控按钮；token/费用统计移动端隐藏（预算徽章保留）
+- 顺手修复：预览 ✕ 现在真正关闭面板（原只清 openFile 留空面板）
+- 验证：`mobile-shell.spec.ts`（375×667 开工作区入口/发消息/开文件预览）+ 桌面回归 specs + 后端 262 单测全绿
+- 设计：ADR-014
+
+## Phase 14/15 复查修复（2026-08-05，三路对抗审查）
+
+- **前端**：Slash 目录异步竞态——目录未加载时 `/help` 会误走 LLM → `useSlashCommands` 加 `ready`，ChatView `handleSend` 未就绪时 slash 形式一律走后端；并发双击防重（`slashBusy` guard）；`runSlashLine` 抽公共（去 handleSend/handleSystemSlashPick 重复）
+- **前端**：补全候选 `slashIndex` 过滤变短后越界吞 Enter → clamp；候选 popup 移动端 44px（`completer-popup`）
+- **前端**：**provider 未就绪时发送静默丢消息**（`useChat.send` 空 provider 早退）→ `ChatView` 用 `providerReadyRef` await 就绪；确无 provider 时本地回合提示
+- **前端**（Phase 15）：`useLayoutEffect` 防 resize 一帧抽屉盖屏；移回桌面断点自动重开侧栏；关闭抽屉 box-shadow 清除；移动端 composer 右 padding 恢复对称；删死代码 `.ide-topbar{height:48px}`
+- **后端**：`SlashController` 删与 GlobalExceptionHandler 重复的 try/catch；`/tasks` 补工作区存在性校验（与 /status 一致，防伪 id 全零摘要）；测试补 `tasks_unknownWorkspace_throws`
+- **e2e**：`mobile-shell.spec` 文件改为 `openIde` 前写入（解耦文件树刷新时序）、断言 scope 到 `file-preview`、增补 375px Slash 候选检查
+- 验证：typecheck 0 / e2e（mobile+chat+app-shell+files+workspace）全绿 / 后端 263 单测 BUILD SUCCESS
 
 ## Phase 14 交付要点（2026-08-05）
 

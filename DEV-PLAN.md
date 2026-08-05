@@ -487,7 +487,7 @@
 
 **Difficulty**: 🟢 低  
 **Nature**: UI  
-**Status**: ⏳ 待确认
+**Status**: ✅ 完成（2026-08-05）
 
 **Deliverables**:
 - 窄屏布局：侧栏可折叠为底栏/抽屉；对话主区优先

@@ -155,7 +155,7 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
 
   const toolbar = (
     <div
-      className="shrink-0 h-9 flex items-center gap-0.5 px-2 border-b"
+      className="preview-toolbar shrink-0 h-9 flex items-center gap-0.5 px-2 border-b"
       style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}
     >
       <span className="text-xs truncate flex-1 px-1" style={{ color: 'var(--color-text)', fontFamily: 'var(--font-mono)' }}>
@@ -294,6 +294,7 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
   if (fullscreen) {
     return (
       <div
+        data-testid="file-preview"
         className="fixed inset-0 z-50 flex flex-col"
         style={{ backgroundColor: 'var(--color-bg)' }}
       >
@@ -304,7 +305,7 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div data-testid="file-preview" className="h-full flex flex-col overflow-hidden">
       {toolbar}
       {body}
     </div>

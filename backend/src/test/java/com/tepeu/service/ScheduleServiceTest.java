@@ -96,14 +96,20 @@ class ScheduleServiceTest {
         Session session = new Session("sess-1", "ws-1", "自主 · 日报");
         when(sessionService.createSession(eq("ws-1"), anyString())).thenReturn(session);
         when(sessionService.listMessages("sess-1")).thenReturn(List.of());
+        // 流订阅时刻（=运行期间）应处于自主免批状态
         when(orchestrator.streamTurn(anyString(), anyList(), any(), any(), anyString(), any(), anyString()))
-                .thenReturn(Flux.just(textChunk("摘要完成")));
+                .thenAnswer(inv -> {
+                    assertTrue(approvalStore.isAutonomous("sess-1"),
+                            "运行期间应处于自主免批状态");
+                    return Flux.just(textChunk("摘要完成"));
+                });
 
         service.execute("sch-1", true);
 
         assertEquals("SUCCESS", s.getLastStatus());
         assertEquals("sess-1", s.getLastSessionId());
-        assertTrue(approvalStore.isAutonomous("sess-1"));
+        assertFalse(approvalStore.isAutonomous("sess-1"),
+                "运行结束后应撤销自主免批，防止续用永久绕过审批");
         verify(sessionService).appendMessage("sess-1", "user", "写一份摘要");
         verify(sessionService).appendMessage("sess-1", "assistant", "摘要完成");
         verify(taskEvents).publish(eventOfType("task_completed"));

@@ -62,7 +62,7 @@ public class FileVersionRepository {
      * <p>The version number is computed as {@code MAX(version_no) + 1} for the same
      * {@code (workspace_id, file_path)}. If {@code id} is null a UUID is generated.
      */
-    public FileVersion save(FileVersion fileVersion) {
+    public synchronized FileVersion save(FileVersion fileVersion) {
         if (fileVersion.getId() == null) {
             fileVersion.setId(UUID.randomUUID().toString());
         }

@@ -277,6 +277,9 @@ public class ScheduleService {
             log.warn("Schedule {} failed: {}", id, e.toString());
             s.setLastSessionId(session.getId());
             fail(s, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
+        } finally {
+            // 撤销自主免批：会话只在本次调度运行期间豁免审批，避免用户续用被永久绕过
+            approvalStore.disableAutonomous(session.getId());
         }
     }
 
@@ -294,6 +297,11 @@ public class ScheduleService {
     void recoverStaleRunning() {
         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(staleRunningMinutes);
         for (AgentSchedule s : repository.findStaleRunning(cutoff)) {
+            if (isLocked(s.getId())) {
+                // 锁仍持有 = 虚拟线程仍在真实运行 → 超长任务误判保护，跳过恢复
+                log.debug("Schedule {} still running (lock held), skip recovery", s.getId());
+                continue;
+            }
             log.warn("Recovering stale RUNNING schedule {} lastRunAt={}", s.getId(), s.getLastRunAt());
             running.remove(s.getId());
             fail(s, "已恢复：任务卡在运行中（中断或超时超过 "

@@ -46,6 +46,10 @@ public class MemoryController {
 
     @PostMapping("/search")
     public ResponseEntity<ApiResponse<?>> searchMemories(@RequestBody MemorySearchRequest req) {
+        if (req == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("VALIDATION_ERROR", "请求体不能为空"));
+        }
         if (req.getWorkspaceId() == null) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("VALIDATION_ERROR", "需要指定工作区"));
@@ -71,6 +75,10 @@ public class MemoryController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<Memory>> createMemory(@RequestBody CreateMemoryRequest req) {
+        if (req == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("VALIDATION_ERROR", "请求体不能为空"));
+        }
         if (req.getWorkspaceId() == null || req.getContent() == null) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("VALIDATION_ERROR", "需要工作区与记忆内容"));

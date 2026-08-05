@@ -74,6 +74,24 @@ class ReadFileToolTest {
     }
 
     @Test
+    void readFile_multibyteTruncation_doesNotThrow() throws IOException {
+        // 中文 UTF-8 每字 3 字节：3000 字 = 9000 字节 > 8KB，但字符数 3000 < 8K
+        // 旧实现按字符下标 substring(0,8192) 会抛 StringIndexOutOfBoundsException
+        Files.writeString(tempDir.resolve("cn.txt"), "中文".repeat(3000));
+
+        String result = tools.readFile("/cn.txt");
+        assertTrue(result.contains("[truncated"), "should truncate large multibyte file");
+        assertTrue(result.contains(" bytes]"), "truncation marker carries byte count");
+    }
+
+    @Test
+    void readFile_multibyteUnderCap_returnsInFull() throws IOException {
+        Files.writeString(tempDir.resolve("cn-small.txt"), "中文".repeat(100)); // 600 bytes
+
+        assertEquals("中文".repeat(100), tools.readFile("/cn-small.txt"));
+    }
+
+    @Test
     void toolCallbacks_areDiscoverableWithExpectedNames() {
         ToolCallback[] callbacks = ToolCallbacks.from(tools);
         Set<String> names = Arrays.stream(callbacks)

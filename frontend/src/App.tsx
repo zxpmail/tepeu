@@ -116,12 +116,12 @@ export default function App() {
         {isSecondary ? (
           <>
             <header
-              className="h-10 flex items-center px-3 border-b shrink-0 select-none"
+              className="sec-topbar h-10 flex items-center px-3 border-b shrink-0 select-none"
               style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}
             >
               <button
                 type="button"
-                className="text-xs px-2 py-1 rounded mr-2"
+                className="sec-back text-xs px-2 py-1 rounded mr-2"
                 style={{ color: 'var(--color-accent)' }}
                 onClick={() => setActivePanel('chat')}
               >

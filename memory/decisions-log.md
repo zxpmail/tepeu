@@ -88,6 +88,11 @@
 - **Rationale**: Phase 1 无完整登录（ADR-005），但审批与危险操作不能完全裸奔；实例令牌是单机最小门禁。
 - **Not**: 多用户 OAuth/OIDC（仍属远期）。
 
+## ADR-014: 移动端布局 — 抽屉 + 全屏预览 + 44px 触控（2026-08-05）
+- **Decision**: 移动断点统一 `max-width: 767px`（与 minimap 断点一致）。`useMediaQuery` hook（JSX：顶栏统计折叠、抽屉状态、遮罩渲染）与 CSS media query（定位/触控）混合实现，不引入 Tailwind 响应式前缀（本仓零 `sm:/lg:`）。左栏在移动端变 fixed 抽屉（`min(84vw,320px)`，遮罩点击收起）；右预览变全屏 overlay（z-50）；顶栏 40→48px 容纳 ≥44px 按钮；顶栏 token/费用统计移动端隐藏（预算徽章保留）。预览 ✕ 现在真正关闭面板（原只清 `openFile` 留空面板，属顺手修复；桌面布局唯一行为变更）。
+- **Rationale**: DEV-PLAN Phase 15「侧栏可折叠为底栏/抽屉」——底栏放 9 个次级面板过紧，抽屉是 IDE 类常规形态且改动面小；右预览本就是沉浸式主任务，全屏最省事。44px 触控只覆盖主路径控件（顶栏/抽屉/发送/文件行/预览工具栏/返回），不逐像素打磨表格单元格、版本面板等深层次要控件。
+- **Verification**: `frontend/e2e/mobile-shell.spec.ts`（375×667：开工作区入口 → 发一条消息 → 打开文件预览）+ 桌面回归 specs（app-shell/files/workspace/chat）全绿；`useMediaQuery` 首次挂载用 `window.matchMedia`（浏览器环境，无 SSR 风险）。
+
 ## ADR-013: 后台任务通知用独立 `/api/task-events` SSE 通道（2026-08-05）
 - **Decision**: Phase 13 自主任务完成/失败通知走**独立** `GET /api/task-events` 常驻 SSE（`TaskEventNotifier` hub + `TaskEventController`），不复用 Phase 12 的 `/api/events` 文件事件通道。
 - **Rationale**: ADR-012 forward 提出「可复用 `/api/events` 或在 FileWatcherService 上加通用 listener 总线」，但两类事件特性不同：文件事件高频、需 250ms 合并 + 跨 tab leader 选举共享一条连接；任务通知低频、需每个 tab 都能即时弹出徽章/浏览器通知，且 `sharedFileEvents.ts` 已按 `file_changed` 专型化（parse + BroadcastChannel），塞入 task 事件会把它变成多职责模块。独立通道使后端（TaskEventNotifier 镜像 FileWatcherService 的 subscribe/sendJson/broadcast，~60 行）与前端（`useNotifications` 单例 EventSource，无需 leader 选举）都保持单一职责。事件同样走 `{type, ...}` 形状 + `SseEmitter.event().name("message")`，与 Phase 12 一致。

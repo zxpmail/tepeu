@@ -43,17 +43,25 @@ public class WorkspaceService {
 
     public Workspace createWorkspace(String name, String description, String type, String rootPath) {
         String id = UUID.randomUUID().toString();
+        String normalizedType = normalizeType(type);
         if (rootPath == null || rootPath.isBlank()) {
             rootPath = "workspaces/" + id;
         }
-        Workspace workspace = new Workspace(id, name, description, type, "local", rootPath);
-        Workspace saved = repository.save(workspace);
-        // 立刻创建磁盘目录，避免「工作区有了但文件树是空的且写不进去」
+        // 先建磁盘目录，再入库——避免「目录失败但 DB 行已存在」的孤儿行
+        Path dir = Paths.get(System.getProperty("user.dir"), rootPath).normalize();
         try {
-            Path dir = Paths.get(System.getProperty("user.dir"), rootPath).normalize();
             Files.createDirectories(dir);
         } catch (IOException e) {
             throw new RuntimeException("无法创建工作区目录: " + rootPath, e);
+        }
+        Workspace workspace = new Workspace(id, name, description, normalizedType, "local", rootPath);
+        Workspace saved;
+        try {
+            saved = repository.save(workspace);
+        } catch (RuntimeException e) {
+            // 目录已建但入库失败：清掉目录，避免孤儿目录
+            deleteWorkspaceDirectorySafely(rootPath);
+            throw e;
         }
         // 新工作区目录加入文件监听（Phase 12）
         fileWatcherService.registerWorkspace(id, rootPath);
@@ -68,7 +76,7 @@ public class WorkspaceService {
         Workspace w = existing.get();
         if (name != null) w.setName(name);
         if (description != null) w.setDescription(description);
-        if (type != null) w.setType(type);
+        if (type != null) w.setType(normalizeType(type));
         return Optional.of(repository.update(w));
     }
 
@@ -76,6 +84,18 @@ public class WorkspaceService {
      * 删除工作区：先读 root_path，再删库（级联会话/记忆等），最后安全删除磁盘目录。
      * 仅删除位于 {@code user.dir} 下的路径，防止误删任意绝对路径。
      */
+    /** 校验工作区类型：null/空白 → personal；非法值抛 400（而非 DB CHECK 500）。 */
+    private static String normalizeType(String type) {
+        if (type == null || type.isBlank()) {
+            return "personal";
+        }
+        String t = type.trim();
+        if (!"personal".equals(t) && !"enterprise".equals(t)) {
+            throw new IllegalArgumentException("type 只能是 personal 或 enterprise");
+        }
+        return t;
+    }
+
     public boolean deleteWorkspace(String id) {
         Optional<Workspace> existing = repository.findById(id);
         if (existing.isEmpty()) {

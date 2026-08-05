@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { api } from '../../api/client'
 import { useChat, type LastUsage } from '../../hooks/useChat'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import { parseSlashLine, useSlashCommands } from '../../hooks/useSlashCommands'
 import ChatInput from '../chat/ChatInput'
 import MessageView from '../chat/MessageView'
@@ -47,7 +48,8 @@ export default function ChatView({
     lastUsage, sessionStats, queueLength,
     pendingApprovals, decidingId, decideApproval,
   } = useChat()
-  const { catalog, isSystemCommand, execute: executeSlash } = useSlashCommands()
+  const { catalog, isSystemCommand, ready: slashReady, execute: executeSlash } = useSlashCommands()
+  const isMobile = useIsMobile()
   const [providers, setProviders] = useState<ProviderMetadata[]>([])
   const [provider, setProvider] = useState('')
   const [input, setInput] = useState('')
@@ -55,21 +57,27 @@ export default function ChatView({
   const [forking, setForking] = useState<string | null>(null)
   const [slashBusy, setSlashBusy] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const providerReadyRef = useRef<Promise<string> | null>(null)
 
   const displayItems = useMemo(() => groupChatMessages(messages), [messages])
   const minimapSources = useMemo(() => toMinimapSources(displayItems), [displayItems])
   const itemRefs = useItemRefs(minimapSources.length)
 
   useEffect(() => {
-    api.getAvailableProviders()
+    // 暴露 provider 就绪 promise：发送时若 provider 未就绪则等待，避免静默丢消息
+    providerReadyRef.current = api.getAvailableProviders()
       .then(list => {
         const enabled = list.filter(p => p.enabled)
         const pick = enabled.length > 0 ? enabled : list
         setProviders(pick.length > 0 ? pick : list)
-        if (pick.length > 0) setProvider(pick[0]!.id)
-        else if (list.length > 0) setProvider(list[0]!.id)
+        const pid = pick.length > 0 ? pick[0]!.id : (list.length > 0 ? list[0]!.id : '')
+        setProvider(pid)
+        return pid
       })
-      .catch(() => {})
+      .catch(() => {
+        setProviders([])
+        return ''
+      })
   }, [])
 
   useEffect(() => {
@@ -93,30 +101,42 @@ export default function ChatView({
     onRegisterActions?.({ reset, loadSession })
   }, [reset, loadSession, onRegisterActions])
 
+  /** 执行一条 slash 命令（不经 LLM）：压缩动作 → 本地回合；handleSend 与点选共用 */
+  const runSlashLine = async (line: string) => {
+    setSlashBusy(true)
+    setInput('')
+    try {
+      const result = await executeSlash(line, workspaceId, sessionId)
+      if (result.action === 'compact') {
+        reset()
+      }
+      appendLocalTurn(line, result.text)
+    } catch (e) {
+      appendLocalTurn(line, e instanceof Error ? e.message : '命令执行失败')
+    } finally {
+      setSlashBusy(false)
+    }
+  }
+
   const handleSend = async () => {
     const trimmed = input.trim()
-    if (!trimmed) return
+    if (!trimmed || slashBusy) return
 
     const parsed = parseSlashLine(trimmed)
-    if (parsed && parsed.name && isSystemCommand(parsed.name)) {
-      setSlashBusy(true)
-      setInput('')
-      try {
-        const result = await executeSlash(trimmed, workspaceId, sessionId)
-        if (result.action === 'compact') {
-          reset()
-        }
-        appendLocalTurn(trimmed, result.text)
-      } catch (e) {
-        appendLocalTurn(trimmed, e instanceof Error ? e.message : '命令执行失败')
-      } finally {
-        setSlashBusy(false)
-      }
+    // 目录未就绪时 slash 形式输入也一律走后端，避免把已知命令误送 LLM（Phase 14 保底）
+    if (parsed && parsed.name && (isSystemCommand(parsed.name) || !slashReady)) {
+      await runSlashLine(trimmed)
       return
     }
 
     if (!workspaceId) return
-    send(input, workspaceId, provider)
+    // provider 未就绪（首挂载竞态）时等待加载，避免 send() 因空 provider 静默丢弃用户消息
+    const pid = provider || (await providerReadyRef.current?.catch(() => '')) || providers[0]?.id || ''
+    if (!pid) {
+      appendLocalTurn(input, '暂无可用的模型服务商，请先到「服务商」配置后重试。')
+      return
+    }
+    send(input, workspaceId, pid)
     setInput('')
   }
 
@@ -135,23 +155,9 @@ export default function ChatView({
       setInput(`/${name} `)
       return
     }
-    setInput(`/${name}`)
-    // 下一帧发送，复用 handleSend 路径
+    // 下一帧执行，复用 runSlashLine 路径
     requestAnimationFrame(() => {
-      void (async () => {
-        const line = `/${name}`
-        setSlashBusy(true)
-        setInput('')
-        try {
-          const result = await executeSlash(line, workspaceId, sessionId)
-          if (result.action === 'compact') reset()
-          appendLocalTurn(line, result.text)
-        } catch (e) {
-          appendLocalTurn(line, e instanceof Error ? e.message : '命令执行失败')
-        } finally {
-          setSlashBusy(false)
-        }
-      })()
+      void runSlashLine(`/${name}`)
     })
   }
 
@@ -313,7 +319,7 @@ export default function ChatView({
         />
       </div>
 
-      <div className="shrink-0 px-4 pb-3 pt-1" style={{ paddingRight: 52 }}>
+      <div className="shrink-0 px-4 pb-3 pt-1" style={{ paddingRight: isMobile ? undefined : 52 }}>
         <div className="max-w-[820px] mx-auto">
           <ApprovalBanner
             items={pendingApprovals}

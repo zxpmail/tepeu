@@ -303,7 +303,8 @@ export default function ChatInput({
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         const exact = value.trim().slice(1)
-        const match = filteredSlash.find(c => c.name === exact) ?? filteredSlash[slashIndex]
+        // 过滤变短后 slashIndex 可能越界 → clamp，避免 Enter 被吞
+        const match = filteredSlash.find(c => c.name === exact) ?? filteredSlash[Math.min(slashIndex, filteredSlash.length - 1)]
         if (match) pickSlash(match)
         return
       }
@@ -346,7 +347,7 @@ export default function ChatInput({
       {/* @ 向上弹出：技能 + 文件 */}
       {atQuery !== null && atItems.length > 0 && (
         <div
-          className="absolute left-0 right-0 max-h-48 overflow-auto rounded-lg border text-sm z-20"
+          className="completer-popup absolute left-0 right-0 max-h-48 overflow-auto rounded-lg border text-sm z-20"
           style={{ ...popupStyle, bottom: 'calc(100% + 8px)' }}
         >
           {atItems.map((item, i) => (
@@ -373,7 +374,7 @@ export default function ChatInput({
       {/* / 向上弹出：界面命令 + 技能 */}
       {slashOpen && filteredSlash.length > 0 && (
         <div
-          className="absolute left-0 w-80 max-h-56 overflow-auto rounded-lg border text-sm z-20"
+          className="completer-popup absolute left-0 w-80 max-h-56 overflow-auto rounded-lg border text-sm z-20"
           style={{ ...popupStyle, bottom: 'calc(100% + 8px)' }}
         >
           {filteredSlash.map((cmd, i) => (

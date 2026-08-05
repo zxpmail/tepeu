@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -50,12 +52,19 @@ public class ReadFileTool extends WorkspaceBoundTool {
         }
         try {
             long size = Files.size(target);
-            if (size > MAX_READ_BYTES) {
-                String head = Files.readString(target).substring(0, MAX_READ_BYTES);
-                return head + "\n...[truncated: file is " + size + " bytes, showing first "
-                        + MAX_READ_BYTES + " bytes]";
+            // 只读前 MAX+1 字节：上限内返回全文，超限返回截断预览。
+            // 避免旧实现的整文件 readString 后按字符下标截断——多字节文件会越界崩溃，且大文件整读浪费内存。
+            try (InputStream in = Files.newInputStream(target)) {
+                byte[] buf = in.readNBytes(MAX_READ_BYTES + 1);
+                boolean truncated = buf.length > MAX_READ_BYTES;
+                int len = truncated ? MAX_READ_BYTES : buf.length;
+                String head = new String(buf, 0, len, StandardCharsets.UTF_8);
+                if (truncated) {
+                    return head + "\n...[truncated: file is " + size + " bytes, showing first "
+                            + MAX_READ_BYTES + " bytes]";
+                }
+                return head;
             }
-            return Files.readString(target);
         } catch (IOException e) {
             return "ERROR: failed to read file: " + e.getMessage();
         } catch (OutOfMemoryError e) {

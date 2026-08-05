@@ -118,6 +118,13 @@ public class ApprovalStore {
         }
     }
 
+    /** 撤销自主免批（调度运行结束调用），防止会话被续用时 shell 永久绕过审批。 */
+    public void disableAutonomous(String sessionId) {
+        if (sessionId != null) {
+            autonomousSessions.remove(sessionId);
+        }
+    }
+
     public boolean isAutonomous(String sessionId) {
         return sessionId != null && !sessionId.isBlank() && autonomousSessions.contains(sessionId);
     }

@@ -53,6 +53,10 @@ public class ScheduleController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> create(@RequestBody ScheduleRequest req) {
+        if (req == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("VALIDATION_ERROR", "请求体不能为空"));
+        }
         try {
             boolean enabled = req.getEnabled() == null || req.getEnabled();
             int interval = req.getIntervalMinutes() == null ? 60 : req.getIntervalMinutes();
@@ -71,6 +75,10 @@ public class ScheduleController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> update(@PathVariable String id, @RequestBody ScheduleRequest req) {
+        if (req == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("VALIDATION_ERROR", "请求体不能为空"));
+        }
         try {
             Optional<AgentSchedule> updated = scheduleService.update(
                     id,

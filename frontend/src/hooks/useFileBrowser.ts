@@ -17,19 +17,24 @@ export function useFileBrowser(workspaceId?: string) {
   const [error, setError] = useState<string | null>(null)
   const currentPathRef = useRef(currentPath)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** 请求序号：工作区切换时旧响应用序数淘汰，避免 stale 覆盖 */
+  const requestSeq = useRef(0)
 
   const loadFiles = useCallback(async (path: string = '/') => {
+    const seq = ++requestSeq.current
     setLoading(true)
     setError(null)
     try {
       const data = await api.listFiles(path, workspaceId)
+      if (seq !== requestSeq.current) return // 旧工作区的慢响应不覆盖新状态
       setFiles(data.items)
       setCurrentPath(data.path)
       currentPathRef.current = data.path
     } catch (e) {
+      if (seq !== requestSeq.current) return
       setError(e instanceof Error ? e.message : 'Failed to load files')
     } finally {
-      setLoading(false)
+      if (seq === requestSeq.current) setLoading(false)
     }
   }, [workspaceId])
 

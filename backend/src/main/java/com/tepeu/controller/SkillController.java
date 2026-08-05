@@ -67,6 +67,10 @@ public class SkillController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<?>> install(@RequestBody InstallSkillRequest req) {
+        if (req == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("VALIDATION_ERROR", "请求体不能为空"));
+        }
         if (req.getWorkspaceId() == null || req.getWorkspaceId().isBlank()) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("VALIDATION_ERROR", "workspaceId is required"));
@@ -122,7 +126,7 @@ public class SkillController {
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> setEnabled(
             @PathVariable String id, @RequestBody UpdateSkillRequest req) {
-        if (req.getEnabled() == null) {
+        if (req == null || req.getEnabled() == null) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("VALIDATION_ERROR", "enabled is required"));
         }

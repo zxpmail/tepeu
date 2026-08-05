@@ -48,26 +48,22 @@ public class SlashController {
         return ResponseEntity.ok(ApiResponse.success(items));
     }
 
+    /** 命令执行错误统一由 GlobalExceptionHandler 映射（IllegalArgumentException → 400 VALIDATION_ERROR）。 */
     @PostMapping
     public ResponseEntity<ApiResponse<?>> execute(@RequestBody SlashExecuteRequest req) {
-        try {
-            ParsedLine parsed = parseCommandLine(req != null ? req.getCommand() : null);
-            SlashContext ctx = new SlashContext(
-                    req != null ? req.getWorkspaceId() : null,
-                    req != null ? req.getSessionId() : null,
-                    parsed.args());
-            SlashResult result = registry.execute(parsed.name(), ctx);
-            Map<String, Object> data = new LinkedHashMap<>();
-            data.put("command", parsed.name());
-            data.put("text", result.text());
-            if (result.action() != null) {
-                data.put("action", result.action());
-            }
-            return ResponseEntity.ok(ApiResponse.success(data));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("VALIDATION_ERROR", e.getMessage()));
+        ParsedLine parsed = parseCommandLine(req != null ? req.getCommand() : null);
+        SlashContext ctx = new SlashContext(
+                req != null ? req.getWorkspaceId() : null,
+                req != null ? req.getSessionId() : null,
+                parsed.args());
+        SlashResult result = registry.execute(parsed.name(), ctx);
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("command", parsed.name());
+        data.put("text", result.text());
+        if (result.action() != null) {
+            data.put("action", result.action());
         }
+        return ResponseEntity.ok(ApiResponse.success(data));
     }
 
     /** 解析 {@code /help}、{@code help}、{@code /schedule list} */

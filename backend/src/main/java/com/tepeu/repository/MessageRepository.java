@@ -76,4 +76,9 @@ public class MessageRepository {
     public void deleteBySessionId(String sessionId) {
         jdbc.update("DELETE FROM message WHERE session_id = ?", sessionId);
     }
+
+    /** 删除单条消息（幂等重试回滚用：stream 失败时移除已插入的 user 消息）。 */
+    public void deleteById(String id) {
+        jdbc.update("DELETE FROM message WHERE id = ?", id);
+    }
 }
