@@ -16,11 +16,4 @@ public record SlashContext(
         }
         return args.get(index);
     }
-
-    public String argsJoined() {
-        if (args == null || args.isEmpty()) {
-            return "";
-        }
-        return String.join(" ", args);
-    }
 }

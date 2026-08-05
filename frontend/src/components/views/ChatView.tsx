@@ -44,7 +44,7 @@ export default function ChatView({
 }: ChatViewProps) {
   const {
     messages, streaming, error, sessionId,
-    send, stop, reset, loadSession, appendLocalTurn,
+    send, stop, reset, clearScreen, loadSession, appendLocalTurn,
     lastUsage, sessionStats, queueLength,
     pendingApprovals, decidingId, decideApproval,
   } = useChat()
@@ -56,6 +56,7 @@ export default function ChatView({
   const [sessions, setSessions] = useState<{ id: string; title: string | null }[]>([])
   const [forking, setForking] = useState<string | null>(null)
   const [slashBusy, setSlashBusy] = useState(false)
+  const slashBusyRef = useRef(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const providerReadyRef = useRef<Promise<string> | null>(null)
 
@@ -103,17 +104,22 @@ export default function ChatView({
 
   /** 执行一条 slash 命令（不经 LLM）：压缩动作 → 本地回合；handleSend 与点选共用 */
   const runSlashLine = async (line: string) => {
+    // 并发防重：点选路径经 requestAnimationFrame 可能双击触发两条
+    if (slashBusyRef.current) return
+    slashBusyRef.current = true
     setSlashBusy(true)
     setInput('')
     try {
       const result = await executeSlash(line, workspaceId, sessionId)
       if (result.action === 'compact') {
-        reset()
+        // 清屏但保留当前会话（compact 语义，不 detach）
+        clearScreen()
       }
       appendLocalTurn(line, result.text)
     } catch (e) {
       appendLocalTurn(line, e instanceof Error ? e.message : '命令执行失败')
     } finally {
+      slashBusyRef.current = false
       setSlashBusy(false)
     }
   }
@@ -123,6 +129,12 @@ export default function ChatView({
     if (!trimmed || slashBusy) return
 
     const parsed = parseSlashLine(trimmed)
+    // 裸 "/"：本地提示，不送 LLM
+    if (parsed && !parsed.name) {
+      appendLocalTurn(trimmed, '请输入命令名，如 /help 查看可用命令。')
+      setInput('')
+      return
+    }
     // 目录未就绪时 slash 形式输入也一律走后端，避免把已知命令误送 LLM（Phase 14 保底）
     if (parsed && parsed.name && (isSystemCommand(parsed.name) || !slashReady)) {
       await runSlashLine(trimmed)

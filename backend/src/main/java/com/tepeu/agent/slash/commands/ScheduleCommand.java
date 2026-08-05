@@ -5,6 +5,7 @@ import com.tepeu.agent.slash.SlashContext;
 import com.tepeu.agent.slash.SlashResult;
 import com.tepeu.model.AgentSchedule;
 import com.tepeu.service.ScheduleService;
+import com.tepeu.service.WorkspaceService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,9 +18,11 @@ import java.util.Locale;
 public class ScheduleCommand implements SlashCommand {
 
     private final ScheduleService scheduleService;
+    private final WorkspaceService workspaceService;
 
-    public ScheduleCommand(ScheduleService scheduleService) {
+    public ScheduleCommand(ScheduleService scheduleService, WorkspaceService workspaceService) {
         this.scheduleService = scheduleService;
+        this.workspaceService = workspaceService;
     }
 
     @Override
@@ -46,6 +49,9 @@ public class ScheduleCommand implements SlashCommand {
                 return SlashResult.text("用法：/schedule [list]\n未知子命令：" + sub);
             }
         }
+        // 与 /status、/tasks 一致：校验工作区存在，避免伪 id 返回空列表
+        workspaceService.getWorkspace(ctx.workspaceId())
+                .orElseThrow(() -> new IllegalArgumentException("工作区不存在：" + ctx.workspaceId()));
         List<AgentSchedule> items = scheduleService.list(ctx.workspaceId());
         if (items.isEmpty()) {
             return SlashResult.text("当前工作区暂无自主任务。可在侧栏「自主」面板新建。");

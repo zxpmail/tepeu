@@ -8,6 +8,7 @@ import {
   type KeyboardEvent, type ChangeEvent, type CompositionEvent,
 } from 'react'
 import { api } from '../../api/client'
+import type { SlashCatalogItem } from '../../hooks/useSlashCommands'
 import type { FileItem, Skill } from '../../types'
 
 const UI_SLASH_COMMANDS = [
@@ -20,12 +21,6 @@ type SlashItem =
   | { name: string; label: string; kind: 'ui' }
   | { name: string; label: string; kind: 'system'; usage: string }
   | { name: string; label: string; kind: 'skill'; slug: string }
-
-export interface SystemSlashHint {
-  name: string
-  description: string
-  usage: string
-}
 
 type AtItem =
   | { kind: 'skill'; key: string; label: string; insert: string }
@@ -45,7 +40,7 @@ interface ChatInputProps {
   workspaceId?: string
   onSlashCommand?: (cmd: string) => void
   /** 后端内置 Slash 目录（Phase 14） */
-  systemSlashCommands?: SystemSlashHint[]
+  systemSlashCommands?: SlashCatalogItem[]
   /** 选中系统命令时：填入 usage 或立即执行（无参命令） */
   onSystemSlashPick?: (name: string, usage: string) => void
   /** 底栏服务商选择 */

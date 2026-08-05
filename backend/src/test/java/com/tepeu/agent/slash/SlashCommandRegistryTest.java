@@ -42,7 +42,7 @@ class SlashCommandRegistryTest {
         // Help 需要 Lazy registry：先建临时，再重建含 Help 的完整表
         CompactCommand compact = new CompactCommand();
         TasksCommand tasks = new TasksCommand(taskService, workspaceService);
-        ScheduleCommand schedule = new ScheduleCommand(scheduleService);
+        ScheduleCommand schedule = new ScheduleCommand(scheduleService, workspaceService);
         StatusCommand status = new StatusCommand(workspaceService, budgetService, sessionService);
         HelpCommand help = new HelpCommand();
 
@@ -61,6 +61,8 @@ class SlashCommandRegistryTest {
 
     @Test
     void scheduleList_returnsSchedules() {
+        when(workspaceService.getWorkspace("ws-1"))
+                .thenReturn(Optional.of(new Workspace("ws-1", "演示区", null, "personal", "local")));
         AgentSchedule s = new AgentSchedule();
         s.setName("日报");
         s.setIntervalMinutes(60);
@@ -78,6 +80,14 @@ class SlashCommandRegistryTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> registry.execute("schedule", new SlashContext(null, null, List.of())));
         assertTrue(ex.getMessage().contains("工作区"));
+    }
+
+    @Test
+    void schedule_unknownWorkspace_throws() {
+        when(workspaceService.getWorkspace("ws-missing")).thenReturn(Optional.empty());
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> registry.execute("schedule", new SlashContext("ws-missing", null, List.of("list"))));
+        assertTrue(ex.getMessage().contains("工作区不存在"));
     }
 
     @Test

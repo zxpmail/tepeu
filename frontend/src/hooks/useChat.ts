@@ -143,6 +143,24 @@ export function useChat() {
 
   const stop = useCallback(() => { abortRef.current?.abort() }, [])
 
+  /**
+   * 清空本屏但不脱离当前会话（/compact 语义）：保留 sessionId，下次发送续旧会话。
+   * reset() 会 detach 会话，不能用于 compact。
+   */
+  const clearScreen = useCallback(() => {
+    abortRef.current?.abort()
+    pendingQueue.current = []
+    setQueueLength(0)
+    setMessages([])
+    setError(null)
+    setLastUsage(null)
+    setSessionStats(null)
+    setPendingApprovals([])
+    setDecidingId(null)
+    lastSendRef.current = null
+    setStreamingBoth(false)
+  }, [])
+
   /** 刷新会话统计 */
   const refreshStats = useCallback(async (sid: string) => {
     try {
@@ -450,6 +468,7 @@ export function useChat() {
     send,
     stop,
     reset,
+    clearScreen,
     loadSession,
     appendLocalTurn,
     setSessionId: syncSessionId,
