@@ -380,6 +380,10 @@ body {
     min-width: 44px;
     min-height: 44px;
   }
+  /* 移动端右栏已是全屏 overlay，内部「全屏/退出」按钮无意义 → 隐藏 */
+  .ide-right .preview-fs-btn {
+    display: none;
+  }
 
   /* 对话发送/停止 */
   .chat-composer-card button {

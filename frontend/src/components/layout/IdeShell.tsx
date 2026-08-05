@@ -59,6 +59,19 @@ export default function IdeShell({
     }
   }, [isMobile])
 
+  // 移动端预览为全屏 overlay：Esc 关闭整块（内部 fullscreen 按钮已隐藏）
+  useEffect(() => {
+    if (!isMobile || !rightOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpenFile(null)
+        setRightOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isMobile, rightOpen])
+
   const handleOpenFile = useCallback((path: string) => {
     setOpenFile(path)
     setRightOpen(true)
@@ -204,7 +217,7 @@ export default function IdeShell({
         )}
         {/* 左栏 */}
         <aside
-          className={`ide-left border-r shrink-0 overflow-hidden ${leftOpen ? 'ide-panel-open' : 'ide-panel-closed'}`}
+          className={`ide-left border-r shrink-0 overflow-hidden ${leftOpen ? '' : 'ide-panel-closed'}`}
           style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-sidebar-bg)' }}
         >
           <div className="ide-left-inner h-full">
@@ -215,8 +228,13 @@ export default function IdeShell({
               onSelectSession={(id) => {
                 if (id === null) chatActions?.reset()
                 else void chatActions?.loadSession(id)
+                // 移动端选会话后收起抽屉（与打开文件收起一致）
+                if (isMobile) setLeftOpen(false)
               }}
-              onNewSession={() => chatActions?.reset()}
+              onNewSession={() => {
+                chatActions?.reset()
+                if (isMobile) setLeftOpen(false)
+              }}
               onOpenFile={handleOpenFile}
               onNavigate={onNavigate}
             />

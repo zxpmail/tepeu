@@ -43,5 +43,15 @@ test.describe('移动端（375×667）', () => {
     await page.getByRole('button', { name: new RegExp(fileName) }).click()
     await expect(page.getByTestId('file-preview')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByTestId('file-preview').getByText(fileName)).toBeVisible({ timeout: 15_000 })
+
+    // 5) 预览 ✕ 真正关闭面板（Phase 15 修复：不再只清 openFile 留空面板）
+    await page.getByRole('button', { name: '关闭' }).click()
+    await expect(page.getByTestId('file-preview')).toBeHidden({ timeout: 10_000 })
+
+    // 6) 移动端点「+ 新建」后抽屉收起（Phase 15 修复：与打开文件收起一致）
+    await page.getByTestId('sidebar-toggle').click()
+    await expect(page.getByTestId('drawer-backdrop')).toBeVisible()
+    await page.getByTestId('btn-new-session').click()
+    await expect(page.getByTestId('drawer-backdrop')).toBeHidden()
   })
 })

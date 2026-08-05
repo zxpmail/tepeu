@@ -174,7 +174,7 @@ export default function RightFilePanel({ path, workspaceId, onClose }: RightFile
         type="button"
         title={fullscreen ? '退出全屏 (Esc)' : '面板全屏'}
         onClick={toggleFullscreen}
-        className="preview-tool-btn text-[11px] px-2"
+        className="preview-fs-btn preview-tool-btn text-[11px] px-2"
         style={{ color: 'var(--color-text)' }}
       >
         {fullscreen ? '退出' : '全屏'}
