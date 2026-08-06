@@ -135,6 +135,12 @@ export default function ChatView({
       setInput('')
       return
     }
+    // 纯前端命令：手打回车与点选菜单一致，禁止误送 LLM
+    if (parsed && (parsed.name === 'clear' || parsed.name === 'new' || parsed.name === 'files')) {
+      handleSlashCommand(parsed.name)
+      setInput('')
+      return
+    }
     // 目录未就绪时 slash 形式输入也一律走后端，避免把已知命令误送 LLM（Phase 14 保底）
     if (parsed && parsed.name && (isSystemCommand(parsed.name) || !slashReady)) {
       await runSlashLine(trimmed)

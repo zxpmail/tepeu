@@ -89,6 +89,18 @@ public class SessionService {
         // 不 touch updatedAt：回滚不应改变会话的「最后活动」时间
     }
 
+    /**
+     * 清空会话全部消息但保留会话本身（/compact）。
+     * 下次对话历史为空，真正减少送入模型的上下文。
+     */
+    public void clearMessages(String sessionId) {
+        if (sessionRepository.findById(sessionId).isEmpty()) {
+            throw new IllegalArgumentException("会话不存在：" + sessionId);
+        }
+        messageRepository.deleteBySessionId(sessionId);
+        sessionRepository.touchUpdatedAt(sessionId);
+    }
+
     /** All messages for a session in chronological order — used by the orchestrator to build the
      *  prompt history. */
     public List<Message> listMessages(String sessionId) {

@@ -13,13 +13,15 @@
 
     <groupId>com.tepeu</groupId>
     <artifactId>tepeu-backend</artifactId>
-    <version>0.2.0</version>
+    <version>1.0.0</version>
     <name>Tepeu Backend</name>
     <description>Tepeu Agentic Operating System - Backend</description>
 
     <properties>
         <java.version>21</java.version>
         <spring-ai.version>2.0.0</spring-ai.version>
+        <!-- Phase 17：技能脚本沙箱（GraalJS / Polyglot，精确 patch） -->
+        <graalvm.polyglot.version>24.2.1</graalvm.polyglot.version>
     </properties>
 
     <dependencies>
@@ -77,6 +79,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Phase 17：GraalJS 技能脚本沙箱（社区版，可在 HotSpot JDK 21 嵌入） -->
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>polyglot</artifactId>
+            <version>${graalvm.polyglot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>js-community</artifactId>
+            <version>${graalvm.polyglot.version}</version>
+            <type>pom</type>
         </dependency>
 
         <!-- Spring Boot Test -->

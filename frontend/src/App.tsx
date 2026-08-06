@@ -11,6 +11,7 @@ import MemoryView from './components/views/MemoryView'
 import TerminalView from './components/views/TerminalView'
 import ProviderSettingsView from './components/views/ProviderSettingsView'
 import SkillsView from './components/views/SkillsView'
+import MarketplaceView from './components/views/MarketplaceView'
 import MultiAgentView from './components/views/MultiAgentView'
 import CostDashboardView from './components/views/CostDashboardView'
 import ScheduleView from './components/views/ScheduleView'
@@ -22,7 +23,7 @@ import { ensureInstanceToken } from './security/instanceToken'
 import type { Panel } from './types'
 
 /** 次级全屏面板（非 IDE 主路径） */
-const SECONDARY_PANELS: Panel[] = ['workspace', 'files', 'memory', 'terminal', 'provider', 'skills', 'multi', 'cost', 'schedule']
+const SECONDARY_PANELS: Panel[] = ['workspace', 'files', 'memory', 'terminal', 'provider', 'skills', 'marketplace', 'multi', 'cost', 'schedule']
 
 export default function App() {
   const { theme, setTheme } = useTheme()
@@ -89,6 +90,8 @@ export default function App() {
         return <ProviderSettingsView />
       case 'skills':
         return <SkillsView workspaceId={workspace.current?.id} />
+      case 'marketplace':
+        return <MarketplaceView workspaceId={workspace.current?.id} />
       case 'multi':
         return (
           <MultiAgentView
@@ -133,6 +136,7 @@ export default function App() {
                 {activePanel === 'files' && '文件'}
                 {activePanel === 'memory' && '记忆'}
                 {activePanel === 'skills' && '技能'}
+                {activePanel === 'marketplace' && '市场'}
                 {activePanel === 'multi' && '多 Agent'}
                 {activePanel === 'schedule' && '自主'}
                 {activePanel === 'cost' && '成本'}

@@ -2,7 +2,7 @@
  * API client — fetch wrapper with unified error handling.
  * Returns the unwrapped `data` payload for all endpoints; throws ApiError on non-2xx / non-OK.
  */
-import type { Workspace, Memory, FileItem, FileVersion, LlmProvider, ChatSession, ChatMessageBE, ProviderMetadata, SessionStats, WorkspaceStats, BudgetStatus, McpStatus, Skill, AgentSchedule } from '../types'
+import type { Workspace, Memory, FileItem, FileVersion, LlmProvider, ChatSession, ChatMessageBE, ProviderMetadata, SessionStats, WorkspaceStats, BudgetStatus, McpStatus, Skill, AgentSchedule, MarketplaceCatalog } from '../types'
 import { ensureInstanceToken, getInstanceTokenSync } from '../security/instanceToken'
 
 const BASE_URL = '/api'
@@ -282,6 +282,22 @@ export const api = {
     }),
   deleteSkill: (id: string) =>
     request<void>(`/skills/${id}`, { method: 'DELETE' }),
+
+  /** 应用市场（Spec M3.3） */
+  getMarketplaceCatalog: (workspaceId?: string, q?: string) => {
+    const params = new URLSearchParams()
+    if (workspaceId) params.set('workspaceId', workspaceId)
+    if (q) params.set('q', q)
+    const qs = params.toString()
+    return request<MarketplaceCatalog>(
+      `/marketplace/catalog${qs ? `?${qs}` : ''}`,
+    )
+  },
+  installMarketplaceSkill: (workspaceId: string, entryId: string) =>
+    request<Skill>('/marketplace/install', {
+      method: 'POST',
+      body: JSON.stringify({ workspaceId, entryId }),
+    }),
 
   /** 自主 Agent 定时任务（Spec M3.1） */
   listSchedules: (workspaceId: string) =>

@@ -511,7 +511,7 @@
 
 **Difficulty**: 🟡 中  
 **Nature**: Backend + UI  
-**Status**: ⏳ 待确认
+**Status**: ✅ 已完成（2026-08-07）
 
 **Deliverables**:
 - 技能目录源：本地索引 + 可选远程清单 URL（默认 ReqForge / 配置项）
@@ -529,13 +529,18 @@
 **Primary metric**: 从市场安装 ≥1 个技能成功  
 **Behavior**: 🟡 中
 
+**Done notes**:
+- 内置 `marketplace/catalog.json` + classpath 示例技能 `hello-assistant`（离线可装）
+- 本机 ReqForge `core/skills` 扫描合并；可选 `tepeu.marketplace.manifest-url`
+- API：`GET /api/marketplace/catalog`、`POST /api/marketplace/install`；skill 表 `install_source` / `install_version`
+
 ---
 
 ## Phase 17: WASM+V8 运行时（Spec M3.2）
 
 **Difficulty**: 🔴 高  
 **Nature**: Backend  
-**Status**: ⏳ 待确认
+**Status**: ✅ 已完成（2026-08-07）
 
 **Deliverables**:
 - 选型落地（优先评估 GraalJS / wasmtime-java 与现有 JDK21 兼容性）
@@ -553,13 +558,18 @@
 **Primary metric**: 隔离边界测试绿  
 **Behavior**: 🔴 高（须单独确认依赖与威胁模型）
 
+**Done notes**:
+- ADR-015：选用 GraalJS `js-community` 24.2.1；wasmtime 原生 WASM 延后
+- `ScriptSandbox` + `WorkspaceScriptFs`；工具 `run_skill_script`（demo / `/scripts/*.js`）
+- 隔离单测：工作区读写、穿越拒绝、`Java.type` 拒绝、超时强制中断
+
 ---
 
 ## Phase 18: v1.0.0 发布（Spec M3.5）
 
 **Difficulty**: 🟢 低  
 **Nature**: Integration  
-**Status**: ⏳ 待确认
+**Status**: ✅ 已完成（2026-08-07）
 
 **Deliverables**:
 - `RELEASE_NOTES-v1.0.0.md`
@@ -572,6 +582,12 @@
 
 **Primary metric**: 发布说明 + 可构建  
 **Behavior**: 🟢 低
+
+**Done notes**:
+- `RELEASE_NOTES-v1.0.0.md` + 版本 `1.0.0`（pom / package.json / SetupWizard / README）
+- Docker：定义校验通过；本机无 CLI → build 仍暂缓
+- Spec §10 基线表已写入发布说明（多数性能/社区指标标明未测）
+- tag / GitHub Release **未打**（须批准）
 
 ---
 

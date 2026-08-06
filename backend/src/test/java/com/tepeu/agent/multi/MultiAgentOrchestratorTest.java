@@ -6,7 +6,9 @@ import com.tepeu.agent.tool.ListDirTool;
 import com.tepeu.agent.tool.ReadFileTool;
 import com.tepeu.agent.tool.ReadOutputTool;
 import com.tepeu.agent.tool.RunCommandTool;
+import com.tepeu.agent.tool.RunSkillScriptTool;
 import com.tepeu.agent.tool.SearchFileTool;
+import com.tepeu.runtime.ScriptSandbox;
 import com.tepeu.agent.tool.ToolEventEmitter;
 import com.tepeu.agent.tool.WriteFileTool;
 import com.tepeu.service.SessionService;
@@ -54,6 +56,7 @@ class MultiAgentOrchestratorTest {
         CommandOutputStore store = new CommandOutputStore();
         RunCommandTool runCommandTool = RunCommandTool.forTests(temp, store);
         ReadOutputTool readOutputTool = new ReadOutputTool(store);
+        RunSkillScriptTool runSkillScriptTool = RunSkillScriptTool.forTests(temp, new ScriptSandbox(5000));
         orchestrator = new MultiAgentOrchestrator(
                 chatService,
                 new AgentRolePrompts("", "", ""),
@@ -61,7 +64,7 @@ class MultiAgentOrchestratorTest {
                 taskService,
                 new TokenCostEstimator(),
                 listDirTool, readFileTool, writeFileTool,
-                searchFileTool, deleteFileTool, runCommandTool, readOutputTool);
+                searchFileTool, deleteFileTool, runCommandTool, readOutputTool, runSkillScriptTool);
         events = new ArrayList<>();
     }
 

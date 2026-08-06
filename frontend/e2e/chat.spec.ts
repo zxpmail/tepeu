@@ -25,4 +25,25 @@ test.describe('对话', () => {
     await page.getByTestId('chat-input').fill('/')
     await expect(page.getByText('清空对话')).toBeVisible({ timeout: 10_000 })
   })
+
+  test('/help 不走模型直接出结果', async ({ page, request }) => {
+    await openIde(page, request)
+    await page.getByTestId('chat-input').fill('/help')
+    await page.getByTestId('chat-send').click()
+    await expect(page.getByText(/内置命令/).first()).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('/schedule').first()).toBeVisible()
+  })
+
+  test('手打 /clear 清空对话不送模型', async ({ page, request }) => {
+    await openIde(page, request)
+    // 先用 /help 插入一轮，再 /clear
+    await page.getByTestId('chat-input').fill('/help')
+    await page.getByTestId('chat-send').click()
+    await expect(page.getByText(/内置命令/).first()).toBeVisible({ timeout: 15_000 })
+    await page.getByTestId('chat-input').fill('/clear')
+    await page.getByTestId('chat-send').click()
+    await expect(page.getByText(/内置命令/)).toHaveCount(0, { timeout: 10_000 })
+    await expect(page.getByTestId('chat-input')).toHaveValue('')
+    await expect(page.getByText('/clear')).toHaveCount(0)
+  })
 })

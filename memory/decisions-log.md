@@ -88,6 +88,16 @@
 - **Rationale**: Phase 1 无完整登录（ADR-005），但审批与危险操作不能完全裸奔；实例令牌是单机最小门禁。
 - **Not**: 多用户 OAuth/OIDC（仍属远期）。
 
+## ADR-015: 技能脚本运行时选型 — GraalJS 沙箱，WASM 原生延后（2026-08-07）
+- **Decision**: Phase 17（Spec M3.2）采用 **GraalJS（Polyglot `js-community` 24.2.1）** 作为「技能脚本」隔离执行引擎；**不引入 wasmtime-java / 原生 WASM 宿主**。脚本仅通过显式 `fs` 宿主 API 读写当前 workspace；禁止 IO/进程/线程/任意 Java 类查找；默认超时强制 `Context.close(true)` 中断。
+- **Rationale**:
+  1. Spec 写「WASM+V8 Isolates」目标是轻量 Agent 隔离；GraalJS Context 提供相近的 per-run 隔离与限权模型，且 Maven 精确版本可在现有 **JDK 21 HotSpot** 上嵌入，无需换 GraalVM JDK。
+  2. `wasmtime-java` 依赖平台原生库与 JNI，部署面（Windows/Linux 双轨、CI）远大于本阶段「最小沙箱 + demo 工具」收益。
+  3. 威胁模型（本阶段）：不可信脚本 → 默认无主机能力；唯一出口是 `WorkspaceScriptFs`（路径必须落在 workspace 根内，穿越/`..` 拒绝）；超时防死循环；不暴露 `java`/`Packages`/`Process`。残留风险：同进程内存侧信道、Polyglot 解释器性能；完整多租户硬隔离仍需进程/容器层（远期）。
+- **Alternatives**: wasmtime-java（原生 WASM，部署重）；纯 Java AST 解释器（生态差）；GraalWasm（可与 JS 同 Polyglot，但本阶段无 WASM 技能包需求）。
+- **Forward**: 若社区技能需要真正 `.wasm` 模块，再评估 GraalWasm 或独立 wasmtime 子进程；保持同一 `run_skill_script` 工具面。
+- **Config**: `tepeu.runtime.script-timeout-ms`（默认 5000）；工具名 `run_skill_script`（toolKind=`script`，免批，因已沙箱化）。
+
 ## ADR-014: 移动端布局 — 抽屉 + 全屏预览 + 44px 触控（2026-08-05）
 - **Decision**: 移动断点统一 `max-width: 767px`（与 minimap 断点一致）。`useMediaQuery` hook（JSX：顶栏统计折叠、抽屉状态、遮罩渲染）与 CSS media query（定位/触控）混合实现，不引入 Tailwind 响应式前缀（本仓零 `sm:/lg:`）。左栏在移动端变 fixed 抽屉（`min(84vw,320px)`，遮罩点击收起）；右预览变全屏 overlay（z-50）；顶栏 40→48px 容纳 ≥44px 按钮；顶栏 token/费用统计移动端隐藏（预算徽章保留）。预览 ✕ 现在真正关闭面板（原只清 `openFile` 留空面板，属顺手修复；桌面布局唯一行为变更）。
 - **Rationale**: DEV-PLAN Phase 15「侧栏可折叠为底栏/抽屉」——底栏放 9 个次级面板过紧，抽屉是 IDE 类常规形态且改动面小；右预览本就是沉浸式主任务，全屏最省事。44px 触控只覆盖主路径控件（顶栏/抽屉/发送/文件行/预览工具栏/返回），不逐像素打磨表格单元格、版本面板等深层次要控件。

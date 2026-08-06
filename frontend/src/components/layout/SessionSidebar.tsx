@@ -23,6 +23,7 @@ const SECONDARY: { id: Panel; label: string }[] = [
   { id: 'files', label: '文件' },
   { id: 'memory', label: '记忆' },
   { id: 'skills', label: '技能' },
+  { id: 'marketplace', label: '市场' },
   { id: 'multi', label: '多 Agent' },
   { id: 'schedule', label: '自主' },
   { id: 'cost', label: '成本' },

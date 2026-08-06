@@ -2,6 +2,9 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-07 | phase18-v1 | **DEV-PLAN Phase 18 / v1.0.0** | RELEASE_NOTES；版本 1.0.0；§10 基线；Docker 定义校验；tag 未打待批 |
+| 2026-08-07 | phase17-runtime | **DEV-PLAN Phase 17 技能脚本沙箱** | ADR-015 GraalJS 24.2.1；run_skill_script；超时强制中断；wasmtime 延后 |
+| 2026-08-07 | phase16-market | **DEV-PLAN Phase 16 应用市场** | 内置目录+本机扫描+可选远程；MarketplaceView；install_source/version；离线可装 hello-assistant |
 | 2026-08-05 | phase14-slash | **DEV-PLAN Phase 14 Slash 命令框架** | Registry+5 命令；GET/POST /api/slash；ChatInput 候选+发送拦截不经 LLM；mvn/tsc 通过 |
 | 2026-08-05 | phase13-notify | **DEV-PLAN Phase 13 后台任务通知** | TaskEventNotifier + GET /api/task-events 独立 SSE 通道（ADR-013）；ScheduleService 终态发布 task_completed/task_failed；前端 useNotifications store + NotificationBell 徽章/下拉/浏览器通知；ScheduleView 完成/失败标记+时间戳+事件驱动刷新；mvn 246 全绿 + typecheck + gstack E2E 双路径 |
 | 2026-08-04 | phase12-fixup | **Phase 12 风险修复：合并+多tab共享** | FileWatcherService 250ms 合并去重（delete>create>modify）；sharedFileEvents.ts BroadcastChannel+localStorage leader 多 tab 共享 SSE；mvn 243 全绿 + 双 tab E2E |

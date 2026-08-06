@@ -17,6 +17,7 @@ class ToolKindsTest {
         assertEquals("file_search", ToolKinds.of("search_files"));
         assertEquals("shell", ToolKinds.of("run_command"));
         assertEquals("shell_output", ToolKinds.of("read_output"));
+        assertEquals("script", ToolKinds.of("run_skill_script"));
     }
 
     @Test
@@ -44,5 +45,6 @@ class ToolKindsTest {
         assertFalse(ToolKinds.needsApproval("file_search"));
         assertFalse(ToolKinds.needsApproval("file_read"));
         assertFalse(ToolKinds.needsApproval("file_rest"));
+        assertFalse(ToolKinds.needsApproval("script"));
     }
 }

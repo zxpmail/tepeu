@@ -98,6 +98,8 @@ public class DatabaseConfig {
             content       TEXT NOT NULL,
             enabled       INTEGER DEFAULT 0,
             builtin       INTEGER DEFAULT 0,
+            install_source TEXT,
+            install_version TEXT,
             created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(workspace_id, slug),
@@ -177,6 +179,16 @@ public class DatabaseConfig {
         }
         try {
             jt.execute("ALTER TABLE session ADD COLUMN fork_from_message_id TEXT");
+        } catch (Exception ignored) {
+            // column already exists — safe to ignore
+        }
+        try {
+            jt.execute("ALTER TABLE skill ADD COLUMN install_source TEXT");
+        } catch (Exception ignored) {
+            // column already exists — safe to ignore
+        }
+        try {
+            jt.execute("ALTER TABLE skill ADD COLUMN install_version TEXT");
         } catch (Exception ignored) {
             // column already exists — safe to ignore
         }

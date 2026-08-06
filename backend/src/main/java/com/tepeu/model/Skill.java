@@ -16,6 +16,10 @@ public class Skill {
     private String content;
     private boolean enabled;
     private boolean builtin;
+    /** 安装来源，如 builtin:classpath / local:… / github / remote:… */
+    private String installSource;
+    /** 安装时记录的版本（目录声明或 frontmatter） */
+    private String installVersion;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -37,6 +41,10 @@ public class Skill {
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public boolean isBuiltin() { return builtin; }
     public void setBuiltin(boolean builtin) { this.builtin = builtin; }
+    public String getInstallSource() { return installSource; }
+    public void setInstallSource(String installSource) { this.installSource = installSource; }
+    public String getInstallVersion() { return installVersion; }
+    public void setInstallVersion(String installVersion) { this.installVersion = installVersion; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

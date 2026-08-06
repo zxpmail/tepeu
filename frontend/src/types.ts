@@ -122,7 +122,7 @@ export interface FileVersion {
   createdAt: string
 }
 
-export type Panel = 'workspace' | 'files' | 'chat' | 'memory' | 'terminal' | 'provider' | 'skills' | 'multi' | 'cost' | 'schedule'
+export type Panel = 'workspace' | 'files' | 'chat' | 'memory' | 'terminal' | 'provider' | 'skills' | 'marketplace' | 'multi' | 'cost' | 'schedule'
 
 /** 自主 Agent 定时任务 */
 export interface AgentSchedule {
@@ -152,6 +152,32 @@ export interface Skill {
   content: string
   enabled: boolean
   builtin: boolean
+  installSource?: string | null
+  installVersion?: string | null
   createdAt?: string
   updatedAt?: string
+}
+
+/** 应用市场目录条目 */
+export interface MarketplaceEntry {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  version: string | null
+  category: string
+  tags: string[]
+  availability: string
+  installed: boolean
+  installedSkillId?: string | null
+  installedVersion?: string | null
+}
+
+export interface MarketplaceCatalog {
+  catalogVersion: string
+  localRoot: string | null
+  remoteManifestUrl: string | null
+  remoteLoaded: boolean
+  remoteError?: string | null
+  entries: MarketplaceEntry[]
 }

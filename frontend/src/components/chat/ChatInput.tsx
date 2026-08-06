@@ -116,6 +116,12 @@ export default function ChatInput({
     return /^\/\S*$/.test(t.trim())
   }, [])
 
+  // 系统/界面命令占坑：同名技能不进 / 候选，避免与 /help 等冲突
+  const reservedSlashNames = new Set<string>([
+    ...UI_SLASH_COMMANDS.map(c => c.name.toLowerCase()),
+    ...systemSlashCommands.map(c => c.name.toLowerCase()),
+  ])
+
   const slashItems: SlashItem[] = [
     ...UI_SLASH_COMMANDS,
     ...systemSlashCommands.map(c => ({
@@ -125,6 +131,7 @@ export default function ChatInput({
       usage: c.usage,
     })),
     ...[...skills]
+      .filter(s => !reservedSlashNames.has(s.slug.toLowerCase()))
       .sort((a, b) => Number(b.enabled) - Number(a.enabled) || a.slug.localeCompare(b.slug))
       .map(s => ({
         name: s.slug,

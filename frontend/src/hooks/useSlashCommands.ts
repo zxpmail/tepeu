@@ -30,22 +30,37 @@ export function parseSlashLine(raw: string): { name: string; args: string[]; lin
   return { name, args, line }
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 export function useSlashCommands() {
   const [catalog, setCatalog] = useState<SlashCatalogItem[]>([])
   const [loading, setLoading] = useState(false)
   /** 首次目录加载是否完成（成功或失败）——目录未就绪时 slash 输入一律走后端，避免误送 LLM */
   const [ready, setReady] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const reload = useCallback(async () => {
     setLoading(true)
-    try {
-      setCatalog(await api.listSlashCommands())
-    } catch {
-      setCatalog([])
-    } finally {
-      setLoading(false)
-      setReady(true)
+    setLoadError(null)
+    let lastErr: unknown = null
+    // 失败重试一次，降低瞬时网络抖动导致候选为空的概率
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        setCatalog(await api.listSlashCommands())
+        setReady(true)
+        setLoading(false)
+        return
+      } catch (e) {
+        lastErr = e
+        if (attempt === 0) await delay(400)
+      }
     }
+    setCatalog([])
+    setLoadError(lastErr instanceof Error ? lastErr.message : '命令目录加载失败')
+    setReady(true)
+    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -70,5 +85,5 @@ export function useSlashCommands() {
     }
   }, [])
 
-  return { catalog, loading, ready, reload, isSystemCommand, execute, parseSlashLine }
+  return { catalog, loading, ready, loadError, reload, isSystemCommand, execute }
 }

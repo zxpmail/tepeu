@@ -84,6 +84,12 @@ tepeu:
   reqforge:
     # 本机 ReqForge 根目录（GitHub 不可达时一键安装回退）；也可用环境变量 TEPEU_REQFORGE_PATH
     local-path: ${TEPEU_REQFORGE_PATH:E:/work/ReqForge}
+  marketplace:
+    # 可选远程技能清单 URL（JSON：{ entries: [...] }）；留空则仅用内置索引 + 本机扫描
+    manifest-url: ${TEPEU_MARKETPLACE_MANIFEST_URL:}
+  runtime:
+    # 技能脚本沙箱默认超时（毫秒）；超时强制中断 Context（ADR-015）
+    script-timeout-ms: 5000
   llm:
     providers:
       - id: openai

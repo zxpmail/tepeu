@@ -56,6 +56,7 @@ public class SkillService {
             "^---\\r?\\n(.*?)\\r?\\n---\\r?\\n?(.*)$", Pattern.DOTALL);
     private static final Pattern FM_NAME = Pattern.compile("(?m)^name:\\s*[\"']?([^\"'\\r\\n]+)[\"']?\\s*$");
     private static final Pattern FM_DESC = Pattern.compile("(?m)^description:\\s*[\"']?(.+?)[\"']?\\s*$");
+    private static final Pattern FM_VERSION = Pattern.compile("(?m)^version:\\s*[\"']?([^\"'\\r\\n]+)[\"']?\\s*$");
     private static final Pattern HTML_COMMENT = Pattern.compile("(?s)<!--.*?-->");
 
     private final SkillRepository repository;
@@ -99,6 +100,21 @@ public class SkillService {
             throw new IllegalArgumentException("content is required");
         }
         return saveParsed(workspaceId, nameHint, content.trim());
+    }
+
+    /** 安装并记录来源/版本（应用市场） */
+    public Skill installWithMeta(
+            String workspaceId, String nameHint, String content,
+            String installSource, String installVersion) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("content is required");
+        }
+        return saveParsed(workspaceId, nameHint, content.trim(), false, installSource, installVersion);
+    }
+
+    /** 解析本机 ReqForge 根目录（供市场目录扫描） */
+    public Path resolveLocalReqForgeRootPublic() {
+        return resolveLocalReqForgeRoot();
     }
 
     /** 从 http(s) URL 安装：.zip 按包解析，否则当 Markdown */
@@ -168,7 +184,7 @@ public class SkillService {
                             ? "local:" + localRoot
                             : "github";
                 }
-                Skill s = saveParsed(workspaceId, null, markdown, false);
+                Skill s = saveParsed(workspaceId, null, markdown, false, sourceHint, null);
                 if (item.enable()) {
                     repository.updateEnabled(s.getId(), true);
                     s = repository.findById(s.getId()).orElse(s);
@@ -243,10 +259,16 @@ public class SkillService {
     private record PackItem(String path, String fallbackName, boolean enable) {}
 
     private Skill saveParsed(String workspaceId, String nameHint, String content) {
-        return saveParsed(workspaceId, nameHint, content, false);
+        return saveParsed(workspaceId, nameHint, content, false, null, null);
     }
 
     private Skill saveParsed(String workspaceId, String nameHint, String content, boolean enabled) {
+        return saveParsed(workspaceId, nameHint, content, enabled, null, null);
+    }
+
+    private Skill saveParsed(
+            String workspaceId, String nameHint, String content, boolean enabled,
+            String installSource, String installVersion) {
         byte[] raw = content.getBytes(StandardCharsets.UTF_8);
         if (raw.length > MAX_SKILL_CONTENT_BYTES) {
             throw new IllegalArgumentException("skill content too large (max " + MAX_SKILL_CONTENT_BYTES + " bytes)");
@@ -258,6 +280,10 @@ public class SkillService {
         String slug = slugify(parsed.name != null ? parsed.name : name);
         if (BUILTIN_SLUG.equals(slug)) {
             slug = slug + "-custom";
+        }
+        String version = installVersion;
+        if ((version == null || version.isBlank()) && parsed.version != null) {
+            version = parsed.version;
         }
         Optional<Skill> existing = repository.findByWorkspaceAndSlug(workspaceId, slug);
         if (existing.isPresent()) {
@@ -272,6 +298,12 @@ public class SkillService {
             if (enabled) {
                 s.setEnabled(true);
             }
+            if (installSource != null && !installSource.isBlank()) {
+                s.setInstallSource(installSource);
+            }
+            if (version != null && !version.isBlank()) {
+                s.setInstallVersion(version);
+            }
             return repository.save(s);
         }
         Skill s = new Skill();
@@ -282,6 +314,8 @@ public class SkillService {
         s.setContent(parsed.body);
         s.setEnabled(enabled);
         s.setBuiltin(false);
+        s.setInstallSource(installSource);
+        s.setInstallVersion(version);
         return repository.save(s);
     }
 
@@ -518,12 +552,13 @@ public class SkillService {
         String cleaned = HTML_COMMENT.matcher(raw).replaceAll("").trim();
         Matcher m = FRONTMATTER.matcher(cleaned);
         if (!m.matches()) {
-            return new ParsedSkill(null, null, raw);
+            return new ParsedSkill(null, null, null, raw);
         }
         String fm = m.group(1);
         String body = m.group(2) != null ? m.group(2).trim() : "";
         String name = null;
         String desc = null;
+        String version = null;
         Matcher nm = FM_NAME.matcher(fm);
         if (nm.find()) {
             name = nm.group(1).trim();
@@ -532,10 +567,14 @@ public class SkillService {
         if (dm.find()) {
             desc = dm.group(1).trim();
         }
+        Matcher vm = FM_VERSION.matcher(fm);
+        if (vm.find()) {
+            version = vm.group(1).trim();
+        }
         if (body.isEmpty()) {
             body = cleaned;
         }
-        return new ParsedSkill(name, desc, body);
+        return new ParsedSkill(name, desc, version, body);
     }
 
     static String slugify(String name) {
@@ -551,7 +590,7 @@ public class SkillService {
         return s;
     }
 
-    record ParsedSkill(String name, String description, String body) {}
+    record ParsedSkill(String name, String description, String version, String body) {}
 
     private static final String BUILTIN_CONTENT = """
             # 编程助手

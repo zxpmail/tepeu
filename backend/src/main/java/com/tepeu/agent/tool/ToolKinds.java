@@ -21,6 +21,7 @@ public final class ToolKinds {
         BY_NAME.put("search_files", "file_search");
         BY_NAME.put("run_command", "shell");
         BY_NAME.put("read_output", "shell_output");
+        BY_NAME.put("run_skill_script", "script");
         // 宿主通道（REST / 终端）合成工具名
         BY_NAME.put("rest_write_file", "file_write");
         BY_NAME.put("rest_upload_file", "file_write");
@@ -34,7 +35,7 @@ public final class ToolKinds {
 
     /** 明确免批的 toolKind（工作区沙箱读写/REST 删除与输出续读） */
     public static final Set<String> SAFE_KINDS = Set.of(
-            "file_list", "file_read", "file_write", "file_search", "file_rest", "shell_output");
+            "file_list", "file_read", "file_write", "file_search", "file_rest", "shell_output", "script");
 
     /** 需用户批准的已知高危类别 */
     public static final Set<String> NEED_APPROVAL_KINDS = Set.of("shell", "mcp");

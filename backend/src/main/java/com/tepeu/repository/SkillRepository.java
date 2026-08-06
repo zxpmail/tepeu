@@ -28,6 +28,8 @@ public class SkillRepository {
         s.setContent(rs.getString("content"));
         s.setEnabled(rs.getInt("enabled") != 0);
         s.setBuiltin(rs.getInt("builtin") != 0);
+        s.setInstallSource(rs.getString("install_source"));
+        s.setInstallVersion(rs.getString("install_version"));
         s.setCreatedAt(rs.getObject("created_at", LocalDateTime.class));
         s.setUpdatedAt(rs.getObject("updated_at", LocalDateTime.class));
         return s;
@@ -72,13 +74,16 @@ public class SkillRepository {
         skill.setUpdatedAt(now);
         jdbc.update(
                 """
-                INSERT INTO skill (id, workspace_id, slug, name, description, content, enabled, builtin, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO skill (id, workspace_id, slug, name, description, content, enabled, builtin,
+                                  install_source, install_version, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                   name = excluded.name,
                   description = excluded.description,
                   content = excluded.content,
                   enabled = excluded.enabled,
+                  install_source = excluded.install_source,
+                  install_version = excluded.install_version,
                   updated_at = excluded.updated_at
                 """,
                 skill.getId(),
@@ -89,6 +94,8 @@ public class SkillRepository {
                 skill.getContent(),
                 skill.isEnabled() ? 1 : 0,
                 skill.isBuiltin() ? 1 : 0,
+                skill.getInstallSource(),
+                skill.getInstallVersion(),
                 skill.getCreatedAt(),
                 skill.getUpdatedAt());
         return skill;

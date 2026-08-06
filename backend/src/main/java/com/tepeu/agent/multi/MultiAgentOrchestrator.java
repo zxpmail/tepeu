@@ -5,6 +5,7 @@ import com.tepeu.agent.tool.ListDirTool;
 import com.tepeu.agent.tool.ReadFileTool;
 import com.tepeu.agent.tool.ReadOutputTool;
 import com.tepeu.agent.tool.RunCommandTool;
+import com.tepeu.agent.tool.RunSkillScriptTool;
 import com.tepeu.agent.tool.SearchFileTool;
 import com.tepeu.agent.tool.ToolEventEmitter;
 import com.tepeu.agent.tool.WorkspaceBoundTool;
@@ -53,6 +54,7 @@ public class MultiAgentOrchestrator {
     private final DeleteFileTool deleteFileTool;
     private final RunCommandTool runCommandTool;
     private final ReadOutputTool readOutputTool;
+    private final RunSkillScriptTool runSkillScriptTool;
 
     public MultiAgentOrchestrator(
             ChatService chatService,
@@ -66,7 +68,8 @@ public class MultiAgentOrchestrator {
             SearchFileTool searchFileTool,
             DeleteFileTool deleteFileTool,
             RunCommandTool runCommandTool,
-            ReadOutputTool readOutputTool) {
+            ReadOutputTool readOutputTool,
+            RunSkillScriptTool runSkillScriptTool) {
         this.chatService = chatService;
         this.rolePrompts = rolePrompts;
         this.sessionService = sessionService;
@@ -79,6 +82,7 @@ public class MultiAgentOrchestrator {
         this.deleteFileTool = deleteFileTool;
         this.runCommandTool = runCommandTool;
         this.readOutputTool = readOutputTool;
+        this.runSkillScriptTool = runSkillScriptTool;
     }
 
     /**
@@ -122,6 +126,7 @@ public class MultiAgentOrchestrator {
         runCommandTool.bindWorkspace(workspaceId);
         runCommandTool.bindSession(sessionId);
         readOutputTool.bindSession(sessionId);
+        runSkillScriptTool.bindWorkspace(workspaceId);
         try {
             String plan = runRole(AgentRole.PLANNER, providerId, goal, null, null,
                     false, workspaceId, sessionId, toolEmitter, emit);
@@ -166,6 +171,7 @@ public class MultiAgentOrchestrator {
             runCommandTool.unbindWorkspace();
             runCommandTool.unbindSession();
             readOutputTool.unbindSession();
+            runSkillScriptTool.unbindWorkspace();
         }
     }
 

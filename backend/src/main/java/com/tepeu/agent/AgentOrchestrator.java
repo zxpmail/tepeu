@@ -5,6 +5,7 @@ import com.tepeu.agent.tool.ListDirTool;
 import com.tepeu.agent.tool.ReadFileTool;
 import com.tepeu.agent.tool.ReadOutputTool;
 import com.tepeu.agent.tool.RunCommandTool;
+import com.tepeu.agent.tool.RunSkillScriptTool;
 import com.tepeu.agent.tool.SearchFileTool;
 import com.tepeu.agent.tool.ToolEventEmitter;
 import com.tepeu.agent.tool.WorkspaceBoundTool;
@@ -46,6 +47,7 @@ public class AgentOrchestrator {
     private final SearchFileTool searchFileTool;
     private final RunCommandTool runCommandTool;
     private final ReadOutputTool readOutputTool;
+    private final RunSkillScriptTool runSkillScriptTool;
     private final SkillService skillService;
 
     public AgentOrchestrator(ChatService chatService,
@@ -56,6 +58,7 @@ public class AgentOrchestrator {
                              SearchFileTool searchFileTool,
                              RunCommandTool runCommandTool,
                              ReadOutputTool readOutputTool,
+                             RunSkillScriptTool runSkillScriptTool,
                              SkillService skillService) {
         this.chatService = chatService;
         this.listDirTool = listDirTool;
@@ -65,6 +68,7 @@ public class AgentOrchestrator {
         this.searchFileTool = searchFileTool;
         this.runCommandTool = runCommandTool;
         this.readOutputTool = readOutputTool;
+        this.runSkillScriptTool = runSkillScriptTool;
         this.skillService = skillService;
     }
 
@@ -129,6 +133,7 @@ public class AgentOrchestrator {
             runCommandTool.bindWorkspace(workspaceId);
             runCommandTool.bindSession(sessionId);
             readOutputTool.bindSession(sessionId);
+            runSkillScriptTool.bindWorkspace(workspaceId);
         } catch (RuntimeException e) {
             unbindAllTools();
             WorkspaceBoundTool.BIND_LOCK.unlock();
@@ -160,6 +165,7 @@ public class AgentOrchestrator {
         runCommandTool.unbindWorkspace();
         runCommandTool.unbindSession();
         readOutputTool.unbindSession();
+        runSkillScriptTool.unbindWorkspace();
     }
 
     /**

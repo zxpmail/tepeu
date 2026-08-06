@@ -1,16 +1,35 @@
 # Handoff — Tepeu Agentic OS
 
-> 到达后阅读序：本文件 → `CONTEXT.md` → `decisions-log.md`（ADR-012/013）→ DEV-PLAN Phase 15+。
+> 到达后阅读序：本文件 → `CONTEXT.md` → `RELEASE_NOTES-v1.0.0.md` → `decisions-log.md`（ADR-015）。
 
-**Last updated**: 2026-08-05
+**Last updated**: 2026-08-07
 
 ## 当前阶段
 
-- ✅ DEV-PLAN Phase 5–13（含复查修复）
-- ✅ **DEV-PLAN Phase 14 Slash 命令框架已完成**（2026-08-05）
-- ✅ **DEV-PLAN Phase 15 多端适配已完成**（2026-08-05）
-- ⏳ 下一刀：**Phase 16 应用市场（Spec M3.3）**
-- ⏳ Docker 暂缓
+- ✅ **DEV-PLAN Phase 1–18 / v1.0.0 发布收口已完成**（2026-08-07）
+- ⏳ Docker `docker build` 暂缓（无 CLI）
+- ⏳ git tag `v1.0.0` / GitHub Release（须批准）
+
+## Phase 18 交付要点（2026-08-07）
+
+- `RELEASE_NOTES-v1.0.0.md`；版本号 `1.0.0`（pom / package.json / SetupWizard / README）
+- Docker：`Dockerfile` + `docker-compose.yml` 定义校验；本机无 CLI 未实测 build
+- Spec §10 基线表写入发布说明（性能/社区指标多数标明未测）
+- **未**打 git tag / GitHub Release
+
+## Phase 17 交付要点（2026-08-07）
+
+- ADR-015：GraalJS `js-community` 24.2.1；wasmtime 原生 WASM 延后
+- `ScriptSandbox` / `WorkspaceScriptFs`；工具 `run_skill_script`（内置 demo + `/scripts/*.js`）
+- 配置 `tepeu.runtime.script-timeout-ms`；超时 `Context.close(true)`
+- 验证：`ScriptSandboxTest` + `RunSkillScriptToolTest` + 相关回归通过
+
+## Phase 16 交付要点（2026-08-07）
+
+- `SkillMarketplaceService`：内置 `marketplace/catalog.json` + classpath 示例 `hello-assistant`；扫描本机 ReqForge；可选 `tepeu.marketplace.manifest-url`
+- API：`GET /api/marketplace/catalog`、`POST /api/marketplace/install`；skill 记 `install_source` / `install_version`
+- 前端「市场」面板：浏览/搜索/一键安装；侧栏入口
+- 验证：`SkillMarketplaceServiceTest` + `SkillServiceTest` 通过；前端 typecheck 通过
 
 ## Phase 15 交付要点（2026-08-05）
 
@@ -30,6 +49,13 @@
 - **后端**：`SlashController` 删与 GlobalExceptionHandler 重复的 try/catch；`/tasks` 补工作区存在性校验（与 /status 一致，防伪 id 全零摘要）；测试补 `tasks_unknownWorkspace_throws`
 - **e2e**：`mobile-shell.spec` 文件改为 `openIde` 前写入（解耦文件树刷新时序）、断言 scope 到 `file-preview`、增补 375px Slash 候选检查
 - 验证：typecheck 0 / e2e（mobile+chat+app-shell+files+workspace）全绿 / 后端 263 单测 BUILD SUCCESS
+
+## Phase 14 复查修复续（2026-08-07）
+
+- 手打 `/clear` `/new` `/files` 回车拦截，不再误送 LLM
+- `/compact`：`SessionService.clearMessages` 清空服务器历史 + 本屏；文案对齐真实语义
+- `/` 候选过滤与系统/UI 同名的技能；目录加载失败自动重试一次
+- e2e：`/help` 出结果、手打 `/clear` 清空
 
 ## Phase 14 交付要点（2026-08-05）
 
@@ -62,4 +88,4 @@
 - ToolCallback deprecated（ADR-007）；Crypto passthrough（ADR-006）
 - 无 CI/CD；**本机无 Docker CLI → 镜像未实测**
 - Spec M3.1「Hands 能力包」未做（超出定时调度切片）
-- git tag `v0.2.0` 未打（可选）
+- git tag `v0.2.0` / `v1.0.0` 未打（可选，须批准）

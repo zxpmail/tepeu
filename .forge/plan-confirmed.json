@@ -2,9 +2,9 @@
   "confirmed_at": "2026-07-18T14:46:00Z",
   "plan_path": "DEV-PLAN.md",
   "confirmed_by": "user",
-  "plan_version": "v0.3.0-phase3",
+  "plan_version": "v1.0.0",
   "total_phases": 18,
-  "active_phase": 16,
+  "active_phase": 18,
   "phase_9_status": "complete_docs_pending_docker_build",
   "phase_10_status": "complete",
   "phase_11_status": "complete",
@@ -12,10 +12,14 @@
   "phase_13_status": "complete",
   "phase_14_status": "complete",
   "phase_15_status": "complete",
+  "phase_16_status": "complete",
+  "phase_17_status": "complete",
+  "phase_18_status": "complete",
   "phase_3_plan_status": "confirmed",
+  "app_version": "1.0.0",
   "proposed_order": "10=M3.1 schedule → 11=tool-split → 12=fs-notify → 13=task-notify → 14=slash-cmd → 15=M3.4 mobile → 16=M3.3 marketplace → 17=M3.2 wasm → 18=M3.5 v1.0",
   "v0.1.0_scope": "Phase 1–4 complete",
   "v0.2.0_scope": "Phase 5–9 (notes+version done; docker build pending CLI)",
-  "v0.3_scope": "Phase 10–18 Spec Phase 3",
-  "notes": "Phase 15 complete 2026-08-06 (mobile); Docker still deferred; next Phase 16 marketplace (Spec M3.3)"
+  "v1.0.0_scope": "Phase 10–18 Spec Phase 3 complete; tag/Release optional pending approval",
+  "notes": "Phase 18 complete 2026-08-07 (v1.0.0 RELEASE_NOTES + version bump); Docker CLI still absent; git tag v1.0.0 not created"
 }

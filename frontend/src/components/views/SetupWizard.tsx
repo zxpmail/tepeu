@@ -105,7 +105,7 @@ export default function SetupWizard({ onComplete }: SetupWizardProps) {
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🚀</div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Tepeu</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>智能体操作系统 — v0.2.0</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>智能体操作系统 — v1.0.0</p>
         </div>
 
         {/* Step indicator */}

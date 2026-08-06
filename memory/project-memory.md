@@ -7,7 +7,7 @@
 - **Database**: SQLite (WAL mode)
 - **Frontend**: React 18 + TypeScript 5 + Tailwind CSS 4 + Vite 6
 - **Build**: Maven 3.9 (backend) + npm (frontend)
-- **Deploy**: Docker multi-stage, single JAR；应用版本 **0.2.0**（Harness）
+- **Deploy**: Docker multi-stage, single JAR；应用版本 **1.0.0**（Agentic OS）；本机 docker build 仍待 CLI
 
 ## Architecture
 - Monorepo: `backend/` (Spring Boot) + `frontend/` (Vite/React)
@@ -26,7 +26,7 @@
 - **成本**：会话级 + **workspace 累计**（`GET /api/workspace/:id/stats`，顶栏/工作区列表）；完整仪表盘属 Spec Phase 2 M2.4。
 - **Hook（Phase 5 / M2.3）**：`HookingToolCallback`；按 `toolKind` 审批（`shell`/`mcp`/`file_delete` 需批；`file_write`/`shell_output` 免批）；同会话同工具+参数授权；`HostChannelGuard` 覆盖 REST/终端；`HallucinationGuard`；本机实例令牌 `X-Tepeu-Token`；`ApprovalStore.enableAutonomous` 供自主调度免人工批。
 - **自主调度（Phase 10）**：`ScheduleService` ticker；卡死 RUNNING 超时恢复；用量经 `TokenCostEstimator` 入 task；空回复状态 `EMPTY`。
-- **Slash 命令（Phase 14）**：`SlashCommandRegistry` + `/help` `/tasks` `/schedule` `/compact` `/status`；`GET /api/slash/commands`、`POST /api/slash`；前端候选浮层 + 发送拦截，结果以本地对话轮次展示，不消耗 LLM。`/clear` `/new` `/files` 仍为纯前端。
+- **Slash 命令（Phase 14）**：`SlashCommandRegistry` + `/help` `/tasks` `/schedule` `/compact` `/status`；`GET /api/slash/commands`、`POST /api/slash`；前端候选浮层 + 发送拦截，结果以本地对话轮次展示，不消耗 LLM。`/clear` `/new` `/files` 纯前端（手打回车也拦截）。`/compact` 会 `clearMessages` 清空服务器会话历史并清屏。同名技能不进 `/` 候选。
 - **后台任务通知（Phase 13）**：`TaskEventNotifier`（SSE hub）+ `GET /api/task-events` 常驻 SSE；`ScheduleService` 终态发布 `task_completed`/`task_failed`（payload 含 scheduleId/scheduleName/workspaceId/sessionId/message）；前端 `useNotifications` 模块 store（useSyncExternalStore）+ 单例 EventSource + 可选浏览器 Notification；`NotificationBell` 顶栏徽章/下拉（点击跳会话或自主面板）；`ScheduleView` 订阅 onTaskEvent 按 workspaceId 刷新 + 完成/失败时间戳。**独立通道不复用 /api/events**，理由见 ADR-013。
 - **文件变更通知（Phase 12）**：`FileWatcherService`（JDK WatchService）递归监听全部 workspace 根目录；`GET /api/events` 常驻 SSE 推 `file_changed`（含 workspaceId，operation=create/modify/delete）；前端 `WorkspaceEventsProvider` 用事件源喂 `workspaceEventBus`；`useFileBrowser` 按当前工作区过滤 + 300ms 防抖重载，`FileBrowserView` 同时刷目录树。忽略目录名：`.git/node_modules/target/dist/.claude/.forge`。设计见 ADR-012。
   - **事件合并（2026-08-04 后补）**：`FileWatcherService` 250ms 窗口内同 (workspace,path) 只广播一条，保留「最显著」operation（delete > create > modify），降低频繁 MODIFY 刷屏。

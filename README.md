@@ -1,14 +1,14 @@
 # Tepeu
 
-个人 Agent 工作台：对话、工作区文件、记忆、终端，以及 Hook / 多 Agent / MCP / 成本等 Harness 能力。
+个人 Agent 工作台：对话、工作区文件、记忆、终端，以及 Hook / 多 Agent / MCP / 成本 / 自主调度 / 市场 / 技能脚本等 Agentic OS 能力。
 
 ## 技术栈
 
-- 后端：Java 21 · Spring Boot 4.0.7 · Spring AI 2.0 · SQLite
+- 后端：Java 21 · Spring Boot 4.0.7 · Spring AI 2.0 · SQLite · GraalJS 24.2.1
 - 前端：React 18 · Vite 6 · Tailwind CSS 4
 - 部署：Docker 多阶段单 JAR（端口 `30141`）
 
-当前应用版本：**0.2.0**（Harness）。详见 [RELEASE_NOTES-v0.2.0.md](./RELEASE_NOTES-v0.2.0.md)。
+当前应用版本：**1.0.0**。详见 [RELEASE_NOTES-v1.0.0.md](./RELEASE_NOTES-v1.0.0.md)。
 
 ## 本地运行
 
@@ -28,14 +28,13 @@ npm run dev
 ## Docker
 
 ```bash
-docker build -t tepeu:v0.2.0 .
+docker build -t tepeu:v1.0.0 .
 docker compose up -d
 # http://localhost:30141
 ```
 
-数据卷：`tepeu-keys`（主密钥）已挂载；工作区/SQLite 持久化路径与 compose 对齐、以及 `docker build` 实测 — **暂缓**（见 `CONTEXT.md`）。
-
-> 有 Docker CLI 后再补验镜像与数据持久化。
+数据卷：`tepeu-data` / `tepeu-keys`（见 `docker-compose.yml`）。  
+本机 `docker build`：**暂缓**（当前环境无 Docker CLI；定义已就绪，见发布说明）。
 
 ## 测试
 
@@ -52,11 +51,12 @@ cd frontend && npm run typecheck
 | [Product-Spec.md](./Product-Spec.md) | 产品规格 |
 | [DEV-PLAN.md](./DEV-PLAN.md) | 交付切片 |
 | [CONTEXT.md](./CONTEXT.md) | 当前进度快照 |
+| [RELEASE_NOTES-v1.0.0.md](./RELEASE_NOTES-v1.0.0.md) | v1.0.0 说明 |
 | [RELEASE_NOTES-v0.2.0.md](./RELEASE_NOTES-v0.2.0.md) | v0.2.0 说明 |
 | [memory/handoff.md](./memory/handoff.md) | 会话交接 |
 
-## 已完成 / 进行中（摘要）
+## 已完成（摘要）
 
 - ✅ v0.1.0 个人工作台 · ✅ v0.2.0 Harness（Hook / 多 Agent / MCP / 成本）
-- ✅ Phase 10–14（自主调度 / 工具细粒度 / 文件变更 / 任务通知 / Slash 命令）
-- ⏳ 下一刀：Phase 15 多端适配（见 `DEV-PLAN.md`）
+- ✅ v1.0.0 Agentic OS（Phase 10–18：自主调度 → 技能脚本沙箱 → 发布收口）
+- ⏳ Docker 镜像本机实测、git tag / GitHub Release（可选，须批准）

@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "entries": [
+    {
+      "id": "builtin-hello-assistant",
+      "slug": "hello-assistant",
+      "name": "问候助手",
+      "description": "内置示例技能：用简洁中文问候与自我介绍，无需外网即可安装。",
+      "version": "1.0.0",
+      "category": "builtin",
+      "tags": ["demo", "builtin"],
+      "classpath": "marketplace/skills/hello-assistant.md"
+    },
+    {
+      "id": "reqforge-dev-builder",
+      "slug": "dev-builder",
+      "name": "dev-builder",
+      "description": "按 DEV-PLAN 分阶段实现功能；有计划后开始写代码时使用。",
+      "version": "1.2.0",
+      "category": "reqforge",
+      "tags": ["coding", "reqforge"],
+      "relativePath": "core/skills/dev-builder/SKILL.md"
+    },
+    {
+      "id": "reqforge-bug-fixer",
+      "slug": "bug-fixer",
+      "name": "bug-fixer",
+      "description": "用户报告错误或异常行为时系统排查与修复。",
+      "version": "1.0.0",
+      "category": "reqforge",
+      "tags": ["coding", "reqforge"],
+      "relativePath": "core/skills/bug-fixer/SKILL.md"
+    },
+    {
+      "id": "reqforge-code-review",
+      "slug": "code-review",
+      "name": "code-review",
+      "description": "代码审查：对照规范与验收标准找问题。",
+      "version": "1.0.0",
+      "category": "reqforge",
+      "tags": ["coding", "reqforge"],
+      "relativePath": "core/skills/code-review/SKILL.md"
+    },
+    {
+      "id": "reqforge-dev-planner",
+      "slug": "dev-planner",
+      "name": "dev-planner",
+      "description": "把产品规格拆成可执行的开发计划（DEV-PLAN）。",
+      "version": "1.0.0",
+      "category": "reqforge",
+      "tags": ["planning", "reqforge"],
+      "relativePath": "core/skills/dev-planner/SKILL.md"
+    },
+    {
+      "id": "reqforge-product-spec-builder",
+      "slug": "product-spec-builder",
+      "name": "product-spec-builder",
+      "description": "从想法/访谈整理出 Product-Spec。",
+      "version": "1.0.0",
+      "category": "reqforge",
+      "tags": ["planning", "reqforge"],
+      "relativePath": "core/skills/product-spec-builder/SKILL.md"
+    },
+    {
+      "id": "reqforge-skill-builder",
+      "slug": "skill-builder",
+      "name": "skill-builder",
+      "description": "创建或迭代 Agent Skill 定义。",
+      "version": "1.0.0",
+      "category": "reqforge",
+      "tags": ["meta", "reqforge"],
+      "relativePath": "core/skills/skill-builder/SKILL.md"
+    }
+  ]
+}

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /** Slash 注册表与首批命令（不调 LLM）。 */
@@ -40,7 +41,7 @@ class SlashCommandRegistryTest {
         sessionService = mock(SessionService.class);
 
         // Help 需要 Lazy registry：先建临时，再重建含 Help 的完整表
-        CompactCommand compact = new CompactCommand();
+        CompactCommand compact = new CompactCommand(sessionService);
         TasksCommand tasks = new TasksCommand(taskService, workspaceService);
         ScheduleCommand schedule = new ScheduleCommand(scheduleService, workspaceService);
         StatusCommand status = new StatusCommand(workspaceService, budgetService, sessionService);
@@ -123,10 +124,19 @@ class SlashCommandRegistryTest {
     }
 
     @Test
-    void compact_returnsAction() {
+    void compact_withoutSession_returnsActionOnly() {
         SlashResult r = registry.execute("compact", new SlashContext(null, null, List.of()));
         assertEquals("compact", r.action());
-        assertNotNull(r.text());
+        assertTrue(r.text().contains("没有活动会话"));
+        verify(sessionService, never()).clearMessages(anyString());
+    }
+
+    @Test
+    void compact_withSession_clearsServerHistory() {
+        SlashResult r = registry.execute("compact", new SlashContext("ws-1", "sess-1", List.of()));
+        assertEquals("compact", r.action());
+        verify(sessionService).clearMessages("sess-1");
+        assertTrue(r.text().contains("服务器历史"));
     }
 
     @Test
