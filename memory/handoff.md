@@ -8,7 +8,7 @@
 
 - ✅ **DEV-PLAN Phase 1–18 / v1.0.0 发布收口已完成**（2026-08-07）
 - ⏳ Docker `docker build` 暂缓（无 CLI）
-- ⏳ git tag `v1.0.0` / GitHub Release（须批准）
+- ✅ git tag `v1.0.0` + GitHub Release：https://github.com/zxpmail/tepeu/releases/tag/v1.0.0
 
 ## Phase 18 交付要点（2026-08-07）
 
