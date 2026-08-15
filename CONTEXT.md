@@ -2,11 +2,11 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-架构定界：企业 OS 内核 / Adaptor / 编排积木（ADR-016）。代码未按该 ADR 大重构。
+已切到 **develop** 作为重写/开发线；**main** 冻在 v1.0（`c98fec8`，tag `v1.0.0`）。架构定界见 ADR-016。
 
 ## 上次停在哪
-- ✅ 审计收口已 commit+push（`c98fec8`）
-- ✅ ADR-016 写入 `memory/decisions-log.md`（内核 3 件、Adaptor 缝、Subagent/Teams/长程、企业 MVP）
+- ✅ `develop` 已创建并 push（`origin/develop`）；ADR-016 提交在 `fe7ab28`
+- ✅ main 保持审计收口版，待重写成熟再合并
 
 ## 近期关键决定
 - 严格内核：主体+命名空间、能力总线、会话事实日志；Loop 是运行时不是内核
