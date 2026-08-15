@@ -9,7 +9,7 @@
               PromptAssembly · ReasoningPresenter · Command(Slash)
 ② 适配        Store/Claim/Execution/LLM/Tool/MCP/Policy/Audit/Metering/…
               Compaction · Identity/Secret/Knowledge/ProjectionBus
-① 内核        主体+命名空间 · 能力总线〔入口钩Policy+卫兵〕
+① 内核        主体+命名空间 · 能力总线〔入口钩Policy+卫兵(超时/取消/不变量/配额限流)〕
               会话(日志+Inbox+主/子；日志替换端口)
 ```
 

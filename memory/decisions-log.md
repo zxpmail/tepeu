@@ -121,7 +121,7 @@
      - **会话关系**：主/子会话（话题枝）、`parentId` / 分叉点等；单调序号属日志实现细节。
      无 Inbox 契约则只有账本、没有进场规则，编排器会再次耦合。
   - **分层位置（由内向外；实施底板 [`docs/os-baseplate.md`](../docs/os-baseplate.md)，短图 [`docs/kernel-layer.md`](../docs/kernel-layer.md)；规范以本 ADR 为准）**：  
-    **① 内核三件**（总线入口 = 钩〔**Policy + 卫兵**〕，实现属②；会话含主/子与**日志替换端口**；日志禁明文 secret）  
+    **① 内核三件**（总线入口 = 钩〔**Policy + 卫兵**：超时/取消/不变量/**配额限流**〕，实现属②；会话含主/子与**日志替换端口**；日志禁明文 secret）  
     → **② 适配环**（驱动插头，清单见底板 §3.1；含 Tool、MCP、**Compaction**、AuditSink、Metering…）  
     → **③ 编排环**（兜底 Agent、Loop、Team/Subagent/LongTask、PromptAssembly、ReasoningPresenter、Command）  
     → **④ 路由环**（Thread/Flow/Model；Model 只选型）  
@@ -138,8 +138,8 @@
     |---------|----------|--------------|
     | `SessionStore` | 本地 SQLite/文件 | 中央 DB / 日志服务 |
     | `InboxClaim` | 进程内锁 | 分布式租约抢占（防双跑） |
-    | `ApprovalStore`（属 Policy 旁路状态） | 内存 | 共享存储 |
-    | `ProjectionBus` | 本机直推 SSE | Redis/NATS 等 Pub/Sub（只做通知/投影，**不是**消息真相） |
+    | `ApprovalStore`（属 Policy 旁路状态） | 本地 SQLite（**审批是合规证据，禁内存默认**） | 共享存储 |
+    | `ProjectionBus` | 本机直推 SSE | Redis/NATS 等 Pub/Sub（只做通知/投影，**不是**消息真相；下发前按**查看者 ACL** 过滤，防越权泄露） |
     | `Execution` | 本地盘/进程 | 共享盘 / 远程沙箱 |
   - **双真相域（裁决）**：  
     - **会话日志** = 对话 + Agent 工具事实的真相（模型可见 ⟺ 可还原）。  
@@ -193,7 +193,7 @@
     - 开发期可用本机 dsh **外部引擎/对照实验**；固化发行 **冻结 Adaptor 集合与事件 schema**，默认透传路由，不热换野生插件。
   - **双模原则**：开发 = 多缝、可换、日志拉满、可桥接 dsh 学习；固化 = 薄内核不变、实现集收敛、不变量与超时默认开、灵活让位于稳定/准确/效率。企业卖的是后者。
 - **Decision — 模型路由层（该有缝，不该急着做聪明实现）**:
-  - **该有**：`ModelRouterAdaptor`（可挂在 LLM 能力上）——输入目标/预算/延时/请求指定等，输出 `providerId` + 可选 fallback；组装层只认此缝，禁止在 ChatController/Orchestrator 里写死选模型分支。
+  - **该有**：`ModelRouter`（④ 路由缝，Provider 实现在 ②）——输入目标/预算/延时/**合规约束（数据驻留等）**/请求指定等，输出 `providerId` + 可选 fallback；组装层只认此缝，禁止在 ChatController/Orchestrator 里写死选模型分支。
   - **默认实现（MVP）**：透传请求中的 `providerId`（可加静态 fallback 列表）；**不做**「简单/复杂自动选大/小模型」分类器。
   - **企业省钱优先**：预算硬门 + 项目默认模型，覆盖智能路由大部分诉求；真·智能路由以后换 Adaptor 实现，不改内核。
   - **勿混**：模型路由 ≠ Agent Flow 图路由 ≠ 能力总线分发 ≠ HTTP 路由。`FlowRouter` / `ThreadRouter` / `ModelRouter` 同属 **④ 路由环**（薄、默认可透传）；Model 的 Provider 在 ②。
@@ -232,5 +232,9 @@
   - 用户消息与系统 Section 分列；禁止把技能/记忆默默写进一条匿名 system 而无法追溯 section id。
   - **模型可见 ⟺ 会话日志可还原**；人手宿主操作 → AuditSink，不冒充会话对话事实。
 - **Alternatives rejected**: 把 Loop/审批/多 Agent/思维链/提示词拼装塞进内核；照搬 Cordis；先做完整四智能体再卖；为 Teams 再写上帝编排器；用 system 行混装 thinking；Orchestrator 继续巨型 Prompt 字符串；固化期追求与 dsh 同等热插灵活。
+- **Decision — 企业评审落位（2026-08-15 第二轮严苛评审）**:
+  - **配额/限流是入口卫兵**（per-principal/namespace 的速率、并发、token 硬顶，**入口处拒绝**）；Metering 只是事后仪表盘。刹车 ≠ 仪表。
+  - **OS 类比诚实度**：当前内核 = syscall 表 + 事件日志 + 卫兵（journal-first），**不是**完整 OS。以下为**显式债务**，不许靠类比暗示已具备：调度公平/优先级队列、Agent 资源隔离边界（超时/取消只是部分覆盖）、运行中能力撤销（会话中途吊销工具授权，已发 syscall 如何处置）、日志 tamper-evidence（哈希链）。
+  - **待裁决（Open）**：append-only 会话日志 vs 删除权（GDPR/个保法）——候选 crypto-shredding（按租户密钥加密日志段，删租户=销毁密钥）；未裁决前不得声称合规。
 - **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 TurnContext、会话事件最小集、PromptAssembly、总线+Policy；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。
 

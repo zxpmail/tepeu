@@ -97,19 +97,20 @@ Package Manager: Maven 3.9.x（backend）/ npm 11.x（frontend）
 Database: SQLite（WAL，JdbcTemplate）
 ```
 
-## ✏️ 项目结构
+## ✏️ 项目结构（develop 重写阶段）
 
 ```
-backend/          Spring Boot 后端（Java 21）
-frontend/         Vite + React SPA
-docs/             文章与长文
+os/               重写主线：OS 骨架（kernel / adaptors / orchestration / routing / compose）
+legacy/           v1 只读标本（backend / frontend / experiments / scripts）——禁止加功能
+docs/             底板与图示（os-baseplate.md · kernel-layer.md）+ 文章
 memory/           项目记忆与交接
-experiments/      ATE 等实验（非主线）
-Dockerfile        多阶段构建
 Product-Spec.md   产品规格
 DEV-PLAN.md       交付切片计划
 CONTEXT.md        进度快照
 ```
+
+规范以 ADR-016（`memory/decisions-log.md`）为准；实施底板 `docs/os-baseplate.md`。
+`Dockerfile` / `docker-compose.yml` / `RELEASE_NOTES-*.md` 属 v1 遗留，随 legacy 视图看待。
 
 规则：agent 生成的代码必须遵循上述结构。不得在列出的目录之外放置文件，除非先询问。
 
