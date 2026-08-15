@@ -144,14 +144,30 @@ public final class InMemorySession implements Session {
 
         @Override
         public synchronized long replaceRange(long fromSeq, long toSeq, String checkpointBody) {
+            if (fromSeq <= 0 || fromSeq > toSeq) {
+                throw new IllegalArgumentException("invalid replace range: [" + fromSeq + "," + toSeq + "]");
+            }
             long s = append(SessionEventType.COMPACTION_CHECKPOINT, checkpointBody,
                     Map.of("from", String.valueOf(fromSeq), "to", String.valueOf(toSeq)));
+            SessionEvent checkpoint = events.get(events.size() - 1);
             List<SessionEvent> next = new ArrayList<>();
+            boolean inserted = false;
             for (SessionEvent e : events) {
+                if (e.seq() == s) {
+                    // checkpoint 自身不按日志尾序进 surface，插入到被替换区间位置
+                    continue;
+                }
                 if (e.seq() >= fromSeq && e.seq() <= toSeq) {
+                    if (!inserted) {
+                        next.add(checkpoint);
+                        inserted = true;
+                    }
                     continue;
                 }
                 next.add(e);
+            }
+            if (!inserted) {
+                next.add(checkpoint);
             }
             surfaceOverride = List.copyOf(next);
             return s;
