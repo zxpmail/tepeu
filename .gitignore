@@ -1,23 +1,23 @@
-# Backend
-backend/target/
+# Backend（根目录新骨架 或 legacy/v1）
+**/backend/target/
 # SQLite（含仓库根目录启动时写出的 tepeu.db）
 *.db
 *.db-journal
 *.db-wal
 *.db-shm
-backend/.mvn/
-backend/mvnw*
+**/backend/.mvn/
+**/backend/mvnw*
 # 运行时工作区（用户/Agent 生成文件，可能含敏感内容）
-backend/workspace/
-backend/workspaces/
+**/backend/workspace/
+**/backend/workspaces/
 
 # Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/playwright-report/
-frontend/test-results/
-frontend/blob-report/
-frontend/playwright/.cache/
+**/node_modules/
+**/frontend/dist/
+**/playwright-report/
+**/test-results/
+**/blob-report/
+**/playwright/.cache/
 
 # IDE
 .idea/
