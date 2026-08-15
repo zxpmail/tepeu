@@ -120,18 +120,17 @@
      - **有序 Inbox / claim**：活如何进入本会话、由谁领取进入 turn（禁止编排器私自「旁路拼消息」）。
      - **会话关系**：主/子会话（话题枝）、`parentId` / 分叉点等；单调序号属日志实现细节。
      无 Inbox 契约则只有账本、没有进场规则，编排器会再次耦合。
-  - **分层位置（由内向外，如 OS；图示见 `docs/kernel-layer.md`，**规范以本 ADR 为准、图仅为投影**）**：  
-    **① 内核三件**（总线入口 = **Policy + 卫兵**（超时/取消/不变量），主路旁路对称；会话含主/子关系；日志禁明文 secret；**真压缩**经自家总线 `llm.*` syscall，**同受卫兵与 Metering**）  
-    → **② 适配环（驱动插头）**（显式清单见下「Adaptor 缝」，含 **Tool 插头、MCP Bridge**；禁止用省略号藏缝）  
-    → **③ 编排环**（兜底 Agent、Loop/turn、Team/Subagent/LongTask **积木+对应 Adaptor 缝**、PromptAssembly、ReasoningPresenter、**Command 分发**）  
-    → **④ 路由环**（ThreadRouter、**FlowRouter**、ModelRouter；仅对话主路；ModelRouter **只选型**，LLM 调用在总线+② LLM Provider）  
-    → **⑤ 应用/呈现**（UI、Skill/记忆**资产文件**、面板）。  
-    **人机同底座**：  
-    - 对话主路：应用→④→③ Loop→内核 claim/syscall→〔Policy+卫兵〕→②。对话/工具事实→**会话日志**。  
-    - 人手旁路（REST/终端）：应用→总线→〔Policy+卫兵〕→同一②；**不经**④与 Loop；事实→**AuditSink**（审计事件，**不算**会话对话事实）。  
-    - **Slash**：只进 ③ **Command 分发**（不经模型/Loop）；若动宿主再走总线〔Policy+卫兵〕；**不**与人手旁路混写。  
-    **依赖**：外环依赖内环；适配是插头不是外壳。compose/app-boot 只接线，不单成环。  
-    **底板 = 内核三件**（禁止说成「最内三环」，以免把可换的②冻死）。
+  - **分层位置（由内向外；实施底板 [`docs/os-baseplate.md`](../docs/os-baseplate.md)，短图 [`docs/kernel-layer.md`](../docs/kernel-layer.md)；规范以本 ADR 为准）**：  
+    **① 内核三件**（总线入口 = 钩〔**Policy + 卫兵**〕，实现属②；会话含主/子与**日志替换端口**；日志禁明文 secret）  
+    → **② 适配环**（驱动插头，清单见底板 §3.1；含 Tool、MCP、**Compaction**、AuditSink、Metering…）  
+    → **③ 编排环**（兜底 Agent、Loop、Team/Subagent/LongTask、PromptAssembly、ReasoningPresenter、Command）  
+    → **④ 路由环**（Thread/Flow/Model；Model 只选型）  
+    → **⑤ 应用/呈现**。  
+    **人机同底座**：对话主路→会话日志；人手旁路→AuditSink；Slash→③ Command（不与人手旁路混写）。主路旁路碰总线时门对称。  
+    **开 Agent turn 前**：Metering 预算硬门。  
+    **真压缩**：属 **`Compaction` 缝**（非内核内嵌 LLM）；经总线 `llm.*`，同受卫兵+Metering；写回经会话日志替换端口。  
+    **TurnContext** 显式跨环传递；禁止单例 bind。  
+    **底板 = 内核三件**。compose 只接线。
 - **Decision — 会话/多副本相关必须有可扩展 Adaptor（单机默认，集群可换）**:
   - 内核只认 Session 契约（日志 + Inbox/claim + 会话关系）；**存储与跨副本通知不得写死在内核**。
   - 至少预留下列缝（接口先定，单机先简实现）：
@@ -152,9 +151,9 @@
   - **Tool 实现与 MCP Bridge** = **② 适配插头**（挂能力总线），**不是**⑤，也不是「无家可归的外围」——旧称「外围积木」仅指勿进①内核。  
   - 不引入 Cordis；宿主仍 Spring；先包级乐高 + 依赖规则，再视需要升 Maven 多模块。
 - **Decision — Adaptor 缝（接口先定，默认实现先简；边界图须显式列出）**:  
-  `Identity` · `OrgNamespace` · `Policy` · `AuditSink` · `Metering` · `KnowledgeSource` · `Execution` · `LlmProvider` · **`Tool`（各工具插头）** · **`McpBridge`** · `Secret` · `SessionStore` · `InboxClaim` · `ProjectionBus` · `SubagentAdaptor` · `TeamAdaptor` · `LongTaskAdaptor` · `ReasoningPresenter` · 路由侧 `ThreadRouter` / `FlowRouter` / `ModelRouter`（④ 策略，选型结果消费 ② Provider）。  
-  业务只依赖接口；组装仅在 app/compose。入参预留 `agentKind`（默认 `PERSONAL`；将来 `ENTERPRISE|ROLE|TASK`）。  
-  **工具之间禁止互引**（均经总线）；Loop **禁止** import 具体 Tool 类。
+  `Identity` · `OrgNamespace` · `Policy` · `AuditSink` · `Metering` · `KnowledgeSource` · `Execution` · `LlmProvider` · `Tool` · `McpBridge` · `Compaction` · `Secret` · `SessionStore` · `InboxClaim` · `ProjectionBus` · `SubagentAdaptor` · `TeamAdaptor` · `LongTaskAdaptor` · `PromptAssembly` · `ReasoningPresenter` · `CommandDispatcher` · `ThreadRouter` · `FlowRouter` · `ModelRouter`。  
+  分类与单机/集群默认见 `docs/os-baseplate.md` §3。业务只依赖接口；`agentKind` 默认 `PERSONAL`。  
+  **工具之间禁止互引**；Loop **禁止** import 具体 Tool 类。
 - **Decision — 企业最小可卖（MVP）挂在缝上，不摊全企业**:  
   多人角色 · 组织下项目隔离 · 危险操作审批 · 审计导出 · 项目预算 · 薄项目共享知识。  
   **不做**：完整四智能体、SSO/OIDC、多租户集群、市场/移动/进化引擎当卖点。
@@ -183,7 +182,7 @@
 - **Decision — 继续可向 dsh 学的（榨干清单）与「开发活 / 固化稳」双模**:
   - **仍值得学（固化也要）——稳、准、效率优先**:
     1. **运行时不变量（invariants）**：tool_call↔result 成对、turn/step 包裹、序号单调；违反即失败可见（准/稳）。
-    2. **真·压缩缝**：压力触发 + 摘要替换进日志；经能力总线 `llm.*`，**同受卫兵与 Metering**（非仅 clear-history）。
+    2. **真·压缩缝（`Compaction`）**：经总线 `llm.*` + 会话日志替换端口；同受卫兵与 Metering（非内核内嵌调模型；非仅 clear-history）。
     3. **工具超时 / 循环卫生 / 取消**：防死循环与悬挂 turn（稳/效率）。
     4. **TurnContext 显式传递**（ScopedValue 等），禁止单例 bind 污染（准/稳，尤其虚线程）。
     5. **配错即响**：缺引用/错误 preset 启动或首用失败，禁静默跳过（准）。
@@ -233,5 +232,5 @@
   - 用户消息与系统 Section 分列；禁止把技能/记忆默默写进一条匿名 system 而无法追溯 section id。
   - **模型可见 ⟺ 会话日志可还原**；人手宿主操作 → AuditSink，不冒充会话对话事实。
 - **Alternatives rejected**: 把 Loop/审批/多 Agent/思维链/提示词拼装塞进内核；照搬 Cordis；先做完整四智能体再卖；为 Teams 再写上帝编排器；用 system 行混装 thinking；Orchestrator 继续巨型 Prompt 字符串；固化期追求与 dsh 同等热插灵活。
-- **Forward**: 实现时优先「ToolRuntime 上下文解耦 bind/unbind」、会话事件最小集（含 reasoning/plan 占位）、**PromptAssembly Section 收编现有技能/记忆注入**；固化路径叠加不变量、超时、真压缩；本 ADR 不自动授权大范围拆模块，动手前按黄灯确认切片。
+- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 TurnContext、会话事件最小集、PromptAssembly、总线+Policy；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。
 

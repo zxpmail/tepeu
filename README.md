@@ -12,12 +12,14 @@ Agentic OS（智能体操作系统）。**develop 正在按 ADR-016 重写**；�
 ## 仓库布局（develop）
 
 ```
-文档与规格/   Product-Spec · DEV-PLAN · CONTEXT · ADR（memory/）
-legacy/       v1 backend/frontend/experiments/scripts（只读参考）
-（待建）      新内核与积木骨架
+docs/os-baseplate.md   实施底板（必读）
+docs/kernel-layer.md   短图投影
+os/                    新骨架（kernel/adaptors/orchestration/routing/compose）
+legacy/                v1 只读标本
+memory/                ADR（ADR-016 规范）
 ```
 
-根目录 `Dockerfile` / `docker-compose.yml` 仍对应 **v1 布局**，重写完成前请用 `main` 或 `legacy/` 构建运行。
+根目录 `Dockerfile` / `docker-compose.yml` 仍对应 **v1 布局**，请用 `main` 或 `legacy/` 运行旧版。
 
 ## 跑 v1（推荐）
 
