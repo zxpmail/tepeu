@@ -2,12 +2,12 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-**develop 底板已重写**：实施以 `docs/os-baseplate.md` + `os/` 骨架为准；ADR-016 为规范。
+**develop ① 内核端口 + ② 内存冒烟已落地**；实施以 `docs/os-baseplate.md` + `os/` 为准。
 
 ## 上次停在哪
-- ✅ 严苛补洞：Compaction 属缝、预算门、TurnContext、缝分类
-- ✅ `docs/os-baseplate.md`；`os/{kernel,adaptors,orchestration,routing,compose}/`
-- ✅ `legacy/` 只读；下一步按底板填 ① 会话+总线空实现（黄灯切片）
+- ✅ 内核 Java 端口：identity / context / session / bus
+- ✅ 内存适配器 + `KernelPortsSmokeTest`（`mvn -f os/pom.xml test` 通过）
+- 下一步：黄灯切片补单机行为，或进 ③ 编排空壳（仍不搬 legacy）
 
 ## 近期关键决定
 - 双真相：会话日志 vs AuditSink

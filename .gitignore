@@ -44,3 +44,6 @@ Thumbs.db
 .tepeu/
 .tepleu/
 .gstack/
+
+# Maven (os/ 等)
+**/target/
