@@ -51,16 +51,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   /** Workspace */
   listWorkspaces: () => request<Workspace[]>('/workspace'),
-  getWorkspace: (id: string) => request<Workspace>(`/workspace/${id}`),
   createWorkspace: (name: string, description?: string) =>
     request<Workspace>('/workspace', {
       method: 'POST',
       body: JSON.stringify({ name, description, type: 'personal' }),
-    }),
-  updateWorkspace: (id: string, data: { name?: string; description?: string }) =>
-    request<Workspace>(`/workspace/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
     }),
   deleteWorkspace: (id: string) =>
     request<void>(`/workspace/${id}`, { method: 'DELETE' }),
@@ -82,24 +76,6 @@ export const api = {
     }),
 
   /** Memory */
-  listMemories: (params: {
-    workspaceId: string
-    query?: string
-    tags?: string[]
-    limit?: number
-    cursor?: string
-  }) => {
-    const q = new URLSearchParams({ workspaceId: params.workspaceId })
-    if (params.query) q.set('query', params.query)
-    if (params.limit != null) q.set('limit', String(params.limit))
-    if (params.cursor) q.set('cursor', params.cursor)
-    if (params.tags) {
-      for (const t of params.tags) q.append('tags', t)
-    }
-    return request<{ items: Memory[]; hasMore: boolean; nextCursor?: string }>(
-      `/memory?${q.toString()}`,
-    )
-  },
   searchMemories: (params: { workspaceId: string; query?: string; tags?: string[]; limit?: number; cursor?: string }) =>
     request<{ items: Memory[]; hasMore: boolean; nextCursor?: string }>('/memory/search', {
       method: 'POST',
@@ -115,7 +91,6 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ content, tags }),
     }),
-  getMemory: (id: string) => request<Memory>(`/memory/${id}`),
   deleteMemory: (id: string) => request<void>(`/memory/${id}`, { method: 'DELETE' }),
 
   /** Session (chat history) */
@@ -170,11 +145,6 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(workspaceId ? { path, workspaceId } : { path }),
     }),
-  writeFile: (path: string, content: string, workspaceId?: string) =>
-    request<{ path: string }>('/files/write', {
-      method: 'POST',
-      body: JSON.stringify(workspaceId ? { path, content, workspaceId } : { path, content }),
-    }),
   uploadFile: async (file: File, path: string = '/', workspaceId?: string): Promise<{ path: string; size: number }> => {
     // FormData must NOT set Content-Type (browser sets the multipart boundary). Bypass request().
     await ensureInstanceToken()
@@ -216,11 +186,6 @@ export const api = {
   },
   restoreFileVersion: (versionId: string) =>
     request<{ id: string; workspaceId: string; filePath: string; versionNo: number; createdAt: string }>(`/files/restore/${versionId}`, { method: 'POST' }),
-  createFileVersion: (workspaceId: string, path: string, content: string, sessionId?: string) =>
-    request<{ id: string; workspaceId: string; filePath: string; versionNo: number; createdAt: string }>('/files/version', {
-      method: 'POST',
-      body: JSON.stringify({ workspaceId, path, content, sessionId }),
-    }),
 
   /** Provider config */
   getAvailableProviders: () => request<ProviderMetadata[]>('/provider/available'),

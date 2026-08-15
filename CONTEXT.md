@@ -2,15 +2,16 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-Phase 18 / v1.0.0 发布收口已完成。Docker 镜像本机实测与 git tag 仍可选待批。
+本地后端运行中（30141）。已按审计结果完成一轮「能删就删 / 能改就改」。
 
 ## 上次停在哪
-- ✅ Phase 18：`RELEASE_NOTES-v1.0.0.md`、版本号 1.0.0、Spec §10 基线、Docker 定义校验
-- ✅ Phase 10–17 主线能力
-- ⏳ Docker `docker build` 暂缓（无 CLI）
-- ✅ git tag `v1.0.0` + GitHub Release 已发布
+- ✅ 中文文件名 Content-Disposition（RFC 5987）
+- ✅ 写文件自动建版本；记忆检索注入对话
+- ✅ 去掉 E:/work/ReqForge 硬编码；任务失败写 partial/abandoned
+- ✅ /clear-history（兼容 /compact）；技能+市场合并；侧栏去掉独立「市场」；多 Agent 降为高级
+- ✅ 删除前端未用 API：getWorkspace/updateWorkspace/listMemories/getMemory/writeFile/createFileVersion
 
 ## 近期关键决定
-- v1.0.0 = Spec Phase 3 单机 Agentic OS；集群/OAuth 仍为远期（Spec §8.2）
-- 技能脚本用 GraalJS，原生 WASM 延后（ADR-015）
-- Release：https://github.com/zxpmail/tepeu/releases/tag/v1.0.0
+- 市场入口并入技能「目录安装」页签，不删后端市场 API
+- ReqForge 本机路径仅配置/环境变量/相对探测，无绝对路径默认值
+- 文件三入口、双预览组件本次未大拆（风险高），仅改侧栏文案

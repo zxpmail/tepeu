@@ -20,15 +20,14 @@ interface SessionSidebarProps {
 
 const SECONDARY: { id: Panel; label: string }[] = [
   { id: 'workspace', label: '工作区' },
-  { id: 'files', label: '文件' },
+  { id: 'files', label: '文件管理' },
   { id: 'memory', label: '记忆' },
   { id: 'skills', label: '技能' },
-  { id: 'marketplace', label: '市场' },
-  { id: 'multi', label: '多 Agent' },
   { id: 'schedule', label: '自主' },
   { id: 'cost', label: '成本' },
   { id: 'terminal', label: '终端' },
   { id: 'provider', label: '服务商' },
+  { id: 'multi', label: '多 Agent（高级）' },
 ]
 
 /** 侧栏小图标按钮用的 14px SVG */

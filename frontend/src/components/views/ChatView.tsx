@@ -102,7 +102,7 @@ export default function ChatView({
     onRegisterActions?.({ reset, loadSession })
   }, [reset, loadSession, onRegisterActions])
 
-  /** 执行一条 slash 命令（不经 LLM）：压缩动作 → 本地回合；handleSend 与点选共用 */
+  /** 执行一条 slash 命令（不经 LLM）；清空历史 → 本地清屏；handleSend 与点选共用 */
   const runSlashLine = async (line: string) => {
     // 并发防重：点选路径经 requestAnimationFrame 可能双击触发两条
     if (slashBusyRef.current) return
@@ -111,7 +111,7 @@ export default function ChatView({
     setInput('')
     try {
       const result = await executeSlash(line, workspaceId, sessionId)
-      if (result.action === 'compact') {
+      if (result.action === 'compact' || result.action === 'clear-history') {
         // 清屏但保留当前会话（compact 语义，不 detach）
         clearScreen()
       }

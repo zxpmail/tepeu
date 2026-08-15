@@ -245,7 +245,6 @@ public class SkillService {
         Path userDir = Path.of(System.getProperty("user.dir", ".")).toAbsolutePath().normalize();
         candidates.add(userDir.resolve("../ReqForge").normalize());
         candidates.add(userDir.getParent() != null ? userDir.getParent().resolve("ReqForge") : null);
-        candidates.add(Path.of("E:/work/ReqForge"));
         for (Path p : candidates) {
             if (p != null && Files.isDirectory(p) && Files.isRegularFile(p.resolve("core/skills/dev-builder/SKILL.md"))) {
                 return p.toAbsolutePath().normalize();

@@ -1,16 +1,20 @@
 /**
- * 技能面板 — 列表启用；从 URL / ZIP 安装（可选手动粘贴）。
- * 关联：api.installSkillFromUrl / installSkillFromZip、App。
+ * 技能面板 — 已安装管理 + 目录安装（原市场入口合并至此）。
+ * 关联：api.installSkillFromUrl / installSkillFromZip、MarketplaceView、App。
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api, ApiError } from '../../api/client'
 import type { Skill } from '../../types'
+import MarketplaceView from './MarketplaceView'
 
 interface SkillsViewProps {
   workspaceId: string | undefined
+  /** manage=已安装；market=目录安装 */
+  initialTab?: 'manage' | 'market'
 }
 
-export default function SkillsView({ workspaceId }: SkillsViewProps) {
+export default function SkillsView({ workspaceId, initialTab = 'manage' }: SkillsViewProps) {
+  const [tab, setTab] = useState<'manage' | 'market'>(initialTab)
   const [skills, setSkills] = useState<Skill[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,6 +28,10 @@ export default function SkillsView({ workspaceId }: SkillsViewProps) {
   const [msg, setMsg] = useState<string | null>(null)
 
   const [installingPack, setInstallingPack] = useState(false)
+
+  useEffect(() => {
+    setTab(initialTab)
+  }, [initialTab])
 
   const reload = useCallback(async () => {
     if (!workspaceId) {
@@ -139,8 +147,38 @@ export default function SkillsView({ workspaceId }: SkillsViewProps) {
         <p className="text-xs mt-1" style={{ color: 'var(--color-text-dim)' }}>
           安装后在对话里用 /技能名 或 @技能名 调用（例如 /dev-builder 写个接口）。「常用」只影响 / 菜单排序。
         </p>
+        <div className="flex gap-2 mt-3">
+          <button
+            type="button"
+            className="text-sm px-3 py-1 rounded"
+            style={{
+              backgroundColor: tab === 'manage' ? 'var(--color-accent)' : 'transparent',
+              color: tab === 'manage' ? '#fff' : 'var(--color-text-secondary)',
+              border: tab === 'manage' ? 'none' : '1px solid var(--color-border)',
+            }}
+            onClick={() => setTab('manage')}
+          >
+            已安装
+          </button>
+          <button
+            type="button"
+            className="text-sm px-3 py-1 rounded"
+            style={{
+              backgroundColor: tab === 'market' ? 'var(--color-accent)' : 'transparent',
+              color: tab === 'market' ? '#fff' : 'var(--color-text-secondary)',
+              border: tab === 'market' ? 'none' : '1px solid var(--color-border)',
+            }}
+            onClick={() => setTab('market')}
+          >
+            目录安装
+          </button>
+        </div>
       </div>
 
+      {tab === 'market' ? (
+        <MarketplaceView workspaceId={workspaceId} />
+      ) : (
+      <>
       <section
         className="p-4 rounded border space-y-2"
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg-secondary)' }}
@@ -149,7 +187,7 @@ export default function SkillsView({ workspaceId }: SkillsViewProps) {
           ReqForge 编程套件
         </div>
         <p className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-          从 github.com/zxpmail/ReqForge 拉取开发所需 skill 与 agent；若 GitHub 不可达，会自动使用本机 E:\work\ReqForge。
+          从 github.com/zxpmail/ReqForge 拉取开发所需 skill 与 agent；GitHub 不可达时可配置 TEPEU_REQFORGE_PATH 指向本机目录。
           安装后用 /dev-builder、/bug-fixer 等调用。
         </p>
         <button
@@ -313,6 +351,8 @@ export default function SkillsView({ workspaceId }: SkillsViewProps) {
           {installing ? '安装中…' : '安装'}
         </button>
       </section>
+      </>
+      )}
     </div>
   )
 }

@@ -44,12 +44,27 @@ public class TaskService {
             int promptTokens,
             int completionTokens,
             double costUsd) {
+        return recordTurn(workspaceId, sessionId, modelUsed, promptTokens, completionTokens, costUsd, "succeeded");
+    }
+
+    /**
+     * @param outcome succeeded | partial | abandoned
+     */
+    public Task recordTurn(
+            String workspaceId,
+            String sessionId,
+            String modelUsed,
+            int promptTokens,
+            int completionTokens,
+            double costUsd,
+            String outcome) {
         LocalDateTime now = LocalDateTime.now();
         Task task = new Task();
         task.setWorkspaceId(workspaceId);
         task.setSessionId(sessionId);
         task.setStatus("completed");
-        task.setOutcome("succeeded");
+        String o = outcome == null || outcome.isBlank() ? "succeeded" : outcome;
+        task.setOutcome(o);
         task.setModelUsed(modelUsed);
         task.setTokensUsed(promptTokens + completionTokens);
         task.setCostUsd(costUsd);

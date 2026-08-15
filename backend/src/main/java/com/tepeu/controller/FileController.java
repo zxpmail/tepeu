@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -190,6 +192,7 @@ public class FileController {
                 return gateResponse(gate);
             }
             Files.writeString(target, content);
+            snapshotVersion(workspaceId, filePath, content);
             return ResponseEntity.ok(ApiResponse.success("File written", Map.of("path", filePath)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404)
@@ -326,9 +329,8 @@ public class FileController {
             String mime = probeMime(target);
             boolean asDownload = "1".equals(download) || "true".equalsIgnoreCase(download);
             response.setContentType(mime);
-            String filename = target.getFileName().toString().replace("\"", "");
-            String disposition = (asDownload ? "attachment" : "inline") + "; filename=\"" + filename + "\"";
-            response.setHeader("Content-Disposition", disposition);
+            // Tomcat 响应头仅 ASCII；中文文件名用 RFC 5987 filename*
+            response.setHeader("Content-Disposition", contentDisposition(asDownload, target.getFileName().toString()));
             response.setHeader("Cache-Control", "no-cache");
             Files.copy(target, response.getOutputStream());
             response.flushBuffer();
@@ -361,6 +363,34 @@ public class FileController {
         if (name.endsWith(".css")) return "text/css; charset=UTF-8";
         if (name.endsWith(".js")) return "text/javascript; charset=UTF-8";
         return "application/octet-stream";
+    }
+
+    /**
+     * Content-Disposition：ASCII 回退名 + UTF-8 filename*，避免中文文件名导致 Tomcat 抛 UnmappableCharacterException。
+     */
+    static String contentDisposition(boolean asDownload, String rawFilename) {
+        String safe = rawFilename == null ? "file" : rawFilename.replace("\"", "").replace("\r", "").replace("\n", "");
+        StringBuilder ascii = new StringBuilder();
+        for (int i = 0; i < safe.length(); i++) {
+            char c = safe.charAt(i);
+            ascii.append(c >= 0x20 && c <= 0x7e ? c : '_');
+        }
+        String asciiName = ascii.length() == 0 ? "file" : ascii.toString();
+        String encoded = URLEncoder.encode(safe, StandardCharsets.UTF_8).replace("+", "%20");
+        return (asDownload ? "attachment" : "inline")
+                + "; filename=\"" + asciiName + "\"; filename*=UTF-8''" + encoded;
+    }
+
+    /** 文本写入成功后自动打版本快照；失败只记日志，不阻断主路径。 */
+    private void snapshotVersion(String workspaceId, String filePath, String content) {
+        if (workspaceId == null || workspaceId.isBlank() || filePath == null || filePath.isBlank()) {
+            return;
+        }
+        try {
+            fileVersionService.createVersion(workspaceId, filePath, content != null ? content : "", null);
+        } catch (RuntimeException e) {
+            log.warn("自动创建文件版本失败 path={}: {}", filePath, e.toString());
+        }
     }
 
     // ---------------------------------------------------------------------------

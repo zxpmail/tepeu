@@ -126,7 +126,7 @@ class SlashCommandRegistryTest {
     @Test
     void compact_withoutSession_returnsActionOnly() {
         SlashResult r = registry.execute("compact", new SlashContext(null, null, List.of()));
-        assertEquals("compact", r.action());
+        assertEquals("clear-history", r.action());
         assertTrue(r.text().contains("没有活动会话"));
         verify(sessionService, never()).clearMessages(anyString());
     }
@@ -134,9 +134,16 @@ class SlashCommandRegistryTest {
     @Test
     void compact_withSession_clearsServerHistory() {
         SlashResult r = registry.execute("compact", new SlashContext("ws-1", "sess-1", List.of()));
-        assertEquals("compact", r.action());
+        assertEquals("clear-history", r.action());
         verify(sessionService).clearMessages("sess-1");
         assertTrue(r.text().contains("服务器历史"));
+    }
+
+    @Test
+    void clearHistory_aliasWorks() {
+        SlashResult r = registry.execute("clear-history", new SlashContext("ws-1", "sess-2", List.of()));
+        assertEquals("clear-history", r.action());
+        verify(sessionService).clearMessages("sess-2");
     }
 
     @Test

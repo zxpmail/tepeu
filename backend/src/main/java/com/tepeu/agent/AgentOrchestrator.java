@@ -10,7 +10,9 @@ import com.tepeu.agent.tool.SearchFileTool;
 import com.tepeu.agent.tool.ToolEventEmitter;
 import com.tepeu.agent.tool.WorkspaceBoundTool;
 import com.tepeu.agent.tool.WriteFileTool;
+import com.tepeu.model.Memory;
 import com.tepeu.model.Message;
+import com.tepeu.service.MemoryService;
 import com.tepeu.service.SkillService;
 import com.tepeu.service.chat.ChatService;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -38,6 +40,9 @@ public class AgentOrchestrator {
     public static final int MAX_HISTORY_MESSAGES = 50;
     /** 每个 @ 引用文件注入上下文的最大字符数 */
     private static final int MAX_FILE_REF_CHARS = 4000;
+    /** 检索注入的记忆条数与单条截断 */
+    private static final int MAX_MEMORY_HITS = 5;
+    private static final int MAX_MEMORY_CHARS = 500;
 
     private final ChatService chatService;
     private final ListDirTool listDirTool;
@@ -49,6 +54,7 @@ public class AgentOrchestrator {
     private final ReadOutputTool readOutputTool;
     private final RunSkillScriptTool runSkillScriptTool;
     private final SkillService skillService;
+    private final MemoryService memoryService;
 
     public AgentOrchestrator(ChatService chatService,
                              ListDirTool listDirTool,
@@ -59,7 +65,8 @@ public class AgentOrchestrator {
                              RunCommandTool runCommandTool,
                              ReadOutputTool readOutputTool,
                              RunSkillScriptTool runSkillScriptTool,
-                             SkillService skillService) {
+                             SkillService skillService,
+                             MemoryService memoryService) {
         this.chatService = chatService;
         this.listDirTool = listDirTool;
         this.readFileTool = readFileTool;
@@ -70,6 +77,7 @@ public class AgentOrchestrator {
         this.readOutputTool = readOutputTool;
         this.runSkillScriptTool = runSkillScriptTool;
         this.skillService = skillService;
+        this.memoryService = memoryService;
     }
 
     public Flux<ChatResponse> streamTurn(String providerId, List<Message> history) {
@@ -190,6 +198,7 @@ public class AgentOrchestrator {
         List<org.springframework.ai.chat.messages.Message> promptMessages = new ArrayList<>();
         skillService.buildInvokedSkillsPrompt(workspaceId, lastUserText, skillRefs).ifPresent(text ->
                 promptMessages.add(new SystemMessage(text)));
+        appendMemoryContext(promptMessages, workspaceId, lastUserText);
         List<String> fileOnlyRefs = filterFileRefs(workspaceId, fileRefs);
         for (int i = 0; i < trimmed.size(); i++) {
             Message m = trimmed.get(i);
@@ -207,6 +216,41 @@ public class AgentOrchestrator {
             }
         }
         return promptMessages;
+    }
+
+    /** 按用户最新一句话检索工作区记忆并注入 SystemMessage（白盒记忆可读）。 */
+    private void appendMemoryContext(
+            List<org.springframework.ai.chat.messages.Message> promptMessages,
+            String workspaceId,
+            String lastUserText) {
+        if (workspaceId == null || workspaceId.isBlank()
+                || lastUserText == null || lastUserText.isBlank()) {
+            return;
+        }
+        try {
+            List<Memory> hits = memoryService.searchMemories(
+                    workspaceId, lastUserText.trim(), null, MAX_MEMORY_HITS, null);
+            if (hits == null || hits.isEmpty()) {
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("Relevant workspace memories (user-editable; use only if helpful):\n");
+            for (Memory m : hits) {
+                String c = m.getContent();
+                if (c == null || c.isBlank()) {
+                    continue;
+                }
+                if (c.length() > MAX_MEMORY_CHARS) {
+                    c = c.substring(0, MAX_MEMORY_CHARS) + "…";
+                }
+                sb.append("- ").append(c.replace('\n', ' ')).append('\n');
+            }
+            if (sb.indexOf("- ") >= 0) {
+                promptMessages.add(new SystemMessage(sb.toString()));
+            }
+        } catch (RuntimeException e) {
+            // 记忆检索失败不阻断对话
+        }
     }
 
     /** @ 提及若匹配已安装技能则不当文件路径。 */

@@ -23,12 +23,21 @@ public class SlashCommandRegistry {
         List<SlashCommand> sorted = new ArrayList<>(commands);
         sorted.sort(Comparator.comparing(SlashCommand::name));
         for (SlashCommand c : sorted) {
-            String key = c.name().toLowerCase(Locale.ROOT);
-            if (byName.containsKey(key)) {
-                throw new IllegalStateException("重复的 Slash 命令名: " + key);
+            registerName(c.name(), c);
+            for (String alias : c.aliases()) {
+                if (alias != null && !alias.isBlank()) {
+                    registerName(alias, c);
+                }
             }
-            byName.put(key, c);
         }
+    }
+
+    private void registerName(String raw, SlashCommand c) {
+        String key = raw.toLowerCase(Locale.ROOT).trim();
+        if (byName.containsKey(key)) {
+            throw new IllegalStateException("重复的 Slash 命令名: " + key);
+        }
+        byName.put(key, c);
     }
 
     public Optional<SlashCommand> find(String name) {
@@ -38,8 +47,13 @@ public class SlashCommandRegistry {
         return Optional.ofNullable(byName.get(name.toLowerCase(Locale.ROOT).trim()));
     }
 
+    /** 去重列举（主名优先，不含别名重复条目） */
     public List<SlashCommand> list() {
-        return List.copyOf(byName.values());
+        LinkedHashMap<String, SlashCommand> unique = new LinkedHashMap<>();
+        for (SlashCommand c : byName.values()) {
+            unique.putIfAbsent(c.name().toLowerCase(Locale.ROOT), c);
+        }
+        return List.copyOf(unique.values());
     }
 
     /** 执行：未知命令抛 IllegalArgumentException。 */

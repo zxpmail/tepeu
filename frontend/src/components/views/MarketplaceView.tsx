@@ -79,9 +79,9 @@ export default function MarketplaceView({ workspaceId }: MarketplaceViewProps) {
   return (
     <div className="p-6 max-w-2xl space-y-4">
       <div>
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>应用市场</h1>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>技能目录</h1>
         <p className="text-xs mt-1" style={{ color: 'var(--color-text-dim)' }}>
-          浏览技能目录并一键安装到当前工作区。不配远程清单时，仍可用内置与本机 ReqForge 目录。
+          浏览内置/本机技能并一键安装。可选配置远程清单 URL；不是社区应用商店。
         </p>
       </div>
 

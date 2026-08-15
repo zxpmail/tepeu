@@ -11,7 +11,6 @@ import MemoryView from './components/views/MemoryView'
 import TerminalView from './components/views/TerminalView'
 import ProviderSettingsView from './components/views/ProviderSettingsView'
 import SkillsView from './components/views/SkillsView'
-import MarketplaceView from './components/views/MarketplaceView'
 import MultiAgentView from './components/views/MultiAgentView'
 import CostDashboardView from './components/views/CostDashboardView'
 import ScheduleView from './components/views/ScheduleView'
@@ -89,9 +88,10 @@ export default function App() {
       case 'provider':
         return <ProviderSettingsView />
       case 'skills':
-        return <SkillsView workspaceId={workspace.current?.id} />
+        return <SkillsView workspaceId={workspace.current?.id} initialTab="manage" />
       case 'marketplace':
-        return <MarketplaceView workspaceId={workspace.current?.id} />
+        // 兼容旧入口：市场已并入技能「目录安装」页签
+        return <SkillsView workspaceId={workspace.current?.id} initialTab="market" />
       case 'multi':
         return (
           <MultiAgentView
@@ -136,8 +136,8 @@ export default function App() {
                 {activePanel === 'files' && '文件'}
                 {activePanel === 'memory' && '记忆'}
                 {activePanel === 'skills' && '技能'}
-                {activePanel === 'marketplace' && '市场'}
-                {activePanel === 'multi' && '多 Agent'}
+                {activePanel === 'marketplace' && '技能 · 目录安装'}
+                {activePanel === 'multi' && '多 Agent（高级）'}
                 {activePanel === 'schedule' && '自主'}
                 {activePanel === 'cost' && '成本'}
                 {activePanel === 'terminal' && '终端'}

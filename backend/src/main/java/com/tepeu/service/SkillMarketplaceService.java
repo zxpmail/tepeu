@@ -1,7 +1,7 @@
 package com.tepeu.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.tepeu.dto.MarketplaceCatalogResponse;
 import com.tepeu.dto.MarketplaceEntryDto;
 import com.tepeu.model.Skill;

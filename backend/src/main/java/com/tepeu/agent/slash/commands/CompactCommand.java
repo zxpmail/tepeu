@@ -6,9 +6,11 @@ import com.tepeu.agent.slash.SlashResult;
 import com.tepeu.service.SessionService;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
- * /compact — 清空当前会话在服务器上的消息历史，并通知前端清屏。
- * 下一轮对话不再携带旧上下文（与仅清屏不同）。
+ * /clear-history（别名 /compact）— 清空当前会话服务器消息历史，并通知前端清屏。
+ * 不是「摘要压缩」；下一轮对话不再携带旧上下文。
  */
 @Component
 public class CompactCommand implements SlashCommand {
@@ -21,7 +23,12 @@ public class CompactCommand implements SlashCommand {
 
     @Override
     public String name() {
-        return "compact";
+        return "clear-history";
+    }
+
+    @Override
+    public List<String> aliases() {
+        return List.of("compact");
     }
 
     @Override
@@ -31,7 +38,7 @@ public class CompactCommand implements SlashCommand {
 
     @Override
     public String usage() {
-        return "/compact";
+        return "/clear-history（或 /compact）";
     }
 
     @Override
@@ -45,11 +52,11 @@ public class CompactCommand implements SlashCommand {
         if (sid == null || sid.isBlank()) {
             return SlashResult.of(
                     "当前没有活动会话。已仅清空本屏显示；发送新消息后会开启新会话。",
-                    "compact");
+                    "clear-history");
         }
         sessionService.clearMessages(sid);
         return SlashResult.of(
                 "已清空本会话的服务器历史与本屏显示。下一轮对话将从空白上下文开始。",
-                "compact");
+                "clear-history");
     }
 }

@@ -189,6 +189,8 @@ public class ChatController {
                     rollbackUserMessage(resolvedSessionId, userMessageId);
                     idempotencyService.release(idemKey);
                     persistPartialAssistant(resolvedSessionId, assistantText.toString());
+                    String outcome = assistantText.length() > 0 ? "partial" : "abandoned";
+                    recordFailedTurn(resolvedWorkspaceId, resolvedSessionId, providerId, outcome);
                     String[] mapped = mapError(error);
                     sendErrorEvent(emitter, sendLock, mapped[0], mapped[1]);
                     emitter.complete();
@@ -320,10 +322,22 @@ public class ChatController {
         if (workspaceId != null && total > 0) {
             try {
                 taskService.recordTurn(workspaceId, sessionId, model != null ? model : providerId,
-                        prompt, completion, cost);
+                        prompt, completion, cost, "succeeded");
             } catch (RuntimeException e) {
                 log.debug("Failed to record turn usage: {}", e.getMessage());
             }
+        }
+    }
+
+    /** 流失败时写入 outcome=partial|abandoned，便于成本/成功率统计 */
+    private void recordFailedTurn(String workspaceId, String sessionId, String providerId, String outcome) {
+        if (workspaceId == null || workspaceId.isBlank()) {
+            return;
+        }
+        try {
+            taskService.recordTurn(workspaceId, sessionId, providerId, 0, 0, 0.0, outcome);
+        } catch (RuntimeException e) {
+            log.debug("Failed to record failed turn: {}", e.getMessage());
         }
     }
 
