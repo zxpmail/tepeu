@@ -231,10 +231,19 @@
   - reasoning / plan 事件与 assistant 正文分列；回灌须显式经 `ReasoningPresenter` 策略，禁止静默拼进 Prompt。
   - 用户消息与系统 Section 分列；禁止把技能/记忆默默写进一条匿名 system 而无法追溯 section id。
   - **模型可见 ⟺ 会话日志可还原**；人手宿主操作 → AuditSink，不冒充会话对话事实。
-- **Alternatives rejected**: 把 Loop/审批/多 Agent/思维链/提示词拼装塞进内核；照搬 Cordis；先做完整四智能体再卖；为 Teams 再写上帝编排器；用 system 行混装 thinking；Orchestrator 继续巨型 Prompt 字符串；固化期追求与 dsh 同等热插灵活。
+- **Decision — dsh 四路源码深读落位（2026-08-15 第三轮严苛对账）**:
+  1. **传输层日志重建断言（最高优先）**：`llm.*` syscall 入口拦截器断言「请求 messages 与 `deriveMessages()` **逐字节相等**、config 与 folded request header 相等」——把「模型可见⟺日志可还原」从口号变机器检查（dsh `agent-loop/invariant.ts` 先例）。
+  2. **Compaction 代数**：压缩**不删事件**——摘要为带 `surfaceOp{op:replace,start,end}` 的事件，`sourceEventSeqs` 必须完整覆盖被遮蔽节点；**双读者分离**：模型读 surface（旧文不可见）、人类 transcript 读 append-origin 事件（全文可见）；禁止改写日志。工具大结果先确定性剪枝再摘要；剪枝/摘要均记 shadow 记账事件。
+  3. **事件日志立规**：`seq = log.length` 强制连续；append 点做 lossless 校验（坏事件在 append 失败，不在 flush）；未知事件默认 required-fail（需 `ignorable:true` 才可跳过，禁静默丢数据）；崩溃恢复**补合成闭合**（open turn 补 `turn/end{interrupted}`）不截断；fork/resume 用 `end-seed` 边界事件区分种子/活写。
+  4. **Policy 封闭词汇表 + 审批单次许可**：Policy 返回值为封闭 union（allow|deny|ask 类），词汇表外返回/插件异常一律规范化为拒绝（fail-closed，禁异常穿透）；审批 = `asked/decided` 事件对落会话日志、必须在 open turn 内、许可严格**单次**（allowed-once）——**不发放长期能力，从结构上消灭「撤销已授权能力」**（显式债务大半关闭；残余=沙箱类运行中资源回收，如 dispose 撤销 ACL grant）。
+  5. **执行隔离契约先行**：`SandboxPolicy`（mode + workspaceRoot + sessionId）随能力调用携带，在 spawn 点由 OS 级机制执行（Linux 方向：子进程 + bwrap/landlock；Windows 方向：Job Object/restricted token）；隔离完备性 `full|partial` 是**报告事实**而非承诺，配功能性 probe；**禁止静默未沙箱直通**（全不可用即失败可见）。Java 侧选型单独立项（黄灯），先落缝与契约。
+  6. **编排缝契约四条**：Loop 三态 `idle|maintenance|running`（maintenance 为独占 idle 窗口，回答「两次 turn 之间谁拥有 agent」；后台/定时任务不得与模型 turn 抢执行面）；长程续跑 = **预约-复核**（先持久 checkpoint，再预约 `(taskId,revision,round)`，pre-step 前后各验一次，失效拒绝该 step 并归还被 claim 消息）；Subagent `delegationDepth` 持久化为**单调下界**（重启不得降级，防递归逃逸）；终态写权限来自**消息溯源**（host-attested user 源或精确匹配的机器轮次源），非 ambient 会话状态。
+  7. **PromptAssembly 三补**：**静态 Section / 动态 PromptContext 分离**——稳定身份进 system prompt（KV-cache 前缀稳定），动态事实以 sourced user-role 快照落 durable history、只在变化或被压缩遮蔽时重发（企业省钱直接相关）；技能**目录/正文两段式懒加载**（目录仅 name+description 带 digest，正文按需加载、每次重读盘）；超预算丢弃必须**出账单**（先丢宽泛后截最具体 + 显式通知列省略路径——白盒可见性的另一半）。
+  8. **Secret 四细则**：配置只放 branded 引用（不放假路径）；每次操作重解析、禁跨操作缓存（轮换下个请求生效）；解析结果永不进模型可见通道；文档诚实标注「克制品不是安全边界」。**GDPR Open 加候选 B**：导出侧脱敏、canonical 日志永不重写（dsh telemetry 先例），与 crypto-shredding 并列待裁。
+- **Alternatives rejected**: 把 Loop/审批/多 Agent/思维链/提示词拼装塞进内核；照搬 Cordis；先做完整四智能体再卖；为 Teams 再写上帝编排器；用 system 行混装 thinking；Orchestrator 继续巨型 Prompt 字符串；固化期追求与 dsh 同等热插灵活；Policy 用异常穿透做拒绝；压缩改写/删除日志事件；审批发放会话级长期能力。
 - **Decision — 企业评审落位（2026-08-15 第二轮严苛评审）**:
   - **配额/限流是入口卫兵**（per-principal/namespace 的速率、并发、token 硬顶，**入口处拒绝**）；Metering 只是事后仪表盘。刹车 ≠ 仪表。
   - **OS 类比诚实度**：当前内核 = syscall 表 + 事件日志 + 卫兵（journal-first），**不是**完整 OS。以下为**显式债务**，不许靠类比暗示已具备：调度公平/优先级队列、Agent 资源隔离边界（超时/取消只是部分覆盖）、运行中能力撤销（会话中途吊销工具授权，已发 syscall 如何处置）、日志 tamper-evidence（哈希链）。
   - **待裁决（Open）**：append-only 会话日志 vs 删除权（GDPR/个保法）——候选 crypto-shredding（按租户密钥加密日志段，删租户=销毁密钥）；未裁决前不得声称合规。
-- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 TurnContext、会话事件最小集、PromptAssembly、总线+Policy；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。
+- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。
 

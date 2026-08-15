@@ -57,25 +57,26 @@
 |----|------|
 | `SessionStore` | 会话/事件持久化 |
 | `InboxClaim` | claim 锁/租约 |
-| `Execution` | fs/shell 等执行世界 |
+| `Execution` | fs/shell 等执行世界；携带 `SandboxPolicy`（mode+workspaceRoot+sessionId），OS 级沙箱链在 spawn 点执行；`full\|partial` 诚实度 + 功能性 probe；**禁静默未沙箱直通**（Java 选型另立项） |
 | `LlmProvider` | 模型流式调用实现 |
 | `Tool`* | 各工具插头（彼此禁止互引） |
 | `McpBridge` | 外挂 MCP 工具桥 |
-| `Policy` / `ApprovalStore` | 放行/拒绝/审批状态（**审批证据须持久**，单机默认 SQLite，禁内存） || `AuditSink` | 人手等审计真相 |
+| `Policy` / `ApprovalStore` | 放行/拒绝/审批。返回值**封闭 union**（allow/deny/ask），词汇表外一律规范化为拒绝（fail-closed，禁异常穿透）；审批 = `asked/decided` 事件对落日志 + 必须 open turn 内 + 许可**严格单次**（不发放长期能力→结构上消灭撤销问题）；审批证据须持久，单机默认 SQLite，禁内存 || `AuditSink` | 人手等审计真相 |
 | `Metering` | token/费用/预算门 |
 | `KnowledgeSource` | 知识→Section 的唯一内容源接口 |
-| `Identity` / `OrgNamespace` / `Secret` | 身份、组织命名空间、密钥 |
+| `Identity` / `OrgNamespace` / `Secret` | 身份、组织命名空间、密钥。Secret 四细则：配置只放 branded 引用；每次操作重解析禁缓存；解析结果永不进模型可见通道；文档诚实标注「克制品不是边界」 |
 | `ProjectionBus` | 多副本/UI **通知**（禁止当真相；下发前按**查看者 ACL** 过滤） |
-| `Compaction` | 摘要压缩；调 `llm.*`；写回经会话「日志替换」端口 |
+| `Compaction` | 摘要压缩；调 `llm.*`；**surface 替换代数**——不删事件，摘要带 `surfaceOp{replace,start,end}` + `sourceEventSeqs` 完整覆盖被遮蔽节点；模型读 surface、人类 transcript 读 append-origin（双读者）；工具大结果先确定性剪枝再摘要，均记 shadow 记账 |
 
 ### 3.2 编排缝（③ 使用）
 
 | 缝 | 职责 |
 |----|------|
-| `SubagentAdaptor` | 委派子 Agent |
+| `LoopRuntime` | 三态 `idle\|maintenance\|running`；maintenance 为独占 idle 窗口（后台/定时任务不得与模型 turn 抢执行面，期间唤醒 latch 重放） |
+| `SubagentAdaptor` | 委派子 Agent；工具集只减不增；`delegationDepth` 持久化为**单调下界**（重启不得降级） |
 | `TeamAdaptor` | Team preset 图 |
-| `LongTaskAdaptor` | 长程状态机 |
-| `PromptAssembly` | Section 组装 |
+| `LongTaskAdaptor` | 长程状态机；续跑 = **预约-复核**（先持久 checkpoint，预约 `(taskId,revision,round)`，pre-step 前后各验一次，失效拒绝并归还被 claim 消息）；终态写权限来自**消息溯源**（host-attested user 源或精确机器轮次源） |
+| `PromptAssembly` | Section 组装；**静态 Section（KV-cache 前缀稳定）/动态 PromptContext（sourced user-role 快照，变化或被遮蔽才重发）分离**；技能目录/正文两段式懒加载（digest 驱动重发）；超预算丢弃出账单（先宽泛后具体 + 显式通知） |
 | `ReasoningPresenter` | reasoning 可见/持久化/是否回灌 |
 | `CommandDispatcher` | Slash 等命令面 |
 
@@ -116,7 +117,9 @@
 3. 禁止 Orchestrator 巨型系统提示词字符串（经 PromptAssembly）。  
 4. TurnContext 显式传递；禁止单例 Tool bind 当跨请求真相。  
 5. 压缩/LLM 走总线，受卫兵与 Metering。  
-6. 开发可活、固化求稳准效率；dsh 插件不可直接加载。
+6. 开发可活、固化求稳准效率；dsh 插件不可直接加载。  
+7. `llm.*` 入口断言：请求 messages 与日志派生**逐字节相等**、config 与 folded header 相等（「模型可见⟺日志可还原」的机器检查，违反即失败可见）。  
+8. 取消时为未派发 call 写**合成错误结果**（保 tool_call↔result 配对与 replay 有效）；调度器自身故障**不伪造**结果，只 drain 后抛——哪类失败可补占位、哪类必须诚实缺口，显式分界。
 
 ---
 
@@ -145,8 +148,18 @@ legacy/             v1 只读标本
 |------|------|
 | 调度公平 / 优先级队列 | 多租户 Agent 竞争预算与执行队列时的公平性 |
 | Agent 资源隔离边界 | 一个 Agent 失控不得饿死他人（现有超时/取消只是部分覆盖） |
-| 运行中能力撤销 | 会话中途吊销工具授权，已发 syscall 如何处置 |
+| 运行中能力撤销 | ~~会话中途吊销工具授权~~ **大半关闭**：审批单次许可制（allowed-once）从结构上消灭长期能力发放；残余=沙箱类运行中资源回收（如 dispose 撤销 ACL grant） |
 | 日志 tamper-evidence | 哈希链防篡改，审计可信的前提 |
 | 投影 per-viewer ACL 细则 | 缝上已声明（§3.1），实现细则待定 |
 
-**待裁决（Open，未决不动）**：append-only 会话日志 vs 删除权（GDPR/个保法）——候选 crypto-shredding（按租户密钥加密日志段，删租户=销毁密钥）。未裁决前不得向企业声称合规。
+**待裁决（Open，未决不动）**：append-only 会话日志 vs 删除权（GDPR/个保法）——候选 A crypto-shredding（按租户密钥加密日志段，删租户=销毁密钥）；候选 B 导出侧脱敏、canonical 日志永不重写（dsh telemetry 先例）。未裁决前不得向企业声称合规。
+
+---
+
+## 9. 事件日志立规（dsh 对账）
+
+- `seq = log.length` **强制连续**；append 点做 lossless 校验，坏事件在 append 失败，不在 flush 处。
+- 未知事件默认 **required-fail**：无 `ignorable: true` 标记时读者必须拒绝重建，禁静默丢弃（事件词汇演进的兼容规则）。
+- 崩溃恢复**补合成闭合**：open turn 补 `turn/end{kind:'interrupted'}`，事件全保留，**不截断日志**。
+- fork/resume 写 `end-seed` 边界事件区分种子历史与本生命周期写入（孤儿压缩锁、重开判定都依赖它）。
+- 附件 **persist-before-event**：二进制先落内容寻址存储（sha256），事件里只放 opaque 引用，禁 objectURL/base64/临时路径；超大工具输出 **spill** 落盘 + locator + retrievalHint，模型按需取回。

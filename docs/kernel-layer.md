@@ -10,7 +10,7 @@
 ② 适配        Store/Claim/Execution/LLM/Tool/MCP/Policy/Audit/Metering/…
               Compaction · Identity/Secret/Knowledge/ProjectionBus
 ① 内核        主体+命名空间 · 能力总线〔入口钩Policy+卫兵(超时/取消/不变量/配额限流)〕
-              会话(日志+Inbox+主/子；日志替换端口)
+              会话(日志+Inbox+主/子；surface替换端口)
 ```
 
 **三路**：对话主路 → 会话日志；人手旁路 → AuditSink；Slash → Command→(可选总线)。  
