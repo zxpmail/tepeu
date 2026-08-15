@@ -2,16 +2,14 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-**develop 重写骨架阶段**：旧业务已迁入 `legacy/`；根目录保留规格/ADR/记忆，待按 ADR-016 建新内核。
+**develop 重写骨架阶段**：旧业务在 `legacy/`；架构以 **ADR-016** 为准，`docs/kernel-layer.md` 仅为图示投影。
 
 ## 上次停在哪
-- ✅ `backend` / `frontend` / `experiments` / `scripts` → `legacy/`
-- ✅ `main` 仍冻在 `c98fec8`；tag `v1.0.0` 仍在
-- ⏳ 下一步：按 ADR-016 落空骨架（内核 3 件 + Adaptor 缝），勿在 `legacy/` 加功能
+- ✅ v1 → `legacy/`；main 冻结
+- ✅ ADR-016 裁决：Tool/MCP=②插头；人手→AuditSink；压缩走总线+卫兵+计量；Slash≠人手旁路；底板=内核三件
+- ⏳ 下一步：按 ADR 落空骨架，勿在 `legacy/` 加功能
 
 ## 近期关键决定
-- develop = 重写线；main = v1 标本
-- 旧代码整树进 `legacy/`（只读），不直接删历史
-- 严格内核：主体+命名空间、能力总线、**会话设施（日志+Inbox/claim+主/子关系）**；Loop 是运行时不是内核
-- 企业可卖先薄；开发可活、固化求稳准效率
-- 详见 ADR-016
+- 五环由内向外：内核 → 适配插头 → 编排 → 路由 → 应用；人机旁路对称过 Policy+卫兵
+- 双真相：会话日志（对话/工具）≠ AuditSink（人手审计）
+- 详见 ADR-016；图：`docs/kernel-layer.md`

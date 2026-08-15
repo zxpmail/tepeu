@@ -120,13 +120,41 @@
      - **有序 Inbox / claim**：活如何进入本会话、由谁领取进入 turn（禁止编排器私自「旁路拼消息」）。
      - **会话关系**：主/子会话（话题枝）、`parentId` / 分叉点等；单调序号属日志实现细节。
      无 Inbox 契约则只有账本、没有进场规则，编排器会再次耦合。
+  - **分层位置（由内向外，如 OS；图示见 `docs/kernel-layer.md`，**规范以本 ADR 为准、图仅为投影**）**：  
+    **① 内核三件**（总线入口 = **Policy + 卫兵**（超时/取消/不变量），主路旁路对称；会话含主/子关系；日志禁明文 secret；**真压缩**经自家总线 `llm.*` syscall，**同受卫兵与 Metering**）  
+    → **② 适配环（驱动插头）**（显式清单见下「Adaptor 缝」，含 **Tool 插头、MCP Bridge**；禁止用省略号藏缝）  
+    → **③ 编排环**（兜底 Agent、Loop/turn、Team/Subagent/LongTask **积木+对应 Adaptor 缝**、PromptAssembly、ReasoningPresenter、**Command 分发**）  
+    → **④ 路由环**（ThreadRouter、**FlowRouter**、ModelRouter；仅对话主路；ModelRouter **只选型**，LLM 调用在总线+② LLM Provider）  
+    → **⑤ 应用/呈现**（UI、Skill/记忆**资产文件**、面板）。  
+    **人机同底座**：  
+    - 对话主路：应用→④→③ Loop→内核 claim/syscall→〔Policy+卫兵〕→②。对话/工具事实→**会话日志**。  
+    - 人手旁路（REST/终端）：应用→总线→〔Policy+卫兵〕→同一②；**不经**④与 Loop；事实→**AuditSink**（审计事件，**不算**会话对话事实）。  
+    - **Slash**：只进 ③ **Command 分发**（不经模型/Loop）；若动宿主再走总线〔Policy+卫兵〕；**不**与人手旁路混写。  
+    **依赖**：外环依赖内环；适配是插头不是外壳。compose/app-boot 只接线，不单成环。  
+    **底板 = 内核三件**（禁止说成「最内三环」，以免把可换的②冻死）。
+- **Decision — 会话/多副本相关必须有可扩展 Adaptor（单机默认，集群可换）**:
+  - 内核只认 Session 契约（日志 + Inbox/claim + 会话关系）；**存储与跨副本通知不得写死在内核**。
+  - 至少预留下列缝（接口先定，单机先简实现）：
+    | Adaptor | 单机默认 | 多副本可换为 |
+    |---------|----------|--------------|
+    | `SessionStore` | 本地 SQLite/文件 | 中央 DB / 日志服务 |
+    | `InboxClaim` | 进程内锁 | 分布式租约抢占（防双跑） |
+    | `ApprovalStore`（属 Policy 旁路状态） | 内存 | 共享存储 |
+    | `ProjectionBus` | 本机直推 SSE | Redis/NATS 等 Pub/Sub（只做通知/投影，**不是**消息真相） |
+    | `Execution` | 本地盘/进程 | 共享盘 / 远程沙箱 |
+  - **双真相域（裁决）**：  
+    - **会话日志** = 对话 + Agent 工具事实的真相（模型可见 ⟺ 可还原）。  
+    - **AuditSink** = 人手宿主操作等审计真相（企业导出必含）；**不**写入冒充对话的会话事实。  
+    - `ProjectionBus` 禁止充当任一真相源。
 - **Decision — 明确不进内核**:
-  - **Agent Loop** = 紧贴内核的可替换**运行时**（单轮 turn/step），不是内核。
-  - 具体工具、技能、MCP、市场、成本看板 UI、记忆面板 = **外围积木**。
+  - **Agent Loop** = 编排环可替换运行时（turn/step），不是内核。
+  - **Skill 资产文件、市场 UI、记忆面板 UI** = ⑤ 应用/呈现；Skill **激活**走 ③ PromptAssembly。  
+  - **Tool 实现与 MCP Bridge** = **② 适配插头**（挂能力总线），**不是**⑤，也不是「无家可归的外围」——旧称「外围积木」仅指勿进①内核。  
   - 不引入 Cordis；宿主仍 Spring；先包级乐高 + 依赖规则，再视需要升 Maven 多模块。
-- **Decision — Adaptor 缝（接口先定，默认实现先简）**:  
-  `Identity` · `OrgNamespace` · `Policy`（总线入口）· `AuditSink` · `Metering` · `KnowledgeSource` · `Execution`（fs/shell）· `Secret` · `ModelRouter`（LLM 选型，见下）。  
-  业务只依赖接口；组装仅在 app/compose。入参预留 `agentKind`（默认 `PERSONAL`；将来 `ENTERPRISE|ROLE|TASK`），四智能体靠换 Adaptor/加 kind，不改内核。
+- **Decision — Adaptor 缝（接口先定，默认实现先简；边界图须显式列出）**:  
+  `Identity` · `OrgNamespace` · `Policy` · `AuditSink` · `Metering` · `KnowledgeSource` · `Execution` · `LlmProvider` · **`Tool`（各工具插头）** · **`McpBridge`** · `Secret` · `SessionStore` · `InboxClaim` · `ProjectionBus` · `SubagentAdaptor` · `TeamAdaptor` · `LongTaskAdaptor` · `ReasoningPresenter` · 路由侧 `ThreadRouter` / `FlowRouter` / `ModelRouter`（④ 策略，选型结果消费 ② Provider）。  
+  业务只依赖接口；组装仅在 app/compose。入参预留 `agentKind`（默认 `PERSONAL`；将来 `ENTERPRISE|ROLE|TASK`）。  
+  **工具之间禁止互引**（均经总线）；Loop **禁止** import 具体 Tool 类。
 - **Decision — 企业最小可卖（MVP）挂在缝上，不摊全企业**:  
   多人角色 · 组织下项目隔离 · 危险操作审批 · 审计导出 · 项目预算 · 薄项目共享知识。  
   **不做**：完整四智能体、SSO/OIDC、多租户集群、市场/移动/进化引擎当卖点。
@@ -155,7 +183,7 @@
 - **Decision — 继续可向 dsh 学的（榨干清单）与「开发活 / 固化稳」双模**:
   - **仍值得学（固化也要）——稳、准、效率优先**:
     1. **运行时不变量（invariants）**：tool_call↔result 成对、turn/step 包裹、序号单调；违反即失败可见（准/稳）。
-    2. **真·压缩缝**：压力触发 + 摘要替换进日志（非仅 clear-history）；大工具结果先剪枝再摘要（效率）。
+    2. **真·压缩缝**：压力触发 + 摘要替换进日志；经能力总线 `llm.*`，**同受卫兵与 Metering**（非仅 clear-history）。
     3. **工具超时 / 循环卫生 / 取消**：防死循环与悬挂 turn（稳/效率）。
     4. **TurnContext 显式传递**（ScopedValue 等），禁止单例 bind 污染（准/稳，尤其虚线程）。
     5. **配错即响**：缺引用/错误 preset 启动或首用失败，禁静默跳过（准）。
@@ -169,7 +197,7 @@
   - **该有**：`ModelRouterAdaptor`（可挂在 LLM 能力上）——输入目标/预算/延时/请求指定等，输出 `providerId` + 可选 fallback；组装层只认此缝，禁止在 ChatController/Orchestrator 里写死选模型分支。
   - **默认实现（MVP）**：透传请求中的 `providerId`（可加静态 fallback 列表）；**不做**「简单/复杂自动选大/小模型」分类器。
   - **企业省钱优先**：预算硬门 + 项目默认模型，覆盖智能路由大部分诉求；真·智能路由以后换 Adaptor 实现，不改内核。
-  - **勿混**：模型路由 ≠ Agent Flow 图路由 ≠ 能力总线分发 ≠ HTTP 路由。另可可选 `FlowRouter`（进 Agentic Loop 还是某 Team preset），同属编排上的薄缝，非内核。
+  - **勿混**：模型路由 ≠ Agent Flow 图路由 ≠ 能力总线分发 ≠ HTTP 路由。`FlowRouter` / `ThreadRouter` / `ModelRouter` 同属 **④ 路由环**（薄、默认可透传）；Model 的 Provider 在 ②。
 - **Decision — 思维链 / 推理过程（不进内核，必留事件缝）**:
   - **三分开，禁止混成一种「thinking」字符串**:
     1. **Model reasoning**（厂商原生 thinking/reasoning_content 流）— 模型侧隐式推理  
@@ -196,13 +224,14 @@
   - **pre-step 钩子**（挂 Loop，非内核）：可改写/拒绝本轮进入模型的 messages；技能命中、记忆注入走 Section，不手写进 Orchestrator。  
   - **与 ReasoningPresenter**：若策略允许「推理回灌」，也只是多一个 Section（如 `prior_reasoning`），默认关闭。  
   - **企业**：组织规范 / 共享知识只经 `KnowledgeSource` → Section；个人记忆 Section 不得在无授权时进入企业任务上下文。  
-  - **Slash / 系统命令**：不经模型、不进 PromptAssembly（保持现状：命令面与对话面分离）。  
+  - **Slash / 系统命令**：进 ③ Command 分发（不经模型、不进 PromptAssembly）；与人手 REST 旁路分离。  
   - **MVP**：先把现有「技能 + 记忆 + 历史」收成 Section 接口 + 默认组装器；UI 可折叠展示「本轮用了哪些 Section」（白盒）。
 - **Decision — 依赖与事件硬规矩**:
-  - 上层可依赖下层接口；工具之间禁止互引；Loop **禁止** import 具体 Tool 类；Loop/Orchestrator **禁止**直接拼系统提示词长字符串（须经 PromptAssembly）。
+  - 上层可依赖下层接口；**工具属 ②、彼此禁止互引**；Loop **禁止** import 具体 Tool 类；Loop/Orchestrator **禁止**直接拼系统提示词长字符串（须经 PromptAssembly）；**禁止编排器旁路拼消息**（必经 Inbox/claim）。
   - 委派/团队交接/任务状态变更必须落会话（或任务投影）事件，带 `delegationId` / `taskId` 供 Audit/Metering。
   - reasoning / plan 事件与 assistant 正文分列；回灌须显式经 `ReasoningPresenter` 策略，禁止静默拼进 Prompt。
   - 用户消息与系统 Section 分列；禁止把技能/记忆默默写进一条匿名 system 而无法追溯 section id。
+  - **模型可见 ⟺ 会话日志可还原**；人手宿主操作 → AuditSink，不冒充会话对话事实。
 - **Alternatives rejected**: 把 Loop/审批/多 Agent/思维链/提示词拼装塞进内核；照搬 Cordis；先做完整四智能体再卖；为 Teams 再写上帝编排器；用 system 行混装 thinking；Orchestrator 继续巨型 Prompt 字符串；固化期追求与 dsh 同等热插灵活。
 - **Forward**: 实现时优先「ToolRuntime 上下文解耦 bind/unbind」、会话事件最小集（含 reasoning/plan 占位）、**PromptAssembly Section 收编现有技能/记忆注入**；固化路径叠加不变量、超时、真压缩；本 ADR 不自动授权大范围拆模块，动手前按黄灯确认切片。
 
