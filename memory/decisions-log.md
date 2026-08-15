@@ -109,3 +109,96 @@
 - **Implied**: 任务事件低频 → 每 tab 直连一条 SSE 可接受（不上 BroadcastChannel/leader）。`GET /api/task-events` 只读，免实例令牌。
 - **Forward**: 后续其他低频后台事件（如 MCP 状态变化提示）可并入 `TaskEventNotifier` 或再开独立通道，按事件频率与职责划分。
 
+## ADR-016: 企业 OS 内核、Adaptor 缝与编排积木（2026-08-15）
+- **Status**: Accepted（架构边界；未要求立刻大重构）
+- **Context**: 对照 DeepSeek Harness「能力缝 / 事件日志 / 插件化」后，确认 tepeu 最大问题是编排器耦合高，不利于多人开发与调试；企业方向需「饼心可卖 + 饼边可摊」，且 Subagent / Agent Teams / 长程任务不能再堆进上帝编排器。
+- **Decision — 严格内核仅 3 件（冻住）**:
+  1. **主体 + 命名空间**：谁（人/Agent）× 在哪（Workspace/将来租户）；个人知识默认仅本人。
+  2. **能力总线（syscall 表）**：注册/分发；**入口策略钩子**（审批等）挂在此，不另立「权限层」。
+  3. **仅追加的会话事实日志**：模型可见 ⟺ 可从日志还原；审计/回放/计量投影同源。
+- **Decision — 明确不进内核**:
+  - **Agent Loop** = 紧贴内核的可替换**运行时**（单轮 turn/step），不是内核。
+  - 具体工具、技能、MCP、市场、成本看板 UI、记忆面板 = **外围积木**。
+  - 不引入 Cordis；宿主仍 Spring；先包级乐高 + 依赖规则，再视需要升 Maven 多模块。
+- **Decision — Adaptor 缝（接口先定，默认实现先简）**:  
+  `Identity` · `OrgNamespace` · `Policy`（总线入口）· `AuditSink` · `Metering` · `KnowledgeSource` · `Execution`（fs/shell）· `Secret` · `ModelRouter`（LLM 选型，见下）。  
+  业务只依赖接口；组装仅在 app/compose。入参预留 `agentKind`（默认 `PERSONAL`；将来 `ENTERPRISE|ROLE|TASK`），四智能体靠换 Adaptor/加 kind，不改内核。
+- **Decision — 企业最小可卖（MVP）挂在缝上，不摊全企业**:  
+  多人角色 · 组织下项目隔离 · 危险操作审批 · 审计导出 · 项目预算 · 薄项目共享知识。  
+  **不做**：完整四智能体、SSO/OIDC、多租户集群、市场/移动/进化引擎当卖点。
+- **Decision — 三类编排积木（运行时之上，可插拔）**:
+  | 积木 | 缝 | 规则 |
+  |------|----|------|
+  | **Subagent** | `SubagentAdaptor` | 派生 principal；工具集只减不增；子事件挂 parent/delegation；回传摘要 |
+  | **Agent Teams** | `TeamAdaptor` + **Preset 配置** | 现有 Planner→Implementer→Reviewer 收编为 preset，禁止第三套硬编码编排器 |
+  | **长程任务** | `LongTaskAdaptor` | 持久状态机 + 多次短 turn；`waiting_human`；从现有 Schedule/task **演进**，不平行再造 |
+  卖点顺序建议：长程薄版 → Subagent → Teams preset 化。MVP 可不做前两块卖点，但**接口与事件字段先留**。
+- **Decision — Agent Flow vs Agentic Flow（两种编排积木，勿混一个 Orchestrator）**:
+  - **Agentic Flow**：目标驱动；模型在 turn/step 工具循环里自选下一步（普通对话、长程每次唤醒的内环）。积木：`Loop` +（可选）`LongTask` 外壳。
+  - **Agent Flow**：流程驱动；按 Team/Workflow **preset 图**走角色与边（现有 Planner→Implementer→Reviewer 应收编为此）。积木：`TeamAdaptor` / workflow preset。
+  - **组合**：企业常见「外层 Agent Flow、节点内 Agentic Flow」；Subagent 两种均可挂；门 / PromptAssembly / 记忆为共用缝，不按 flow 复制。
+  - 产品与文档可用此二词；实现认积木名，不新增第三套编排器。
+- **Decision — 兜底 Agent（每项目默认运行身份）**:
+  - **系统必须有兜底 Agent**：每个 Workspace 隐含（或自动创建）一个默认 Agent 上下文，用作普通对话、Skill 激活、工具循环的承载者；**禁止**「无 Agent 却走 Orchestrator 调 Skill」。
+  - **定位**：不是第四套编排器，而是 **Agentic Flow 的默认 principal**（`agentKind` 默认 `PERSONAL` 或项目配置的默认种）；无 Team preset / 无显式 Agent 时一律落兜底。
+  - **与 Skill**：Skill 仍属项目资产；调用时挂到**兜底（或当前选中）Agent** 的 PromptAssembly，不经「无主体 Orchestrator」。
+  - **与项目隔离**：兜底 Agent 的会话/记忆/授权按 Workspace 隔离，不跨项目共享脑子。
+  - **可替换**：企业可把兜底换成岗位预设人格，仍是「默认 Agent」，不是取消兜底。
+- **Decision — 与 DeepSeek Harness（dsh）插件的关系**:
+  - dsh 是可参照的 **harness 底盘**（缝、事件、组装），不是 tepeu 的个人版 SKU，也不是插件市场。
+  - **禁止**假设「安装 dsh Cordis 插件即可被 tepeu 加载」——运行时（Node/Cordis vs Java/Spring）与扩展 ABI 不兼容。
+  - **允许的复用**：设计对齐；**MCP** 互通；技能 Markdown 内容迁移；可选经 ACP/JSON-RPC/子进程把 dsh 当**外部引擎**桥接。tepeu 自有扩展面仍是 Adaptor / Tool / 技能包。
+- **Decision — 继续可向 dsh 学的（榨干清单）与「开发活 / 固化稳」双模**:
+  - **仍值得学（固化也要）——稳、准、效率优先**:
+    1. **运行时不变量（invariants）**：tool_call↔result 成对、turn/step 包裹、序号单调；违反即失败可见（准/稳）。
+    2. **真·压缩缝**：压力触发 + 摘要替换进日志（非仅 clear-history）；大工具结果先剪枝再摘要（效率）。
+    3. **工具超时 / 循环卫生 / 取消**：防死循环与悬挂 turn（稳/效率）。
+    4. **TurnContext 显式传递**（ScopedValue 等），禁止单例 bind 污染（准/稳，尤其虚线程）。
+    5. **配错即响**：缺引用/错误 preset 启动或首用失败，禁静默跳过（准）。
+    6. **回放 / 快照测**：关键路径可对事件流或固定输出做回归（准）。
+    7. **token 计量与压力信号**：压缩与预算同源测量（效率）。
+  - **开发模式可学、固化不必追（灵活实验）**:
+    - Cordis 热插、`--dump-config` 式整树打印、agent 自改插件树、海量 Provider 并行、100% 覆盖门禁仪式、为灵活而灵活的多层 patch。
+    - 开发期可用本机 dsh **外部引擎/对照实验**；固化发行 **冻结 Adaptor 集合与事件 schema**，默认透传路由，不热换野生插件。
+  - **双模原则**：开发 = 多缝、可换、日志拉满、可桥接 dsh 学习；固化 = 薄内核不变、实现集收敛、不变量与超时默认开、灵活让位于稳定/准确/效率。企业卖的是后者。
+- **Decision — 模型路由层（该有缝，不该急着做聪明实现）**:
+  - **该有**：`ModelRouterAdaptor`（可挂在 LLM 能力上）——输入目标/预算/延时/请求指定等，输出 `providerId` + 可选 fallback；组装层只认此缝，禁止在 ChatController/Orchestrator 里写死选模型分支。
+  - **默认实现（MVP）**：透传请求中的 `providerId`（可加静态 fallback 列表）；**不做**「简单/复杂自动选大/小模型」分类器。
+  - **企业省钱优先**：预算硬门 + 项目默认模型，覆盖智能路由大部分诉求；真·智能路由以后换 Adaptor 实现，不改内核。
+  - **勿混**：模型路由 ≠ Agent Flow 图路由 ≠ 能力总线分发 ≠ HTTP 路由。另可可选 `FlowRouter`（进 Agentic Loop 还是某 Team preset），同属编排上的薄缝，非内核。
+- **Decision — 思维链 / 推理过程（不进内核，必留事件缝）**:
+  - **三分开，禁止混成一种「thinking」字符串**:
+    1. **Model reasoning**（厂商原生 thinking/reasoning_content 流）— 模型侧隐式推理  
+    2. **Agent plan**（显式计划/待办，如 todo、Goal 步骤）— 编排侧可执行意图  
+    3. **Tool trace**（工具调用与结果）— 已有过程事件，不算思维链  
+  - **落点**：均为**会话事实事件**（如 `assistant/reasoning`、`plan/step`），由 UI 投影；**不**塞进普通 `assistant` 正文冒充最终答复。  
+  - **缝：`ReasoningPresenter`（可选 Adaptor）**：控制是否持久化全文、是否对用户可见、是否进下一轮模型上下文（企业可关「推理回灌」防泄密/省 token）。  
+  - **与编排关系**：Subagent/Teams 各自可有独立 reasoning 事件，挂同一 `delegationId`；长程任务每次短 turn 的 reasoning **按 turn 追加**，任务级只保留计划投影，避免把多日隐式思维拼成巨上下文。  
+  - **企业 MVP**：至少能**展示并回放** tool trace；原生 model thinking 与 plan 事件**接口先留**，默认实现可先「透传存储 + 折叠展示」，策略默认：reasoning **可展示、默认不回灌**（可配）。  
+  - **不做**：把 CoT 提示词技巧写进内核；用 system 消息糊全部思维过程（违背事件日志原则）。
+- **Decision — 用户提示词与系统提示词（组装缝，不进内核）**:
+  - **用户提示词（User）**：会话事实事件 `user/message`（可含附件/引用元数据）；是 Inbox 输入，不是拼进上帝字符串的临时变量。`@文件` / 粘贴等 → 先落事件或 attachment，再由组装器决定是否进模型。
+  - **系统提示词（System）**：禁止「Orchestrator 里一大段 String 拼接」。改为 **`PromptAssembly` 缝**——按有序 **Section** 注册组装：
+    | Section 例 | 来源 | 备注 |
+    |------------|------|------|
+    | `base` | 产品/预设 | 身份与总规，版本化 |
+    | `workspace_rules` | 项目规则文件 | 随 Workspace |
+    | `skills` | Skill/Knowledge 缝 | 激活技能正文 |
+    | `memory_hits` | 记忆检索 | 须可追溯来源 id |
+    | `tools_schema` | 能力总线 | 工具描述随注册变化 |
+    | `team_role` | Team preset | 多角色时按角色切换 |
+    | `task_brief` | LongTask | 长程每次唤醒的目标摘要 |
+  - **组装规则**：Section 有 id、顺序、是否进模型、是否持久化；**进模型的内容必须可从日志或「prompt_assembly 快照事件」还原**（满足 model-visible ⟺ logged）。  
+  - **pre-step 钩子**（挂 Loop，非内核）：可改写/拒绝本轮进入模型的 messages；技能命中、记忆注入走 Section，不手写进 Orchestrator。  
+  - **与 ReasoningPresenter**：若策略允许「推理回灌」，也只是多一个 Section（如 `prior_reasoning`），默认关闭。  
+  - **企业**：组织规范 / 共享知识只经 `KnowledgeSource` → Section；个人记忆 Section 不得在无授权时进入企业任务上下文。  
+  - **Slash / 系统命令**：不经模型、不进 PromptAssembly（保持现状：命令面与对话面分离）。  
+  - **MVP**：先把现有「技能 + 记忆 + 历史」收成 Section 接口 + 默认组装器；UI 可折叠展示「本轮用了哪些 Section」（白盒）。
+- **Decision — 依赖与事件硬规矩**:
+  - 上层可依赖下层接口；工具之间禁止互引；Loop **禁止** import 具体 Tool 类；Loop/Orchestrator **禁止**直接拼系统提示词长字符串（须经 PromptAssembly）。
+  - 委派/团队交接/任务状态变更必须落会话（或任务投影）事件，带 `delegationId` / `taskId` 供 Audit/Metering。
+  - reasoning / plan 事件与 assistant 正文分列；回灌须显式经 `ReasoningPresenter` 策略，禁止静默拼进 Prompt。
+  - 用户消息与系统 Section 分列；禁止把技能/记忆默默写进一条匿名 system 而无法追溯 section id。
+- **Alternatives rejected**: 把 Loop/审批/多 Agent/思维链/提示词拼装塞进内核；照搬 Cordis；先做完整四智能体再卖；为 Teams 再写上帝编排器；用 system 行混装 thinking；Orchestrator 继续巨型 Prompt 字符串；固化期追求与 dsh 同等热插灵活。
+- **Forward**: 实现时优先「ToolRuntime 上下文解耦 bind/unbind」、会话事件最小集（含 reasoning/plan 占位）、**PromptAssembly Section 收编现有技能/记忆注入**；固化路径叠加不变量、超时、真压缩；本 ADR 不自动授权大范围拆模块，动手前按黄灯确认切片。
+

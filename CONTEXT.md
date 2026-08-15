@@ -2,16 +2,20 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-本地后端运行中（30141）。已按审计结果完成一轮「能删就删 / 能改就改」。
+架构定界：企业 OS 内核 / Adaptor / 编排积木（ADR-016）。代码未按该 ADR 大重构。
 
 ## 上次停在哪
-- ✅ 中文文件名 Content-Disposition（RFC 5987）
-- ✅ 写文件自动建版本；记忆检索注入对话
-- ✅ 去掉 E:/work/ReqForge 硬编码；任务失败写 partial/abandoned
-- ✅ /clear-history（兼容 /compact）；技能+市场合并；侧栏去掉独立「市场」；多 Agent 降为高级
-- ✅ 删除前端未用 API：getWorkspace/updateWorkspace/listMemories/getMemory/writeFile/createFileVersion
+- ✅ 审计收口已 commit+push（`c98fec8`）
+- ✅ ADR-016 写入 `memory/decisions-log.md`（内核 3 件、Adaptor 缝、Subagent/Teams/长程、企业 MVP）
 
 ## 近期关键决定
-- 市场入口并入技能「目录安装」页签，不删后端市场 API
-- ReqForge 本机路径仅配置/环境变量/相对探测，无绝对路径默认值
-- 文件三入口、双预览组件本次未大拆（风险高），仅改侧栏文案
+- 严格内核：主体+命名空间、能力总线、会话事实日志；Loop 是运行时不是内核
+- 企业可卖先薄（人/项目/审批/审计/预算/薄知识）；缝预留摊大饼
+- Subagent / Teams / 长程 = 编排积木，Teams 用 preset，长程从 Schedule 演进
+- Agent Flow（preset 图）vs Agentic Flow（工具循环）；可外层流程+内层自主；勿混一个 Orchestrator
+- 每项目兜底 Agent：无专用 Agent 时普通对话/Skill 激活落此；禁无 Agent 走 Orchestrator
+- dsh 插件不可直接加载；可 MCP/内容/外部引擎桥接；tepeu 自有 Adaptor 扩展面
+- 向 dsh 续学：不变量、真压缩、超时/取消、TurnContext、配错即响、回放测、token 压力；开发可活、固化求稳准效率（不追热插）
+- 模型路由：该有 ModelRouterAdaptor 缝；MVP 透传 providerId；不做自动难度选模；与图路由/总线分发分开
+- 思维链三分开：model reasoning / agent plan / tool trace；事件化 + ReasoningPresenter；默认可展示不回灌
+- 提示词：User=事件；System=PromptAssembly 分 Section 注册（技能/记忆/规则/工具 schema）；禁 Orchestrator 巨型拼接
