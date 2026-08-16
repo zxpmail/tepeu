@@ -2,7 +2,7 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-**对账轮已冻结（ADR-016 第七轮）——下一动作 = ② conformance 切片落码**；实施以 `docs/os-baseplate.md` + `os/` 为准。
+**对账冻结（第七轮）+ 蒸馏完成（第八轮，底板减法重写：四环洋葱/内核必需端口 4 个/红线 7 条/SYSTEM_NOTE 砍除）——下一动作 = ② conformance 切片落码**；实施以 `docs/os-baseplate.md` + `os/` 为准。
 
 ## 上次停在哪
 - ✅ 内核 Java 端口：identity / context / session / bus（含 fail-closed + surface 次序修复）

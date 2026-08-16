@@ -275,5 +275,15 @@
   2. **fork 后 seq 空间（解 E2）**：种子事件**保留原 seq**；自身写入从 end-seed 后**续接同一单调空间分配**。「seq = log.length」表述修正为：**seq 由 append 点分配、本日志内严格单调连续且唯一；无种子日志才等值于 length**。replaceRange 区间校验在同一空间内进行、禁伸种子区（沿第四轮）。落码：① session（seq 分配与区间校验 + 测试）。
   3. **C3「轮」的定义（解 E3）与当场核对**：「连续两轮未落码」的**轮 = 落码切片轮**（一次合入 develop 的实现切片计一轮；对账轮不计数）。核对结果：第四~六轮 18 条裁决的落码映射已入底板 §8.5 挂账清单；第五/六轮已指认 ② conformance 切片、未逾期。处置：**冻结新对账轮，直至 ② conformance 切片落地**（同时 discharge 第六轮 manifest 测试与第五轮三 store 用例）。**「冻结」的可操作定义（同日代码审计二 C7 补全）：冻结 = 不新增 ADR 裁决与底板红线变更；清点/吸收/审计类文档不受限；解除条件 = ② conformance 切片合入 develop。**
   4. **claim 租约 TTL/fencing（解 O2）**：租约必带 TTL——单机默认=持有进程存活 + 崩溃后过期可被回收，turn 级租约随 turn 终态释放；多副本升级为 fencing token（单调递增，Pi/OpenCode 先例），旧持有者写被 fence 拒绝。落码：① session（InboxClaim 契约 + conformance 用例「死租约可回收」「fence 拒绝旧写」）。
+- **Decision — 蒸馏轮（2026-08-16 第八轮，用户指令）**:
+  > 隐喻：EJB 思想先进但死于接口森林，Spring 蒸馏其思想则活。六参照+legacy+agent-utils+netty 吸收后，底板出现缝合怪风险（26 命名缝 × 每缝行为规范 × 五张对账索引表，209 行近半为 ADR 复述）。本轮为**减法裁决**（用户明令「该砍一定要砍，少也是多」），底板重写为最小内核规范。**砍单七刀**：
+  1. §0–0.8 五张对账索引表全删（ADR 为真相，正文已落位，索引表是第三份复述）。
+  2. 缝行为细则降级：底板每缝一行职责 + 指针，已裁细则完整保留于本 ADR 轮次（真相不动）——细则前置到无代码处即 Pi harness 式漂移（第五轮 C3 所防）。
+  3. **④ 路由环并入 ③**：环的判据=独立不变量+独立替换边界，三个默认透传决策函数不够格。洋葱五环→四环；`os/routing/` 目录待 ③ 落地时并入。
+  4. Execution/Tool/McpBridge/LlmProvider/Compaction 从「缝」降为 **syscall 命名族**（注册进总线即存在，内核不感知类型）；**内核必需端口收敛为 4 个**：SessionStore / InboxClaim / Policy·ApprovalStore / Metering。
+  5. 红线 9→7：dsh 双模原则（过程原则）与裁决限期落码（§8.5 头部已有）移出红线。
+  6. **`SYSTEM_NOTE` 从事件词汇表砍除**（语义未定义=垃圾抽屉；需要时按 manifest 流程显式加回）。落码=② conformance（manifest 钉 7 类）。
+  7. Secret/KnowledgeSource/ProjectionBus/Identity 归并为支撑服务一行组（⑤/② 关切，非内核契约）。
+  **不砍（稳定项）**：三 store、双真相+错误归属、封闭 union、fail-closed、§9 事件立规全节、三条进路门对称、红线 1–5/7/8、债务表与挂账账本。**蒸馏判据写进底板头**：内核=少量冻结概念+不变量；一切能力=注册进总线的插头；底板只写内核规范与红线。冻结状态：本轮为用户指令下的减法例外；对账冻结其余条款不变，下一动作仍为 ② conformance 切片落码。
 - **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。**（第七轮追加：对账轮冻结中，下一动作 = ② conformance 切片落码。）**
 
