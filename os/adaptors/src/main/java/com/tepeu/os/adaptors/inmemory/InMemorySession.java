@@ -12,6 +12,8 @@ import com.tepeu.os.kernel.session.SessionId;
 import com.tepeu.os.kernel.session.SessionInbox;
 import com.tepeu.os.kernel.session.SessionLog;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,20 +26,31 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 单机内存会话 — 日志 + Inbox + 简单 surface 替换。
+ * 时钟可注入（TTL/超时可测试性）；租约过期在领取点惰性回收（ADR-016 第七轮：死租约可回收）。
  */
 public final class InMemorySession implements Session {
+
+    static final Duration LEASE_TTL = Duration.ofSeconds(300);
 
     private final SessionId id;
     private final Namespace namespace;
     private final Principal owner;
     private final Optional<SessionId> parentId;
-    private final LogAndInbox core = new LogAndInbox();
+    private final Clock clock;
+    private final LogAndInbox core;
 
     public InMemorySession(SessionId id, Principal owner, Namespace namespace, Optional<SessionId> parentId) {
+        this(id, owner, namespace, parentId, Clock.systemUTC());
+    }
+
+    public InMemorySession(SessionId id, Principal owner, Namespace namespace, Optional<SessionId> parentId,
+            Clock clock) {
         this.id = id;
         this.owner = owner;
         this.namespace = namespace;
         this.parentId = parentId == null ? Optional.empty() : parentId;
+        this.clock = clock == null ? Clock.systemUTC() : clock;
+        this.core = new LogAndInbox(this.clock);
     }
 
     @Override
@@ -84,9 +97,17 @@ public final class InMemorySession implements Session {
         private final AtomicLong seq = new AtomicLong(0);
         private final List<SessionEvent> events = new ArrayList<>();
         private final ConcurrentLinkedQueue<InboxMessage> queue = new ConcurrentLinkedQueue<>();
-        private final Map<String, InboxMessage> claimed = new ConcurrentHashMap<>();
+        private final Map<String, Claimed> claimed = new ConcurrentHashMap<>();
+
+        private record Claimed(InboxMessage message, Instant expiresAt) {
+        }
         /** null 表示 surface ≡ 全量日志；压缩后维护投影。 */
         private List<SessionEvent> surfaceOverride = null;
+        private final Clock clock;
+
+        LogAndInbox(Clock clock) {
+            this.clock = clock;
+        }
 
         @Override
         public synchronized long append(SessionEventType type, String body, Map<String, String> attrs) {
@@ -120,13 +141,29 @@ public final class InMemorySession implements Session {
 
         @Override
         public Optional<ClaimLease> claimNext() {
+            reclaimExpiredLeases();
             InboxMessage msg = queue.poll();
             if (msg == null) {
                 return Optional.empty();
             }
             String claimId = UUID.randomUUID().toString();
-            claimed.put(claimId, msg);
-            return Optional.of(new ClaimLease(claimId, msg.id(), Instant.now().plusSeconds(300)));
+            Instant expiresAt = clock.instant().plus(LEASE_TTL);
+            claimed.put(claimId, new Claimed(msg, expiresAt));
+            return Optional.of(new ClaimLease(claimId, msg.id(), expiresAt));
+        }
+
+        /**
+         * 惰性回收过期租约：持有者异常消失（进程存活）后消息不再永久卡死（ADR-016 第七轮）。
+         */
+        private void reclaimExpiredLeases() {
+            Instant now = clock.instant();
+            claimed.entrySet().removeIf(entry -> {
+                if (now.isAfter(entry.getValue().expiresAt())) {
+                    queue.offer(entry.getValue().message());
+                    return true;
+                }
+                return false;
+            });
         }
 
         @Override
@@ -136,9 +173,9 @@ public final class InMemorySession implements Session {
 
         @Override
         public void nack(String claimId) {
-            InboxMessage msg = claimed.remove(claimId);
-            if (msg != null) {
-                queue.offer(msg);
+            Claimed c = claimed.remove(claimId);
+            if (c != null) {
+                queue.offer(c.message());
             }
         }
 

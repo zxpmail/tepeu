@@ -2,7 +2,7 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-**对账冻结（第七轮）+ 蒸馏完成（第八轮，底板减法重写：四环洋葱/内核必需端口 4 个/红线 7 条/SYSTEM_NOTE 砍除）——下一动作 = ② conformance 切片落码**；实施以 `docs/os-baseplate.md` + `os/` 为准。
+**② conformance 切片已落码（2026-08-16，22 用例全绿）——对账冻结解除**；下一刀 = `llm.*` 断言切片（LlmProvider 双协议族选型同刀裁）。实施以 `docs/os-baseplate.md` + `os/` 为准。
 
 ## 上次停在哪
 - ✅ 内核 Java 端口：identity / context / session / bus（含 fail-closed + surface 次序修复）
@@ -12,7 +12,8 @@
 - ✅ v1.0 吸收清单（2026-08-16）：`docs/legacy-absorption.md`——A16 条行为规格 + 代码迁移候选（ScriptSandbox 最直接可搬）+ 反模式不吸收（上帝编排器/装饰器链/内存审批）；切片规划输入，不开新裁决轮
 - ✅ 代码审计二（2026-08-16）：立即修四件（§2 Metering 正典措辞投影、冻结词可操作定义、§8.5 增 drift 表 + 三挂账【审批端口形态 / 未装配默认 / 失败双通道】、身份双枚举注记）；drift 五项入 §8.5（死租约 / 卫兵无 verdict / priority / fork / 计量槽）——全部待 conformance 切片消化
 - ✅ Netty 理念对账（2026-08-16）：`docs/netty-reference.md`——IoHandler 解耦与 ①② 缝同构印证；三解挂账（时间轮判据→死租约、双水位滞回→SSE 背压、Ticker→可测试时钟）；元模式三条（显式契约/惰性清理/采样观测）；零新裁决，§8.5 增 timer 与泄漏检测两行
-- ⏭️ **下一步（冻结解除条件）：② conformance 套件落码**（discharge 第六轮 manifest 测试 + 第五轮三 store 用例 + 五参照弹药 + §8.5 drift 五项 + Clock/Ticker 基建 + EmbeddedChannel 假实现模式）→ `llm.*` 断言切片 → ③ Loop 端口
+- ✅ **② conformance 切片落码**（2026-08-16）：kernel 新增 `conformance` 包（SessionConformance 12 + BusConformance 13 + MutableClock，随包发布、runner 无关、纯 JDK）；`KernelPortsSmokeTest` 改 @TestFactory 桥；**第六轮 manifest 钉死 7 类落码（SYSTEM_NOTE 已删）**；**第七轮死租约可回收落码**（时钟注入 + 惰性回收）；mvn 22 用例全绿。**对账冻结解除**
+- ⏭️ **下一刀：`llm.*` 断言切片**（canonical 类型 + normalize 版本化 + prepare 可观测 + 双协议族选型同刀裁【LlmProvider 挂账】）→ kernel 端口演化刀（C1 审批端口/C2 未装配默认/C3 失败双通道/SessionLoop/③ Loop 选型）→ ③ Loop 端口
 
 ## 近期关键决定
 - 双真相：entries（对话事实）vs ledger（用量真相）vs AuditSink（人手审计）vs ProjectionBus（非真相）
