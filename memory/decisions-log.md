@@ -245,5 +245,19 @@
   - **配额/限流是入口卫兵**（per-principal/namespace 的速率、并发、token 硬顶，**入口处拒绝**）；Metering 只是事后仪表盘。刹车 ≠ 仪表。
   - **OS 类比诚实度**：当前内核 = syscall 表 + 事件日志 + 卫兵（journal-first），**不是**完整 OS。以下为**显式债务**，不许靠类比暗示已具备：调度公平/优先级队列、Agent 资源隔离边界（超时/取消只是部分覆盖）、运行中能力撤销（会话中途吊销工具授权，已发 syscall 如何处置）、日志 tamper-evidence（哈希链）。
   - **待裁决（Open）**：append-only 会话日志 vs 删除权（GDPR/个保法）——候选 crypto-shredding（按租户密钥加密日志段，删租户=销毁密钥）；未裁决前不得声称合规。
+- **Decision — CC 源码对账落位（2026-08-16 第四轮严苛对账）**:
+  > 参照 `docs/claude-code-reference.md`（claude-code-best v2.8.4 源码六路探查 + 严苛驳斥轮）。CC 为同构实现的压力测试参照；已冻方向（封闭 union、合成闭合、journal-first、单调 delegationDepth）获同构印证，下列为本轮新裁决与修正。
+  1. **`llm.*` 断言规范形态（修正第三轮第 1 条的字面表述）**：断言目标 = `derive(log) ∘ normalize == sent` 逐字节相等；`normalize` 是**版本化纯函数**（provider 侧合法变形——连续 user 合并、media 上限剥离、cache_control 逐请求布点——只准发生在其中），版本号随事件落日志。禁止无版本、无记录的黑盒归一化：字面断言会误伤合法发送，黑盒断言会漏真漂移。
+  2. **syscall 注册表规范序（内核不变量）**：能力总线 syscall 枚举序**确定且稳定**——工具数组顺序是缓存键与 `llm.*` config 相等断言的组成部分；禁止实现迭代序（HashMap 等）泄漏进断言。
+  3. **卫兵组合代数**：多卫兵/多 hook 决策聚合 **deny > ask > allow** 格；任何 allow（含卫兵或编排器的批准）**不得**越过 Policy 的 deny/ask（「批准压不过拒绝」）；组件异常一律规范化为 deny（沿 fail-closed）。
+  4. **Inbox 优先级与抢占**：InboxMessage 带 priority（now/next/later）；now 级用户消息在 turn 运行中到达 → 抢占当前流（合成闭合后让位），排队消息即上下文。claim/租约语义不变。
+  5. **fork 跨 seed 记账**：fork 必须携带全部替换/surface 记账（CC 事故先例：不携带 → 永久 cache miss）；自身写入的 `replaceRange` 区间**不得伸进种子区**，越界即 append 失败。
+  6. **取消传播拓扑**：delegation 树上取消沿父子边传播；**后台子代理不挂父取消**（父 turn 取消不杀后台，显式 kill 才杀）；兄弟连坐仅限执行类（shell）失败。
+  7. **熔断器作用域参数化**：CircuitBreaker 卫兵必须带作用域（per syscall / per provider / per principal），禁全局单例熔断——一个主体的过载不得饿死他人（「调度公平」债务的具体化）。
+  8. **Metering 拦截面（裁决为有意取舍，非遗漏）**：单机版开 turn 前拦 + provider 级 max_tokens 兜底；不做逐消息费用检查。多租户企业版再升格逐消息。
+  9. **错误事件可见性**：需 resume 后模型可见的错误（API/传输失败，续跑须知道先前失败）是**会话事件**（新事件类型）；纯人看的宿主/运维错误 → AuditSink。「模型可见⟺日志可还原」照旧封口。
+  10. **审批中间态拒绝理由（记账）**：拒绝「运行中交互产生的有界 TTL 记住型规则」。界线 = **事前声明 vs 会话中授予**：事前声明式规则走 Policy 配置面（可审计、可评审、可版本化）；运行中审批严格单次。若单机 UX 实测不可忍受，可再裁决「ApprovalStore 带 expiry 规则」为显式扩展，不静默引入。
+  11. **maintenance 窗口两细则**：maintenance 有**强制上限**（超时让位给等待中的 now 级消息）；唤醒 latch = 开窗时快照 Inbox 水位，闭窗时重放其后到达的 now/next 消息进 claim 队列。
+  12. **CommandDispatcher 端口两型**：③ 端口只见 `local`/`prompt`；UI 面板命令 = ⑤ 向 ③ 注册的 local 命令处理器（内不依赖外，照旧）。
 - **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。
 

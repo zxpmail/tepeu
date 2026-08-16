@@ -5,11 +5,15 @@
 **develop ① 内核端口 + ② 内存冒烟已落地**；实施以 `docs/os-baseplate.md` + `os/` 为准。
 
 ## 上次停在哪
-- ✅ 内核 Java 端口：identity / context / session / bus
+- ✅ 内核 Java 端口：identity / context / session / bus（含 fail-closed + surface 次序修复）
 - ✅ 内存适配器 + `KernelPortsSmokeTest`（`mvn -f os/pom.xml test` 通过）
-- 下一步：黄灯切片补单机行为，或进 ③ 编排空壳（仍不搬 legacy）
+- ✅ CC 源码对账（2026-08-16）：`docs/claude-code-reference.md` + ADR-016 第四轮 12 条裁决 + 底板 §0.5
+- 下一步：③ 编排空壳 或 `llm.*` 断言切片（动手前先按 §6.7 新形态：normalize 版本化）
 
 ## 近期关键决定
-- 双真相：会话日志 vs AuditSink
-- Tool/MCP=②；Slash→Command；压缩走总线
-- 详见 ADR-016 / os-baseplate
+- 双真相：会话日志 vs AuditSink；模型须可见的错误=会话事件
+- Tool/MCP=②；Slash→Command（端口两型）；压缩走总线
+- `llm.*` 断言 = `derive(log) ∘ normalize == sent`（normalize 版本化纯函数）
+- syscall 注册表确定性规范序（内核不变量）
+- 审批界线：事前声明走 Policy 配置面；会话中授予严格单次
+- 详见 ADR-016（四轮） / os-baseplate
