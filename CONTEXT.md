@@ -10,7 +10,8 @@
 - ✅ 五参照对账 + ADR-016 四~六轮（CC/Pi/TriniOS/AIOS/OpenCode，2026-08-16，见 docs/*-reference.md）
 - ✅ 第七轮设计审计（2026-08-16）：文档级缺陷已修（表格损坏/抢占边界/§5 滞后等）；四裁决：压缩双轨（触发式内联 turn + 后台走 maintenance，无无门 llm.*）、fork 后 seq 续接同一空间、C3 轮=落码切片轮+**对账冻结**、租约 TTL/fencing；新增 §8.5 挂账清单
 - ✅ v1.0 吸收清单（2026-08-16）：`docs/legacy-absorption.md`——A16 条行为规格 + 代码迁移候选（ScriptSandbox 最直接可搬）+ 反模式不吸收（上帝编排器/装饰器链/内存审批）；切片规划输入，不开新裁决轮
-- ⏭️ **下一步（冻结解除条件）：② conformance 套件落码**（discharge 第六轮 manifest 测试 + 第五轮三 store 用例 + 五参照弹药）→ `llm.*` 断言切片 → ③ Loop 端口
+- ✅ 代码审计二（2026-08-16）：立即修四件（§2 Metering 正典措辞投影、冻结词可操作定义、§8.5 增 drift 表 + 三挂账【审批端口形态 / 未装配默认 / 失败双通道】、身份双枚举注记）；drift 五项入 §8.5（死租约 / 卫兵无 verdict / priority / fork / 计量槽）——全部待 conformance 切片消化
+- ⏭️ **下一步（冻结解除条件）：② conformance 套件落码**（discharge 第六轮 manifest 测试 + 第五轮三 store 用例 + 五参照弹药 + §8.5 drift 五项）→ `llm.*` 断言切片 → ③ Loop 端口
 
 ## 近期关键决定
 - 双真相：entries（对话事实）vs ledger（用量真相）vs AuditSink（人手审计）vs ProjectionBus（非真相）

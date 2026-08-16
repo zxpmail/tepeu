@@ -95,7 +95,7 @@
 | **人手旁路** | 应用 REST/终端→① 总线→②（**跳过④与 Loop**） | **AuditSink**（非会话对话事实） |
 | **Slash** | 应用→③ **Command**（必经；不经模型/Loop）→若动宿主再走总线 | 宿主副作用 → AuditSink |
 
-开 **Agent turn 前**：`Metering` 预算硬门（超限则不得 claim/开跑）。
+开 **Agent turn 前**：预算硬门——`Metering` 供数、与 Policy 协作拦截（超限则不得 claim/开跑；**Metering 自身不产生裁决**——ADR-016 第七轮调和措辞，此处为唯一正典表述）。
 
 ---
 
@@ -212,6 +212,7 @@ legacy/             v1 只读标本
 ### 8.5 挂账与悬置清单（裁决债 ledger，ADR-016 第七轮设立）
 
 > 对账轮产出但「归入某切片顺路兑现」的项集中登记；随对应切片落码后销账。此表就是 C3 纪律的账本——**裁决不许只活在参照文档里**。
+> **对账冻结**（第七轮）：冻结 = **不新增 ADR 裁决与底板红线变更**（清点/吸收/审计类文档不受限）；解除条件 = ② conformance 切片合入。
 
 | 项 | 来源 | 归属切片 | 状态 |
 |----|------|----------|------|
@@ -224,7 +225,20 @@ legacy/             v1 只读标本
 | §6-7「config 相等」的外延（cache_control 布点须入 normalize 确定性） | 第七轮审计 O8 | `llm.*` 断言 | 挂账 |
 | `SYSTEM_NOTE` 语义定义或从词汇表删除 | 第七轮审计 O11 | 事件最小集 / conformance | 挂账 |
 | 多设备同步 fencing（单写者→fencing token/steal） | OpenCode C4 | 远期（多副本） | 挂账 |
+| **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY）；ask-then-wait 需端口演化或 ApprovalStore 独立通道 | 代码审计二 C1 | kernel 端口演化（conformance 后） | 挂账 |
+| **未装配 Policy 的默认语义**：现默认 ALLOW（fail-open，与身份陈述抵触）；须裁 deny / 显式 NoPolicy / ask 三选一 | 代码审计二 C2 | kernel 端口演化 | 挂账 |
+| **失败双通道契约**：Policy/卫兵=异常通道、handler=结果通道并存；异常通道的 catch 方与日志归属（entries vs AuditSink）未定义 | 代码审计二 C3 | kernel 端口演化 + ③ Loop | 挂账 |
 | 抢占边界三参照收敛规则 | AIOS C4 | — | ✅ 本轮已落 §3.2 |
+
+**设计-代码 drift 现状**（conformance 切片的用例来源；消除即销账）：
+
+| drift | 现状位置 | 消除切片 |
+|-------|----------|----------|
+| 租约 TTL 记而不执——同进程持有者异常退出后消息永久卡死（死租约可回收未实现） | `InMemorySession:129` | conformance 用例「死租约可回收」 |
+| `GuardHook` 无 verdict 载体（void+抛异常；组合代数 deny>ask>allow 无实现前提） | `InMemoryCapabilityBus` | conformance 用例 / 端口演化 |
+| `InboxMessage` 无 priority（now/next/later 未落） | `InMemorySession:115` | Inbox 契约落码 |
+| fork 未实现（`forkFromEventId` 恒 empty；种子区校验缺位） | `InMemorySession:64` | ① session fork 切片 |
+| `SyscallResult` 无 usage/latency 计量槽位 | kernel bus | 随 AIOS C5 挂账项 |
 
 ---
 
