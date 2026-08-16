@@ -163,9 +163,11 @@ legacy/             v1 只读标本
 
 | drift | 现状位置 | 消除切片 |
 |-------|----------|----------|
-| 租约 TTL 记而不执（同进程持有者异常退出→消息永久卡死） | `InMemorySession:129` | conformance 用例「死租约可回收」 |
+| ~~租约 TTL 记而不执~~ | ~~`InMemorySession`~~ | ✅ 已落码（时钟注入 + 惰性回收 + conformance 用例，2026-08-16） |
+| **syscall 注册表无确定性规范序**（第四轮 B2 内核不变量：注册序=缓存键组成部分；现为 ConcurrentHashMap 无序）——第四轮裁时挂账机制未立，漏登，2026-08-16 补 | `InMemoryCapabilityBus.handlers` | kernel 端口演化刀（或单开小切片） |
 | `GuardHook` 无 verdict 载体（组合代数无实现前提） | `InMemoryCapabilityBus` | conformance 用例 / 端口演化 |
-| `InboxMessage` 无 priority（now/next/later 未落） | `InMemorySession:115` | Inbox 契约落码 |
+| `InboxMessage` 无 priority（now/next/later 未落） | `InMemorySession` | Inbox 契约落码（kernel 端口演化刀） |
+| ledger store 零代码（三 store 之一，内核必需端口 Metering 同缺） | kernel session 包 | ledger/Metering 切片 |
 | fork 未实现（`forkFromEventId` 恒 empty；种子区校验缺位） | `InMemorySession:64` | ① session fork 切片 |
 | `SyscallResult` 无 usage/latency 计量槽位 | kernel bus | 随计量槽位挂账项 |
 
