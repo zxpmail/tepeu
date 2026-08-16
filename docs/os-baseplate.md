@@ -154,6 +154,8 @@ legacy/             v1 只读标本
 | **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY） | 代码审计二 C1 | kernel 端口演化 | 挂账 |
 | **未装配 Policy 的默认语义**（现默认 ALLOW=fail-open；须裁 deny/显式 NoPolicy/ask） | 代码审计二 C2 | kernel 端口演化 | 挂账 |
 | **失败双通道契约**（异常通道 catch 方与日志归属未定义） | 代码审计二 C3 | kernel 端口演化 + ③ Loop | 挂账 |
+| **总线是否自动落 TOOL_CALL/TOOL_RESULT 事件**：现设计=③ 编排落 entries（总线不耦合事件类型）；备选=总线自动追加（journal 更强） | 内核架构图待验点 1（kernel-layer.md） | ③ Loop 落地时裁 | 挂账 |
+| **registers 是否建通用 RegisterStore 端口**：Inbox 租约表已是事实寄存器；分支 leaf/模型配置未建模（统一端口 vs 各设施自管） | 内核架构图待验点 4 | kernel 端口演化刀 | 挂账 |
 | **SessionLoop 会话串行域**：无条件=状态面串行化；条件=maintenance 物理独占（仅当 ③ 事件驱动化）；裁决真问题=③ Loop 选型（倾向阻塞式+显式门）。全案 netty-reference §2.6 | 用户提案 + Netty | kernel 端口演化（与上三条同刀） | 挂账 |
 | **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动（黑盒变换与断言冲突）；缝可逆 | 选型问询 + 五参照 | `llm.*` 断言切片 | 挂账 |
 | **timer 基础设施**：per-domain PQ 起步，>万级升时间轮；解「死租约可回收」 | Netty §2.1 | ① session | 挂账 |
