@@ -229,6 +229,7 @@ legacy/             v1 只读标本
 | **未装配 Policy 的默认语义**：现默认 ALLOW（fail-open，与身份陈述抵触）；须裁 deny / 显式 NoPolicy / ask 三选一 | 代码审计二 C2 | kernel 端口演化 | 挂账 |
 | **失败双通道契约**：Policy/卫兵=异常通道、handler=结果通道并存；异常通道的 catch 方与日志归属（entries vs AuditSink）未定义 | 代码审计二 C3 | kernel 端口演化 + ③ Loop | 挂账 |
 | **SessionLoop 会话串行域**（用户提案，仿 Netty EventLoop 会话粒度）：**无条件成立**=状态面串行化（三 store 唯一写者/TTL 回投/回调 remap/assertInLoop 纪律）；**条件成立**=maintenance 物理独占与抢占队列化（仅当 ③ Loop 事件驱动化；若阻塞式则由已裁 LoopRuntime 协议承担）——裁决时真正的问题是 ③ Loop 选型（事件驱动状态机 vs 阻塞式+显式门，当前倾向后者）。四坑见 netty-reference §2.6 | 用户提案 + Netty 参照（严苛复核修正过卖） | kernel 端口演化切片（与 C1/C2/C3 同刀） | 挂账 |
+| **LlmProvider 实现选型**：自研双协议族（anthropic-messages + openai-compatible）优先 vs Spring AI 作驱动。Spring AI 的 ChatClient 黑盒变换与 `llm.*` 断言（normalize 版本化纯函数 + sent 可观测）直接冲突（OpenCode 迁出 Vercel AI SDK 同因）；代价=自背兼容矩阵（cassette/golden 缓解）；缝使决定可逆，个别 provider 可后补 Spring AI 驱动。宿主 Spring Boot 不动 | 选型问询 + 五参照证据 | `llm.*` 断言切片（断言与驱动同刀） | 挂账 |
 | **timer 基础设施**：租约 TTL/卫兵超时的到期机制——per-domain 优先队列起步（若 SessionLoop 落地则 per-loop PQ 内建），租约量 > 万级再升时间轮；解「死租约可回收」drift | Netty 参照 §2.1 | ① session（conformance 后） | 挂账 |
 | **采样泄漏检测**：租约/spill/寄存器生命周期审计——弱引用+GC 探测、1/N 采样、测试期 PARANOID 生产 SIMPLE | Netty 参照 §2.2 | ①/② 生命周期审计切片 | 挂账 |
 | 抢占边界三参照收敛规则 | AIOS C4 | — | ✅ 本轮已落 §3.2 |
