@@ -47,11 +47,28 @@
 4. **工具轨迹混进 system 行**——os/ 类型化事件取代。
 5. `Tools.java` 静态注册表、EventLoop（已退役 ADR-003）。
 
-## D-2. 与 spring-ai-agent-utils 的关系（选型定位，2026-08-16）
+## D-2. spring-ai-agent-utils 抽取清单（2026-08-16 逐组件评估）
 
-**不用作原语层**：它是工具箱不是运行时（无 bus/Policy/journal/Inbox/Loop）；`@Tool` 直挂 ChatClient 的形态绕过总线=绕过门（违背身份陈述）；垫在 ③ 下当底座 = v1 装饰器链老路换库重演（ADR-016 起因）。其 subagent SPI 无 delegationDepth/父集减法/取消拓扑，照搬违反第四/五轮裁决。
+**选型定位（不变）**：不用作原语层（工具箱非运行时 / `@Tool` 直挂绕门 / subagent SPI 违第四五轮裁决）；只做 ② 零件库。全库唯一硬三方依赖 flexmark（仅 WebFetch 用）；Grep/Glob/Shell/FileSystem/AgentEnvironment 剥掉注解即纯 JDK。
 
-**定位 = ② 工具插头的候选零件库，legacy 优先、utils 补缺**：Grep/Glob 纯 Java 实现、WebFetch/WebSearch（legacy 均无）值得抄；A2A 模块为远期多副本 SubagentAdaptor 后端参考；AutoMemory/Skills/TodoWrite 属 ⑤ 域 os/ 阶段不碰。引入纪律：包进 Tool 插头过门 + SandboxPolicy + toolKind 元数据 + conformance；外部依赖黄灯；须锁精确发布版（本地 0.11.0-SNAPSHOT 不可直接用）。
+**抽取表（按价值降序；引入纪律照旧：过门 + SandboxPolicy + toolKind + conformance + 锁发布版）**：
+
+| # | 组件 | 抽什么 | 落点 | 修什么 |
+|---|------|--------|------|--------|
+| 1 | **GrepTool**（577 行，纯 JDK） | 实现 + CC 对齐参数面（output_mode/-B/-A/-C/head_limit/offset/multiline/type 映射表） | ② Tool 插头 | ① `isIgnoredPath` 斜杠判断 **Windows 全失效**；② content 模式 `readAllLines` 改流式窗口；③ `/target//build/` 硬编码误伤 |
+| 2 | **FileSystemTools**（532 行） | **`validateAllowedAccess` 三重防逃逸**（拒原始 `..` + normalize startsWith + toRealPath 含 dangling symlink 拒绝）→ SandboxPolicy 卫兵实现；CC 式 Edit 语义（唯一匹配/replace_all/行尾保留）+ 801 行测试 | ② Execution 卫兵 + Tool 插头 | — |
+| 3 | **ShellTools 后台三件套**（460 行） | `BackgroundProcess` **游标式增量读取** + 读后即焚 filter + destroy→5s→destroyForcibly 链 | ② Execution（legacy RunCommand/ReadOutput 缺后台增量） | 输出 StringBuilder 无上限（OOM）、static Map 永不清理——内存治理自做 |
+| 4 | **task/repository**（348 行） | `BackgroundTask` CompletableFuture 句柄抽象（与 #3 同构）——**统一成总线后台 syscall 句柄** | ①/② 后台 syscall 形状 | 两套同构实现合一 |
+| 5 | **AgentEnvironment**（175 行） | git 命令最小集（main/master 探测含 origin/HEAD 降级、`LC_ALL=C`、win 包装、30s 超时）+ 文案结构 | ③ PromptAssembly Env/Git Section 蓝图 | 删 2 处 println + 硬编码 user.dir 即纯函数 |
+| 6 | SmartWebFetchTool（680 行） | fetch/charset/retry（指数退避）/100k 截断/15min TTL 缓存内核 | ② Tool 插头（legacy 无 web） | 摘要回调换自有 LLM 端口；claude.ai 私有安全 API 换自家 Policy；JS 页面无解 |
+| 7 | subagent（SPI+claude 实现） | **TaskCall 参数面**（对齐 CC schema）+ 4 个内置 subagent md 文案 | ③ SubagentAdaptor preset 文案 | 不抄接口/Executor（YAML 数组解析是坏的、模型别名已过时、resume 未实现） |
+| 8 | GlobTool / BraveWebSearch | Glob 参数面 + mtime 倒序承诺；Brave 参数面 + 子域匹配函数 | ② | Glob 实现可 30 分钟自写；Brave 换 HTTP client |
+| 9 | Skills.java :157-296 | 仅当需要 **jar 打包技能** 时抄（jar: URL / classpath* / MANIFEST 枚举三重） | ⑤/技能加载 | MarkdownParser 弃用换 snakeyaml |
+| — | a2a / aot / CommandLineQuestionHandler | 不抄 | — | a2a client-only 示例（需要时直依赖官方 SDK）；aot 仅记「jar 技能须注册资源 pattern」 |
+
+**两个跨组件警告**：① 全库 isIgnoredPath 在 Windows 失效（tepeu 跑 win 必踩）；② frontmatter 解析不支持 YAML 数组——CC 的 `tools: [A, B]` 会被解析成字符串，tepeu 一律 snakeyaml。
+
+**测试模式意外收获**：`GrepToolCompatibilityTest` 用**真 ripgrep 二进制做差分对比**（646 行，24 用例）——这个「以真实现为 oracle 的差分测试」直接进 conformance 框架方法论（工具行为对标成熟实现，而非手写期望）。
 
 ## D. 对切片的输入（与挂账的接口）
 
