@@ -10,7 +10,8 @@
 - ✅ CC 源码对账（2026-08-16）：`docs/claude-code-reference.md` + ADR-016 第四轮 12 条裁决 + 底板 §0.5
 - ✅ Pi 源码对账（2026-08-16）：`docs/pi-reference.md` + ADR-016 第五轮 4 条裁决 + 底板 §0.6
 - ✅ TriniOS 镜鉴（2026-08-16）：`docs/trinios-reference.md`——无新增裁决（守 C3：候选归入 llm.*/Metering 切片顺路兑现）
-- 下一步（优先级）：② conformance 套件（KernelPortsSmokeTest 升格）→ `llm.*` 断言切片 → ③ Loop 端口
+- ✅ AIOS 对账（2026-08-16）：`docs/aios-reference.md`——同名学术前辈；零新增裁决，产出 conformance 用例弹药（失败必达终态/错误不伪装成功/寄存器键跨重入队稳定等）；C6 barrier 超时语义挂 ledger 切片待裁
+- 下一步（优先级）：② conformance 套件（KernelPortsSmokeTest 升格，含四参照用例弹药）→ `llm.*` 断言切片 → ③ Loop 端口
 
 ## 近期关键决定
 - 双真相：会话日志 vs AuditSink；模型须可见的错误=会话事件
