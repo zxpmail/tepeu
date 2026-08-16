@@ -9,6 +9,7 @@
 - ✅ 内存适配器 + `KernelPortsSmokeTest`（`mvn -f os/pom.xml test` 通过）
 - ✅ CC 源码对账（2026-08-16）：`docs/claude-code-reference.md` + ADR-016 第四轮 12 条裁决 + 底板 §0.5
 - ✅ Pi 源码对账（2026-08-16）：`docs/pi-reference.md` + ADR-016 第五轮 4 条裁决 + 底板 §0.6
+- ✅ TriniOS 镜鉴（2026-08-16）：`docs/trinios-reference.md`——无新增裁决（守 C3：候选归入 llm.*/Metering 切片顺路兑现）
 - 下一步（优先级）：② conformance 套件（KernelPortsSmokeTest 升格）→ `llm.*` 断言切片 → ③ Loop 端口
 
 ## 近期关键决定
