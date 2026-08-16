@@ -84,6 +84,8 @@
 
 ## 5. 严苛节（对 tepeu 自身）
 
+> **裁决状态（同日）**：C2 已裁入 ADR-016 第六轮（事件词汇表三件：per-type 版本化 + manifest + 数量钉死测试；落码切片=② conformance）；C3 已立备注（不改 A2 裁决）。C1/C4 为观察项不裁。
+
 **C1 重写方式的对照。** OpenCode 原地渐进迁移，代价是三代并存税：本报告引用的机制一半属于正在退役的 v1。tepeu「legacy 只读 + os/ 重写」是更干净的路线——**但 OpenCode 同时证明渐进迁移能让产品在重写期间继续出货**。tepeu 的对应风险不是代际税而是「重写期间无产品」：v1 已发布冻结在 main，develop 重写期间没有可用增量——这是有意的取舍（已裁），不是疏漏，但别忘了它的存在。
 
 **C2 事件词汇表机制是唯一够格的新裁决候选。** tepeu §9 现规只有「未知事件 required-fail + ignorable 标记」；OpenCode 补上三件：**per-type 版本化**（schema 变更不破历史 decode）、**manifest 显式清单 + 数量钉死测试**（防漂移）、**Latest/Durable 双 map**（当下发布与历史解码分离）。落码切片现成：② conformance 任务里加 manifest 测试。若裁决，归 ADR-016 第六轮一行即可——待你点头。

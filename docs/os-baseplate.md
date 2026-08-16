@@ -45,6 +45,15 @@
 | Policy 可能被误读为隔离边界 | Policy=授权、Execution/Sandbox=隔离，分工写明 | §3.1 Execution |
 | 底板规范先行有漂移风险（Pi 2941 行 spec 对 796 行实现） | 裁决限期落码；两轮未落码标「悬置」 | §6-9 |
 
+## 0.7 OpenCode 对账落位（2026-08-16 第六轮，已裁进正文与 ADR-016 第六轮）
+
+> 全量论证见 [`opencode-reference.md`](./opencode-reference.md)。EventV2 同构印证不另立条。
+
+| 洞/候选 | 裁决 | 落点 |
+|----|------|------|
+| 事件词汇演进只有 required-fail 一条 | 三件：per-type 版本化 + 显式 manifest + 数量钉死测试 | §9；落码=② conformance |
+| A2「记住」中间态将来是否可解禁 | 不改裁决，立备注：工具声明+会话内+不跨 session+显式 expiry，届时另裁 | ADR-016 第六轮-2 |
+
 ---
 
 ## 1. 由内向外（OS 洋葱）
@@ -193,6 +202,7 @@ legacy/             v1 只读标本
 
 - `seq = log.length` **强制连续**；append 点做 lossless 校验，坏事件在 append 失败，不在 flush 处。
 - 未知事件默认 **required-fail**：无 `ignorable: true` 标记时读者必须拒绝重建，禁静默丢弃（事件词汇演进的兼容规则）。
+- **词汇表机制**（ADR-016 第六轮，三件）：per-type 版本化（schema 变更 bump `version`，持久化键 `type.version`，旧版本留作历史 decode，发布走 latest）；显式 manifest（重复定义启动失败）；**数量钉死测试**（新增事件必须显式改测试）。
 - 崩溃恢复**补合成闭合**：open turn 补 `turn/end{kind:'interrupted'}`，事件全保留，**不截断日志**。
 - fork/resume 写 `end-seed` 边界事件区分种子历史与本生命周期写入（孤儿压缩锁、重开判定都依赖它）。fork 必须携带全部替换/surface 记账（缺携带 = 永久 cache miss）；自身写入的 `replaceRange` 区间**不得伸进种子区**，越界 append 失败。
 - 附件 **persist-before-event**：二进制先落内容寻址存储（sha256），事件里只放 opaque 引用，禁 objectURL/base64/临时路径；超大工具输出 **spill** 落盘 + locator + retrievalHint，模型按需取回。

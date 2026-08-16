@@ -265,5 +265,9 @@
   2. **配置与编排禁入事件词汇表（长期闸门）**：model_change / 思考档位 / 工具集切换等配置类状态一律走寄存器，不产生会话事件。现 `SessionEventType`（8 类）已合规，无需迁移；此为词汇表演进的否决项（Pi v3 把配置写进树、format-4 判错的教训）。
   3. **Policy 与 Sandbox 分工写明**：**Policy = 授权**（谁可请求什么；封闭 union；进程内判定，fail-closed）；**Execution/SandboxPolicy = 隔离**（OS 级机制在 spawn 点执行，完备性 full|partial 如实报告）。Policy 永不冒充隔离边界——「半吊子进程内沙箱比没有更危险」的批评（Pi security.md）据此吸收为**分工**而非取消。
   4. **裁决限期落码（工程规矩）**：每条新裁决须指认落码切片；**连续两轮未落码的裁决标「悬置」**，悬置裁决不得作为后续裁决的前提。防底板演化为「2941 行规范对 796 行实现」的 Pi harness 空壳形态。
+- **Decision — OpenCode 对账落位（2026-08-16 第六轮严苛对账）**:
+  > 参照 `docs/opencode-reference.md`（OpenCode v1.18.18 五路探查）。其 EventV2 与 tepeu ① 已冻决定逐条同构（seq 连续 / 未知 die / 幂等重放 / 事务内投影），生产级印证，不另立条。本轮两裁决：
+  1. **事件词汇表机制（补 §9 立规，三件）**：① **per-type 版本化**——事件 schema 变更时 bump 该类型 `version`，持久化键为 `type.version`；旧版本定义保留专供历史 decode，当下发布走 `latest`。② **显式 manifest**——词汇表为编译期聚合清单（含对外暴露子集），重复定义启动即失败。③ **数量钉死测试**——manifest 成员与数量由测试断言，新增事件必须显式改测试（防词汇静默漂移；OpenCode 85→88 计数测试先例）。未知 type/version 仍 required-fail（沿第三轮立规）。**落码切片（按第五轮 C3 纪律指认）：② conformance 套件——SessionEventType manifest 钉死测试。**
+  2. **A2 备注（不改裁决）**：OpenCode 实例级 always 记忆的跨 session 泄漏（A 会话批准 B 会话生效）是第四轮 A2 拒绝理由的**活例证**。若将来 UX 实测逼宫需解禁「记住」，唯一可接受形态 = **工具在 ask 时声明可记 pattern + 会话内 + 不跨 session + 显式 expiry**；届时另行裁决，不得静默引入。
 - **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。
 
