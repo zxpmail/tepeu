@@ -47,6 +47,8 @@ tepeu 落法：每 SSE 订阅者一个 outbox + 双阈值滞回；超 high 后�
 - **ThreadExecutorMap 回调重映射**：provider 异步回调统一 remap 回会话串行域，禁止回调在 provider 线程直接改 registers。
 - **被虚线程取代**：手工事件循环/MPSC 唤醒/wakeup-task 整套不需要（JVM 调度器管）；JCTools MPSC 若需要可直接依赖。
 
+**SessionLoop 提案（用户提出，仿 EventLoop 会话粒度，2026-08-16 记入待裁）**：每会话一个单线程串行执行域（虚线程），`execute / assertInLoop / schedule(delay)` 三件接口；会话一切状态变更（entries/registers/ledger/claim/maintenance/定时回收）pin 域内，thread-confinement 使三 store 无锁。**统一已裁规则**：maintenance 独占=串行域物理保证；强制上限=域内任务 deadline；now 级抢占=域队列插队；租约 TTL=域内 per-loop PQ 到期回投（每会话租约个位数，无需全局时间轮）；回调 remap、取消标志位+域边界检查同构。**三坑**：① 命名消歧「SessionLoop(①执行域) ≠ LoopRuntime(③编排态)，后者跑在前者上」；② 域线程禁跑长阻塞——工具执行丢工作虚线程、完成回投（一个慢 shell 不得卡死会话域）；③ 跨会话=跨域——触碰他域 store 必须 `targetLoop.execute()` 转投 + 域上同步等跨域 future 直接抛（BlockingOperationException 同款）。**量级合身**（单机会话数十级，每会话一虚线程可承受，六参照中唯一无量级错配的执行模型）。归「kernel 端口演化」切片随 C1/C2/C3 一并裁（冻结中）。
+
 ### 2.7 杂项速记
 
 DefaultPromise 单 listener 快路径 + **listener 栈深守卫**（防递归换栈）；Signal 类型化控制流常量异常（TurnAborted 同构）；「自举检测」（HashedWheelTimer 用 leak detector 检测自己）；FastThreadLocal 的卫生纪律（thread local 必须 removeAll）保留、实现不吸收。
