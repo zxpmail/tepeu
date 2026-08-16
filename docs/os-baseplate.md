@@ -5,7 +5,7 @@
 
 ---
 
-## 0. 最后一轮严苛补洞（已裁进底板）
+## 0. 第三轮严苛补洞（已裁进底板）
 
 | 洞 | 裁决 |
 |----|------|
@@ -54,6 +54,17 @@
 | 事件词汇演进只有 required-fail 一条 | 三件：per-type 版本化 + 显式 manifest + 数量钉死测试 | §9；落码=② conformance |
 | A2「记住」中间态将来是否可解禁 | 不改裁决，立备注：工具声明+会话内+不跨 session+显式 expiry，届时另裁 | ADR-016 第六轮-2 |
 
+## 0.8 设计审计落位（2026-08-16 第七轮，已裁进正文与 ADR-016 第七轮）
+
+> 六轮累积后的全面审计（矛盾/冗余/遗漏/错误）；E1 表格损坏、E4 抢占边界缺失、M3/M4/M6 措辞与 §5 滞后、O1 挂账清单均**已立即修复**。
+
+| 洞 | 裁决 | 落点 |
+|----|------|------|
+| 压缩执行位置两裁决冲突（维护服务 vs mid-turn 必须即时压缩） | **双轨**：触发式压缩内联 turn 路径（占该 turn 预算）；主动/后台压缩走 maintenance 窗口（独立预算条目）；不存在无 Metering 门的 `llm.*` 调用。并调和第二轮「仪表」与第三轮「硬门」措辞：配额=卫兵，预算门=Metering 供数与 Policy 协作拦截 | §3.1 Compaction / §2 |
+| fork 后 seq 空间未定（`seq=log.length` 与种子事件字面互斥） | 种子保留原 seq；自写从 end-seed 后续接同一单调空间；区间校验同空间、禁伸种子区 | §9 |
+| C3「轮」单位未定义且按对账轮读法已违反 | **轮 = 落码切片轮**（合入 develop 的实现切片）；对账轮不计数。核对后处置：**冻结新对账轮直至 ② conformance 切片落地** | §6-9 / §8.5 |
+| claim 租约崩溃后死锁未定 | 租约必带 TTL（进程存活+过期回收）；多副本升级 fencing token | §3.1 InboxClaim |
+
 ---
 
 ## 1. 由内向外（OS 洋葱）
@@ -95,12 +106,13 @@
 | 缝 | 职责 |
 |----|------|
 | `SessionStore` | 会话/事件持久化 |
-| `InboxClaim` | claim 锁/租约；消息带 priority（now/next/later），now 级运行中到达即抢占当前流（合成闭合后让位，排队消息即上下文） |
+| `InboxClaim` | claim 锁/租约，**租约带 TTL**（单机默认=持有进程存活 + 崩溃后过期可回收；turn 级租约随 turn 终态释放；多副本升级 fencing token，旧持有者写被 fence 拒绝——ADR-016 第七轮）；消息带 priority（now/next/later），now 级运行中到达即抢占当前流（合成闭合后让位，排队消息即上下文） |
 | `Execution` | fs/shell 等执行世界；携带 `SandboxPolicy`（mode+workspaceRoot+sessionId），OS 级沙箱链在 spawn 点执行；`full\|partial` 诚实度 + 功能性 probe；**禁静默未沙箱直通**（Java 选型另立项）。**分工**：Policy=授权（进程内判定），Execution/Sandbox=隔离（OS 级）——隔离边界只在此缝，Policy 永不冒充隔离 |
 | `LlmProvider` | 模型流式调用实现 |
 | `Tool`* | 各工具插头（彼此禁止互引） |
 | `McpBridge` | 外挂 MCP 工具桥 |
-| `Policy` / `ApprovalStore` | 放行/拒绝/审批。返回值**封闭 union**（allow/deny/ask），词汇表外一律规范化为拒绝（fail-closed，禁异常穿透）；审批 = `asked/decided` 事件对落日志 + 必须 open turn 内 + 许可**严格单次**（不发放长期能力→结构上消灭撤销问题）；审批证据须持久，单机默认 SQLite，禁内存。**界线=事前声明 vs 会话中授予**：事前声明式规则走 Policy 配置面；拒绝运行中交互产生的记住型规则（ADR-016 第四轮，理由记账见该条）| `AuditSink` | 人手等审计真相 |
+| `Policy` / `ApprovalStore` | 放行/拒绝/审批。返回值**封闭 union**（allow/deny/ask），词汇表外一律规范化为拒绝（fail-closed，禁异常穿透）；审批 = `asked/decided` 事件对落日志 + 必须 open turn 内 + 许可**严格单次**（不发放长期能力→结构上消灭撤销问题）；审批证据须持久，单机默认 SQLite，禁内存。**界线=事前声明 vs 会话中授予**：事前声明式规则走 Policy 配置面；拒绝运行中交互产生的记住型规则（ADR-016 第四轮，理由记账见该条） |
+| `AuditSink` | 人手等审计真相 |
 | `Metering` | token/费用/预算门（单机裁决：开 turn 前拦 + provider max_tokens 兜底，不逐消息查；企业多租户再升格逐消息） |
 | `KnowledgeSource` | 知识→Section 的唯一内容源接口 |
 | `Identity` / `OrgNamespace` / `Secret` | 身份、组织命名空间、密钥。Secret 四细则：配置只放 branded 引用；每次操作重解析禁缓存；解析结果永不进模型可见通道；文档诚实标注「克制品不是边界」 |
@@ -111,7 +123,7 @@
 
 | 缝 | 职责 |
 |----|------|
-| `LoopRuntime` | 三态 `idle\|maintenance\|running`；maintenance 为独占 idle 窗口（后台/定时任务不得与模型 turn 抢执行面）；maintenance 有**强制上限**（超时让位 now 级等待消息）；唤醒 latch = 开窗快照 Inbox 水位、闭窗重放其后到达的 now/next 进 claim 队列 |
+| `LoopRuntime` | 三态 `idle\|maintenance\|running`；maintenance 为独占 idle 窗口（后台/定时任务不得与模型 turn 抢执行面）；maintenance 有**强制上限**（超时让位 now 级等待消息）；唤醒 latch = 开窗快照 Inbox 水位、闭窗重放其后到达的 now/next 进 claim 队列。**now 级抢占边界**（AIOS/CC/Pi 三方收敛，ADR-016 第七轮收录）：只切**流式生成的 chunk 边界**；结构化输出与非幂等工具**不可无损切**——只能等完成或整体取消（合成闭合） |
 | `SubagentAdaptor` | 委派子 Agent；工具集只减不增（**对父 TurnContext 快照的有效集**做减法，禁对全量池重建——防权限上浮）；`delegationDepth` 持久化为**单调下界**（重启不得降级）；取消沿父子边传播，**后台子代理不挂父取消**（显式 kill 才杀），兄弟连坐仅限执行类失败 |
 | `TeamAdaptor` | Team preset 图 |
 | `LongTaskAdaptor` | 长程状态机；续跑 = **预约-复核**（先持久 checkpoint，预约 `(taskId,revision,round)`，pre-step 前后各验一次，失效拒绝并归还被 claim 消息）；终态写权限来自**消息溯源**（host-attested user 源或精确机器轮次源） |
@@ -133,7 +145,7 @@
 
 1. **主体 + 命名空间**：人/Agent × Workspace（及将来租户）；个人知识默认仅本人。  
 2. **能力总线**：syscall 注册/分发；入口只负责调用 Policy+卫兵，不承载业务。syscall 注册表输出**确定性规范序**（顺序是缓存键与 `llm.*` config 相等断言的组成部分；禁实现迭代序泄漏——内核不变量）。  
-3. **会话设施**：**三 store**（ADR-016 第五轮）——**entries**（append-only 对话事实+审计；surface 替换只在此层；禁明文 secret；提供日志替换端口给 Compaction）+ **registers**（覆盖写可变状态：Inbox/claim 租约、分支 leaf、模型/思考档配置、进行时操作；恢复=点查非重放）+ **ledger**（append-only 用量记账）。「每个载荷恰好属于三者之一，没有第四个地方」；配置与编排禁入事件词汇表。主/子关系挂在 entries。
+3. **会话设施**：**三 store**（ADR-016 第五轮）——**entries**（append-only 对话事实（含审批 `asked/decided` 等模型可见事实；**人手审计归 AuditSink，不在此层**）；surface 替换只在此层；禁明文 secret；提供日志替换端口给 Compaction）+ **registers**（覆盖写可变状态；**恢复=点查非重放**。权威清单（初始，扩充须裁决）：claim/租约、分支 leaf、模型/思考档配置、进行时操作状态、孤儿压缩锁、delegationDepth）+ **ledger**（append-only 用量记账；消耗从 ledger 派生，预算上限属 Metering/Policy 配置面）。「每个载荷恰好属于三者之一，没有第四个地方」；**配置与编排的控制状态禁入事件词汇表**（判据：模型可见的事实进 entries——PLAN_STEP、COMPACTION_CHECKPOINT 属此类；机器控制状态进 registers）。主/子关系挂在 entries。
 
 **不进内核**：Loop、Tool 实现、MCP、UI、Skill 文件、Router 策略正文。
 
@@ -143,7 +155,8 @@
 
 | 域 | 内容 |
 |----|------|
-| 会话日志 | 对话 + Agent 工具（+ reasoning/plan 事件）；模型可见 ⟺ 可还原 |
+| 会话日志（entries） | 对话 + Agent 工具（+ reasoning/plan 事件）；模型可见 ⟺ 可还原 |
+| ledger | 用量事实（token/费用）；append-only，是用量真相（第五轮三 store 之一） |
 | AuditSink | 人手 REST/终端等宿主操作审计；企业导出必含 |
 | ProjectionBus | 不是真相 |
 
@@ -196,11 +209,28 @@ legacy/             v1 只读标本
 
 **待裁决（Open，未决不动）**：append-only 会话日志 vs 删除权（GDPR/个保法）——候选 A crypto-shredding（按租户密钥加密日志段，删租户=销毁密钥）；候选 B 导出侧脱敏、canonical 日志永不重写（dsh telemetry 先例）。未裁决前不得向企业声称合规。
 
+### 8.5 挂账与悬置清单（裁决债 ledger，ADR-016 第七轮设立）
+
+> 对账轮产出但「归入某切片顺路兑现」的项集中登记；随对应切片落码后销账。此表就是 C3 纪律的账本——**裁决不许只活在参照文档里**。
+
+| 项 | 来源 | 归属切片 | 状态 |
+|----|------|----------|------|
+| `SyscallResult` 基座计量槽位（usage/latency；两参照独立收敛） | TriniOS + AIOS C5 | `llm.*` 断言 / Metering | 挂账 |
+| ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed；OpenCode 双轨不变式为候选答案） | AIOS C6 + OpenCode | ledger / Metering | 挂账 |
+| DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode | ③ Loop | 挂账 |
+| CC §3 吸收项（终态转移表/恢复分级/分区并发/熔断/递减收益停机） | CC | ③ Loop 端口设计说明 | 挂账 |
+| 工具经总线组合调用另一工具是否算互引 | 第七轮审计 O5 | Tool 缝 | 挂账 |
+| 子代理审批 `asked/decided` 落哪个会话（父/子/delegationId） | 第七轮审计 O6 | SubagentAdaptor | 挂账 |
+| §6-7「config 相等」的外延（cache_control 布点须入 normalize 确定性） | 第七轮审计 O8 | `llm.*` 断言 | 挂账 |
+| `SYSTEM_NOTE` 语义定义或从词汇表删除 | 第七轮审计 O11 | 事件最小集 / conformance | 挂账 |
+| 多设备同步 fencing（单写者→fencing token/steal） | OpenCode C4 | 远期（多副本） | 挂账 |
+| 抢占边界三参照收敛规则 | AIOS C4 | — | ✅ 本轮已落 §3.2 |
+
 ---
 
 ## 9. 事件日志立规（dsh 对账）
 
-- `seq = log.length` **强制连续**；append 点做 lossless 校验，坏事件在 append 失败，不在 flush 处。
+- **seq 由 append 点分配**，本日志内严格单调连续且唯一（无种子日志等值于 `log.length`；fork 场景种子事件**保留原 seq**、自身写入从 end-seed 后**续接同一单调空间**——ADR-016 第七轮）；append 点做 lossless 校验，坏事件在 append 失败，不在 flush 处。
 - 未知事件默认 **required-fail**：无 `ignorable: true` 标记时读者必须拒绝重建，禁静默丢弃（事件词汇演进的兼容规则）。
 - **词汇表机制**（ADR-016 第六轮，三件）：per-type 版本化（schema 变更 bump `version`，持久化键 `type.version`，旧版本留作历史 decode，发布走 latest）；显式 manifest（重复定义启动失败）；**数量钉死测试**（新增事件必须显式改测试）。
 - 崩溃恢复**补合成闭合**：open turn 补 `turn/end{kind:'interrupted'}`，事件全保留，**不截断日志**。

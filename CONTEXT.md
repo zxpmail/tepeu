@@ -2,25 +2,24 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-**develop ① 内核端口 + ② 内存冒烟已落地**；实施以 `docs/os-baseplate.md` + `os/` 为准。
+**对账轮已冻结（ADR-016 第七轮）——下一动作 = ② conformance 切片落码**；实施以 `docs/os-baseplate.md` + `os/` 为准。
 
 ## 上次停在哪
 - ✅ 内核 Java 端口：identity / context / session / bus（含 fail-closed + surface 次序修复）
 - ✅ 内存适配器 + `KernelPortsSmokeTest`（`mvn -f os/pom.xml test` 通过）
-- ✅ CC 源码对账（2026-08-16）：`docs/claude-code-reference.md` + ADR-016 第四轮 12 条裁决 + 底板 §0.5
-- ✅ Pi 源码对账（2026-08-16）：`docs/pi-reference.md` + ADR-016 第五轮 4 条裁决 + 底板 §0.6
-- ✅ TriniOS 镜鉴（2026-08-16）：`docs/trinios-reference.md`——无新增裁决（守 C3：候选归入 llm.*/Metering 切片顺路兑现）
-- ✅ AIOS 对账（2026-08-16）：`docs/aios-reference.md`——同名学术前辈；零新增裁决，产出 conformance 用例弹药（失败必达终态/错误不伪装成功/寄存器键跨重入队稳定等）；C6 barrier 超时语义挂 ledger 切片待裁
-- ✅ OpenCode 对账（2026-08-16）：`docs/opencode-reference.md`——工程同代，EventV2 与 tepeu ① 逐条同构（seq 连续/未知 die/幂等重放）；**第六轮已裁**：C2 事件词汇表三件（per-type 版本化+manifest+数量钉死测试，落码=conformance）、C3 A2 备注（解禁唯一形态：工具声明+会话内+expiry）
-- 下一步（优先级）：② conformance 套件（KernelPortsSmokeTest 升格 + SessionEventType manifest 钉死测试 = 第六轮落码）→ `llm.*` 断言切片（prepare()+录制回放已定型）→ ③ Loop 端口
+- ✅ 五参照对账 + ADR-016 四~六轮（CC/Pi/TriniOS/AIOS/OpenCode，2026-08-16，见 docs/*-reference.md）
+- ✅ 第七轮设计审计（2026-08-16）：文档级缺陷已修（表格损坏/抢占边界/§5 滞后等）；四裁决：压缩双轨（触发式内联 turn + 后台走 maintenance，无无门 llm.*）、fork 后 seq 续接同一空间、C3 轮=落码切片轮+**对账冻结**、租约 TTL/fencing；新增 §8.5 挂账清单
+- ⏭️ **下一步（冻结解除条件）：② conformance 套件落码**（discharge 第六轮 manifest 测试 + 第五轮三 store 用例 + 五参照弹药）→ `llm.*` 断言切片 → ③ Loop 端口
 
 ## 近期关键决定
-- 双真相：会话日志 vs AuditSink；模型须可见的错误=会话事件
-- **会话设施三 store**：entries / registers（覆盖写、恢复点查）/ ledger；no third place；配置禁入事件词汇表
-- Policy=授权（进程内）vs Execution/Sandbox=隔离（OS 级 spawn 点），分工写明
-- Tool/MCP=②；Slash→Command（端口两型）；压缩走总线
-- `llm.*` 断言 = `derive(log) ∘ normalize == sent`（normalize 版本化纯函数）
-- syscall 注册表确定性规范序（内核不变量）
-- 审批界线：事前声明走 Policy 配置面；会话中授予严格单次
-- 裁决限期落码：两轮未落码标「悬置」（工程规矩）
-- 详见 ADR-016（五轮） / os-baseplate
+- 双真相：entries（对话事实）vs ledger（用量真相）vs AuditSink（人手审计）vs ProjectionBus（非真相）
+- **会话设施三 store**：entries / registers（权威清单已列）/ ledger；no third place；配置与编排**控制状态**禁入词汇表（PLAN_STEP 等模型可见事实不在此列）
+- 压缩双轨：触发式内联 turn（占该 turn 预算）/ 后台走 maintenance（独立预算条目）；一切 llm.* 必过 Metering 门
+- seq：append 点分配、本日志单调连续；fork 种子保留原 seq、自写续接同一空间
+- Policy=授权（进程内）vs Execution/Sandbox=隔离（OS 级）；配额=卫兵、预算门=Metering 供数+Policy 协作
+- `llm.*` 断言 = `derive(log) ∘ normalize == sent`（normalize 版本化纯函数）；syscall 注册表确定性规范序
+- 审批界线：事前声明走 Policy 配置面；会话中授予严格单次（解禁唯一形态见第六轮备注）
+- 租约必带 TTL；多副本升级 fencing token
+- now 级抢占只切流式 chunk 边界；结构化输出与非幂等工具不可无损切
+- 裁决限期落码：轮=落码切片轮；挂账见底板 §8.5
+- 详见 ADR-016（七轮） / os-baseplate

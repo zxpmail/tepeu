@@ -269,5 +269,11 @@
   > 参照 `docs/opencode-reference.md`（OpenCode v1.18.18 五路探查）。其 EventV2 与 tepeu ① 已冻决定逐条同构（seq 连续 / 未知 die / 幂等重放 / 事务内投影），生产级印证，不另立条。本轮两裁决：
   1. **事件词汇表机制（补 §9 立规，三件）**：① **per-type 版本化**——事件 schema 变更时 bump 该类型 `version`，持久化键为 `type.version`；旧版本定义保留专供历史 decode，当下发布走 `latest`。② **显式 manifest**——词汇表为编译期聚合清单（含对外暴露子集），重复定义启动即失败。③ **数量钉死测试**——manifest 成员与数量由测试断言，新增事件必须显式改测试（防词汇静默漂移；OpenCode 85→88 计数测试先例）。未知 type/version 仍 required-fail（沿第三轮立规）。**落码切片（按第五轮 C3 纪律指认）：② conformance 套件——SessionEventType manifest 钉死测试。**
   2. **A2 备注（不改裁决）**：OpenCode 实例级 always 记忆的跨 session 泄漏（A 会话批准 B 会话生效）是第四轮 A2 拒绝理由的**活例证**。若将来 UX 实测逼宫需解禁「记住」，唯一可接受形态 = **工具在 ask 时声明可记 pattern + 会话内 + 不跨 session + 显式 expiry**；届时另行裁决，不得静默引入。
-- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。
+- **Decision — 设计审计落位（2026-08-16 第七轮严苛审计）**:
+  > 六轮累积后的全面审计（矛盾/冗余/遗漏/错误四类）；其中文档级缺陷（§3.1 表格损坏吞掉 AuditSink 行、抢占边界未落文、§5 未随三 store 更新、「编排禁入」措辞误伤 PLAN_STEP、entries「+审计」抢词、§0 标题失真、挂账无归集）**已立即修复入底板**。本轮四裁决：
+  1. **压缩执行位置双轨（解 M1+M5）**：**触发式压缩**（上下文满/overflow，对话不可等待）**内联在 turn 路径内**执行，其 `llm.*` 调用占该 turn 预算、随 turn 过 Metering 门；**主动/后台压缩**（维护性摘要）走 maintenance 窗口，按**独立预算条目**过 Metering 门。「一切 `llm.*` 受 Metering」的落法：turn 内随 turn 门、maintenance 内按窗口预算条目，**不存在无门的 `llm.*` 调用**。同时调和第二轮「Metering 只是事后仪表」与第三轮「预算硬门」的措辞冲突：**配额=入口卫兵；预算门=Metering 供数、与 Policy 协作拦截；Metering 自身不产生裁决**。落码：③ Loop + Compaction 缝。
+  2. **fork 后 seq 空间（解 E2）**：种子事件**保留原 seq**；自身写入从 end-seed 后**续接同一单调空间分配**。「seq = log.length」表述修正为：**seq 由 append 点分配、本日志内严格单调连续且唯一；无种子日志才等值于 length**。replaceRange 区间校验在同一空间内进行、禁伸种子区（沿第四轮）。落码：① session（seq 分配与区间校验 + 测试）。
+  3. **C3「轮」的定义（解 E3）与当场核对**：「连续两轮未落码」的**轮 = 落码切片轮**（一次合入 develop 的实现切片计一轮；对账轮不计数）。核对结果：第四~六轮 18 条裁决的落码映射已入底板 §8.5 挂账清单；第五/六轮已指认 ② conformance 切片、未逾期。处置：**冻结新对账轮，直至 ② conformance 切片落地**（同时 discharge 第六轮 manifest 测试与第五轮三 store 用例）。
+  4. **claim 租约 TTL/fencing（解 O2）**：租约必带 TTL——单机默认=持有进程存活 + 崩溃后过期可被回收，turn 级租约随 turn 终态释放；多副本升级为 fencing token（单调递增，Pi/OpenCode 先例），旧持有者写被 fence 拒绝。落码：① session（InboxClaim 契约 + conformance 用例「死租约可回收」「fence 拒绝旧写」）。
+- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。**（第七轮追加：对账轮冻结中，下一动作 = ② conformance 切片落码。）**
 
