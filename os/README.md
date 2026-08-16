@@ -2,7 +2,7 @@
 
 实施底板：[docs/os-baseplate.md](../docs/os-baseplate.md)  
 规范：[memory/decisions-log.md](../memory/decisions-log.md) ADR-016  
-外部参照：[claude-code-reference.md](../docs/claude-code-reference.md)（CC 巨石）· [pi-reference.md](../docs/pi-reference.md)（Pi 极简）· [trinios-reference.md](../docs/trinios-reference.md)（真 OS 镜鉴）· [aios-reference.md](../docs/aios-reference.md)（同名学术前辈，均非规范）  
+外部参照：[claude-code](../docs/claude-code-reference.md)（巨石）· [pi](../docs/pi-reference.md)（极简）· [trinios](../docs/trinios-reference.md)（真 OS）· [aios](../docs/aios-reference.md)（学术同名）· [opencode](../docs/opencode-reference.md)（工程同代），均非规范  
 v1 标本：[legacy/](../legacy/README.md)（只读）
 
 | 目录 | 环 | 状态 |

@@ -11,7 +11,8 @@
 - ✅ Pi 源码对账（2026-08-16）：`docs/pi-reference.md` + ADR-016 第五轮 4 条裁决 + 底板 §0.6
 - ✅ TriniOS 镜鉴（2026-08-16）：`docs/trinios-reference.md`——无新增裁决（守 C3：候选归入 llm.*/Metering 切片顺路兑现）
 - ✅ AIOS 对账（2026-08-16）：`docs/aios-reference.md`——同名学术前辈；零新增裁决，产出 conformance 用例弹药（失败必达终态/错误不伪装成功/寄存器键跨重入队稳定等）；C6 barrier 超时语义挂 ledger 切片待裁
-- 下一步（优先级）：② conformance 套件（KernelPortsSmokeTest 升格，含四参照用例弹药）→ `llm.*` 断言切片 → ③ Loop 端口
+- ✅ OpenCode 对账（2026-08-16）：`docs/opencode-reference.md`——工程同代，EventV2 与 tepeu ① 逐条同构（seq 连续/未知 die/幂等重放）；两个待裁候选：C2 事件词汇表机制（per-type 版本化+manifest 钉死测试，落码切片=conformance 任务）、C3 A2 备注（always[] 形态）
+- 下一步（优先级）：② conformance 套件（KernelPortsSmokeTest 升格，含五参照用例弹药 + 待裁 C2）→ `llm.*` 断言切片（prepare()+录制回放已定型）→ ③ Loop 端口
 
 ## 近期关键决定
 - 双真相：会话日志 vs AuditSink；模型须可见的错误=会话事件
