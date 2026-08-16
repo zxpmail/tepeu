@@ -34,6 +34,17 @@
 | Metering 拦截面 | 单机：turn 前 + max_tokens 兜底（有意取舍） | §3.1 Metering |
 | Command 端口三型违反分层 | 端口两型；UI 命令=⑤ 注册 local 处理器 | §3.2 CommandDispatcher |
 
+## 0.6 Pi 对账落位（2026-08-16 第五轮，已裁进正文与 ADR-016 第五轮）
+
+> 全量论证见 [`pi-reference.md`](./pi-reference.md) §5。
+
+| 洞 | 裁决 | 落点 |
+|----|------|------|
+| 「会话设施=事实日志」未说破可变状态归属 | 三 store：entries / registers（覆盖写、恢复点查）/ ledger；no third place | §4-3 |
+| 配置类状态可能混入事件词汇表 | 配置与编排禁入词汇表（长期闸门）；现 8 类已合规 | §4-3 |
+| Policy 可能被误读为隔离边界 | Policy=授权、Execution/Sandbox=隔离，分工写明 | §3.1 Execution |
+| 底板规范先行有漂移风险（Pi 2941 行 spec 对 796 行实现） | 裁决限期落码；两轮未落码标「悬置」 | §6-9 |
+
 ---
 
 ## 1. 由内向外（OS 洋葱）
@@ -76,7 +87,7 @@
 |----|------|
 | `SessionStore` | 会话/事件持久化 |
 | `InboxClaim` | claim 锁/租约；消息带 priority（now/next/later），now 级运行中到达即抢占当前流（合成闭合后让位，排队消息即上下文） |
-| `Execution` | fs/shell 等执行世界；携带 `SandboxPolicy`（mode+workspaceRoot+sessionId），OS 级沙箱链在 spawn 点执行；`full\|partial` 诚实度 + 功能性 probe；**禁静默未沙箱直通**（Java 选型另立项） |
+| `Execution` | fs/shell 等执行世界；携带 `SandboxPolicy`（mode+workspaceRoot+sessionId），OS 级沙箱链在 spawn 点执行；`full\|partial` 诚实度 + 功能性 probe；**禁静默未沙箱直通**（Java 选型另立项）。**分工**：Policy=授权（进程内判定），Execution/Sandbox=隔离（OS 级）——隔离边界只在此缝，Policy 永不冒充隔离 |
 | `LlmProvider` | 模型流式调用实现 |
 | `Tool`* | 各工具插头（彼此禁止互引） |
 | `McpBridge` | 外挂 MCP 工具桥 |
@@ -113,7 +124,7 @@
 
 1. **主体 + 命名空间**：人/Agent × Workspace（及将来租户）；个人知识默认仅本人。  
 2. **能力总线**：syscall 注册/分发；入口只负责调用 Policy+卫兵，不承载业务。syscall 注册表输出**确定性规范序**（顺序是缓存键与 `llm.*` config 相等断言的组成部分；禁实现迭代序泄漏——内核不变量）。  
-3. **会话设施**：事实日志 + Inbox/claim + 主/子关系；禁明文 secret；提供日志替换端口给 Compaction。
+3. **会话设施**：**三 store**（ADR-016 第五轮）——**entries**（append-only 对话事实+审计；surface 替换只在此层；禁明文 secret；提供日志替换端口给 Compaction）+ **registers**（覆盖写可变状态：Inbox/claim 租约、分支 leaf、模型/思考档配置、进行时操作；恢复=点查非重放）+ **ledger**（append-only 用量记账）。「每个载荷恰好属于三者之一，没有第四个地方」；配置与编排禁入事件词汇表。主/子关系挂在 entries。
 
 **不进内核**：Loop、Tool 实现、MCP、UI、Skill 文件、Router 策略正文。
 
@@ -141,6 +152,7 @@
 6. 开发可活、固化求稳准效率；dsh 插件不可直接加载。  
 7. `llm.*` 入口断言：`derive(log) ∘ normalize == sent` **逐字节相等**（`normalize` 为版本化纯函数、版本号落日志；provider 侧合法变形只准发生在 normalize 内）、config 与 folded header 相等（「模型可见⟺日志可还原」的机器检查，违反即失败可见）。  
 8. 取消时为未派发 call 写**合成错误结果**（保 tool_call↔result 配对与 replay 有效）；调度器自身故障**不伪造**结果，只 drain 后抛——哪类失败可补占位、哪类必须诚实缺口，显式分界。
+9. **裁决限期落码**（ADR-016 第五轮）：每条新裁决指认落码切片；连续两轮未落码的裁决标「悬置」，悬置裁决不得作为后续裁决的前提。
 
 ---
 
