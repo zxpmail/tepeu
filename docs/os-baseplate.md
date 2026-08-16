@@ -228,6 +228,8 @@ legacy/             v1 只读标本
 | **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY）；ask-then-wait 需端口演化或 ApprovalStore 独立通道 | 代码审计二 C1 | kernel 端口演化（conformance 后） | 挂账 |
 | **未装配 Policy 的默认语义**：现默认 ALLOW（fail-open，与身份陈述抵触）；须裁 deny / 显式 NoPolicy / ask 三选一 | 代码审计二 C2 | kernel 端口演化 | 挂账 |
 | **失败双通道契约**：Policy/卫兵=异常通道、handler=结果通道并存；异常通道的 catch 方与日志归属（entries vs AuditSink）未定义 | 代码审计二 C3 | kernel 端口演化 + ③ Loop | 挂账 |
+| **timer 基础设施**：租约 TTL/卫兵超时的到期机制——per-domain 优先队列起步，租约量 > 万级再升时间轮（O(1) 惰性取消；到期≠执行，动作投回 turn 执行面）；解「死租约可回收」drift | Netty 参照 §2.1 | ① session（conformance 后） | 挂账 |
+| **采样泄漏检测**：租约/spill/寄存器生命周期审计——弱引用+GC 探测、1/N 采样、测试期 PARANOID 生产 SIMPLE | Netty 参照 §2.2 | ①/② 生命周期审计切片 | 挂账 |
 | 抢占边界三参照收敛规则 | AIOS C4 | — | ✅ 本轮已落 §3.2 |
 
 **设计-代码 drift 现状**（conformance 切片的用例来源；消除即销账）：
