@@ -7,8 +7,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 /**
- * 可拨时钟 — TTL/超时类用例拨时钟而非真 sleep（Netty Ticker/MockTicker 先例）。
- * 起点 EPOCH 保证确定性。
+ * 可拨时钟 — TTL/超时类用例拨时钟而非真 sleep（Netty Ticker 先例）。起点 EPOCH 保证确定性。
  */
 public final class MutableClock extends Clock {
 

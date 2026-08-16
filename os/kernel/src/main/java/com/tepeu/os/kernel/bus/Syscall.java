@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 一次 syscall 请求 — name 如 read_file / llm.stream / run_command。
+ * 一次 syscall 请求 — name 如 llm.stream / execution.run / read_file（命名族见底板 §3.2）。
  */
 public record Syscall(String name, Map<String, String> args) {
     public Syscall {

@@ -2,9 +2,11 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-**② conformance 切片已落码（2026-08-16，22 用例全绿）——对账冻结解除**；下一刀 = `llm.*` 断言切片（LlmProvider 双协议族选型同刀裁）。实施以 `docs/os-baseplate.md` + `os/` 为准。
+**kernel 端口演化刀（ADR-016 第九轮）已落码（2026-08-17，31 用例全绿）**；下一刀 = `llm.*` 断言切片（LlmProvider 双协议族选型同刀裁）。实施以 `docs/os-baseplate.md` + `os/` 为准。
 
 ## 上次停在哪
+- ✅ **第九轮 kernel 端口演化刀落码**（2026-08-17）：C1 审批端口（`ApprovalStore` 同步重试式 ask + 严格单次 consume，`ApprovalRecord` 证据持久）、C2 fail-closed（未装配 Policy/审批通道即拒，废默认 ALLOW）、C3 失败双通道（拦截三异常→调用方；执行失败→ok=false+errorCode）；计量槽位入 `SyscallResult` 基座 + `Usage` inclusive 双轨；`SessionLedger`/`LedgerEntry` + `Metering` 端口定形；`Priority` 入 `InboxMessage` 签名（NOW>NEXT>LATER 同级 FIFO）；`SessionRegistry`→`SessionStore` 改名；conformance 重写（Session 12 + Bus 18 + Store 1，adaptors 重建）；`mvn -f os/pom.xml test` 31/31 全绿；§8.5 销账 C1/C2/计量槽/priority/ledger 零代码五项，drift 表销三行
+- ✅ ② conformance 切片已落码（2026-08-16）——对账冻结解除
 - ✅ 内核 Java 端口：identity / context / session / bus（含 fail-closed + surface 次序修复）
 - ✅ 内存适配器 + `KernelPortsSmokeTest`（`mvn -f os/pom.xml test` 通过）
 - ✅ 五参照对账 + ADR-016 四~六轮（CC/Pi/TriniOS/AIOS/OpenCode，2026-08-16，见 docs/*-reference.md）
@@ -12,8 +14,8 @@
 - ✅ v1.0 吸收清单（2026-08-16）：`docs/legacy-absorption.md`——A16 条行为规格 + 代码迁移候选（ScriptSandbox 最直接可搬）+ 反模式不吸收（上帝编排器/装饰器链/内存审批）；切片规划输入，不开新裁决轮
 - ✅ 代码审计二（2026-08-16）：立即修四件（§2 Metering 正典措辞投影、冻结词可操作定义、§8.5 增 drift 表 + 三挂账【审批端口形态 / 未装配默认 / 失败双通道】、身份双枚举注记）；drift 五项入 §8.5（死租约 / 卫兵无 verdict / priority / fork / 计量槽）——全部待 conformance 切片消化
 - ✅ Netty 理念对账（2026-08-16）：`docs/netty-reference.md`——IoHandler 解耦与 ①② 缝同构印证；三解挂账（时间轮判据→死租约、双水位滞回→SSE 背压、Ticker→可测试时钟）；元模式三条（显式契约/惰性清理/采样观测）；零新裁决，§8.5 增 timer 与泄漏检测两行
-- ✅ **② conformance 切片落码**（2026-08-16）：kernel 新增 `conformance` 包（SessionConformance 12 + BusConformance 13 + MutableClock，随包发布、runner 无关、纯 JDK）；`KernelPortsSmokeTest` 改 @TestFactory 桥；**第六轮 manifest 钉死 7 类落码（SYSTEM_NOTE 已删）**；**第七轮死租约可回收落码**（时钟注入 + 惰性回收）；mvn 22 用例全绿。**对账冻结解除**
-- ⏭️ **下一刀：`llm.*` 断言切片**（canonical 类型 + normalize 版本化 + prepare 可观测 + 双协议族选型同刀裁【LlmProvider 挂账】）→ kernel 端口演化刀（C1 审批端口/C2 未装配默认/C3 失败双通道/SessionLoop/③ Loop 选型）→ ③ Loop 端口
+- ✅ **② conformance 切片落码**（2026-08-16）：kernel 新增 `conformance` 包（SessionConformance + MutableClock，随包发布、runner 无关、纯 JDK）；`KernelPortsSmokeTest` 改 @TestFactory 桥；**第六轮 manifest 钉死 7 类落码（SYSTEM_NOTE 已删）**；**第七轮死租约可回收落码**（时钟注入 + 惰性回收）。**对账冻结解除**
+- ⏭️ **下一刀：`llm.*` 断言切片**（canonical 类型 + normalize 版本化 + prepare 可观测 + 双协议族选型同刀裁【LlmProvider 挂账】）→ ③ Loop 端口（SessionLoop/RegisterStore/总线落事件三项同裁，见 §8.5）
 
 ## 近期关键决定
 - 双真相：entries（对话事实）vs ledger（用量真相）vs AuditSink（人手审计）vs ProjectionBus（非真相）
@@ -22,7 +24,8 @@
 - seq：append 点分配、本日志单调连续；fork 种子保留原 seq、自写续接同一空间
 - Policy=授权（进程内）vs Execution/Sandbox=隔离（OS 级）；配额=卫兵、预算门=Metering 供数+Policy 协作
 - `llm.*` 断言 = `derive(log) ∘ normalize == sent`（normalize 版本化纯函数）；syscall 注册表确定性规范序
-- 审批界线：事前声明走 Policy 配置面；会话中授予严格单次（解禁唯一形态见第六轮备注）
+- 审批界线：事前声明走 Policy 配置面；会话中授予严格单次（解禁唯一形态见第六轮备注）；C1 形态=同步重试式 ask（第九轮：ask 登记抛出→decide→重试 consume 即消费）
+- C2 fail-closed：未装配 Policy/审批通道即拒，无默认 ALLOW；C3 失败双通道：拦截三异常→调用方（③ Loop），执行失败→ok=false+errorCode（第九轮）
 - 租约必带 TTL；多副本升级 fencing token
 - now 级抢占只切流式 chunk 边界；结构化输出与非幂等工具不可无损切
 - 裁决限期落码：轮=落码切片轮；挂账见底板 §8.5

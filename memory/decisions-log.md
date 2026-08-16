@@ -285,5 +285,15 @@
   6. **`SYSTEM_NOTE` 从事件词汇表砍除**（语义未定义=垃圾抽屉；需要时按 manifest 流程显式加回）。落码=② conformance（manifest 钉 7 类）。
   7. Secret/KnowledgeSource/ProjectionBus/Identity 归并为支撑服务一行组（⑤/② 关切，非内核契约）。
   **不砍（稳定项）**：三 store、双真相+错误归属、封闭 union、fail-closed、§9 事件立规全节、三条进路门对称、红线 1–5/7/8、债务表与挂账账本。**蒸馏判据写进底板头**：内核=少量冻结概念+不变量；一切能力=注册进总线的插头；底板只写内核规范与红线。冻结状态：本轮为用户指令下的减法例外；对账冻结其余条款不变，下一动作仍为 ② conformance 切片落码。
-- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。**（第七轮追加：对账轮冻结中，下一动作 = ② conformance 切片落码。）**
+- **Decision — kernel 端口演化刀（2026-08-17 第九轮，落码切片轮）**:
+  > 第七轮 C3 纪律：轮 = 落码切片轮。本刀销代码审计二 C1/C2/C3 三挂账 + 计量槽位挂账 + ledger 零代码 + priority drift；bus/session 契约收紧、conformance 重写、adaptors 重建，`mvn -f os/pom.xml test` 31 用例全绿。
+  1. **C1 审批端口形态 = 同步重试式 ask**：`ApprovalStore`（内核必需端口，与 Policy 同行）——`ask` 登记 asked（同 (session, syscall) 未决时幂等返回同一 approvalId）并由总线抛 `ApprovalRequiredException`；决策者 `decide(approvalId, allow, by)`；重试同一调用时 `consumeDecision` 取走即消费——**许可严格单次**，消费后再调同 syscall 须重新走审批。替代旧「ASK≡DENY」假实现。证据须持久（`ApprovalRecord` asked/decided 对）；生产默认 SQLite（审批是合规证据，**禁内存默认**），`InMemoryApprovalStore` 仅 conformance 用。审批按会话隔离（许可不跨 session 复用）。
+  2. **C2 未装配默认 = fail-closed 拒绝**：未装配 `PolicyHook` → 一切调用 `PolicyDeniedException(DENY)`；NEED_APPROVAL 而未装配审批通道 → `PolicyDeniedException(NEED_APPROVAL)`。废除旧默认 ALLOW（fail-open）。
+  3. **C3 失败双通道 = 拦截走异常、执行走结果**：拦截类（取消/卫兵/Policy/需审批）抛 `BusGuardException` / `PolicyDeniedException` / `ApprovalRequiredException`，**catch 方 = 调用方（③ Loop）**，总线不吞、不代写日志；执行类失败不抛穿（`ok=false + errorCode`：NOT_FOUND / HANDLER_ERROR）。TOOL_CALL/TOOL_RESULT 事件落账归属仍与「总线自动落事件」挂账同随 ③ 裁。
+  4. **计量槽位入基座**：`SyscallResult` 增 `usage` / `latencyMs`；`Usage` 四字段 inclusive 双轨第一步（`inputTokens` = 非缓存输入；`totalInput()` = input + cacheRead + cacheWrite，OpenCode 不变式）。cost/分层计价随 `llm.*` 断言切片。
+  5. **ledger 第一刀 + Metering 定形**：`SessionLedger` append-only 用量端口（seq 由 record 点分配、单调连续）+ `LedgerEntry`；**消耗从 ledger 派生，预算上限属 Metering/Policy 配置面**（第七轮正典不变）。`Metering` 端口同刀定形（`withinBudget`——供数 + 与 Policy 协作拦截，自身不产生裁决）。read-your-writes barrier 超时语义仍挂账（随持久化实现）。
+  6. **Priority day-one 入签名**：`InboxMessage` 带 `NOW/NEXT/LATER`，领取序 NOW > NEXT > LATER、同级 FIFO；NOW 级抢占的**执行**语义属 ③ Loop（只切流式 chunk 边界，第四轮），内核只保证领取顺序。
+  7. **`SessionRegistry` → `SessionStore` 改名**，对齐底板 §3.1 与第八轮内核必需端口四件套之名（SessionStore / InboxClaim / Policy·ApprovalStore / Metering）。
+  8. **总线五道闸定序**：取消 → 卫兵 before → Policy（含同步重试式审批）→ handler → 卫兵 after；conformance 钉死「卫兵中断时 Policy 不被调用」。`GuardHook` verdict 载体（deny>ask>allow 组合代数）与 syscall 注册表确定性规范序**本刀未触及**，仍挂账；registers/RegisterStore 与 SessionLoop 两挂账裁决依赖 ③ Loop 选型，随 ③ 同裁。
+- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。**（第七轮追加：对账轮冻结中，下一动作 = ② conformance 切片落码。）（第九轮追加：② conformance 与 kernel 端口演化两刀已合入；下一动作 = `llm.*` 断言切片，LlmProvider 选型同刀裁。）**
 

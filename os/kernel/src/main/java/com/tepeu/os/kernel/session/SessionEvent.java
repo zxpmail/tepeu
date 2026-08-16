@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * 仅追加的会话事实 — 禁止承载明文 secret。
+ * 仅追加的会话事实 — 禁止承载明文 secret（红线 §4-3）。
  */
 public record SessionEvent(
         long seq,

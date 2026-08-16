@@ -3,7 +3,7 @@ package com.tepeu.os.kernel.bus;
 import com.tepeu.os.kernel.context.TurnContext;
 
 /**
- * 总线入口 Policy 钩 — 实现在适配环。
+ * 总线入口 Policy 钩 — 实现在适配环；未装配即拒绝（C2，ADR-016 第九轮）。
  */
 @FunctionalInterface
 public interface PolicyHook {

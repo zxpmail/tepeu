@@ -1,7 +1,7 @@
 package com.tepeu.os.kernel.bus;
 
 /**
- * 策略拒绝或待审批。
+ * 策略拒绝（拦截通道；含 NEED_APPROVAL 在无通道/被否决时的 fail-closed 形态）。
  */
 public class PolicyDeniedException extends RuntimeException {
     private final PolicyVerdict verdict;

@@ -9,7 +9,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 跨环显式上下文 — 禁止用单例 Tool.bind 代替。
+ * 跨环显式上下文 — 禁止用单例 Tool.bind 代替（红线 §6-4）。
+ * 取消为标志位：入口与 chunk 边界检查，不做线程 interrupt 乱杀（ADR-016 第四轮）。
  */
 public final class TurnContext {
     private final Principal principal;

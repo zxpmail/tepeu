@@ -138,26 +138,26 @@ legacy/             v1 只读标本
 ### 8.5 挂账与悬置清单（裁决债 ledger，ADR-016 第七轮设立）
 
 > 对账轮产出但「归入某切片顺路兑现」的项集中登记；随对应切片落码后销账。此表就是 C3 纪律的账本——**裁决不许只活在参照文档里**。
-> **对账冻结**（第七轮）：冻结 = **不新增 ADR 裁决与底板红线变更**（清点/吸收/审计类不受限）；解除条件 = ② conformance 切片合入。
+> **对账冻结**（第七轮）：冻结 = **不新增 ADR 裁决与底板红线变更**（清点/吸收/审计类不受限）；解除条件 = ② conformance 切片合入。**（2026-08-16 已解除：② conformance 切片合入 develop。）**
 
 | 项 | 来源 | 归属切片 | 状态 |
 |----|------|----------|------|
-| `SyscallResult` 基座计量槽位（usage/latency；两参照独立收敛） | TriniOS + AIOS C5 | `llm.*` 断言 / Metering | 挂账 |
-| ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed） | AIOS C6 + OpenCode | ledger / Metering | 挂账 |
+| `SyscallResult` 基座计量槽位（usage/latency；两参照独立收敛） | TriniOS + AIOS C5 | `llm.*` 断言 / Metering | ✅ 已落码（第九轮：槽位 + `Usage` inclusive 双轨；cost 细化随 `llm.*`） |
+| ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed） | AIOS C6 + OpenCode | ledger / Metering | ◐ 端口与内存实现已落（第九轮）；barrier 语义随持久化实现 |
 | DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode | ③ Loop | 挂账 |
 | CC §3 吸收项（终态转移表/恢复分级/分区并发/熔断/递减收益停机） | CC | ③ Loop 端口设计说明 | 挂账 |
 | 工具经总线组合调用另一工具是否算互引 | 审计 O5 | Tool 契约 | 挂账 |
 | 子代理审批 `asked/decided` 落哪个会话（父/子/delegationId） | 审计 O6 | SubagentAdaptor | 挂账 |
 | §6-6「config 相等」的外延（cache_control 布点须入 normalize 确定性） | 审计 O8 | `llm.*` 断言 | 挂账 |
-| `SYSTEM_NOTE` 从词汇表砍除（语义未定义=垃圾抽屉） | 审计 O11 + 第八轮 | conformance（manifest 钉 7 类） | ✅ 已裁待落码 |
+| `SYSTEM_NOTE` 从词汇表砍除（语义未定义=垃圾抽屉） | 审计 O11 + 第八轮 | conformance（manifest 钉 7 类） | ✅ 已落码（2026-08-16 词汇表用例钉 7 类） |
 | 多设备同步 fencing（单写者→fencing token/steal） | OpenCode C4 | 远期（多副本） | 挂账 |
 | 抢占边界三参照收敛规则 | AIOS C4 | — | ✅ 已落 §3.1/§3.3 |
-| **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY） | 代码审计二 C1 | kernel 端口演化 | 挂账 |
-| **未装配 Policy 的默认语义**（现默认 ALLOW=fail-open；须裁 deny/显式 NoPolicy/ask） | 代码审计二 C2 | kernel 端口演化 | 挂账 |
-| **失败双通道契约**（异常通道 catch 方与日志归属未定义） | 代码审计二 C3 | kernel 端口演化 + ③ Loop | 挂账 |
+| **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY） | 代码审计二 C1 | kernel 端口演化 | ✅ 已落码（第九轮：`ApprovalStore` 同步重试式 ask + 严格单次 consume） |
+| **未装配 Policy 的默认语义**（现默认 ALLOW=fail-open；须裁 deny/显式 NoPolicy/ask） | 代码审计二 C2 | kernel 端口演化 | ✅ 已落码（第九轮：fail-closed，未装配 Policy/审批通道即拒） |
+| **失败双通道契约**（异常通道 catch 方与日志归属未定义） | 代码审计二 C3 | kernel 端口演化 + ③ Loop | ◐ 通道契约已定（第九轮：拦截三异常→调用方；执行失败→ok=false+errorCode）；事件落账归属随「总线自动落事件」项与③ 同裁 |
 | **总线是否自动落 TOOL_CALL/TOOL_RESULT 事件**：现设计=③ 编排落 entries（总线不耦合事件类型）；备选=总线自动追加（journal 更强） | 内核架构图待验点 1（kernel-layer.md） | ③ Loop 落地时裁 | 挂账 |
-| **registers 是否建通用 RegisterStore 端口**：Inbox 租约表已是事实寄存器；分支 leaf/模型配置未建模（统一端口 vs 各设施自管） | 内核架构图待验点 4 | kernel 端口演化刀 | 挂账 |
-| **SessionLoop 会话串行域**：无条件=状态面串行化；条件=maintenance 物理独占（仅当 ③ 事件驱动化）；裁决真问题=③ Loop 选型（倾向阻塞式+显式门）。全案 netty-reference §2.6 | 用户提案 + Netty | kernel 端口演化（与上三条同刀） | 挂账 |
+| **registers 是否建通用 RegisterStore 端口**：Inbox 租约表已是事实寄存器；分支 leaf/模型配置未建模（统一端口 vs 各设施自管） | 内核架构图待验点 4 | kernel 端口演化刀 | 挂账（本刀未触及，随③ Loop 选型再裁） |
+| **SessionLoop 会话串行域**：无条件=状态面串行化；条件=maintenance 物理独占（仅当 ③ 事件驱动化）；裁决真问题=③ Loop 选型（倾向阻塞式+显式门）。全案 netty-reference §2.6 | 用户提案 + Netty | kernel 端口演化（与上三条同刀） | 挂账（本刀未触及，裁决依赖③ Loop 选型） |
 | **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动（黑盒变换与断言冲突）；缝可逆 | 选型问询 + 五参照 | `llm.*` 断言切片 | 挂账 |
 | **timer 基础设施**：per-domain PQ 起步，>万级升时间轮；解「死租约可回收」 | Netty §2.1 | ① session | 挂账 |
 | **采样泄漏检测**（弱引用+GC 探测+1/N 采样） | Netty §2.2 | 生命周期审计切片 | 挂账 |
@@ -169,10 +169,10 @@ legacy/             v1 只读标本
 | ~~租约 TTL 记而不执~~ | ~~`InMemorySession`~~ | ✅ 已落码（时钟注入 + 惰性回收 + conformance 用例，2026-08-16） |
 | **syscall 注册表无确定性规范序**（第四轮 B2 内核不变量：注册序=缓存键组成部分；现为 ConcurrentHashMap 无序）——第四轮裁时挂账机制未立，漏登，2026-08-16 补 | `InMemoryCapabilityBus.handlers` | kernel 端口演化刀（或单开小切片） |
 | `GuardHook` 无 verdict 载体（组合代数无实现前提） | `InMemoryCapabilityBus` | conformance 用例 / 端口演化 |
-| `InboxMessage` 无 priority（now/next/later 未落） | `InMemorySession` | Inbox 契约落码（kernel 端口演化刀） |
-| ledger store 零代码（三 store 之一，内核必需端口 Metering 同缺） | kernel session 包 | ledger/Metering 切片 |
-| fork 未实现（`forkFromEventId` 恒 empty；种子区校验缺位） | `InMemorySession:64` | ① session fork 切片 |
-| `SyscallResult` 无 usage/latency 计量槽位 | kernel bus | 随计量槽位挂账项 |
+| ~~`InboxMessage` 无 priority（now/next/later 未落）~~ | ~~`InMemorySession`~~ | ✅ 已落码（第九轮：`Priority` 入签名 + 领取序用例） |
+| ~~ledger store 零代码（三 store 之一，内核必需端口 Metering 同缺）~~ | ~~kernel session 包~~ | ✅ 已落码（第九轮：`SessionLedger`/`LedgerEntry`/`Usage` + `Metering` 端口 + conformance 2 用例） |
+| fork 未实现（`forkFromEventId` 恒 empty；种子区校验缺位） | `InMemorySession` | ① session fork 切片 |
+| ~~`SyscallResult` 无 usage/latency 计量槽位~~ | ~~kernel bus~~ | ✅ 已落码（第九轮：基座字段 + `Usage` 双轨） |
 
 ---
 

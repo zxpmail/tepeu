@@ -1,5 +1,7 @@
 package com.tepeu.os.adaptors.inmemory;
 
+import com.tepeu.os.kernel.bus.ApprovalRequiredException;
+import com.tepeu.os.kernel.bus.ApprovalStore;
 import com.tepeu.os.kernel.bus.BusGuardException;
 import com.tepeu.os.kernel.bus.CapabilityBus;
 import com.tepeu.os.kernel.bus.GuardHook;
@@ -14,18 +16,23 @@ import com.tepeu.os.kernel.context.TurnContext;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * 单机内存能力总线 — 入口：卫兵 → Policy → handler。
- * fail-closed：Policy/卫兵钩子异常一律规范化为拒绝，禁异常穿透（ADR-016 dsh 对账裁决 4）。
+ * 单机内存能力总线 — 入口：取消 → 卫兵 before → Policy（含同步重试式审批）→ handler → 卫兵 after。
+ * C2 fail-closed（第九轮）：未装配 Policy、或 NEED_APPROVAL 而未装配审批通道，一律拒绝；
+ * Policy/卫兵钩子异常一律规范化为拒绝，禁异常穿透（ADR-016 第三轮）。
+ * 失败双通道（第九轮 C3）：拦截类走异常（BusGuard/PolicyDenied/ApprovalRequired，catch 方=调用方）；
+ * 执行类不抛穿（ok=false + errorCode）。
  */
 public final class InMemoryCapabilityBus implements CapabilityBus {
 
     private final Map<String, SyscallHandler> handlers = new ConcurrentHashMap<>();
     private final List<GuardHook> guards = new CopyOnWriteArrayList<>();
-    private volatile PolicyHook policyHook = (ctx, syscall) -> PolicyVerdict.ALLOW;
+    private volatile PolicyHook policyHook;
+    private volatile ApprovalStore approvalStore;
 
     @Override
     public void register(String name, SyscallHandler handler) {
@@ -39,6 +46,11 @@ public final class InMemoryCapabilityBus implements CapabilityBus {
     @Override
     public void setPolicyHook(PolicyHook policyHook) {
         this.policyHook = Objects.requireNonNull(policyHook, "policyHook");
+    }
+
+    @Override
+    public void setApprovalStore(ApprovalStore approvalStore) {
+        this.approvalStore = Objects.requireNonNull(approvalStore, "approvalStore");
     }
 
     @Override
@@ -63,6 +75,11 @@ public final class InMemoryCapabilityBus implements CapabilityBus {
                 throw new BusGuardException("guard failed (fail-closed): " + e);
             }
         }
+        if (policyHook == null) {
+            // C2：未装配 Policy 即拒绝（fail-closed），无默认放行
+            throw new PolicyDeniedException(PolicyVerdict.DENY,
+                    "policy hook not installed (fail-closed): syscall=" + syscall.name());
+        }
         PolicyVerdict verdict;
         try {
             verdict = policyHook.evaluate(ctx, syscall);
@@ -75,8 +92,27 @@ public final class InMemoryCapabilityBus implements CapabilityBus {
             throw new PolicyDeniedException(PolicyVerdict.DENY,
                     "policy hook returned null (fail-closed): syscall=" + syscall.name());
         }
-        if (verdict != PolicyVerdict.ALLOW) {
+        if (verdict == PolicyVerdict.DENY) {
             throw new PolicyDeniedException(verdict, "policy=" + verdict + " syscall=" + syscall.name());
+        }
+        if (verdict == PolicyVerdict.NEED_APPROVAL) {
+            ApprovalStore store = approvalStore;
+            if (store == null) {
+                // C2：需审批而无审批通道 = 拒绝（fail-closed）
+                throw new PolicyDeniedException(PolicyVerdict.NEED_APPROVAL,
+                        "approval required but no approval channel installed (fail-closed): syscall="
+                                + syscall.name());
+            }
+            // C1 同步重试式：先消费既有决策；无决策则登记 asked 并抛出，由决策者 decide 后重试
+            Optional<Boolean> decision = store.consumeDecision(ctx, syscall);
+            if (decision.isEmpty()) {
+                throw new ApprovalRequiredException(store.ask(ctx, syscall), syscall.name());
+            }
+            if (!decision.get()) {
+                throw new PolicyDeniedException(PolicyVerdict.NEED_APPROVAL,
+                        "approval decided: deny syscall=" + syscall.name());
+            }
+            // 决策=放行 → 落 handler（许可已消费，下次同调用重新走审批）
         }
         SyscallHandler handler = handlers.get(syscall.name());
         if (handler == null) {

@@ -1,7 +1,7 @@
 package com.tepeu.os.kernel.bus;
 
 /**
- * 入口策略裁决（实现属② Policy 适配器）。
+ * 入口策略裁决 — 封闭 union（红线 §2）；词汇表外一律规范化为拒绝（fail-closed）。
  */
 public enum PolicyVerdict {
     ALLOW,

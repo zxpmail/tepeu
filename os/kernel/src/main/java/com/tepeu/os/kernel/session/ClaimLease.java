@@ -4,7 +4,8 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * claim 租约 — 多副本时由 InboxClaim 适配器实现抢占。
+ * claim 租约 — 必带 TTL（ADR-016 第七轮：死租约可回收）；
+ * 多副本时升级 fencing token（挂账远期）。
  */
 public record ClaimLease(String claimId, String messageId, Instant expiresAt) {
     public ClaimLease {
