@@ -47,6 +47,12 @@
 4. **工具轨迹混进 system 行**——os/ 类型化事件取代。
 5. `Tools.java` 静态注册表、EventLoop（已退役 ADR-003）。
 
+## D-2. 与 spring-ai-agent-utils 的关系（选型定位，2026-08-16）
+
+**不用作原语层**：它是工具箱不是运行时（无 bus/Policy/journal/Inbox/Loop）；`@Tool` 直挂 ChatClient 的形态绕过总线=绕过门（违背身份陈述）；垫在 ③ 下当底座 = v1 装饰器链老路换库重演（ADR-016 起因）。其 subagent SPI 无 delegationDepth/父集减法/取消拓扑，照搬违反第四/五轮裁决。
+
+**定位 = ② 工具插头的候选零件库，legacy 优先、utils 补缺**：Grep/Glob 纯 Java 实现、WebFetch/WebSearch（legacy 均无）值得抄；A2A 模块为远期多副本 SubagentAdaptor 后端参考；AutoMemory/Skills/TodoWrite 属 ⑤ 域 os/ 阶段不碰。引入纪律：包进 Tool 插头过门 + SandboxPolicy + toolKind 元数据 + conformance；外部依赖黄灯；须锁精确发布版（本地 0.11.0-SNAPSHOT 不可直接用）。
+
 ## D. 对切片的输入（与挂账的接口）
 
 - **② conformance 切片**：B-测试行的三个改造方向即用例来源（Policy 矩阵 / Sandbox 隔离 / Schedule 恢复）。
