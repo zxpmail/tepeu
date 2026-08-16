@@ -47,7 +47,37 @@ tepeu 落法：每 SSE 订阅者一个 outbox + 双阈值滞回；超 high 后�
 - **ThreadExecutorMap 回调重映射**：provider 异步回调统一 remap 回会话串行域，禁止回调在 provider 线程直接改 registers。
 - **被虚线程取代**：手工事件循环/MPSC 唤醒/wakeup-task 整套不需要（JVM 调度器管）；JCTools MPSC 若需要可直接依赖。
 
-**SessionLoop 提案（用户提出，仿 EventLoop 会话粒度，2026-08-16 记入待裁；同日严苛复核修正过卖）**：每会话一个单线程串行执行域（虚线程），`execute / assertInLoop / schedule(delay)` 三件接口；会话一切**状态变更**（entries/registers/ledger/claim/定时回收）pin 域内——此为**无条件成立**的部分（三 store 唯一写者、可断言纪律、TTL per-loop PQ 回投、回调 remap、跨域禁同步等待）。**条件成立（取决于 ③ Loop 形态，裁决时必须摆上台面的真权衡）**：「maintenance 独占=物理保证」「抢占=队列插队」**仅当 ③ Loop 写成事件驱动状态机**（step 是域任务、LLM/工具在域外工作线程、完成回投）时成立；若 ③ 保持阻塞式循环（CC/Pi/OpenCode 全是此款），turn 跑独立虚线程、经 `loop.execute` 回写状态——独占与抢占仍由已裁 LoopRuntime 协议承担，SessionLoop 降为状态面串行化基底。**当前倾向（待裁）**：阻塞式 + 显式门（简单、全参照同款、已裁协议覆盖），SessionLoop 先只做状态面。**四坑**：① 命名消歧「SessionLoop(①执行域) ≠ LoopRuntime(③编排态)」；② 域线程禁跑长阻塞——工作丢虚线程、完成回投；③ 跨会话=跨域，他域 store 必须 `targetLoop.execute()` 转投，域上同步等跨域 future 直接抛；④ **域任务队列不得成为第二个 Inbox**——顺序真相在 Inbox/LoopRuntime，域队列只执行状态机跃迁、不自长业务语义。**勿以性能卖**（tepeu 量级下锁不是痛点，价值在正确性结构化）；Java 21 虚线程在 `synchronized` 内阻塞会 pin carrier（JDK24/JEP491 修），域任务调用旧同步代码需留意。量级合身（数十会话×虚线程）。归「kernel 端口演化」切片随 C1/C2/C3 一并裁（冻结中）。
+**SessionLoop 提案**（用户提出，仿 EventLoop 会话粒度；2026-08-16 记入待裁，同日严苛复核修正过卖）：
+
+**是什么**：每会话一个单线程串行执行域（虚线程实现），接口三件——`execute(task)` / `assertInLoop()` / `schedule(task, delay)`。会话的一切**状态变更**（entries append、registers 覆写、ledger 记账、claim、定时回收）pin 在域内执行。
+
+**无条件成立**（无论 ③ Loop 怎么写）：
+
+| 件 | 机制 |
+|----|------|
+| 三 store 唯一写者 | thread-confinement → 域内无锁；「谁可能写 store」从纪律变成 `assertInLoop` 可断言 |
+| 租约 TTL 回投 | per-loop 优先队列，到期动作回投本域执行（计时面/动作面分离；每会话租约个位数，无需全局时间轮） |
+| 回调重映射 | LLM 回调 / timer / 投影通知一律 remap 回域再动 registers（ThreadExecutorMap 同款） |
+| 跨域禁同步等待 | 触碰他域 store 必须 `targetLoop.execute()` 转投；在域上同步等跨域 future 直接抛（BlockingOperationException 同款） |
+
+**条件成立**（取决于 ③ Loop 形态——**裁决时必须摆上台面的真权衡**）：
+
+| ③ Loop 形态 | SessionLoop 角色 | maintenance 独占 / now 级抢占 |
+|---|---|---|
+| 事件驱动状态机（step=域任务，LLM/工具在域外工作线程，完成回投） | 执行基底（含 turn） | **物理保证**（域队列优先级） |
+| 阻塞式循环（CC/Pi/OpenCode 全是此款；turn 跑独立虚线程，经 `loop.execute` 回写状态） | 仅状态面串行化基底 | 由已裁 LoopRuntime 协议（三态+显式门+chunk 边界让位）承担 |
+
+**当前倾向（待裁）**：阻塞式 + 显式门——简单、全参照同款、已裁协议覆盖；SessionLoop 先只做状态面。
+
+**四坑**：
+1. 命名消歧：SessionLoop（① 执行域）≠ LoopRuntime（③ 编排态），后者跑在前者之上。
+2. 域线程禁跑长阻塞——工具/LLM 执行丢工作虚线程、完成回投；一个慢 shell 不得卡死会话域。
+3. 跨会话=跨域——转投 + 禁同步等待（见上）。
+4. **域任务队列不得成为第二个 Inbox**——顺序真相只在 Inbox/LoopRuntime；域队列只执行状态机跃迁，不自长业务语义。
+
+**卫生声明**：勿以性能卖（tepeu 量级下锁不是痛点，价值在正确性结构化）；Java 21 虚线程在 `synchronized` 内阻塞会 pin carrier（JDK 24 / JEP 491 修复），域任务调用旧同步代码需留意；量级合身（数十会话 × 虚线程，六参照中唯一无量级错配的执行模型）。
+
+**处置**：归「kernel 端口演化」切片，随 C1/C2/C3 同刀裁（冻结中）。
 
 ### 2.7 杂项速记
 
