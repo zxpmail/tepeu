@@ -54,6 +54,8 @@
 | §6-6 红线 + §8.5 LlmProvider / 规范序 drift | 序 0 必须销；纸面红线 ≠ 已证伪 |
 | `legacy-absorption` A1 / A2 | A1→序 3 规则种子；A2 写声称路径证据 → 与 D1 同族，Loop 完成门对齐 |
 
+**距 OS**：五层最低条与成色债见 [`agent-os-gap.md`](./agent-os-gap.md)。
+
 ---
 
 ## 4. 修订记录

@@ -2,9 +2,10 @@
 # 项目进度快照（极简）
 
 ## 当前在做什么
-**第十轮 gnex3 对账 + LlmProvider 选型 + 派生式断言形态已裁决落文档（2026-08-18，纯文档轮——用户指令「只写文档不写代码」）**；`E:\work\docs` 有利项已收口为 `docs/work-docs-absorption.md`。下一刀 = `llm.*` 断言切片**落码**（裁决已备：`os/llm` 新模块 + kernel 四处小改，fake 传输先行）。实施以 `docs/os-baseplate.md` + `os/` 为准。
+**第十轮 gnex3 对账 + LlmProvider 选型 + 派生式断言形态已裁决落文档（2026-08-18，纯文档轮——用户指令「只写文档不写代码」）**；`E:\work\docs` 有利项已收口为 `docs/work-docs-absorption.md`；距 OS 差距见 `docs/agent-os-gap.md`。下一刀 = `llm.*` 断言切片**落码**（裁决已备：`os/llm` 新模块 + kernel 四处小改，fake 传输先行）。实施以 `docs/os-baseplate.md` + `os/` 为准。
 
 ## 上次停在哪
+- ✅ **距 Agent OS 差距文档**（2026-08-18）：`docs/agent-os-gap.md`——总判当前=kernel 切片；最少五层（进模诚实→Loop→完成权→执行缝→预算/审批做真）后才可称「本机骨架可演示」；成色债与禁止口径；底板头注挂链
 - ✅ **`E:\work\docs` 吸收清单**（2026-08-18）：`docs/work-docs-absorption.md`——**只吸收有利**；纪律八条（完成=证据 / 未知即未知 / 授权只收紧 / SoR 三分 / 有界续跑 / 失败重评估 / 单栈 / 学习≠立项）+ 按刀映射；底板头注挂链
 - ✅ **第十轮对账落文档**（2026-08-18）：`docs/gnex3-reference.md`（第七参照，影子时间线定位，**只吸取有利**：吸收 8 条各指认归属切片 + 反模式不吸收 7 条）；ADR-016 第十轮三裁决——①LlmProvider=自研双协议族（Anthropic Messages + OpenAI Chat Completions 投影自研；Spring AI ChatModel 不进 `llm.*` 路径，黑盒与 §6-6 结构冲突；缝可逆）②断言形态升格「派生式」（`llm.*` 不收调用方拼装 messages，恒 `derive(log)`；红线 §6-1 与 §6-6 合一为机制；digest+版本号落 ledger attrs，下次调用前复核上笔）③gnex3 吸收/不吸收清单；§8.5 新增 4 行挂账 + 3 行并入备注 + LlmProvider 行 ◐ 已裁决；底板 §7 骨架加 `os/llm`（规划）
 - ✅ **第九轮 kernel 端口演化刀落码**（2026-08-17）：C1 审批端口（`ApprovalStore` 同步重试式 ask + 严格单次 consume，`ApprovalRecord` 证据持久）、C2 fail-closed（未装配 Policy/审批通道即拒，废默认 ALLOW）、C3 失败双通道（拦截三异常→调用方；执行失败→ok=false+errorCode）；计量槽位入 `SyscallResult` 基座 + `Usage` inclusive 双轨；`SessionLedger`/`LedgerEntry` + `Metering` 端口定形；`Priority` 入 `InboxMessage` 签名（NOW>NEXT>LATER 同级 FIFO）；`SessionRegistry`→`SessionStore` 改名；conformance 重写（Session 12 + Bus 18 + Store 1，adaptors 重建）；`mvn -f os/pom.xml test` 31/31 全绿；§8.5 销账 C1/C2/计量槽/priority/ledger 零代码五项，drift 表销三行
@@ -35,4 +36,5 @@
 - now 级抢占只切流式 chunk 边界；结构化输出与非幂等工具不可无损切
 - 裁决限期落码：轮=落码切片轮；挂账见底板 §8.5
 - `E:\work\docs`：**只吸收有利**（闸门与诚实八条）；见 `docs/work-docs-absorption.md`
+- **距 Agent OS**：当前=kernel 切片；五层后才可称本机骨架可演示——见 `docs/agent-os-gap.md`
 - 详见 ADR-016（十轮） / os-baseplate

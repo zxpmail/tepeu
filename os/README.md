@@ -5,7 +5,7 @@
 实施底板：[docs/os-baseplate.md](../docs/os-baseplate.md)  
 规范：[memory/decisions-log.md](../memory/decisions-log.md) ADR-016  
 外部参照：[claude-code](../docs/claude-code-reference.md)（巨石）· [pi](../docs/pi-reference.md)（极简）· [trinios](../docs/trinios-reference.md)（真 OS）· [aios](../docs/aios-reference.md)（学术同名）· [opencode](../docs/opencode-reference.md)（工程同代）· [netty](../docs/netty-reference.md)（工程理念源）· [gnex3](../docs/gnex3-reference.md)（影子时间线，只吸取有利），均非规范  
-内部资产：[legacy-absorption.md](../docs/legacy-absorption.md)（v1.0 吸收清单，切片规划输入）  
+内部资产：[legacy-absorption.md](../docs/legacy-absorption.md)（v1.0 吸收清单，切片规划输入）· [work-docs-absorption.md](../docs/work-docs-absorption.md)（`E:\work\docs` 只吸有利）· [agent-os-gap.md](../docs/agent-os-gap.md)（距 OS 还差什么）  
 v1 标本：[legacy/](../legacy/README.md)（只读）
 
 | 目录 | 环 | 状态 |
