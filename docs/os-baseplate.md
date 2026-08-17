@@ -2,7 +2,8 @@
 
 > **地位**：develop 重写的实施底板（投影）。规范裁决以 [`memory/decisions-log.md`](../memory/decisions-log.md) **ADR-016** 为准；冲突改本文件对齐 ADR。  
 > **图示摘要**：[`kernel-layer.md`](./kernel-layer.md)（更短，勿当第二真相）。  
-> **蒸馏原则（ADR-016 第八轮）**：内核 = 少量冻结概念 + 不变量；**一切能力 = 注册进总线的插头**。本文件只写内核规范与红线；各缝行为细则以 ADR 轮次为真相，此处至多一行指针；对账历史见 docs/*-reference.md 与 ADR，不在此重复。
+> **蒸馏原则（ADR-016 第八轮）**：内核 = 少量冻结概念 + 不变量；**一切能力 = 注册进总线的插头**。本文件只写内核规范与红线；各缝行为细则以 ADR 轮次为真相，此处至多一行指针；对账历史见 docs/*-reference.md 与 ADR，不在此重复。  
+> **外部吸收（只吸有利）**：[`legacy-absorption.md`](./legacy-absorption.md)（v1）· [`work-docs-absorption.md`](./work-docs-absorption.md)（`E:\work\docs`）· [`gnex3-reference.md`](./gnex3-reference.md)（影子时间线）。
 > **实施方法（同轮，nanopi 先例）**：慢就是快，简单也是美——**沿数据流垂直切片，需要什么才写什么**，每个模块在数据流需要它的地方出现；由内向外，一个跑通的真实往返优先于一叠按清单填的端口。**合同先于故事**：DONE 由 §8.5 挂账与 conformance 定义，故事只决定顺序；假驱动的故事须设计失败岔路（预算超限/需审批）才能逼出 ledger/Metering/ask；故事测试住外层（adaptors/orchestration test），内核不知道 turn——架构裁决项（C2/SessionLoop/失败通道/RegisterStore）由裁决刀裁，故事逼不出来。
 
 ---
@@ -111,6 +112,8 @@
 os/
   kernel/           ① 端口与不变式
   adaptors/         ② 接口 + 单机默认实现
+  llm/              llm.* 命名族契约：canonical/derive/normalize/双协议族投影 + conformance
+                    （规划——第十轮裁决，随 `llm.*` 断言切片落码）
   orchestration/    ③ Loop/Command/Prompt/路由决策（os/routing/ 目录待 ③ 落地时并入）
   compose/          开机接线
   README.md         本底板索引
@@ -143,8 +146,8 @@ legacy/             v1 只读标本
 | 项 | 来源 | 归属切片 | 状态 |
 |----|------|----------|------|
 | `SyscallResult` 基座计量槽位（usage/latency；两参照独立收敛） | TriniOS + AIOS C5 | `llm.*` 断言 / Metering | ✅ 已落码（第九轮：槽位 + `Usage` inclusive 双轨；cost 细化随 `llm.*`） |
-| ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed） | AIOS C6 + OpenCode | ledger / Metering | ◐ 端口与内存实现已落（第九轮）；barrier 语义随持久化实现 |
-| DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode | ③ Loop | 挂账 |
+| ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed） | AIOS C6 + OpenCode + gnex3（usage 只增禁负禁篡改；写失败 tepeu 倾向 fail-closed——预算门供数源不可丢账，gnex3 降级放行记备选） | ledger / Metering | ◐ 端口与内存实现已落（第九轮）；barrier 语义随持久化实现 |
+| DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode + gnex3（形状：指纹归一化剥时间戳/随机参数 + NUDGE 模型可见） | ③ Loop | 挂账 |
 | CC §3 吸收项（终态转移表/恢复分级/分区并发/熔断/递减收益停机） | CC | ③ Loop 端口设计说明 | 挂账 |
 | 工具经总线组合调用另一工具是否算互引 | 审计 O5 | Tool 契约 | 挂账 |
 | 子代理审批 `asked/decided` 落哪个会话（父/子/delegationId） | 审计 O6 | SubagentAdaptor | 挂账 |
@@ -155,12 +158,17 @@ legacy/             v1 只读标本
 | **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY） | 代码审计二 C1 | kernel 端口演化 | ✅ 已落码（第九轮：`ApprovalStore` 同步重试式 ask + 严格单次 consume） |
 | **未装配 Policy 的默认语义**（现默认 ALLOW=fail-open；须裁 deny/显式 NoPolicy/ask） | 代码审计二 C2 | kernel 端口演化 | ✅ 已落码（第九轮：fail-closed，未装配 Policy/审批通道即拒） |
 | **失败双通道契约**（异常通道 catch 方与日志归属未定义） | 代码审计二 C3 | kernel 端口演化 + ③ Loop | ◐ 通道契约已定（第九轮：拦截三异常→调用方；执行失败→ok=false+errorCode）；事件落账归属随「总线自动落事件」项与③ 同裁 |
-| **总线是否自动落 TOOL_CALL/TOOL_RESULT 事件**：现设计=③ 编排落 entries（总线不耦合事件类型）；备选=总线自动追加（journal 更强） | 内核架构图待验点 1（kernel-layer.md） | ③ Loop 落地时裁 | 挂账 |
+| **总线是否自动落 TOOL_CALL/TOOL_RESULT 事件**：现设计=③ 编排落 entries（总线不耦合事件类型）；备选=总线自动追加（journal 更强）；gnex3 输入=tool/call **先落日志再执行**（崩溃留孤儿 call，replay 可识别 interrupted） | 内核架构图待验点 1（kernel-layer.md）+ gnex3 | ③ Loop 落地时裁 | 挂账 |
 | **registers 是否建通用 RegisterStore 端口**：Inbox 租约表已是事实寄存器；分支 leaf/模型配置未建模（统一端口 vs 各设施自管） | 内核架构图待验点 4 | kernel 端口演化刀 | 挂账（本刀未触及，随③ Loop 选型再裁） |
 | **SessionLoop 会话串行域**：无条件=状态面串行化；条件=maintenance 物理独占（仅当 ③ 事件驱动化）；裁决真问题=③ Loop 选型（倾向阻塞式+显式门）。全案 netty-reference §2.6 | 用户提案 + Netty | kernel 端口演化（与上三条同刀） | 挂账（本刀未触及，裁决依赖③ Loop 选型） |
-| **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动（黑盒变换与断言冲突）；缝可逆 | 选型问询 + 五参照 | `llm.*` 断言切片 | 挂账 |
+| **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动（黑盒变换与断言冲突）；缝可逆 | 选型问询 + 五参照 + gnex3（反面标本：其 model 层走 Spring AI，wire 零可观测） | `llm.*` 断言切片 | ◐ 已裁决（第十轮：自研双协议族——Anthropic Messages + OpenAI Chat Completions 投影自研，Spring AI ChatModel 不进 `llm.*` 路径；工具/MCP 面随 O5 另裁）；落码随 `llm.*` 断言切片 |
 | **timer 基础设施**：per-domain PQ 起步，>万级升时间轮；解「死租约可回收」 | Netty §2.1 | ① session | 挂账 |
 | **采样泄漏检测**（弱引用+GC 探测+1/N 采样） | Netty §2.2 | 生命周期审计切片 | 挂账 |
+| `llm.*` 重试协议：可重试分类封闭集 + requestId 幂等（流式从零重放）+ 熔断开路禁重试 | gnex3 | llm transport 切片 | 挂账 |
+| registers 终态单调：终态值禁被晚到/重放旧值回退 | gnex3 | registers / ③ Loop | 挂账 |
+| TIMED_OUT 一等结果：超时产成对 TOOL_RESULT 标记（禁静默成功/禁悬挂/禁自动重试） | gnex3 | Tool 契约 | 挂账 |
+| 修剪证物保护 + spill 容量纪律（TTL/单条上限/证物类不可修剪） | gnex3 | Compaction | 挂账 |
+| 注册表/工具集版本化快照锁存：增量=新版本，in-flight turn 锁存旧快照 | gnex3 | ③/RegisterStore（同裁） | 挂账 |
 
 **设计-代码 drift 现状**（conformance 切片的用例来源；消除即销账）：
 

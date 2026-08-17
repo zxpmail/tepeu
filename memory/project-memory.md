@@ -38,6 +38,7 @@
 
 ## 外部参照（权威在 ADR）
 - ADR-008（Vibe-Trading）· ADR-009（ATE 裁切）— 细节勿在此重复。
+- **吸收清单（只吸有利）**：`docs/legacy-absorption.md`（v1）· `docs/work-docs-absorption.md`（`E:\work\docs` 闸门与诚实八条）· `docs/gnex3-reference.md`（影子时间线）。
 
 ## 已知坑点 / Gotchas
 

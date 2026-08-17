@@ -2,6 +2,8 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-18 | gnex3-round10 | **ADR-016 第十轮 gnex3 对账（纯文档轮）** | LlmProvider 裁自研双协议族；断言升格派生式（messages 恒 derive(log)，digest+版本号落 ledger attrs 复核上笔）；`docs/gnex3-reference.md` 第七参照只吸取有利（吸收 8/不吸收 7）；§8.5 增 4 行挂账；落码指认 `llm.*` 断言切片（os/llm + kernel 四处小改） |
+| 2026-08-18 | work-docs-abs | **`E:\work\docs` 只吸收有利** | `docs/work-docs-absorption.md` 八纪律+按刀映射；底板/CONTEXT/project-memory 挂链；功能故事零吸收 |
 | 2026-08-07 | phase18-v1 | **DEV-PLAN Phase 18 / v1.0.0** | RELEASE_NOTES；版本 1.0.0；§10 基线；Docker 定义校验；tag 未打待批 |
 | 2026-08-07 | phase17-runtime | **DEV-PLAN Phase 17 技能脚本沙箱** | ADR-015 GraalJS 24.2.1；run_skill_script；超时强制中断；wasmtime 延后 |
 | 2026-08-07 | phase16-market | **DEV-PLAN Phase 16 应用市场** | 内置目录+本机扫描+可选远程；MarketplaceView；install_source/version；离线可装 hello-assistant |
