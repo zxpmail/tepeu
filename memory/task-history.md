@@ -2,6 +2,9 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-18 | v1-brain-off-path | **启动路径改 develop 正文（只动文档）** | project-memory 改为 os/ 记忆，v1 全文进 archive/v1；CLAUDE 技术栈代码块改为 os/；Product-Spec 标题与七层/技术栈节标 v1 档案（根目录不搬） |
+| 2026-08-18 | v1-trap-banner | **启动路径钉 v1 标本（只动文档）** | project-memory 顶栏 + Architecture/Chat 标 v1；CLAUDE 技术栈标明 Forge 填空、ChatModel 不进 llm.*；handoff 到达序只信顶栏 |
+| 2026-08-18 | docs-cut | **文档蒸馏（只动文档）** | 手册只留独有章；删除 kernel-layer；七参照+essay+superpowers+phase2-plan 进 docs/archive/；CONTEXT 缩到当前+下一刀；routing README 标明4已并入3 |
 | 2026-08-18 | agent-os-gap | **距 Agent OS 差距落文档** | `docs/agent-os-gap.md`：kernel≠OS；五层最低条；成色债；禁止口径 |
 | 2026-08-18 | gnex3-round10 | **ADR-016 第十轮 gnex3 对账（纯文档轮）** | LlmProvider 裁自研双协议族；断言升格派生式（messages 恒 derive(log)，digest+版本号落 ledger attrs 复核上笔）；`docs/gnex3-reference.md` 第七参照只吸取有利（吸收 8/不吸收 7）；§8.5 增 4 行挂账；落码指认 `llm.*` 断言切片（os/llm + kernel 四处小改） |
 | 2026-08-18 | work-docs-abs | **`E:\work\docs` 只吸收有利** | `docs/work-docs-absorption.md` 八纪律+按刀映射；底板/CONTEXT/project-memory 挂链；功能故事零吸收 |

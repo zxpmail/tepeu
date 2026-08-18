@@ -6,4 +6,4 @@
 |------|------|
 | `reference/` | CC / Pi / OpenCode / AIOS / TriniOS / Netty / gnex3 |
 | `essays/` | v1 Spring AI 实验文 |
-| `v1/` | IDE shell 草稿、Phase 2 实现计划快照 |
+| `v1/` | IDE shell 草稿、Phase 2 计划、v1 project-memory 标本 |

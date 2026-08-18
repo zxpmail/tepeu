@@ -1,11 +1,12 @@
 # Tepeu OS 底板（实施用）
 
-> **地位**：develop 重写的实施底板（投影）。规范裁决以 [`memory/decisions-log.md`](../memory/decisions-log.md) **ADR-016** 为准；冲突改本文件对齐 ADR。  
-> **图示摘要**：[`kernel-layer.md`](./kernel-layer.md)（更短，勿当第二真相）。  
-> **蒸馏原则（ADR-016 第八轮）**：内核 = 少量冻结概念 + 不变量；**一切能力 = 注册进总线的插头**。本文件只写内核规范与红线；各缝行为细则以 ADR 轮次为真相，此处至多一行指针；对账历史见 docs/*-reference.md 与 ADR，不在此重复。  
-> **外部吸收（只吸有利）**：[`legacy-absorption.md`](./legacy-absorption.md)（v1）· [`work-docs-absorption.md`](./work-docs-absorption.md)（`E:\work\docs`）· [`gnex3-reference.md`](./gnex3-reference.md)（影子时间线）。  
-> **诚实度**：[`agent-os-gap.md`](./agent-os-gap.md)——距「Agent OS」还差什么（当前=kernel 切片，非 OS）。
-> **实施方法（同轮，nanopi 先例）**：慢就是快，简单也是美——**沿数据流垂直切片，需要什么才写什么**，每个模块在数据流需要它的地方出现；由内向外，一个跑通的真实往返优先于一叠按清单填的端口。**合同先于故事**：DONE 由 §8.5 挂账与 conformance 定义，故事只决定顺序；假驱动的故事须设计失败岔路（预算超限/需审批）才能逼出 ledger/Metering/ask；故事测试住外层（adaptors/orchestration test），内核不知道 turn——架构裁决项（C2/SessionLoop/失败通道/RegisterStore）由裁决刀裁，故事逼不出来。
+> **地位**：develop 实施投影。规范以 [`memory/decisions-log.md`](../memory/decisions-log.md) **ADR-016** 为准。  
+> **蒸馏**：内核 = 冻结概念 + 不变量；能力 = 总线上的插头。细则在 ADR，此处一行指针。  
+> **诚实度**：[`agent-os-gap.md`](./agent-os-gap.md)（当前=kernel 切片）。v1 规格不是上级文档。  
+> **阅读序**：`CONTEXT.md` → 本文件 → [`os-handbook.md`](./os-handbook.md)（独有章）→ ADR-016。  
+> **对账存档**：[`archive/reference/`](./archive/reference/)（已吸入 ADR，不是规范）。
+
+沿数据流垂直切片。DONE 由 §8.5 与 conformance 定义。内核不知道 turn。
 
 ---
 
@@ -21,7 +22,23 @@
 ```
 
 **底板 = 内核三件**。**依赖**：外→内；内不依赖外。② 是插头，不是①的父亲。
-（④ 路由环已并入 ③——环的判据是「有独立不变量与独立替换边界」，三个默认透传决策函数不够格独占一环；ADR-016 第八轮。）
+（④ 路由环已并入 ③；ADR-016 第八轮。）
+
+Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
+
+```text
+ Agent 态 ≈ 用户态：Loop / Team / Slash / UI
+        │  唯一通道 syscall（TurnContext）
+ ╔══════╧══════╗
+ ║ 能力总线     ║  取消 → 卫兵 → Policy → 分发 → 卫兵 after
+ ╠═════════════╣
+ ║ Inbox/claim · entries · registers · ledger · 主体×命名空间
+ ╚══════╤══════╝
+        │  端口 ≈ HAL
+ ② 插头：llm.* / execution.* / Store / Claim / Policy / Metering
+        │
+ 外部世界：LLM API · 文件系统 · Shell · SQLite
+```
 
 ---
 
@@ -62,7 +79,7 @@
 ### 3.3 ③ 编排缝（一行 + 指针）
 
 `LoopRuntime`（三态 idle|maintenance|running；维护窗强制上限与 latch；抢占边界）· `SubagentAdaptor`（工具对父有效集只减不增；delegationDepth 单调下界；取消拓扑）· `TeamAdaptor`（preset 图）· `LongTaskAdaptor`（预约-复核；终态消息溯源）· `PromptAssembly`（静态 Section/动态 PromptContext 分离；技能两段懒加载；超预算丢弃出账单）· `ReasoningPresenter` · `CommandDispatcher`（local/prompt 两型）· **路由三决策**（ThreadRouter 贴当前 / FlowRouter 选 Loop-vs-preset / ModelRouter 透传选型）。
-细则：ADR-016 第一/三/四轮与 docs/*-reference.md §3。
+细则：ADR-016 第一/三/四轮。对账存档见 [`archive/reference/`](./archive/reference/)。
 
 ### 3.4 ⑤/② 支撑服务（非内核契约）
 
@@ -159,8 +176,8 @@ legacy/             v1 只读标本
 | **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY） | 代码审计二 C1 | kernel 端口演化 | ✅ 已落码（第九轮：`ApprovalStore` 同步重试式 ask + 严格单次 consume） |
 | **未装配 Policy 的默认语义**（现默认 ALLOW=fail-open；须裁 deny/显式 NoPolicy/ask） | 代码审计二 C2 | kernel 端口演化 | ✅ 已落码（第九轮：fail-closed，未装配 Policy/审批通道即拒） |
 | **失败双通道契约**（异常通道 catch 方与日志归属未定义） | 代码审计二 C3 | kernel 端口演化 + ③ Loop | ◐ 通道契约已定（第九轮：拦截三异常→调用方；执行失败→ok=false+errorCode）；事件落账归属随「总线自动落事件」项与③ 同裁 |
-| **总线是否自动落 TOOL_CALL/TOOL_RESULT 事件**：现设计=③ 编排落 entries（总线不耦合事件类型）；备选=总线自动追加（journal 更强）；gnex3 输入=tool/call **先落日志再执行**（崩溃留孤儿 call，replay 可识别 interrupted） | 内核架构图待验点 1（kernel-layer.md）+ gnex3 | ③ Loop 落地时裁 | 挂账 |
-| **registers 是否建通用 RegisterStore 端口**：Inbox 租约表已是事实寄存器；分支 leaf/模型配置未建模（统一端口 vs 各设施自管） | 内核架构图待验点 4 | kernel 端口演化刀 | 挂账（本刀未触及，随③ Loop 选型再裁） |
+| **总线是否自动落 TOOL_CALL/TOOL_RESULT 事件**：现设计=③ 编排落 entries；备选=总线自动追加；gnex3=先落日志再执行 | 底板待验 + archive/gnex3 | ③ Loop 落地时裁 | 挂账 |
+| **registers 是否建通用 RegisterStore 端口** | 原短图待验点 4 | 随 ③ Loop 选型再裁 | 挂账 |
 | **SessionLoop 会话串行域**：无条件=状态面串行化；条件=maintenance 物理独占（仅当 ③ 事件驱动化）；裁决真问题=③ Loop 选型（倾向阻塞式+显式门）。全案 netty-reference §2.6 | 用户提案 + Netty | kernel 端口演化（与上三条同刀） | 挂账（本刀未触及，裁决依赖③ Loop 选型） |
 | **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动（黑盒变换与断言冲突）；缝可逆 | 选型问询 + 五参照 + gnex3（反面标本：其 model 层走 Spring AI，wire 零可观测） | `llm.*` 断言切片 | ◐ 已裁决（第十轮：自研双协议族——Anthropic Messages + OpenAI Chat Completions 投影自研，Spring AI ChatModel 不进 `llm.*` 路径；工具/MCP 面随 O5 另裁）；落码随 `llm.*` 断言切片 |
 | **timer 基础设施**：per-domain PQ 起步，>万级升时间轮；解「死租约可回收」 | Netty §2.1 | ① session | 挂账 |

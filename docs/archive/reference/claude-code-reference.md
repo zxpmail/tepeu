@@ -1,6 +1,6 @@
 # Claude Code 源码对 Tepeu OS 的启示（对账与吸收清单）
 
-> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](./os-baseplate.md) 为准；本文只回答「CC 怎么解决的、tepeu 该吸收什么、该防什么」。
+> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../../../memory/decisions-log.md) + [os-baseplate.md](../../os-baseplate.md) 为准；本文只回答「CC 怎么解决的、tepeu 该吸收什么、该防什么」。
 > **来源**：`E:\work\claude-code-main`（claude-code-best v2.8.4，Claude Code 完整工程化复原，TypeScript）。2026-08-16 六路源码探查（Loop / 会话日志与压缩 / 子代理 / Prompt 组装 / 权限与 Hook / Slash 与技能）。证据为 CC 仓库内 `文件:行号`，可回查。**证据链弱点**：该目录不是 git 仓库，无法钉 commit——版本号 + 探查日期只是弱钉，行号会随后续更新漂移；引用以机制为准、行号为辅。§7 是对本文件自身的严苛驳斥轮，两处冲突以 §7 为准。
 
 ---

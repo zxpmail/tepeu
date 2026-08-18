@@ -1,9 +1,6 @@
 # tepeu 距 Agent OS 还差什么
 
-> **地位**：诚实度对照（非 Product-Spec 承诺、不开新裁决）。  
-> **姿态**：未实现者不以现状宣称；类名 / 端口 / 对账轮 ≠ OS 成形。  
-> **规范真相**：ADR-016 + [`os-baseplate.md`](./os-baseplate.md)；挂账销账见 §8.5。  
-> **吸收纪律**：[`work-docs-absorption.md`](./work-docs-absorption.md)（只吸闸门与诚实）。  
+> **地位**：诚实度对照。规范 ADR-016 + [`os-baseplate.md`](./os-baseplate.md)；独有章 [`os-handbook.md`](./os-handbook.md)。v1 规格不是上级文档。  
 > **日期**：2026-08-18。
 
 ---
@@ -77,6 +74,7 @@
 - 「内核端口齐了 / 对账多轮了 → OS 成形」  
 - 「conformance 全绿 → 能跑 Agent」  
 - 「v1.0 已发布 → os/ 成熟」（legacy 标本，非 os/）  
+- 「Product-Spec §1.1 / README 旧完成栏 → 完整 OS 已交付」  
 - 「有审批端口 → 完成证据门已过」  
 - 五层未钉死时对外使用「Agent OS 已可演示 / 已成形」
 
@@ -87,3 +85,6 @@
 | 日期 | 说明 |
 |------|------|
 | 2026-08-18 | 初版：总判 + 五层最低条 + 成色债 + 禁止口径 |
+| 2026-08-18 | 口径：Product-Spec = v1 产品圣经；禁止用规格 §1.1 宣称 OS 已交付 |
+| 2026-08-18 | 挂 [`os-handbook.md`](./os-handbook.md)（缺章投影，不开新裁决） |
+| 2026-08-18 | 蒸馏：短图并入底板后删除；参照进 archive |

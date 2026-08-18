@@ -1,6 +1,6 @@
 # AIOS 对 Tepeu OS 的启示（对账与镜鉴）
 
-> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](./os-baseplate.md) 为准。
+> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../../../memory/decisions-log.md) + [os-baseplate.md](../../os-baseplate.md) 为准。
 > **来源**：`E:\work\AIOS-main`（AIOS: AI Agent Operating System，Rutgers agiresearch，COLM 2025 论文实现，Python + 261 行 Rust 脚手架；本快照为 v0.2.2 后 hooks 化重构版）。2026-08-16 四路源码探查（syscall 层 / 调度器 / 上下文与记忆存储 / LLM·工具·hooks·Rust）。非 git 仓库，日期弱钉。
 > **四参照定位**：CC（agent 巨石）· Pi（agent 极简）· TriniOS（真 OS 镜鉴）· **AIOS（同名学术前辈）**——「LLM as OS, Agents as Apps」的原命题者，tepeu 概念最直接的先行实现。
 

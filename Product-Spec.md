@@ -1,12 +1,17 @@
-# Tepeu — Agentic Operating System
+# Tepeu — Agentic Operating System（v1.0 产品规格档案）
 
-产品规格说明书 (Specification)
+<!-- ARCHIVE: v1 product spec. NOT develop OS. Develop spec = ADR-016 + docs/os-baseplate.md. Seven-layer / four-agent / Spring AI ChatModel / WASM+V8 / memory-P0 are NOT os/ current. Do not move this file (Forge spec-before-code-gate). -->
 
 版本: v1.0.0
-状态: 正式发布
+状态: v1.0 冻结（工作台 / Harness）；**不是** develop 的 OS 规范
 日期: 2026-07-05
 作者: Tepeu Team
 协议: Apache 2.0
+
+> **文档地位（2026-08-18）**：本文件是 **v1.0 产品规格**（七层 Harness、工作台、路线图）。  
+> **develop 重写**的 OS 规范以 [`memory/decisions-log.md`](memory/decisions-log.md) **ADR-016** + [`docs/os-baseplate.md`](docs/os-baseplate.md) 为准。  
+> 现状与禁止口径：[`docs/agent-os-gap.md`](docs/agent-os-gap.md)（当前 = kernel 切片）。  
+> **冲突时 ADR-016 为准。** 不得单独引用本节 §1.1 宣称「OS 已成形 / 已交付完整操作系统」。v1 行为标本见 `legacy/`。
 
 ---
 
@@ -14,9 +19,13 @@
 
 ### 1.1 项目定位
 
-Tepeu 是一个开源的通用智能体操作系统（Agentic OS），专为个人知识工作者和企业团队设计。它不是一个聊天应用，不是一个 LLM 封装器，而是一个完整的、可交付的操作系统级平台。
+**目标态（愿景）**：做成开源的通用智能体操作系统（Agentic OS）——不是聊天应用，不是 LLM 封装器。
 
-**核心理念：模型是 CPU，Tepeu 是操作系统。**
+**核心理念：模型是 CPU，Tepeu 是操作系统。** 这是愿景，不是对 v1.0 或 develop 现状的描述。
+
+**v1.0（本规格正文所交付）**：个人工作台 + Harness（对话、工具、记忆、自主调度、市场、技能脚本）。规格里程碑名称含「Agentic OS」，**不等于**完整 OS 已交付。
+
+**develop**：按 ADR-016 重建内核；分层、主体、模型通道、记忆话术以重写文档为准，不以本章七层 / 四智能体 / Spring AI 路径为准。
 
 ### 1.2 命名由来
 
@@ -27,6 +36,12 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 ### 1.3 愿景声明
 
 让每个人和企业都能拥有一个专属的智能体操作系统，将想法转化为行动，将对话转化为交付。
+
+这是**愿景**，不是对 v1.0 或 develop 现状的描述。现状见 [`docs/agent-os-gap.md`](docs/agent-os-gap.md)。
+
+---
+
+> **档案边界**：以下 §2–§11 是 **v1.0 产品规格正文**（工作台 / Harness）。除各节已加的 develop 注记外，不要把模块表、七层图、四智能体、智能路由、记忆 P0 读成 `os/` 已具备。develop 以 ADR-016 为准。
 
 ---
 
@@ -51,7 +66,7 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 - Agent 通过工具创建任务 → 日历应用实时更新
 - 数据一致性是强制约束，而非可选特性
 
-### 3.2 原则二：个人与企业数据隔离
+### 3.2 原则二：个人与企业数据隔离（v1「四智能体」；非 os/）
 
 采用"四智能体"架构，实现个人资产与企业资产的清晰边界：
 
@@ -64,9 +79,11 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 
 **核心规则**：企业只能在任务执行过程中，通过任务智能体临时调用个人的特定能力（如代码审查），但无权访问或留存个人知识。
 
-> **Phase 排期**：四智能体架构属 Phase 2 企业能力。Phase 1（v0.1.0）仅实现个人智能体；企业/岗位/任务智能体推迟到 Phase 2。
+> **Phase 排期**：四智能体架构属 v1 规格的 Phase 2 企业能力；v1 仅实现个人智能体。**develop** 主体模型是 Principal × Namespace + 兜底 Agent（ADR-016），不要用本表描述 `os/`。
 
 ### 3.3 原则三：白盒记忆
+
+> develop：记忆平面未立则产品话术闭嘴（[`docs/agent-os-gap.md`](docs/agent-os-gap.md) §3 / P0-b）。下列条款仍属 **v1 规格承诺**，不是 os/ 已具备的宣称。
 
 记忆的生成、存储、检索和修改全程可视化、可追溯：
 
@@ -89,18 +106,20 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 
 - 每项任务的 Token 消耗精确计量
 - 按项目/按用户/按时间段汇总统计
-- 智能路由：简单任务用轻量模型，复杂任务用旗舰模型
+- 智能路由：简单任务用轻量模型，复杂任务用旗舰模型（**v1 意向。** develop：`ModelRouter` 默认透传 `providerId`，不做简单/复杂自动选模——ADR-016）
 - 提供预算告警机制
 - **Phase 1 最小视图**：每个 workspace 提供累计 Token/成本显示（完整成本仪表盘见 M2.4）
   - **实现状态（2026-08-02）**：会话级用量 + workspace 累计（`GET /api/workspace/:id/stats`）+ **成本仪表盘/预算告警/硬门禁**（`GET /api/workspace/:id/cost`、`PUT .../budget`，顶栏告警徽章）已落地（M2.4 / Phase 8）
 
 ---
 
-## 四、功能架构
+## 四、功能架构（v1 档案）
 
-### 4.1 七层 Harness 架构
+### 4.1 七层 Harness 架构（v1 档案，非 os/）
 
-Tepeu 基于成熟的七层 Agent Harness 架构设计：
+> **v1 概念架构。** develop 分层是洋葱四环（①内核 → ②插头 → ③编排 → ⑤应用），见 [`docs/os-baseplate.md`](docs/os-baseplate.md)。不要把七层与四环混称，也不要用 L1–L7 描述 `os/`。
+
+Tepeu v1 基于七层 Agent Harness 架构设计：
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -131,6 +150,8 @@ Tepeu 基于成熟的七层 Agent Harness 架构设计：
 
 ### 4.2 功能模块清单
 
+> **v1 产品模块**（当时的 P0/P1/P2）。不是 develop `os/` 已交付清单。记忆系统 P0 受 develop P0-b 约束：无平面则话术闭嘴。
+
 | 模块 | 功能 | 优先级 |
 |------|------|--------|
 | Web 工作台 | 多面板布局、主题切换、文件浏览 | P0 |
@@ -147,9 +168,9 @@ Tepeu 基于成熟的七层 Agent Harness 架构设计：
 
 ---
 
-## 五、技术架构
+## 五、技术架构（v1 档案）
 
-### 5.1 整体技术栈
+### 5.1 整体技术栈（v1 档案；Spring AI 非 os/ llm.*）
 
 | 层级 | 技术选型 | 版本 | 理由 |
 |------|---------|------|------|
@@ -159,9 +180,9 @@ Tepeu 基于成熟的七层 Agent Harness 架构设计：
 | UI 框架 | Web UI（SPA，参考 pi-web 设计） | — | 浏览器访问，无需安装客户端 |
 | 运行时 | Java | 21 | 虚线程（Virtual Threads）支持 |
 | 后端框架 | Spring Boot | 4.0+ | 支持 Spring AI 2.0，企业级 Java 生态 |
-| AI 集成 | Spring AI | 2.0.0 (GA) | 官方 MCP 协议支持，需 Spring Boot 4.0 |
+| AI 集成 | Spring AI | 2.0.0 (GA) | **v1 路径。** develop：`llm.*` 不走 Spring AI ChatModel（ADR-016 第十轮，自研双协议族） |
 | Agent 工具 | 自研 `@Tool`（FileTools / ShellTools） | — | Spring AI 2.0 ToolCallback 装饰器路径；未接入 agent-utils |
-| Agent 运行时 | WebAssembly + V8（规划中，见 Phase 3） | — | ~6ms 冷启动，进程隔离 |
+| Agent 运行时 | WebAssembly + V8（v1 规划） | — | develop 技能脚本见 ADR-015（GraalJS；原生 WASM 延后） |
 | 数据库 | SQLite + 文件系统 | — | 开箱即用，无需额外部署 |
 | 协议 | MCP + SSE + REST | — | 标准化 + 实时通信 |
 | 部署 | Docker + 单 JAR | — | 跨平台，一键启动 |
@@ -170,7 +191,7 @@ Tepeu 基于成熟的七层 Agent Harness 架构设计：
 
 ### 5.2 系统架构图
 
-#### 5.2.1 Phase 1 架构（当前）
+#### 5.2.1 v1 Phase 1 架构（当时「当前」；legacy 标本）
 
 ```
 ┌─────────────────────────────────────────────────────────┐

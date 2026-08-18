@@ -1,6 +1,6 @@
 # TriniOS 对 Tepeu OS 的启示（对账与镜鉴）
 
-> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](./os-baseplate.md) 为准。
+> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../../../memory/decisions-log.md) + [os-baseplate.md](../../os-baseplate.md) 为准。
 > **来源**：`E:\work\TriniOS-master`（AI-First Operating System，Mach 微内核方向，GNU Mach 基座，BSD 3-Clause，Phase 0–2）。2026-08-16 直接源码阅读（仓库 932K / kernel 侧 ~6000 行 C，无需 fan-out）。
 > **与前两参照的关系**：CC（agent 巨石）与 Pi（agent 极简）都是 tepeu 的**同域**参照；TriniOS 是**异域同题**——真 OS 里把 LLM 操作做成一等公民（`servers/ai` LLM 推理服务器 + 内核 ASI 接口）。方向相反的同一命题：tepeu 借 OS 隐喻建 agent 内核，TriniOS 在真 OS 上加 AI syscall。
 

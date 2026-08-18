@@ -1,9 +1,9 @@
 # gnex3 对 Tepeu 的启示（影子时间线参照）
 
-> **地位**：参照材料，不是规范；gnex3 是**平行设计语料**（零代码），非运行时、非依赖、非竞品承诺。裁决以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](../os-baseplate.md) 为准。
+> **地位**：参照材料，不是规范；gnex3 是**平行设计语料**（零代码），非运行时、非依赖、非竞品承诺。裁决以 [ADR-016](../../../memory/decisions-log.md) + [os-baseplate.md](../../os-baseplate.md) 为准。
 > **来源**：`E:\work\gnex3`（80 份 SDD、8337 行、2026-08-17 单日产出，全部「实现状态：规划中」；GNEX 2.0 九服务 + dsh 组合语义融合，自研 cordis-jvm 插件内核，67 插件六层）。2026-08-18 全量探查（model/session/storage/context/agent/plugin-runtime/tools/goals-skills/delegation/enterprise 十域 + `_work/` 两份选型文档）。
 > **七参照定位**：CC 巨石 · Pi 极简 · TriniOS 真 OS · AIOS 学术同名 · OpenCode 工程同代 · Netty 工程理念源 · **gnex3 影子时间线**——第一个「同题不同解」参照：吃同一批 dsh 输入，在每个 tepeu 说「不」的地方走了「是」。价值 = 反例印证 + 规则层局部收割；**姿态由用户指令钉死：只吸取有利**。  
-> **近亲**：同姿态的 [`work-docs-absorption.md`](./work-docs-absorption.md)（`E:\work\docs` 闸门与诚实）。
+> **近亲**：同姿态的 [`work-docs-absorption.md`](../../work-docs-absorption.md)（`E:\work\docs` 闸门与诚实）。
 
 ---
 

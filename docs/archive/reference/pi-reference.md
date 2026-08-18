@@ -1,6 +1,6 @@
 # Pi 源码对 Tepeu OS 的启示（对账与吸收清单）
 
-> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](./os-baseplate.md) 为准。
+> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../../../memory/decisions-log.md) + [os-baseplate.md](../../os-baseplate.md) 为准。
 > **来源**：`E:\work\pi-main`（Pi agent harness，pi.dev / earendil-works，v0.84.2，TypeScript，10 包 monorepo）。2026-08-16 五路源码探查（agent-core / pi-ai 归一化 / 会话与压缩 / 扩展与安全 / 遥测契约与测试）。**证据链弱点**：非 git 仓库，版本号+日期弱钉，行号会漂；引用以机制为准、行号为辅。与 [claude-code-reference.md](./claude-code-reference.md)（CC=巨石参照）互补——**Pi 是极简参照，且是 tepeu `os/` 想成为的东西的 TypeScript 同行**。
 
 ---

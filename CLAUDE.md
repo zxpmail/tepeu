@@ -92,20 +92,22 @@ description: Comprehensive CLAUDE.md template — 通用行为规则 + 项目填
 
 ```
 Runtime: Java 21
-Framework: Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18 + Vite 6 + Tailwind CSS 4
-Package Manager: Maven 3.9.x（backend）/ npm 11.x（frontend）
-Database: SQLite（WAL，JdbcTemplate）
+Mainline: os/（Maven 3.9.x；现 kernel + adaptors；llm/ 规划）
+Database: SQLite WAL（schema 未写；conformance 现为内存）
+llm.*: 禁止 Spring AI ChatModel（ADR-016 第十轮）
 ```
+
+v1 工作台（`legacy/` / `main`，禁止当 `os/` 现状）：Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18 + Vite 6 + Tailwind CSS 4。
 
 ## ✏️ 项目结构（develop 重写阶段）
 
 ```
 os/               重写主线：OS 骨架（kernel / adaptors / orchestration / routing / compose）
 legacy/           v1 只读标本（backend / frontend / experiments / scripts）——禁止加功能
-docs/             底板与图示（os-baseplate.md · kernel-layer.md）+ 文章
+docs/             底板（os-baseplate.md）· 手册独有章 · 诚实度 · archive/
 memory/           项目记忆与交接
-Product-Spec.md   产品规格
-DEV-PLAN.md       交付切片计划
+Product-Spec.md   v1 产品规格档案（Forge 门要求根目录；不是 develop 规范）
+DEV-PLAN.md       v1 交付切片档案
 CONTEXT.md        进度快照
 ```
 
@@ -132,13 +134,13 @@ CONTEXT.md        进度快照
 
 **离开前** — 更新 `memory/handoff.md`：当前阶段、已完成/待办项、blocker、变更文件、关键 ADR。
 
-**到达后** — 按序读取（不依赖聊天历史）：`handoff.md` → `project-memory.md` + `decisions-log.md` → `DEV-PLAN.md` 当前章节 → `.forge/active-scope.json` → `.forge/trace/phase-N.json` → 此文件。
+**到达后** — 按序读取（不依赖聊天历史）：`handoff.md` → `CONTEXT.md` → `docs/os-baseplate.md` + `docs/agent-os-gap.md` → `project-memory.md`（**develop**）+ `decisions-log.md`（**ADR-016**）→ 此文件。`Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 排期。v1 工作台记忆在 `docs/archive/v1/project-memory-v1.md`。`.forge/active-scope.json` 若存在则再读。
 
 ## 记忆系统
 
 | 文件 | 用途 | 读取 | 更新 |
 |------|------|------|------|
-| `project-memory.md` | 架构、约束、已知坑点 | Session 启动 | 任务完成后 |
+| `project-memory.md` | develop 架构、约束、坑点（v1 标本在 archive） | Session 启动 | 任务完成后 |
 | `decisions-log.md` | ADR 格式架构决策 | Session 启动 | 决策做出时 |
 | `task-history.md` | 最近任务摘要（30 条） | Session 启动 | 任务完成后 |
 

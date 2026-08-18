@@ -1,6 +1,6 @@
 # Netty 4.2 对 Tepeu OS 的启示（工程理念参照）
 
-> **地位**：参照材料，不是规范；tepeu **不把 Netty 作为运行时依赖**（不写网络层），吸收的是理念与算法。裁决以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](../os-baseplate.md) 为准。
+> **地位**：参照材料，不是规范；tepeu **不把 Netty 作为运行时依赖**（不写网络层），吸收的是理念与算法。裁决以 [ADR-016](../../../memory/decisions-log.md) + [os-baseplate.md](../../os-baseplate.md) 为准。
 > **来源**：`E:\work\netty-4.2`（Netty 4.2.18.Final-SNAPSHOT 源码）。2026-08-16 单路深查（时间轮 / 泄漏检测 / 背压 / 传输抽象 / 管线 / 执行模型 + 杂项）。非 git 仓库，版本弱钉。
 > **六参照定位**：CC 巨石 · Pi 极简 · TriniOS 真 OS · AIOS 学术同名 · OpenCode 工程同代 · **Netty 工程理念源**——第一个非 agent 域参照，价值在「带卫兵的事件驱动内核」怎么做工业级。
 

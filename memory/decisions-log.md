@@ -120,7 +120,7 @@
      - **有序 Inbox / claim**：活如何进入本会话、由谁领取进入 turn（禁止编排器私自「旁路拼消息」）。
      - **会话关系**：主/子会话（话题枝）、`parentId` / 分叉点等；单调序号属日志实现细节。
      无 Inbox 契约则只有账本、没有进场规则，编排器会再次耦合。
-  - **分层位置（由内向外；实施底板 [`docs/os-baseplate.md`](../docs/os-baseplate.md)，短图 [`docs/kernel-layer.md`](../docs/kernel-layer.md)；规范以本 ADR 为准）**：  
+  - **分层位置（由内向外；实施底板 [`docs/os-baseplate.md`](../docs/os-baseplate.md)；规范以本 ADR 为准）**：  
     **① 内核三件**（总线入口 = 钩〔**Policy + 卫兵**：超时/取消/不变量/**配额限流**〕，实现属②；会话含主/子与**日志替换端口**；日志禁明文 secret）  
     → **② 适配环**（驱动插头，清单见底板 §3.1；含 Tool、MCP、**Compaction**、AuditSink、Metering…）  
     → **③ 编排环**（兜底 Agent、Loop、Team/Subagent/LongTask、PromptAssembly、ReasoningPresenter、Command）  
@@ -246,7 +246,7 @@
   - **OS 类比诚实度**：当前内核 = syscall 表 + 事件日志 + 卫兵（journal-first），**不是**完整 OS。以下为**显式债务**，不许靠类比暗示已具备：调度公平/优先级队列、Agent 资源隔离边界（超时/取消只是部分覆盖）、运行中能力撤销（会话中途吊销工具授权，已发 syscall 如何处置）、日志 tamper-evidence（哈希链）。
   - **待裁决（Open）**：append-only 会话日志 vs 删除权（GDPR/个保法）——候选 crypto-shredding（按租户密钥加密日志段，删租户=销毁密钥）；未裁决前不得声称合规。
 - **Decision — CC 源码对账落位（2026-08-16 第四轮严苛对账）**:
-  > 参照 `docs/claude-code-reference.md`（claude-code-best v2.8.4 源码六路探查 + 严苛驳斥轮）。CC 为同构实现的压力测试参照；已冻方向（封闭 union、合成闭合、journal-first、单调 delegationDepth）获同构印证，下列为本轮新裁决与修正。
+  > 参照 `docs/archive/reference/claude-code-reference.md`（claude-code-best v2.8.4 源码六路探查 + 严苛驳斥轮）。CC 为同构实现的压力测试参照；已冻方向（封闭 union、合成闭合、journal-first、单调 delegationDepth）获同构印证，下列为本轮新裁决与修正。
   1. **`llm.*` 断言规范形态（修正第三轮第 1 条的字面表述）**：断言目标 = `derive(log) ∘ normalize == sent` 逐字节相等；`normalize` 是**版本化纯函数**（provider 侧合法变形——连续 user 合并、media 上限剥离、cache_control 逐请求布点——只准发生在其中），版本号随事件落日志。禁止无版本、无记录的黑盒归一化：字面断言会误伤合法发送，黑盒断言会漏真漂移。
   2. **syscall 注册表规范序（内核不变量）**：能力总线 syscall 枚举序**确定且稳定**——工具数组顺序是缓存键与 `llm.*` config 相等断言的组成部分；禁止实现迭代序（HashMap 等）泄漏进断言。
   3. **卫兵组合代数**：多卫兵/多 hook 决策聚合 **deny > ask > allow** 格；任何 allow（含卫兵或编排器的批准）**不得**越过 Policy 的 deny/ask（「批准压不过拒绝」）；组件异常一律规范化为 deny（沿 fail-closed）。
@@ -260,13 +260,13 @@
   11. **maintenance 窗口两细则**：maintenance 有**强制上限**（超时让位给等待中的 now 级消息）；唤醒 latch = 开窗时快照 Inbox 水位，闭窗时重放其后到达的 now/next 消息进 claim 队列。
   12. **CommandDispatcher 端口两型**：③ 端口只见 `local`/`prompt`；UI 面板命令 = ⑤ 向 ③ 注册的 local 命令处理器（内不依赖外，照旧）。
 - **Decision — Pi 源码对账落位（2026-08-16 第五轮严苛对账）**:
-  > 参照 `docs/pi-reference.md`（Pi agent harness v0.84.2 五路探查，严苛节内置）。Pi 为极简参照（tepeu `os/` 的 TS 同行）；v3 之坑反证 tepeu 已冻决定，format-4 与 tepeu 趋同。本轮裁决：
+  > 参照 `docs/archive/reference/pi-reference.md`（Pi agent harness v0.84.2 五路探查，严苛节内置）。Pi 为极简参照（tepeu `os/` 的 TS 同行）；v3 之坑反证 tepeu 已冻决定，format-4 与 tepeu 趋同。本轮裁决：
   1. **会话设施三 store 化（修正内核三件第 3 项表述）**：事实设施拆为三个显式存储职责——**entries**（append-only 对话事实+审计；模型可见⟺可还原者皆在此；surface 替换只在此层）、**registers**（覆盖写可变状态：Inbox/claim 租约、分支 leaf、模型/思考档配置、进行时操作状态；**恢复=点查非重放**）、**ledger**（append-only 用量记账：token/费用）。「每个载荷恰好属于三者之一，没有第四个地方」（Pi format-4「no third place」）。Inbox/claim 的寄存器形态自此说破（原为隐含）。
   2. **配置与编排禁入事件词汇表（长期闸门）**：model_change / 思考档位 / 工具集切换等配置类状态一律走寄存器，不产生会话事件。现 `SessionEventType`（8 类）已合规，无需迁移；此为词汇表演进的否决项（Pi v3 把配置写进树、format-4 判错的教训）。
   3. **Policy 与 Sandbox 分工写明**：**Policy = 授权**（谁可请求什么；封闭 union；进程内判定，fail-closed）；**Execution/SandboxPolicy = 隔离**（OS 级机制在 spawn 点执行，完备性 full|partial 如实报告）。Policy 永不冒充隔离边界——「半吊子进程内沙箱比没有更危险」的批评（Pi security.md）据此吸收为**分工**而非取消。
   4. **裁决限期落码（工程规矩）**：每条新裁决须指认落码切片；**连续两轮未落码的裁决标「悬置」**，悬置裁决不得作为后续裁决的前提。防底板演化为「2941 行规范对 796 行实现」的 Pi harness 空壳形态。
 - **Decision — OpenCode 对账落位（2026-08-16 第六轮严苛对账）**:
-  > 参照 `docs/opencode-reference.md`（OpenCode v1.18.18 五路探查）。其 EventV2 与 tepeu ① 已冻决定逐条同构（seq 连续 / 未知 die / 幂等重放 / 事务内投影），生产级印证，不另立条。本轮两裁决：
+  > 参照 `docs/archive/reference/opencode-reference.md`（OpenCode v1.18.18 五路探查）。其 EventV2 与 tepeu ① 已冻决定逐条同构（seq 连续 / 未知 die / 幂等重放 / 事务内投影），生产级印证，不另立条。本轮两裁决：
   1. **事件词汇表机制（补 §9 立规，三件）**：① **per-type 版本化**——事件 schema 变更时 bump 该类型 `version`，持久化键为 `type.version`；旧版本定义保留专供历史 decode，当下发布走 `latest`。② **显式 manifest**——词汇表为编译期聚合清单（含对外暴露子集），重复定义启动即失败。③ **数量钉死测试**——manifest 成员与数量由测试断言，新增事件必须显式改测试（防词汇静默漂移；OpenCode 85→88 计数测试先例）。未知 type/version 仍 required-fail（沿第三轮立规）。**落码切片（按第五轮 C3 纪律指认）：② conformance 套件——SessionEventType manifest 钉死测试。**
   2. **A2 备注（不改裁决）**：OpenCode 实例级 always 记忆的跨 session 泄漏（A 会话批准 B 会话生效）是第四轮 A2 拒绝理由的**活例证**。若将来 UX 实测逼宫需解禁「记住」，唯一可接受形态 = **工具在 ask 时声明可记 pattern + 会话内 + 不跨 session + 显式 expiry**；届时另行裁决，不得静默引入。
 - **Decision — 设计审计落位（2026-08-16 第七轮严苛审计）**:
@@ -296,7 +296,7 @@
   7. **`SessionRegistry` → `SessionStore` 改名**，对齐底板 §3.1 与第八轮内核必需端口四件套之名（SessionStore / InboxClaim / Policy·ApprovalStore / Metering）。
   8. **总线五道闸定序**：取消 → 卫兵 before → Policy（含同步重试式审批）→ handler → 卫兵 after；conformance 钉死「卫兵中断时 Policy 不被调用」。`GuardHook` verdict 载体（deny>ask>allow 组合代数）与 syscall 注册表确定性规范序**本刀未触及**，仍挂账；registers/RegisterStore 与 SessionLoop 两挂账裁决依赖 ③ Loop 选型，随 ③ 同裁。
 - **Decision — gnex3 对账 + LlmProvider 选型 + 断言形态升格（2026-08-18 第十轮，对账轮——纯文档，落码随下刀）**:
-  > 参照 `docs/gnex3-reference.md`（80 份 SDD / 8337 行全量探查；2026-08-17 单日产出的平行设计语料：gnex2 九服务 + dsh 组合语义 + 自研 cordis-jvm 插件内核，零实现）。定位 = **影子时间线**：吃同一批 dsh 输入，在每个 tepeu 说「不」的地方走了「是」——规范先行 8337:0、生态自研、67 插件接口森林、model 层接受 Spring AI 黑盒。姿态由用户指令钉死：**只吸取有利**。本轮纯文档（用户指令「只写文档不写代码」），三裁决的落码切片统一指认 `llm.*` 断言切片。
+  > 参照 `docs/archive/reference/gnex3-reference.md`（80 份 SDD / 8337 行全量探查；2026-08-17 单日产出的平行设计语料：gnex2 九服务 + dsh 组合语义 + 自研 cordis-jvm 插件内核，零实现）。定位 = **影子时间线**：吃同一批 dsh 输入，在每个 tepeu 说「不」的地方走了「是」——规范先行 8337:0、生态自研、67 插件接口森林、model 层接受 Spring AI 黑盒。姿态由用户指令钉死：**只吸取有利**。本轮纯文档（用户指令「只写文档不写代码」），三裁决的落码切片统一指认 `llm.*` 断言切片。
   1. **LlmProvider = 自研双协议族**：Anthropic Messages + OpenAI Chat Completions 两族投影自研（canonical→wire 版本化纯函数投影），传输层后续薄壳（JDK HttpClient 或官方 SDK，一族一刀后续裁）；**Spring AI ChatModel 不进 `llm.*` 路径**——legacy 实测其 wire 转换/工具循环/schema 生成全黑盒（零 preparedRequest 可观测、无 cache_control、工具序=bean 序），红线 §6-6 逐字节断言在其上结构性不可验证；legacy 4 provider 实测塌缩为两族（DeepSeek 走 Anthropic 兼容端点、Ollama 走 OpenAI 族）；gnex3 model 层（Spring AI 单族、wire 零可观测）为反面标本。缝可逆（换 LlmTransport 实现不动契约）；Spring AI 仅工具/MCP 面不受此裁，随 Tool 契约挂账（O5）另裁。
   2. **断言形态升格为「派生式」**：`llm.*` syscall **不接收**调用方拼装的 messages——messages 恒由 `derive(log)` 派生（对 7 类事件词汇表全定义），args 只携带 config（model/system/sampling/tools）。红线 §6-1（禁旁路拼消息）与 §6-6（`derive(log) ∘ normalize == sent`）由「两条规矩」合一为「一个机制」：非日志可派生者**结构性发不出去**。断言从「入口拦截比对」升格为「结构保证 + digest 对账」：每请求 prepared digest 与 derive/normalize/project 版本号落 ledger 条目 attrs；下次调用前复核上笔（replay verify，失配=失败可见，传输零调用）。断言 v1 范围：messages（派生保证）+ tools 序（须为总线规范序子列）+ cache 布点确定性（anthropic 投影内单断点、逐次稳定）；config 独立来源（system prompt 独立校验）随 PromptAssembly 快照事件 / registers 落位后再收。normalize 细目沿第四轮 B1：版本化纯函数，provider 合法变形（连续 user 合并、media 上限剥离、cache_control 布点、toolCallId 适配）只准发生在其中。
   3. **gnex3 吸收 8 条 / 反模式不吸收 7 条**（证据与落法见参照文档 §2/§3）：吸收 = 重试协议（可重试封闭集+requestId 幂等+熔断开路禁重试）、tool/call 先落日志再执行、registers 终态单调、TIMED_OUT 一等结果、DoomLoop guard 形状（指纹归一化+NUDGE 模型可见）、usage 只增禁负禁篡改（**写失败语义 tepeu 倾向 fail-closed，与 gnex3 降级放行相反**——预算门供数源不可丢账，其形态记备选）、注册表/工具集版本化快照锁存、修剪证物保护+spill 容量纪律。不吸收 = cordis-jvm 自研内核、67 插件×三角色接口森林、冷装插件仪式、开放事件词汇表、审批无单次消费、日志背压可 DROP、Spring AI 黑盒 model 层。§8.5 新增 4 行挂账、3 行并入备注、LlmProvider 行改 ◐ 已裁决。

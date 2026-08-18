@@ -1,6 +1,6 @@
 # OpenCode 对 Tepeu OS 的启示（对账与吸收清单）
 
-> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](./os-baseplate.md) 为准。
+> **地位**：参照材料，不是规范。裁决仍以 [ADR-016](../../../memory/decisions-log.md) + [os-baseplate.md](../../os-baseplate.md) 为准。
 > **来源**：`E:\work\opencode-dev`（OpenCode v1.18.18，开源 AI coding agent，TypeScript/Bun，40+ 包 monorepo，Effect v4 基座）。2026-08-16 五路源码探查（事件总线 / 会话与撤销 / 权限与命令 / LLM 层 / 服务架构）。非 git 仓库，版本号弱钉。
 > **五参照定位**：CC 巨石 · Pi 极简 · TriniOS 真 OS · AIOS 学术同名 · **OpenCode 工程同代**——与 tepeu 技术形态最接近（本地 server + 多客户端、事件溯源内核、正在从 v1 向 v2 重写），且**它的 EventV2 内核与 tepeu ① 已冻决定逐条同构**，等于 tepeu 方向的生产级先例。
 

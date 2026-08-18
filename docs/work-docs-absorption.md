@@ -4,7 +4,7 @@
 > **姿态（用户钉死）**：**只吸收有利**——闸门与诚实纪律；功能故事 / 换栈 / 产业清单 / GNEX 验尸细节一律不进。  
 > **来源**：`E:\work\docs`（尤以 `v3.0/运行时/` 裁剪与启发总表、SessionLoop 单栈结项）。对照日期 2026-08-18。  
 > **规范真相**：ADR-016 + os-baseplate；本文不得覆盖红线。  
-> **近亲**：[`legacy-absorption.md`](./legacy-absorption.md)（v1 行为规格）；[`gnex3-reference.md`](./gnex3-reference.md)（影子时间线，同「只吸取有利」）。
+> **近亲**：[`legacy-absorption.md`](./legacy-absorption.md)（v1 行为规格）；[`archive/reference/gnex3-reference.md`](./archive/reference/gnex3-reference.md)（影子时间线，同「只吸取有利」）。
 
 ---
 

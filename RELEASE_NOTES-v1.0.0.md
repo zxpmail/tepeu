@@ -1,5 +1,7 @@
 # Tepeu v1.0.0 — Agentic OS（Product-Spec §9 Phase 3 / M3.5）
 
+> **文档口径（2026-08-18）**：本文是 **v1.0 产品里程碑**说明。名称含 Agentic OS，**不等于**完整 OS 已交付，也不描述 develop 的 `os/` 内核。现状见 [`docs/agent-os-gap.md`](docs/agent-os-gap.md)。
+
 > 功能冻结说明日期: 2026-08-07  
 > **发布状态**：源码与版本号 `1.0.0` 已对齐；本说明覆盖 **DEV-PLAN Phase 10–17** / Spec **M3.1–M3.4** 及发布收口 **M3.5**。  
 > **本机 `docker build`**：⏳ 当前开发机无 Docker CLI，镜像定义已就绪（`Dockerfile` / `docker-compose.yml`），有守护进程后须补验。  
@@ -9,9 +11,9 @@
 
 ## 概述
 
-v1.0.0 在 Harness（v0.2）之上交付 **Agentic OS 主线能力**：自主调度、细粒度工具、文件/任务事件、Slash 命令、多端布局、应用市场、技能脚本沙箱。
+v1.0.0 在 Harness（v0.2）之上交付的是**工作台能力包**：自主调度、细粒度工具、文件/任务事件、Slash 命令、多端布局、应用市场、技能脚本沙箱。
 
-**核心理念不变：模型是 CPU，Tepeu 是操作系统。**
+这是 v1 产品里程碑，**不是**完整 Agent OS，也不描述 develop 的 `os/` 内核。「模型是 CPU，Tepeu 是操作系统」仍是愿景句，不是本版本已交付的证明。
 
 相对 [v0.2.0](./RELEASE_NOTES-v0.2.0.md) 的增量见下文；v0.1 / v0.2 能力仍包含在本版本中。
 

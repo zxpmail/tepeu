@@ -1,6 +1,6 @@
 # DEV-PLAN Phase 2 实现计划 — Agent 对话（SSE 流式）【历史归档】
 
-> **状态（2026-07-18）**：本切片已交付；勿与 Product-Spec §9「Phase 2 = Harness」混淆。  
+> **存档**：v1 切片草稿。其中 ChatModel / Spring AI 默认路径与 **ADR-016 第十轮**（`llm.*` 禁 ChatModel）冲突，不得当 develop 排期。  
 > 2026-07-11 dev-builder Loading Phase 产出。当时权威为 DEV-PLAN Phase 2；本文件为其 Task 分解快照。  
 > **Foundation 已验证**：Spring AI 2.0.0 `ChatClient`/`StreamingChatModel`/`ChatModel` 在 classpath；Boot 4.0.7 无硬冲突。  
 > **Dispatch（当时）**：Backend → implementer；UI → 主 session。**现已有 git**（`zxpmail/tepeu`）；下列「无 git」表述作废。

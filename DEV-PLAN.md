@@ -1,14 +1,13 @@
 # Development Plan — Tepeu Agentic OS
 
-> This file records the project's development Phase breakdown, current progress, and remaining work.
-> A new session should read this file first to understand the project status before continuing development.
+> **develop（2026-08-18）**：本文件是 **v1.0 交付切片档案，已冻结**。当前进度与下一刀见 [`CONTEXT.md`](CONTEXT.md)；OS 规范见 ADR-016 + [`docs/os-baseplate.md`](docs/os-baseplate.md)。不要按本文件旧「下一刀」继续排期。
 
 > **命名注意（避免与 Product-Spec 混淆）**  
 > - **本文件 Phase 1–4** = v0.1.0 **交付切片**（骨架 → 对话 → 记忆/终端 → 发布）。**已完成。**  
 > - **本文件 Phase 5–9** = Product-Spec §9 **Phase 2（Harness / v0.2.0）** 交付切片（Hook → 多 Agent → MCP → 成本 → 发布）。**已完成。**  
-> - **本文件 Phase 10–18** = Product-Spec §9 **Phase 3（自主与生态 / v0.3→v1.0）** 交付切片（见下）。**Phase 10–13 已完成；下一刀 Phase 14（Slash 命令框架）。**  
-> - **Product-Spec §9 Phase 1–3** = **产品里程碑**（Phase 1≈v0.1；Phase 2=Harness；Phase 3=自主与生态）。  
-> 勿将本文件「Phase 2 对话」与 Spec §9 Phase 2（Harness）混称。
+> - **本文件 Phase 10–18** = Product-Spec §9 **Phase 3（自主与生态 / v0.3→v1.0）** 交付切片。**Phase 10–18 已完成（v1.0 收口）。**  
+> - **Product-Spec §9 Phase 1–3** = **v1 产品里程碑**（Phase 1≈v0.1；Phase 2=Harness；Phase 3=自主与生态）。  
+> 勿将本文件「Phase 2 对话」与 Spec §9 Phase 2（Harness）混称。勿将 v1 里程碑「Agentic OS」读成 develop 的 OS 已成形。
 
 ---
 
