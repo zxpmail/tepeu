@@ -1,0 +1,9 @@
+# 存档
+
+不是规范。已吸入 [ADR-016](../../memory/decisions-log.md) 的对账、v1 切片草稿、实验笔记。现行阅读序见仓库 [README](../../README.md)。
+
+| 目录 | 内容 |
+|------|------|
+| `reference/` | CC / Pi / OpenCode / AIOS / TriniOS / Netty / gnex3 |
+| `essays/` | v1 Spring AI 实验文 |
+| `v1/` | IDE shell 草稿、Phase 2 实现计划快照 |
