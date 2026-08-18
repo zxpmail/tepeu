@@ -13,8 +13,7 @@ v1 标本：[legacy/](../legacy/README.md)（只读）
 | `kernel/` | ① | 端口已落地（identity/context/session/bus） |
 | `adaptors/` | ② | 内存 Session + Bus 冒烟通过 |
 | `llm/` | ② | `llm.*` 命名族契约（canonical/derive/normalize/双协议族投影 + conformance），规划——第十轮裁决，随断言切片落码 |
-| `orchestration/` | ③ | Loop/Command/Prompt…，待实现 |
-| `routing/` | ④ | 三 Router，待实现 |
+| `orchestration/` | ③ | Loop/Command/Prompt/路由决策（`os/routing/` 待并入），待实现 |
 | `compose/` | 接线 | 开机组装，待实现 |
 
 规则：新代码只进 `os/`；禁止在 `legacy/` 加功能。

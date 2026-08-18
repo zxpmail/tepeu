@@ -1,7 +1,7 @@
 # gnex3 对 Tepeu 的启示（影子时间线参照）
 
 > **地位**：参照材料，不是规范；gnex3 是**平行设计语料**（零代码），非运行时、非依赖、非竞品承诺。裁决以 [ADR-016](../memory/decisions-log.md) + [os-baseplate.md](../os-baseplate.md) 为准。
-> **来源**：`E:\work\gnex3`（80 份 SDD、8337 行、2026-08-17 单日产出，全部「实现状态：规划中」；GNEX 2.0 九服务 + dsh 组合语义融合，自研 cordis-jvm 插件内核，67 插件六层）。2026-08-18 全量探查（model/session/storage/context/agent/plugin-runtime/tools/goals-skills/delegation/enterprise 九域 + `_work/` 两份选型文档）。
+> **来源**：`E:\work\gnex3`（80 份 SDD、8337 行、2026-08-17 单日产出，全部「实现状态：规划中」；GNEX 2.0 九服务 + dsh 组合语义融合，自研 cordis-jvm 插件内核，67 插件六层）。2026-08-18 全量探查（model/session/storage/context/agent/plugin-runtime/tools/goals-skills/delegation/enterprise 十域 + `_work/` 两份选型文档）。
 > **七参照定位**：CC 巨石 · Pi 极简 · TriniOS 真 OS · AIOS 学术同名 · OpenCode 工程同代 · Netty 工程理念源 · **gnex3 影子时间线**——第一个「同题不同解」参照：吃同一批 dsh 输入，在每个 tepeu 说「不」的地方走了「是」。价值 = 反例印证 + 规则层局部收割；**姿态由用户指令钉死：只吸取有利**。  
 > **近亲**：同姿态的 [`work-docs-absorption.md`](./work-docs-absorption.md)（`E:\work\docs` 闸门与诚实）。
 
@@ -76,7 +76,7 @@ tepeu 落法：§9 spill 条目补三属性——TTL、单条上限、证物不�
 
 ## 4. 严苛节（对 gnex3 与对 tepeu 自身）
 
-**C1 完成度剧场**。8337 行规范对 0 行实现，单日 81/81 ✅——✅ 指「文档写完」非「设计验证过」。§8 deferred 段无绑定落码切片、无逾期处置，挂账无牙齿。tepeu 的 C3 纪律（轮=落码切片轮、连续两轮未落码标悬置）正是防此病，勿松。
+**C1 完成度剧场**。8337 行规范对 0 行实现，单日 81/81 ✅——✅ 指「文档写完」非「设计验证过」（81 的计数口径与来源头「80 份 SDD」的对应待 `E:\work\gnex3` 核对）。§8 deferred 段无绑定落码切片、无逾期处置，挂账无牙齿。tepeu 的 C3 纪律（轮=落码切片轮、连续两轮未落码标悬置）正是防此病，勿松。
 
 **C2 must 清单必须交联自检**。gnex3 两处当面矛盾（§1.3）皆因各 SDD 独立填充、无人对全集做一致性裁决。tepeu 每次红线/底板变更过 §8.5 对账 + conformance 钉数的纪律保持。
 
