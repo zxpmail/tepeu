@@ -149,7 +149,7 @@
   - **Agent Loop** = 编排环可替换运行时（turn/step），不是内核。
   - **Skill 资产文件、市场 UI、记忆面板 UI** = ⑤ 应用/呈现；Skill **激活**走 ③ PromptAssembly。  
   - **Tool 实现与 MCP Bridge** = **② 适配插头**（挂能力总线），**不是**⑤，也不是「无家可归的外围」——旧称「外围积木」仅指勿进①内核。  
-  - 不引入 Cordis；宿主仍 Spring；先包级乐高 + 依赖规则，再视需要升 Maven 多模块。
+  - 不引入 Cordis；宿主仍 Spring。包级乐高已升为 Maven 多模块（第十一轮：组件 ≠ 插件）。
 - **Decision — Adaptor 缝（接口先定，默认实现先简；边界图须显式列出）**:  
   `Identity` · `OrgNamespace` · `Policy` · `AuditSink` · `Metering` · `KnowledgeSource` · `Execution` · `LlmProvider` · `Tool` · `McpBridge` · `Compaction` · `Secret` · `SessionStore` · `InboxClaim` · `ProjectionBus` · `SubagentAdaptor` · `TeamAdaptor` · `LongTaskAdaptor` · `PromptAssembly` · `ReasoningPresenter` · `CommandDispatcher` · `ThreadRouter` · `FlowRouter` · `ModelRouter`。  
   分类与单机/集群默认见 `docs/os-baseplate.md` §3。业务只依赖接口；`agentKind` 默认 `PERSONAL`。  
@@ -301,5 +301,22 @@
   2. **断言形态升格为「派生式」**：`llm.*` syscall **不接收**调用方拼装的 messages——messages 恒由 `derive(log)` 派生（对 7 类事件词汇表全定义），args 只携带 config（model/system/sampling/tools）。红线 §6-1（禁旁路拼消息）与 §6-6（`derive(log) ∘ normalize == sent`）由「两条规矩」合一为「一个机制」：非日志可派生者**结构性发不出去**。断言从「入口拦截比对」升格为「结构保证 + digest 对账」：每请求 prepared digest 与 derive/normalize/project 版本号落 ledger 条目 attrs；下次调用前复核上笔（replay verify，失配=失败可见，传输零调用）。断言 v1 范围：messages（派生保证）+ tools 序（须为总线规范序子列）+ cache 布点确定性（anthropic 投影内单断点、逐次稳定）；config 独立来源（system prompt 独立校验）随 PromptAssembly 快照事件 / registers 落位后再收。normalize 细目沿第四轮 B1：版本化纯函数，provider 合法变形（连续 user 合并、media 上限剥离、cache_control 布点、toolCallId 适配）只准发生在其中。
   3. **gnex3 吸收 8 条 / 反模式不吸收 7 条**（证据与落法见参照文档 §2/§3）：吸收 = 重试协议（可重试封闭集+requestId 幂等+熔断开路禁重试）、tool/call 先落日志再执行、registers 终态单调、TIMED_OUT 一等结果、DoomLoop guard 形状（指纹归一化+NUDGE 模型可见）、usage 只增禁负禁篡改（**写失败语义 tepeu 倾向 fail-closed，与 gnex3 降级放行相反**——预算门供数源不可丢账，其形态记备选）、注册表/工具集版本化快照锁存、修剪证物保护+spill 容量纪律。不吸收 = cordis-jvm 自研内核、67 插件×三角色接口森林、冷装插件仪式、开放事件词汇表、审批无单次消费、日志背压可 DROP、Spring AI 黑盒 model 层。§8.5 新增 4 行挂账、3 行并入备注、LlmProvider 行改 ◐ 已裁决。
   4. **落码切片指认（C3 纪律）**：`llm.*` 断言切片 = 新模块 `os/llm`（canonical 类型 / LogDeriver / SharedNormalizer / 双协议族投影 / CanonicalJson+digest / LlmGenerateHandler / LlmTransport / LlmConformance 套件）+ kernel 四处小改（`Usage` 增 cost 槽、`LedgerEntry` 增 attrs、`SessionLedger.record` attrs 重载、`CapabilityBus.registeredSyscalls()` 确定性规范序——顺销 drift 行）。fake 传输先行（离线全绿），真 HTTP 往返一族一刀后续裁。
-- **Forward**: 实施以 `docs/os-baseplate.md` + 仓库 `os/` 骨架为准；优先 **`llm.*` 传输层日志重建断言**、TurnContext、会话事件最小集（含立规五条）、PromptAssembly（含静态/动态分离）、总线+Policy（封闭 union）；Java 沙箱选型单独立项（黄灯）；本 ADR 不自动授权大范围从 legacy 搬功能，动手前按黄灯确认切片。**（第七轮追加：对账轮冻结中，下一动作 = ② conformance 切片落码。）（第九轮追加：② conformance 与 kernel 端口演化两刀已合入；下一动作 = `llm.*` 断言切片，LlmProvider 选型同刀裁。）（第十轮追加：gnex3 对账 + LlmProvider 选型（自研双协议族）+ 派生式断言形态已裁——纯文档轮；下一动作 = `llm.*` 断言切片落码：`os/llm` 新模块 + kernel 四处小改，随刀兑现本轮三裁决。）**
+- **Decision — 一切皆组件，不是一切皆插件（2026-08-22 第十一轮，结构切片）**:
+  > 用户裁决：gnex-core-v3 的调试优势是「一件事一个模块」，不是插件仪式。洋葱分层仍成立，但是**依赖规则**，不是 `kernel`+`adaptors` 两个大包。tepeu 不引入 Plugin/Ctx/热插/三角色（第十轮不吸收条款不变）。
+  1. **组件 = Maven 模块 = 一件事**（「事」= 可单独拥有/测，不是一个类型）。严苛口径：能叫组件的是 `session` / `policy` / `bus` / `compose`；`identity`/`syscall` 是词汇，`conformance` 是 harness。同日收回 `context`/`usage`/`metering` 三个类型 jar。默认实现跟组件走（`session.memory`、`bus.memory`、`policy.memory`），废除 `adaptors/` 垃圾桶。空 README 可留，空 jar 不预开。同日稍后 `os/llm` 落码，组件变为 5 个。
+  2. **协作边界 = 模块边界**：改 Inbox 只编 session；改审批只编 policy；`mvn -pl session test` / `-pl bus test` 不拉全世界。compose 只接线（`MemoryAssembly`），不偷偷 ALLOW Policy。
+  3. **内核三件仍是概念**，不是三个 jar：① = identity + session + bus（policy/syscall/guard 是门上的锁与信封，独立组件以免循环依赖与抢文件）。会话仍是一件（三 store 暂不拆模块）。
+  4. **下一刀 `llm.*` 从第一天起就是 `os/llm` 独立组件**，不倒回任何大包。第十轮「kernel 四处小改」落点改为对应组件（`usage` / `session` ledger / `bus` 注册表序）。
+- **Decision — ③ Loop 答复路径（2026-08-22 第十二轮，落码切片）**:
+  1. **选型 = 阻塞式 + 显式门**（销 SessionLoop 串行域挂账）：`SessionLoop.run` 同步执行；`loop.state` 进 `SessionRegisters`（idle|running|maintenance）；running/maintenance 中再 run = INVALID。非事件驱动，maintenance 本刀不进。
+  2. **完成 = 证据门**：`CompletionGate` 无新事件类型。REPLY 须非空 `ASSISTANT_MESSAGE`；TOOL_PAIR 须成对。SSE / idle / Todo ≠ completed。空白模型输出 = INCOMPLETE。
+  3. **entries 由 ③ 写**：总线不自动落 TOOL_CALL/TOOL_RESULT（销该挂账）。本刀主路写 USER + ASSISTANT；工具执行循环后续。拦截异常 catch 在 Loop，不写 ASSISTANT、不 completed（D6）。
+  4. **有界**：`maxSteps < 1` 在 claim 前 STOPPED。无工具则一步 generate。Loop **不** import 具体 Tool 类；syscall 名 `llm.generate` 字符串。
+  5. **registers 薄端口挂 session**，不另开 jar。快照锁存 / DoomLoop / PromptAssembly / Command 仍挂账。
+- **Decision — ③ Loop 工具循环（2026-08-22 第十三轮，落码切片）**:
+  1. **一步 = 一次 `llm.generate`**，可附带至多一次工具。模型输出首行匹配 `syscall <name>`（Loop 步进语言，**不是**第三份 LLM 投影）则走工具；否则当答复写 `ASSISTANT_MESSAGE`。真 HTTP 落码后再把 tool_use 块映射到此语言。
+  2. **先落日志再执行**（兑现 gnex3 §2.2，归属第十二轮已裁给 ③）：`TOOL_CALL` 入 entries 后才 `bus.invoke`。拦截类异常（卫兵/Policy/审批）catch 后**合成** `TOOL_RESULT`（`ok=false` + errorCode）再 FAILED——禁止孤儿 CALL。执行类 `ok=false`（含未注册 `NOT_FOUND`）写 RESULT 后继续 generate。
+  3. **不 import 具体 Tool 类**。禁止把 `llm.generate` 当工具再 invoke（STRUCTURAL + 合成 RESULT + FAILED）。工具名即总线 syscall 名。
+  4. **完成仍过 REPLY 门**。成功路径：USER + (CALL/RESULT)* + 非空 ASSISTANT。仅工具打满 `maxSteps` = STOPPED，不得 completed。DoomLoop / TIMED_OUT / 一块多 tool_use / `execution.*` 沙箱仍挂账。
+- **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。Loop 答复+工具循环已落；下一动作 = llm 真 HTTP（一族一刀），或预算硬门进往返，或 maintenance。Java 沙箱选型单独立项（黄灯）。
 

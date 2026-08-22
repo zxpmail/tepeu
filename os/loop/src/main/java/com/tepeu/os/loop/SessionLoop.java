@@ -1,0 +1,200 @@
+package com.tepeu.os.loop;
+
+import com.tepeu.os.bus.BusGuardException;
+import com.tepeu.os.bus.CapabilityBus;
+import com.tepeu.os.identity.SessionId;
+import com.tepeu.os.identity.TurnContext;
+import com.tepeu.os.policy.ApprovalRequiredException;
+import com.tepeu.os.policy.PolicyDeniedException;
+import com.tepeu.os.session.ClaimLease;
+import com.tepeu.os.session.InboxMessage;
+import com.tepeu.os.session.Session;
+import com.tepeu.os.session.SessionEventType;
+import com.tepeu.os.session.SessionStore;
+import com.tepeu.os.syscall.Syscall;
+import com.tepeu.os.syscall.SyscallResult;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * 会话主路：必经 Inbox/claim；llm.* 与工具都走总线；完成须过证据门。
+ * 阻塞式 + 显式门。不 import 具体 Tool 类。
+ * TOOL_CALL/TOOL_RESULT 由本组件写 entries，总线不自动落事件。
+ * 工具：先落 TOOL_CALL 再 invoke；拦截失败合成 TOOL_RESULT。
+ */
+public final class SessionLoop {
+
+    public static final String SYSCALL_GENERATE = "llm.generate";
+    public static final String REGISTER_STATE = "loop.state";
+
+    private final SessionStore sessions;
+    private final CapabilityBus bus;
+    private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
+
+    public SessionLoop(SessionStore sessions, CapabilityBus bus) {
+        this.sessions = Objects.requireNonNull(sessions, "sessions");
+        this.bus = Objects.requireNonNull(bus, "bus");
+    }
+
+    public TurnOutcome run(TurnContext ctx, LoopConfig config) {
+        Objects.requireNonNull(ctx, "ctx");
+        Objects.requireNonNull(config, "config");
+        Session session = sessions.get(ctx.sessionId()).orElse(null);
+        if (session == null) {
+            return TurnOutcome.invalid("session not found");
+        }
+        synchronized (lockFor(session.id())) {
+            LoopState current = readState(session);
+            if (current != LoopState.IDLE) {
+                return TurnOutcome.invalid("loop.state=" + current);
+            }
+            if (config.maxSteps() < 1) {
+                return TurnOutcome.stopped(0, "maxSteps < 1");
+            }
+            session.registers().put(REGISTER_STATE, LoopState.RUNNING.name());
+            int steps = 0;
+            try {
+                Optional<ClaimLease> leaseOpt = session.inbox().claimNext();
+                if (leaseOpt.isEmpty()) {
+                    return TurnOutcome.empty();
+                }
+                ClaimLease lease = leaseOpt.get();
+                InboxMessage msg = session.inbox().claimed(lease.claimId()).orElse(null);
+                if (msg == null) {
+                    session.inbox().nack(lease.claimId());
+                    return TurnOutcome.failed(0, "claimed message missing");
+                }
+                long userSeq;
+                try {
+                    userSeq = session.log().append(SessionEventType.USER_MESSAGE, msg.body(), attrs(msg));
+                    session.inbox().ack(lease.claimId());
+                } catch (RuntimeException e) {
+                    session.inbox().nack(lease.claimId());
+                    return TurnOutcome.failed(0, String.valueOf(e.getMessage()));
+                }
+                boolean wantsContinue = true;
+                while (wantsContinue && steps < config.maxSteps()) {
+                    steps++;
+                    SyscallResult result;
+                    try {
+                        result = bus.invoke(ctx, new Syscall(SYSCALL_GENERATE, generateArgs(config)));
+                    } catch (BusGuardException | PolicyDeniedException | ApprovalRequiredException e) {
+                        return TurnOutcome.failed(steps, e.getMessage());
+                    }
+                    if (!result.ok()) {
+                        return TurnOutcome.failed(steps,
+                                result.errorCode().orElse("FAILED") + ": " + result.output());
+                    }
+                    Optional<ToolDirective> tool = ToolDirective.parse(result.output());
+                    if (tool.isPresent()) {
+                        TurnOutcome halt = invokeTool(session, ctx, tool.get(), steps);
+                        if (halt != null) {
+                            return halt;
+                        }
+                        continue;
+                    }
+                    if (result.output().isBlank()) {
+                        return TurnOutcome.incomplete(steps,
+                                "reply requires non-blank ASSISTANT_MESSAGE");
+                    }
+                    session.log().append(SessionEventType.ASSISTANT_MESSAGE, result.output(), Map.of());
+                    wantsContinue = false;
+                }
+                if (wantsContinue) {
+                    return TurnOutcome.stopped(steps, "maxSteps reached");
+                }
+                Optional<String> refuse = CompletionGate.refuseReason(
+                        session, CompletionClaim.REPLY, userSeq);
+                if (refuse.isPresent()) {
+                    return TurnOutcome.incomplete(steps, refuse.get());
+                }
+                return TurnOutcome.completed(steps);
+            } finally {
+                session.registers().put(REGISTER_STATE, LoopState.IDLE.name());
+            }
+        }
+    }
+
+    /**
+     * @return 非 null 则中止本轮；null 表示已成对落账，继续 generate。
+     */
+    private TurnOutcome invokeTool(Session session, TurnContext ctx, ToolDirective tool, int steps) {
+        session.log().append(SessionEventType.TOOL_CALL, tool.name(), tool.args());
+        if (SYSCALL_GENERATE.equals(tool.name())) {
+            session.log().append(SessionEventType.TOOL_RESULT,
+                    "loop will not invoke llm.generate as a tool",
+                    interceptAttrs("STRUCTURAL"));
+            return TurnOutcome.failed(steps, "cannot invoke llm.generate as a tool");
+        }
+        try {
+            SyscallResult toolResult = bus.invoke(ctx, new Syscall(tool.name(), tool.args()));
+            session.log().append(SessionEventType.TOOL_RESULT, toolResult.output(), resultAttrs(toolResult));
+            return null;
+        } catch (BusGuardException | PolicyDeniedException | ApprovalRequiredException e) {
+            session.log().append(SessionEventType.TOOL_RESULT, String.valueOf(e.getMessage()),
+                    interceptAttrs(interceptCode(e)));
+            return TurnOutcome.failed(steps, e.getMessage());
+        }
+    }
+
+    private Object lockFor(SessionId id) {
+        return locks.computeIfAbsent(id.value(), k -> new Object());
+    }
+
+    private static Map<String, String> resultAttrs(SyscallResult result) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        attrs.put("ok", Boolean.toString(result.ok()));
+        result.errorCode().ifPresent(code -> attrs.put("errorCode", code));
+        return attrs;
+    }
+
+    private static Map<String, String> interceptAttrs(String errorCode) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        attrs.put("ok", "false");
+        attrs.put("errorCode", errorCode);
+        return attrs;
+    }
+
+    private static String interceptCode(RuntimeException e) {
+        if (e instanceof BusGuardException) {
+            return "GUARD";
+        }
+        if (e instanceof ApprovalRequiredException) {
+            return "APPROVAL";
+        }
+        return "POLICY";
+    }
+
+    private static LoopState readState(Session session) {
+        Optional<String> raw = session.registers().get(REGISTER_STATE);
+        if (raw.isEmpty() || raw.get().isBlank()) {
+            return LoopState.IDLE;
+        }
+        try {
+            return LoopState.valueOf(raw.get());
+        } catch (IllegalArgumentException e) {
+            return LoopState.RUNNING;
+        }
+    }
+
+    private static Map<String, String> attrs(InboxMessage msg) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        attrs.put("messageId", msg.id());
+        msg.source().ifPresent(s -> attrs.put("source", s));
+        return attrs;
+    }
+
+    private static Map<String, String> generateArgs(LoopConfig config) {
+        Map<String, String> args = new LinkedHashMap<>();
+        args.put("model", config.model());
+        args.put("family", config.family());
+        if (!config.system().isEmpty()) {
+            args.put("system", config.system());
+        }
+        return args;
+    }
+}

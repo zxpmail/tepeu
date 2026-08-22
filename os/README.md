@@ -1,25 +1,40 @@
 # os/ — Tepeu 重写骨架（develop）
 
-> **身份陈述（目标态——实现进度见下表，未实现者不以现状宣称）**：CC 一切皆内置 · Pi 一切皆安装件 · dsh 一切皆插件 · OpenCode 一切皆契约客户端 · AIOS 一切皆资源队列——**tepeu：不变量进内核，能力全在缝上**。一切都是 syscall，syscall 只有一扇门；门上焊死四样不可插拔（Policy 封闭 union + 卫兵 fail-closed、双真相 journal-first、封闭词汇表、单次许可），门外的 LLM/工具/存储/编排皆是必须过 conformance 的可换实现。别的系统回答「能做什么」，本内核回答「不允许发生什么」。（四样 = 内核三件之上的**不变量**，不是第二套清单。）
+> **身份陈述（目标态——实现进度见下表，未实现者不以现状宣称）**：不变量进内核概念，能力全是组件。组件 ≠ 插件。洋葱是依赖方向，不是两个大 jar。
 
 实施底板：[docs/os-baseplate.md](../docs/os-baseplate.md)  
-读者手册：[docs/os-handbook.md](../docs/os-handbook.md)（独有章）  
-规范：[memory/decisions-log.md](../memory/decisions-log.md) ADR-016  
-外部参照：[docs/archive/reference/](../docs/archive/README.md)（已吸入 ADR，不是规范）  
-内部资产：[legacy-absorption.md](../docs/legacy-absorption.md)（v1.0 吸收清单，切片规划输入）· [work-docs-absorption.md](../docs/work-docs-absorption.md)（`E:\work\docs` 只吸有利）· [agent-os-gap.md](../docs/agent-os-gap.md)（距 OS 还差什么）  
-v1 产品规格（[Product-Spec.md](../Product-Spec.md)）**不是**本目录规范；冲突以 ADR-016 为准。  
-v1 标本：[legacy/](../legacy/README.md)（只读）
+规范：[memory/decisions-log.md](../memory/decisions-log.md) ADR-016
 
-| 目录 | 环 | 状态 |
-|------|----|------|
-| `kernel/` | ① | 端口已落地（identity/context/session/bus） |
-| `adaptors/` | ② | 内存 Session + Bus 冒烟通过 |
-| `llm/` | ② | `llm.*` 命名族契约（canonical/derive/normalize/双协议族投影 + conformance），规划——第十轮裁决，随断言切片落码 |
-| `orchestration/` | ③ | Loop/Command/Prompt/路由决策（`os/routing/` 待并入），待实现 |
-| `compose/` | 接线 | 开机组装，待实现 |
+## 规则
 
-规则：新代码只进 `os/`；禁止在 `legacy/` 加功能。
+- **组件** = 有人能单独拥有、最好能单独测的能力。一个类型不够成组件。
+- 默认实现跟组件走。compose 只接线。空 README 可留，空 jar 不预开。
+- 新代码只进 `os/` 某模块；禁止在 `legacy/` 加功能。
+
+## 现网
+
+**组件（6）**
+
+| 模块 | 一件事 | 独立测 |
+|------|--------|--------|
+| `session/` | 会话三 store + Metering 端口 | `mvn -f os/pom.xml -pl session test` |
+| `policy/` | Policy + 审批 | — |
+| `bus/` | 总线分发 + 卫兵 | `mvn -f os/pom.xml -pl bus test` |
+| `llm/` | llm.* 派生式断言 + fake 传输 | `mvn -f os/pom.xml -pl llm test` |
+| `loop/` | claim → 有界 turn（含工具）→ 完成证据门 | `mvn -f os/pom.xml -pl loop test` |
+| `compose/` | 开机接线 | `mvn -f os/pom.xml -pl compose test` |
+
+**不是组件**
+
+| 模块 | 角色 |
+|------|------|
+| `identity/` | 词汇：谁 / 在哪 / 哪次会话 / TurnContext |
+| `syscall/` | 词汇：调用信封 + Usage |
+| `conformance/` | 测试 harness |
+
+尚未落码：maintenance / PromptAssembly / Command。`orchestration/` 仍是环索引。真 HTTP 随后一刀。
 
 ```bash
 mvn -f os/pom.xml test
+mvn -f os/pom.xml -pl loop test
 ```

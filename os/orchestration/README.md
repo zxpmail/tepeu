@@ -1,4 +1,3 @@
 # ③ 编排环
 
-兜底 Agent、Loop(turn/step)、Team/Subagent/LongTask、PromptAssembly、ReasoningPresenter、Command(Slash)。  
-缝：SubagentAdaptor / TeamAdaptor / LongTaskAdaptor 等。
+物理组件：[`../loop/`](../loop/)（SessionLoop）。Command / PromptAssembly / Team 未落码。

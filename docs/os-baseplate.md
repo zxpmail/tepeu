@@ -126,19 +126,25 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 
 ## 7. 代码骨架落点（develop）
 
+洋葱是依赖方向，不是 jar。物理单元 = **组件**（一件事一个 Maven 模块；默认实现跟组件走）。组件 ≠ 插件。
+
 ```text
 os/
-  kernel/           ① 端口与不变式
-  adaptors/         ② 接口 + 单机默认实现
-  llm/              llm.* 命名族契约：canonical/derive/normalize/双协议族投影 + conformance
-                    （规划——第十轮裁决，随 `llm.*` 断言切片落码）
-  orchestration/    ③ Loop/Command/Prompt/路由决策（os/routing/ 目录待 ③ 落地时并入）
-  compose/          开机接线
+  identity/         词汇：谁 / 在哪 / 哪次会话 / TurnContext
+  syscall/          词汇：调用信封 + Usage
+  conformance/      测试 harness
+  session/          组件：会话三 store + Metering 端口
+  policy/           组件：Policy + 审批
+  bus/              组件：能力总线 + 卫兵
+  llm/              组件：llm.* 派生式断言 + fake 传输
+  loop/             组件：③ SessionLoop（claim / 有界 turn / 工具 / 完成门）
+  orchestration/    ③ 环索引（Command/Prompt 待落码）
+  compose/          组件：开机接线
   README.md         本底板索引
 legacy/             v1 只读标本
 ```
 
-先挂目录与说明，再填实现；**禁止在 legacy/ 加功能**。
+调试：`mvn -f os/pom.xml -pl session test` / `-pl bus test` / `-pl loop test`。禁止在 `legacy/` 加功能。
 
 ---
 
@@ -175,11 +181,11 @@ legacy/             v1 只读标本
 | 抢占边界三参照收敛规则 | AIOS C4 | — | ✅ 已落 §3.1/§3.3 |
 | **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY） | 代码审计二 C1 | kernel 端口演化 | ✅ 已落码（第九轮：`ApprovalStore` 同步重试式 ask + 严格单次 consume） |
 | **未装配 Policy 的默认语义**（现默认 ALLOW=fail-open；须裁 deny/显式 NoPolicy/ask） | 代码审计二 C2 | kernel 端口演化 | ✅ 已落码（第九轮：fail-closed，未装配 Policy/审批通道即拒） |
-| **失败双通道契约**（异常通道 catch 方与日志归属未定义） | 代码审计二 C3 | kernel 端口演化 + ③ Loop | ◐ 通道契约已定（第九轮：拦截三异常→调用方；执行失败→ok=false+errorCode）；事件落账归属随「总线自动落事件」项与③ 同裁 |
-| **总线是否自动落 TOOL_CALL/TOOL_RESULT 事件**：现设计=③ 编排落 entries；备选=总线自动追加；gnex3=先落日志再执行 | 底板待验 + archive/gnex3 | ③ Loop 落地时裁 | 挂账 |
-| **registers 是否建通用 RegisterStore 端口** | 原短图待验点 4 | 随 ③ Loop 选型再裁 | 挂账 |
-| **SessionLoop 会话串行域**：无条件=状态面串行化；条件=maintenance 物理独占（仅当 ③ 事件驱动化）；裁决真问题=③ Loop 选型（倾向阻塞式+显式门）。全案 netty-reference §2.6 | 用户提案 + Netty | kernel 端口演化（与上三条同刀） | 挂账（本刀未触及，裁决依赖③ Loop 选型） |
-| **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动（黑盒变换与断言冲突）；缝可逆 | 选型问询 + 五参照 + gnex3（反面标本：其 model 层走 Spring AI，wire 零可观测） | `llm.*` 断言切片 | ◐ 已裁决（第十轮：自研双协议族——Anthropic Messages + OpenAI Chat Completions 投影自研，Spring AI ChatModel 不进 `llm.*` 路径；工具/MCP 面随 O5 另裁）；落码随 `llm.*` 断言切片 |
+| **失败双通道契约**（异常通道 catch 方与日志归属未定义） | 代码审计二 C3 | kernel 端口演化 + ③ Loop | ✅ 通道已定（第九轮）；落账归属本刀裁：③ 写 entries，总线不自动落；拦截失败不写 ASSISTANT、不 completed |
+| ~~总线是否自动落 TOOL_CALL/TOOL_RESULT 事件~~ | ~~③ 编排落 entries~~ | ✅ 已裁并落码（第十二轮归属 ③；第十三轮：先落 CALL 再 invoke，拦截合成 RESULT） |
+| ~~registers 是否建通用 RegisterStore 端口~~ | ~~随 ③ Loop~~ | ✅ 已裁（第十二轮：`SessionRegisters` 挂在 session，不另开 jar；快照锁存仍挂账） |
+| ~~SessionLoop 会话串行域~~ | ~~倾向阻塞式+显式门~~ | ✅ 已裁（第十二轮：阻塞 `SessionLoop.run` + `loop.state` 门；非事件驱动） |
+| **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动 | 选型问询 + 五参照 + gnex3 | `llm.*` 断言切片 | ✅ 契约+fake 已落码（2026-08-22：`os/llm` derive/normalize/双族投影/digest 复核）；真 HTTP 一族一刀后续裁 |
 | **timer 基础设施**：per-domain PQ 起步，>万级升时间轮；解「死租约可回收」 | Netty §2.1 | ① session | 挂账 |
 | **采样泄漏检测**（弱引用+GC 探测+1/N 采样） | Netty §2.2 | 生命周期审计切片 | 挂账 |
 | `llm.*` 重试协议：可重试分类封闭集 + requestId 幂等（流式从零重放）+ 熔断开路禁重试 | gnex3 | llm transport 切片 | 挂账 |
@@ -193,7 +199,7 @@ legacy/             v1 只读标本
 | drift | 现状位置 | 消除切片 |
 |-------|----------|----------|
 | ~~租约 TTL 记而不执~~ | ~~`InMemorySession`~~ | ✅ 已落码（时钟注入 + 惰性回收 + conformance 用例，2026-08-16） |
-| **syscall 注册表无确定性规范序**（第四轮 B2 内核不变量：注册序=缓存键组成部分；现为 ConcurrentHashMap 无序）——第四轮裁时挂账机制未立，漏登，2026-08-16 补 | `InMemoryCapabilityBus.handlers` | kernel 端口演化刀（或单开小切片） |
+| ~~syscall 注册表无确定性规范序~~ | ~~`InMemoryCapabilityBus.handlers`~~ | ✅ 已落码（ConcurrentSkipListMap + `registeredSyscalls()` + conformance，2026-08-22） |
 | `GuardHook` 无 verdict 载体（组合代数无实现前提） | `InMemoryCapabilityBus` | conformance 用例 / 端口演化 |
 | ~~`InboxMessage` 无 priority（now/next/later 未落）~~ | ~~`InMemorySession`~~ | ✅ 已落码（第九轮：`Priority` 入签名 + 领取序用例） |
 | ~~ledger store 零代码（三 store 之一，内核必需端口 Metering 同缺）~~ | ~~kernel session 包~~ | ✅ 已落码（第九轮：`SessionLedger`/`LedgerEntry`/`Usage` + `Metering` 端口 + conformance 2 用例） |

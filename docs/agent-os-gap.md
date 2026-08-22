@@ -9,7 +9,7 @@
 
 按 tepeu **自己的定义**（不变量进内核、能力在缝上、门上四样焊死）：
 
-**当前 = kernel 切片**（syscall 表 + 事件日志端口 + 卫兵 / Policy fail-closed + 内存三 store + conformance），**不是** Agent OS。
+**当前 = kernel 切片 + llm(fake) + Loop 答复路径 + 工具循环**，**不是** Agent OS。
 
 `os/README` 身份陈述是**目标态文案**；实现进度见该文件状态表。底板 §8 已钉：**不许靠 OS 类比暗示已具备完整 OS。**
 
@@ -19,13 +19,14 @@
 
 | 已有 | 打折后 |
 |------|--------|
-| ① 内核端口（identity / context / session / bus） | 进程内契约；≠ 完整会话生命周期产品 |
-| C1/C2/C3 审批与 fail-closed（第九轮） | 门地板；≠ 规则集做真、≠ 完成证据门 |
+| ① 内核端口（identity / session / bus / policy… 已拆成组件模块） | 进程内契约；≠ 完整会话生命周期产品 |
+| C1/C2/C3 审批与 fail-closed（第九轮） | 门地板；≠ 规则集做真。完成门在 Loop（答复主路 + 工具成对） |
 | 三 store / Metering 端口 + 内存实现 | 端口有；持久化 barrier / 预算真实往返未证伪 |
 | conformance 绿 | 测已声明契约；不证明「能跑 Agent」 |
-| 第十轮 LlmProvider / 派生式断言裁决 | **文档已裁**；落码未做 |
+| 第十轮 LlmProvider / 派生式断言 | **fake 路径已落码**（`os/llm`）；真 HTTP 未做 |
+| ③ Loop 答复 + 工具循环 | **claim → generate →（可选 syscall 工具）→ 完成门**；maintenance / DoomLoop 未做 |
 
-**未有**：`os/llm` 落码、`orchestration/` Loop、真 `execution.*`/沙箱、`compose` 接线、⑤ 应用面（os/ 路径）。
+**未有**：真 HTTP `llm` 传输、真 `execution.*`/沙箱、⑤ 应用面。`compose` 仅内存接线 + fake llm + Loop。
 
 ---
 
@@ -35,9 +36,9 @@
 
 | 序 | 层 | 缺什么 | 缺了为什么不算 OS | 主归属 |
 |----|-----|--------|-------------------|--------|
-| **1** | **进模诚实** | `llm.*` 派生式断言落码；注册表确定性规范序；未知用量/价格 → n/a | 模型通道不可证伪；§6-6 仍是纸 | `llm.*` 断言切片（下一刀） |
-| **2** | **控制循环** | SessionLoop：claim → turn → 工具/LLM → 有界续跑 | 没有调度内核，只有能过门的调用表 | ③ Loop |
-| **3** | **完成权** | 统一完成出口：**无证据不得 completed**；SSE/Todo/会话结束 ≠ 交付 | 有管线无闸门 = 形态像 OS、契约像 demo | ③ Loop（与层 2 同刀契约） |
+| **1** | **进模诚实** | 真 HTTP 传输；未知用量/价格仍 n/a | fake 可证伪契约，不能证伪真实模型通道 | llm 真 HTTP（一族一刀） |
+| **2** | **控制循环** | maintenance、DoomLoop | 答复+工具可证伪；还不是完整调度内核 | ③ Loop |
+| **3** | **完成权** | 文件 locator / PLAN_STEP 门进主路 | 答复+工具成对门已有；主路完成仍是 REPLY | ③ Loop |
 | **4** | **执行缝** | `execution.*` + 沙箱（隔离完备性如实报告）；工具经总线；先落日志再执行 | Policy=授权 ≠ 隔离；碰真实世界无边界 | Execution / Tool 契约 |
 | **5** | **预算/审批做真** | 超限不得 claim/开跑；默认规则矩阵 + 同 turn 可回放 | 端口有 ≠ 门在往返里咬住 | Metering+Policy；审批规则集 |
 
@@ -60,12 +61,12 @@
 ## 4. 与切片顺序对齐
 
 ```text
-现在 ──► llm.* 落码（层1）──► ③ Loop（层2+3）──► 预算/审批往返（层5，可与 Loop 交叉）
-                              └─► execution/沙箱（层4）
+现在 ──► llm.* fake（层1 契约）──► ③ Loop 答复+工具（层2 半截 / 层3 半截）──► 预算/审批往返（层5）
+                              └─► llm 真 HTTP（层1 通道） / maintenance / execution/沙箱（层4）
          ──► 成色债按痛点排，禁止用「对齐外部」插队
 ```
 
-下一刀（CONTEXT）：**`llm.*` 断言切片落码**（第十轮裁决已备）。
+下一刀（CONTEXT）：llm 真 HTTP（一族一刀），或预算硬门进往返，或 maintenance。禁止称骨架可演示。
 
 ---
 
@@ -87,4 +88,5 @@
 | 2026-08-18 | 初版：总判 + 五层最低条 + 成色债 + 禁止口径 |
 | 2026-08-18 | 口径：Product-Spec = v1 产品圣经；禁止用规格 §1.1 宣称 OS 已交付 |
 | 2026-08-18 | 挂 [`os-handbook.md`](./os-handbook.md)（缺章投影，不开新裁决） |
-| 2026-08-18 | 蒸馏：短图并入底板后删除；参照进 archive |
+| 2026-08-22 | Loop 答复路径落码：claim/完成门可离线证伪；工具循环仍缺 |
+| 2026-08-22 | Loop 工具循环：先落 CALL 再总线执行；拦截合成 RESULT；maintenance 仍缺 |

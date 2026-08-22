@@ -9,11 +9,18 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Tepeu OS</name>
-    <description>develop 重写骨架 — 见 docs/os-baseplate.md</description>
+    <description>develop 重写骨架 — 组件 = 一件事一个模块，见 docs/os-baseplate.md</description>
 
     <modules>
-        <module>kernel</module>
-        <module>adaptors</module>
+        <module>identity</module>
+        <module>conformance</module>
+        <module>syscall</module>
+        <module>session</module>
+        <module>policy</module>
+        <module>bus</module>
+        <module>llm</module>
+        <module>loop</module>
+        <module>compose</module>
     </modules>
 
     <properties>
@@ -27,7 +34,47 @@
         <dependencies>
             <dependency>
                 <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-os-kernel</artifactId>
+                <artifactId>tepeu-os-identity</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-conformance</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-syscall</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-session</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-policy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-bus</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-llm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-loop</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-compose</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

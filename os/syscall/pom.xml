@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.tepeu</groupId>
+        <artifactId>tepeu-os</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>tepeu-os-syscall</artifactId>
+    <name>Tepeu OS Syscall</name>
+    <description>syscall 信封：请求 / 处理器 / 结果 / Usage</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-identity</artifactId>
+        </dependency>
+    </dependencies>
+</project>
