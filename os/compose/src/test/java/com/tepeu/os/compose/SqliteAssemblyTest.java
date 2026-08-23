@@ -17,6 +17,8 @@ import com.tepeu.os.policy.sqlite.SqliteApprovalStore;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEventType;
 import com.tepeu.os.session.sqlite.SqliteSessionStore;
+import com.tepeu.os.syscall.Syscall;
+import com.tepeu.os.syscall.SyscallResult;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -64,6 +66,22 @@ class SqliteAssemblyTest {
             assertFalse(wired.approvals() instanceof InMemoryApprovalStore);
             assertTrue(Files.isRegularFile(dir.resolve("kernel.sqlite")));
             assertTrue(Files.isRegularFile(dir.resolve("approvals.sqlite")));
+        }
+    }
+
+    @Test
+    void policyRulesFileOverridesWriteToAllow() throws Exception {
+        Path dir = Files.createTempDirectory("tepeu-issue-rules-");
+        Files.writeString(dir.resolve("policy.rules"), "execution.fs.write ALLOW\n");
+        try (MemoryAssembly.Wired wired = SqliteAssembly.file(dir)) {
+            Principal owner = Principal.personal(new PrincipalId("rules-user"));
+            Namespace ns = Namespace.ofWorkspace(new WorkspaceId("rules-ws"));
+            Session session = wired.sessions().create(owner, ns, Optional.empty());
+            TurnContext ctx = new TurnContext(owner, ns, session.id(), Optional.empty());
+            SyscallResult r = wired.bus().invoke(ctx,
+                    new Syscall("execution.fs.write", java.util.Map.of("path", "ok.txt", "content", "z")));
+            assertTrue(r.ok(), r.output());
+            assertEquals("z", Files.readString(wired.workspace().resolve("ok.txt")));
         }
     }
 

@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-loop</artifactId>
     <name>Tepeu OS Loop</name>
-    <description>③ SessionLoop：claim → 有界 turn（含工具 / DoomLoop）→ 完成证据门；maintenance 窗</description>
+    <description>③ SessionLoop：claim → 有界 turn → 完成门；maintenance 窗；CompactionWork</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>

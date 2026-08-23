@@ -2,7 +2,7 @@
 
 > **地位**：develop 实施投影。规范以 [`memory/decisions-log.md`](../memory/decisions-log.md) **ADR-016** 为准。  
 > **蒸馏**：内核 = 冻结概念 + 不变量；能力 = 总线上的插头。细则在 ADR，此处一行指针。  
-> **诚实度**：[`agent-os-gap.md`](./agent-os-gap.md)（当前=kernel 切片）。v1 规格不是上级文档。  
+> **诚实度**：[`agent-os-gap.md`](./agent-os-gap.md)（当前=本机 Agent OS 骨架可演示；隔离仍是 partial）。v1 规格不是上级文档。  
 > **阅读序**：`CONTEXT.md` → 本文件 → [`os-handbook.md`](./os-handbook.md)（独有章）→ ADR-016。  
 > **对账存档**：[`archive/reference/`](./archive/reference/)（已吸入 ADR，不是规范）。
 
@@ -136,15 +136,16 @@ os/
   session/          组件：会话三 store + Metering 端口
   policy/           组件：Policy + 审批
   bus/              组件：能力总线 + 卫兵
-  llm/              组件：llm.* 派生式断言 + fake 传输
+  llm/              组件：llm.* 派生式断言 + fake / HTTP 薄壳（compose 默认 fake）
   loop/             组件：③ SessionLoop（claim / 有界 turn / 工具 / 完成门）
   orchestration/    组件：PromptAssembly + CommandDispatcher（Team 未落）
+  execution/        组件：工作区囚笼 + Job Object / bwrap（隔离 partial）
   compose/          组件：开机接线
   README.md         本底板索引
 legacy/             v1 只读标本
 ```
 
-调试：`mvn -f os/pom.xml -pl session test` / `-pl bus test` / `-pl loop test` / `-pl orchestration test`。禁止在 `legacy/` 加功能。
+调试：`mvn -f os/pom.xml test`；单模块 `-pl session` / `policy` / `bus` / `llm` / `loop` / `orchestration` / `execution` / `compose`。禁止在 `legacy/` 加功能。
 
 ---
 
@@ -176,7 +177,7 @@ legacy/             v1 只读标本
 | 工具经总线组合调用另一工具是否算互引 | 审计 O5 | Tool 契约 | 挂账 |
 | 子代理审批 `asked/decided` 落哪个会话（父/子/delegationId） | 审计 O6 | SubagentAdaptor | 挂账 |
 | §6-6「config 相等」的外延（cache_control 布点须入 normalize 确定性） | 审计 O8 | `llm.*` 断言 | 挂账 |
-| `SYSTEM_NOTE` 从词汇表砍除（语义未定义=垃圾抽屉） | 审计 O11 + 第八轮 | conformance（manifest 钉 7 类） | ✅ 已落码（2026-08-16 词汇表用例钉 7 类） |
+| `SYSTEM_NOTE` 从词汇表砍除（语义未定义=垃圾抽屉） | 审计 O11 + 第八轮 | conformance（manifest 钉 8 类，含 END_SEED） | ✅ 已落码（第八轮钉可见类；第十九轮 END_SEED → 8） |
 | 多设备同步 fencing（单写者→fencing token/steal） | OpenCode C4 | 远期（多副本） | 挂账 |
 | 抢占边界三参照收敛规则 | AIOS C4 | — | ✅ 已落 §3.1/§3.3 |
 | **审批端口形态**：`PolicyHook` 同步 evaluate 无法表达 ask（现唯一实现 ASK≡DENY） | 代码审计二 C1 | kernel 端口演化 | ✅ 已落码（第九轮：`ApprovalStore` 同步重试式 ask + 严格单次 consume） |

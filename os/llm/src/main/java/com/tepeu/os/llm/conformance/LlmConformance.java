@@ -131,6 +131,22 @@ public final class LlmConformance {
                     checkEquals("ASSERTION", r.errorCode().orElse(""), "错误码");
                     checkEquals(0, counting.calls, "不得调用传输");
                 }));
+        cases.add(new ConformanceCase("handler", "replaceRange 后二次 generate 不 ASSERTION",
+                () -> {
+                    Fixture f = factory.create();
+                    f.session().log().append(SessionEventType.USER_MESSAGE, "a", Map.of());
+                    f.session().log().append(SessionEventType.USER_MESSAGE, "b", Map.of());
+                    f.session().log().append(SessionEventType.USER_MESSAGE, "c", Map.of());
+                    LlmGenerateHandler h = handler(f);
+                    SyscallResult first = h.handle(f.turn(),
+                            new Syscall(LlmGenerateHandler.NAME, Map.of("model", "fake-model")));
+                    check(first.ok(), "首轮应成功: " + first.errorCode().orElse(""));
+                    f.session().logReplace().replaceRange(1, 2, "sum");
+                    SyscallResult second = h.handle(f.turn(),
+                            new Syscall(LlmGenerateHandler.NAME, Map.of("model", "fake-model")));
+                    check(second.ok(), "压缩后应成功: " + second.errorCode().orElse("") + " " + second.output());
+                    check(!second.errorCode().orElse("").equals("ASSERTION"), "不得 ASSERTION");
+                }));
         return List.copyOf(cases);
     }
 

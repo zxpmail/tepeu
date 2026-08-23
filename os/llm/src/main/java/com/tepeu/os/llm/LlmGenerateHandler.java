@@ -5,6 +5,7 @@ import com.tepeu.os.session.LedgerEntry;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEvent;
 import com.tepeu.os.session.SessionStore;
+import com.tepeu.os.session.SurfaceEpoch;
 import com.tepeu.os.syscall.Syscall;
 import com.tepeu.os.syscall.SyscallHandler;
 import com.tepeu.os.syscall.SyscallResult;
@@ -71,7 +72,7 @@ public final class LlmGenerateHandler implements SyscallHandler {
             return SyscallResult.failure(e.errorCode(), e.getMessage());
         }
         long latencyMs = Math.max(0L, (System.nanoTime() - started) / 1_000_000L);
-        session.ledger().record(NAME, reply.usage(), attrs(prepared, model, system, maxTokens));
+        session.ledger().record(NAME, reply.usage(), attrs(session, prepared, model, system, maxTokens));
         return SyscallResult.success(reply.output(), reply.usage(), latencyMs);
     }
 
@@ -82,6 +83,11 @@ public final class LlmGenerateHandler implements SyscallHandler {
             return null;
         }
         Map<String, String> attrs = last.attrs();
+        String recordedEpoch = attrs.getOrDefault("surfaceEpoch", "0");
+        String currentEpoch = SurfaceEpoch.current(session.registers());
+        if (!recordedEpoch.equals(currentEpoch)) {
+            return null;
+        }
         long throughSeq = Long.parseLong(attrs.getOrDefault("throughSeq", "0"));
         List<SessionEvent> prefix = new ArrayList<>();
         for (SessionEvent event : surface) {
@@ -120,7 +126,7 @@ public final class LlmGenerateHandler implements SyscallHandler {
     }
 
     private static Map<String, String> attrs(
-            PreparedRequest prepared, String model, String system, int maxTokens) {
+            Session session, PreparedRequest prepared, String model, String system, int maxTokens) {
         Map<String, String> attrs = new LinkedHashMap<>();
         attrs.put("digest", prepared.digest());
         attrs.put("deriveVersion", prepared.deriveVersion());
@@ -131,6 +137,7 @@ public final class LlmGenerateHandler implements SyscallHandler {
         attrs.put("system", system);
         attrs.put("maxTokens", Integer.toString(maxTokens));
         attrs.put("throughSeq", Long.toString(prepared.throughSeq()));
+        attrs.put("surfaceEpoch", SurfaceEpoch.current(session.registers()));
         return attrs;
     }
 

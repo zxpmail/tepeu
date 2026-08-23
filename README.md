@@ -1,6 +1,6 @@
 # Tepeu
 
-develop 按 [ADR-016](memory/decisions-log.md) 重建 Agent OS **内核**。当前口径：kernel 切片，**不是**完整 OS——见 [`docs/agent-os-gap.md`](docs/agent-os-gap.md)。
+develop 按 [ADR-016](memory/decisions-log.md) 重建 Agent OS **内核**。当前口径：**本机 Agent OS 骨架可演示**，**不是**企业 OS / 完整 OS——见 [`docs/agent-os-gap.md`](docs/agent-os-gap.md)。
 
 可运行的 v1.0（工作台 / Harness）在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.md)。v1 规格里的「Agentic OS」是产品里程碑名，不是「OS 已成形」。
 
@@ -17,7 +17,7 @@ develop 按 [ADR-016](memory/decisions-log.md) 重建 Agent OS **内核**。当�
 docs/os-baseplate.md   实施底板（必读）
 docs/os-handbook.md    独有章（时序 / 开机 / 威胁）
 docs/archive/          已吸入 ADR 的参照与 v1 草稿（不是规范）
-os/                    新骨架（kernel/adaptors/orchestration/routing/compose）
+os/                    新骨架（8 组件：session/policy/bus/llm/loop/orchestration/execution/compose）
 legacy/                v1 只读标本
 memory/                ADR（ADR-016 规范）
 ```
@@ -60,4 +60,4 @@ cd legacy/frontend && npm install && npm run dev
 ## 已完成（v1 摘要）
 
 - ✅ v0.1 工作台 · v0.2 Harness · v1.0 产品里程碑（规格名称含 Agentic OS，**≠** 完整 OS 已交付）
-- ⏳ develop：按 ADR-016 重建内核（当前 = kernel 切片）
+- ⏳ develop：按 ADR-016 重建内核（当前 = 本机 Agent OS 骨架可演示；隔离 partial）

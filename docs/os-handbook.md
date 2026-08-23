@@ -42,7 +42,7 @@ now 级抢占只切流式 chunk；本刀无流式。
 
 ## 完成证据（无新事件类型）
 
-完成 = 声称之物能从 entries / locator / ledger 还原。SSE 结束、Todo 勾完、回到 idle **不是**完成。`CompletionGate` 已钉答复与工具成对；Loop 主路驱动答复，工具拍写 CALL/RESULT 后续跑，成功完成仍过 REPLY 门。
+完成 = 声称之物能从 entries / locator / ledger 还原。SSE 结束、Todo 勾完、回到 idle **不是**完成。`CompletionGate` 钉答复、工具成对、PLAN_STEP、FILE locator（须能从 ContentStore 取回）。Loop 主路永远过 REPLY；其余声称按本 turn 实际发生推断。
 
 | 声称 | 载体 | 不够则不得 completed |
 |------|------|----------------------|
@@ -98,7 +98,7 @@ Policy≠沙箱。配额=入口拒。Metering 不裁决。Secret 不进模型通
 | 用量 | ledger |
 | 审批证据 | ApprovalStore（须持久） |
 | 密钥 | Secret 缝 |
-| 工作区文件 | execution/fs（名未钉） |
+| 工作区文件 | execution.*（路径囚笼；隔离 partial） |
 
 禁止：模型当策略引擎；静默未沙箱直通；日志当密钥柜；v1 无认证当 develop 已开门；caller 可选审计；ProjectionBus 当真相。
 

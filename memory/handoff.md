@@ -7,36 +7,35 @@
 
 ## 当前阶段
 
-- develop：本机单写者内核可发行（SQLite WAL schema v1；`SqliteAssembly` 为发行默认）。仍不是 Agent OS
-- 下一刀：Compaction 挂 maintenance，或审批规则矩阵，或 execution.* 沙箱（黄灯）
-- 禁止在 `legacy/` 加功能；禁止称骨架可演示
+- develop：**本机 Agent OS 骨架可演示**（ADR-016 第二十二轮）+ 审查修补（第二十三轮）
+- 仍不是企业 Agent OS / 完整 OS；无 UI、无记忆平面
+- 下一刀按痛点：⑤ UI、记忆平面、多副本 fencing
 
 ## 口径
 
-- **组件（7）**：session / policy / bus / llm / loop / orchestration / compose
+- **组件（8）**：session / policy / bus / llm / loop / orchestration / execution / compose
 - **不是组件**：identity、syscall（词汇）；conformance（harness）
-- 组件 ≠ 插件。洋葱是依赖方向。Loop **不**依赖 orchestration。
-- **本机单写者内核可发行** ≠ 五层可演示 ≠ 多副本 ≠ 合规删除权。`MemoryAssembly` 仅测试。
+- Loop **不**依赖 orchestration。CompactionWork 在 loop，经总线 llm.*。
+- execution 隔离 = **partial**。spawn：Windows `CREATE_SUSPENDED` 入 Job 再跑；Linux bwrap + ro-bind-try。无 jail 时失败可见。
+- 压缩后 `log.surfaceEpoch` 跳过上笔 llm digest 复核。审批绑 `argsDigest`。`/approve` 校验会话。
+- compose **不**读 API 密钥。live 测试有 key 才烧。
 
 ## 已完成
 
-- 第九轮起四端口 + fail-closed
-- 第十二–十八轮：Loop / llm HTTP / 预算门 / maintenance / DoomLoop / PromptAssembly / Command
-- 第十九轮：fork+END_SEED、卫兵 deny>ask>allow、AuditSink、recover 补 INTERRUPTED RESULT、ContentStore sha256
-- 第二十轮：SQLite WAL 发行插头（SessionStore / ApprovalStore / AuditSink / ContentStore）；ledger 同连接 read-your-writes + close 后 fail-closed；compose `SqliteAssembly`
+- 第九–二十一轮：四端口、Loop、llm HTTP、SQLite 发行、Compaction 窗、DefaultRuleMatrix、execution 囚笼
+- 第二十二轮：live 测试（opt-in）、turn 内 overflow 压缩、PLAN/FILE 完成门、OS jail、`/approve` + `policy.rules`
+- 第二十三轮：surfaceEpoch、Job CREATE_SUSPENDED、env 白名单、stdout 封顶、argsDigest、jail NOFOLLOW、文档口径对齐
 
 ## 待办
 
-- Compaction 作业挂上 maintenance 窗
-- 默认规则矩阵 / 审批同 turn 回放（层5）
-- live key 往返未在 CI 烧
-- Slash 宿主副作用写 AuditSink（端口有，自动落账未接 Command）
-- 多副本 fencing / timer 轮 / 哈希链 — 远期，禁止当现状
-- 禁止对外「骨架可演示 / OS 成形」（五层未钉死）
+- live 往返未在 CI 烧（无 key skip）
+- DoomLoop 第三刀仍是 NUDGE 不是 NEED_APPROVAL
+- ⑤ UI / 记忆平面
+- 多副本 fencing / timer 轮 / 哈希链 — 远期
 
 ## 调试
 
 ```bash
-mvn -f os/pom.xml -pl session,policy,compose test
 mvn -f os/pom.xml test
+# live（可选）：ANTHROPIC_API_KEY=... mvn -f os/pom.xml -pl llm test
 ```

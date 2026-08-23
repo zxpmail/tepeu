@@ -78,6 +78,20 @@ public final class ApprovalConformance {
                     check(s.consumeDecision(a, call).isPresent(), "a 有");
                     check(s.consumeDecision(b, call).isEmpty(), "b 无");
                 }));
+        cases.add(new ConformanceCase("approval", "argsDigest 不同则不幂等、不能串用许可",
+                () -> {
+                    ApprovalStore s = factory.newStore();
+                    TurnContext ctx = turn("s1");
+                    Syscall a = new Syscall("dangerous", Map.of("path", "a.txt"));
+                    Syscall b = new Syscall("dangerous", Map.of("path", "b.txt"));
+                    String idA = s.ask(ctx, a);
+                    String idB = s.ask(ctx, b);
+                    check(!idA.equals(idB), "不同 args 不同 id");
+                    checkEquals(idA, s.ask(ctx, a), "同 args 仍幂等");
+                    s.decide(idA, true, "host");
+                    check(s.consumeDecision(ctx, b).isEmpty(), "不得用 a 的许可消费 b");
+                    checkEquals(true, s.consumeDecision(ctx, a).orElseThrow(), "匹配 args 可消费");
+                }));
         return List.copyOf(cases);
     }
 

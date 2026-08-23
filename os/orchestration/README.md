@@ -6,7 +6,7 @@ Loop **不**依赖本模块。`LoopConfig.system` 仍只转发；调用方 assem
 
 PromptAssembly：STATIC → system；DYNAMIC → `dynamicBodies`（user-role 快照，不混进 system）。超预算出账单（先丢宽泛 DYNAMIC，后截最具体）。weight = 字符数。收据 = includedIds + bill。不新开事件类型。技能目录仅 name/description/digest。
 
-CommandDispatcher：只见 local / prompt。未知 `/name` 失败，不进 Inbox。prompt 型 `inbox.enqueue`，不跑 Loop。compose 预注册 `/help`。
+CommandDispatcher：只见 local / prompt。未知 `/name` 失败，不进 Inbox。prompt 型 `inbox.enqueue`，不跑 Loop。compose 预注册 `/help` 与 `/approve`（approve 在 compose，写 AuditSink）。
 
 ```bash
 mvn -f os/pom.xml -pl orchestration test

@@ -13,16 +13,17 @@
 
 ## 现网
 
-**组件（7）**
+**组件（8）**
 
 | 模块 | 一件事 | 独立测 |
 |------|--------|--------|
 | `session/` | 会话三 store + Metering + fork/recover/CAS + AuditSink + SQLite WAL | `mvn -f os/pom.xml -pl session test` |
-| `policy/` | Policy + 审批（内存测试 / SQLite 发行） | `mvn -f os/pom.xml -pl policy test` |
+| `policy/` | Policy + 审批 + DefaultRuleMatrix | `mvn -f os/pom.xml -pl policy test` |
 | `bus/` | 总线分发 + 卫兵 | `mvn -f os/pom.xml -pl bus test` |
-| `llm/` | llm.* 派生式断言 + fake + Anthropic/OpenAI HTTP 薄壳 | `mvn -f os/pom.xml -pl llm test` |
-| `loop/` | claim → 有界 turn（含工具 / DoomLoop）→ 完成证据门；maintenance 窗 | `mvn -f os/pom.xml -pl loop test` |
+| `llm/` | llm.* 派生式断言 + fake + Anthropic/OpenAI HTTP 薄壳 + live opt-in | `mvn -f os/pom.xml -pl llm test` |
+| `loop/` | claim → 有界 turn → 完成门；overflow 压缩；maintenance 窗 | `mvn -f os/pom.xml -pl loop test` |
 | `orchestration/` | PromptAssembly + CommandDispatcher（local/prompt） | `mvn -f os/pom.xml -pl orchestration test` |
+| `execution/` | 工作区囚笼 + Job Object/bwrap（隔离 partial） | `mvn -f os/pom.xml -pl execution test` |
 | `compose/` | 开机接线 | `mvn -f os/pom.xml -pl compose test` |
 
 **不是组件**

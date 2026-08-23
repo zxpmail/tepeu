@@ -3,6 +3,7 @@ package com.tepeu.os.policy.sqlite;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.policy.ApprovalRecord;
 import com.tepeu.os.policy.ApprovalStore;
+import com.tepeu.os.syscall.ArgDigest;
 import com.tepeu.os.syscall.Syscall;
 
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,6 +57,7 @@ public final class SqliteApprovalStore implements ApprovalStore, AutoCloseable {
                           approval_id TEXT PRIMARY KEY,
                           session_id TEXT NOT NULL,
                           syscall_name TEXT NOT NULL,
+                          args_digest TEXT NOT NULL,
                           asked_at INTEGER NOT NULL,
                           decided_at INTEGER,
                           allow_flag INTEGER,
@@ -62,6 +65,15 @@ public final class SqliteApprovalStore implements ApprovalStore, AutoCloseable {
                           consumed INTEGER NOT NULL DEFAULT 0
                         )
                         """);
+                try {
+                    s.execute("ALTER TABLE approvals ADD COLUMN args_digest TEXT NOT NULL DEFAULT '"
+                            + ArgDigest.of(Map.of()) + "'");
+                } catch (SQLException e) {
+                    String msg = String.valueOf(e.getMessage()).toLowerCase();
+                    if (!msg.contains("duplicate column")) {
+                        throw e;
+                    }
+                }
             }
         } catch (Exception e) {
             throw new IllegalStateException("open approval sqlite " + file, e);
@@ -74,12 +86,14 @@ public final class SqliteApprovalStore implements ApprovalStore, AutoCloseable {
         Objects.requireNonNull(syscall, "syscall");
         String sessionId = ctx.sessionId().value();
         String syscallName = syscall.name();
+        String digest = ArgDigest.of(syscall.args());
         return tx(c -> {
             try (PreparedStatement ps = c.prepareStatement(
                     "SELECT approval_id FROM approvals WHERE session_id=? AND syscall_name=? "
-                            + "AND decided_at IS NULL ORDER BY asked_at DESC LIMIT 1")) {
+                            + "AND args_digest=? AND decided_at IS NULL ORDER BY asked_at DESC LIMIT 1")) {
                 ps.setString(1, sessionId);
                 ps.setString(2, syscallName);
+                ps.setString(3, digest);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         return rs.getString(1);
@@ -88,11 +102,13 @@ public final class SqliteApprovalStore implements ApprovalStore, AutoCloseable {
             }
             String approvalId = UUID.randomUUID().toString();
             try (PreparedStatement ins = c.prepareStatement(
-                    "INSERT INTO approvals(approval_id, session_id, syscall_name, asked_at) VALUES (?,?,?,?)")) {
+                    "INSERT INTO approvals(approval_id, session_id, syscall_name, args_digest, asked_at) "
+                            + "VALUES (?,?,?,?,?)")) {
                 ins.setString(1, approvalId);
                 ins.setString(2, sessionId);
                 ins.setString(3, syscallName);
-                ins.setLong(4, clock.instant().toEpochMilli());
+                ins.setString(4, digest);
+                ins.setLong(5, clock.instant().toEpochMilli());
                 ins.executeUpdate();
             }
             return approvalId;
@@ -131,6 +147,7 @@ public final class SqliteApprovalStore implements ApprovalStore, AutoCloseable {
     public Optional<Boolean> consumeDecision(TurnContext ctx, Syscall syscall) {
         String sessionId = ctx.sessionId().value();
         String syscallName = syscall.name();
+        String digest = ArgDigest.of(syscall.args());
         return tx(c -> {
             String approvalId = null;
             boolean decided = false;
@@ -138,9 +155,11 @@ public final class SqliteApprovalStore implements ApprovalStore, AutoCloseable {
             Boolean allow = null;
             try (PreparedStatement ps = c.prepareStatement(
                     "SELECT approval_id, decided_at, allow_flag, consumed FROM approvals "
-                            + "WHERE session_id=? AND syscall_name=? ORDER BY asked_at DESC LIMIT 1")) {
+                            + "WHERE session_id=? AND syscall_name=? AND args_digest=? "
+                            + "ORDER BY asked_at DESC LIMIT 1")) {
                 ps.setString(1, sessionId);
                 ps.setString(2, syscallName);
+                ps.setString(3, digest);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) {
                         return Optional.empty();
@@ -168,28 +187,55 @@ public final class SqliteApprovalStore implements ApprovalStore, AutoCloseable {
     }
 
     @Override
+    public Optional<ApprovalRecord> get(String approvalId) {
+        Objects.requireNonNull(approvalId, "approvalId");
+        return tx(c -> {
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT approval_id, session_id, syscall_name, args_digest, asked_at, decided_at, "
+                            + "allow_flag, decided_by FROM approvals WHERE approval_id=?")) {
+                ps.setString(1, approvalId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        return Optional.empty();
+                    }
+                    return Optional.of(mapRecord(rs));
+                }
+            }
+        });
+    }
+
+    @Override
     public List<ApprovalRecord> records() {
         return tx(c -> {
             List<ApprovalRecord> out = new ArrayList<>();
             try (PreparedStatement ps = c.prepareStatement(
-                    "SELECT approval_id, session_id, syscall_name, asked_at, decided_at, allow_flag, decided_by "
-                            + "FROM approvals ORDER BY asked_at, approval_id");
+                    "SELECT approval_id, session_id, syscall_name, args_digest, asked_at, decided_at, "
+                            + "allow_flag, decided_by FROM approvals ORDER BY asked_at, approval_id");
                     ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Long decidedAt = rs.getObject(5) == null ? null : rs.getLong(5);
-                    Integer allow = rs.getObject(6) == null ? null : rs.getInt(6);
-                    out.add(new ApprovalRecord(
-                            rs.getString(1),
-                            rs.getString(2),
-                            rs.getString(3),
-                            Instant.ofEpochMilli(rs.getLong(4)),
-                            decidedAt == null ? Optional.empty() : Optional.of(Instant.ofEpochMilli(decidedAt)),
-                            allow == null ? Optional.empty() : Optional.of(allow != 0),
-                            Optional.ofNullable(rs.getString(7))));
+                    out.add(mapRecord(rs));
                 }
             }
             return List.copyOf(out);
         });
+    }
+
+    private static ApprovalRecord mapRecord(ResultSet rs) throws SQLException {
+        Long decidedAt = rs.getObject(6) == null ? null : rs.getLong(6);
+        Integer allow = rs.getObject(7) == null ? null : rs.getInt(7);
+        String digest = rs.getString(4);
+        if (digest == null || digest.isBlank()) {
+            digest = ArgDigest.of(Map.of());
+        }
+        return new ApprovalRecord(
+                rs.getString(1),
+                rs.getString(2),
+                rs.getString(3),
+                digest,
+                Instant.ofEpochMilli(rs.getLong(5)),
+                decidedAt == null ? Optional.empty() : Optional.of(Instant.ofEpochMilli(decidedAt)),
+                allow == null ? Optional.empty() : Optional.of(allow != 0),
+                Optional.ofNullable(rs.getString(8)));
     }
 
     private <T> T tx(Sql<T> sql) {

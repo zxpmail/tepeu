@@ -11,6 +11,7 @@ import com.tepeu.os.loop.DoomLoop;
 import com.tepeu.os.loop.LoopConfig;
 import com.tepeu.os.loop.LoopState;
 import com.tepeu.os.loop.MaintenanceConfig;
+import com.tepeu.os.loop.PlanDirective;
 import com.tepeu.os.loop.SessionLoop;
 import com.tepeu.os.loop.ToolDirective;
 import com.tepeu.os.loop.TurnOutcome;
@@ -36,7 +37,7 @@ import static com.tepeu.os.conformance.ConformanceCheck.check;
 import static com.tepeu.os.conformance.ConformanceCheck.checkEquals;
 
 /**
- * Loop 套件：claim 主路、有界续跑（含工具）、完成证据门、开 turn 预算门、DoomLoop、maintenance 窗。
+ * Loop 套件：claim 主路、有界续跑（含工具）、完成证据门（REPLY/TOOL_PAIR/PLAN/FILE）、overflow 压缩、开 turn 预算门、DoomLoop、maintenance 窗。
  */
 public final class LoopConformance {
 
@@ -469,6 +470,83 @@ public final class LoopConformance {
                     checkEquals(LoopState.RUNNING.name(),
                             f.session().registers().get(SessionLoop.REGISTER_STATE).orElse(""),
                             "不得改别人的 running");
+                }));
+        cases.add(new ConformanceCase("directive", "首行 plan 落 PLAN_STEP，其余当答复",
+                () -> {
+                    check(PlanDirective.parse("hello").isEmpty(), "普通文本");
+                    PlanDirective p = PlanDirective.parse("plan collect\ntext=gather").orElseThrow();
+                    checkEquals("collect", p.body(), "body");
+                    checkEquals("gather", p.attrs().get("text"), "attr");
+                }));
+        cases.add(new ConformanceCase("gate", "PLAN_STEP 放行 PLAN 声称",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    f.session().log().append(SessionEventType.PLAN_STEP, "collect", Map.of());
+                    check(CompletionGate.allow(f.session(), CompletionClaim.PLAN, 0), "应放行");
+                }));
+        cases.add(new ConformanceCase("gate", "locator 须能从 ContentStore 取回",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    String digest = f.session().blobs().put("hi".getBytes());
+                    f.session().log().append(SessionEventType.TOOL_RESULT, "a.txt", Map.of("locator", digest));
+                    check(CompletionGate.allow(f.session(), CompletionClaim.FILE, 0), "应放行");
+                    f.session().log().append(SessionEventType.TOOL_RESULT, "missing",
+                            Map.of("locator", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+                    check(!CompletionGate.allow(f.session(), CompletionClaim.FILE, 0), "缺 blob 应拒");
+                }));
+        cases.add(new ConformanceCase("loop", "plan 后须再答复才 completed",
+                () -> {
+                    CountingHandler llm = CountingHandler.outputs("plan collect\ntext=gather", "done");
+                    Fixture f = factory.create(llm);
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    TurnOutcome o = loop(f).run(f.turn(), LoopConfig.of("m"));
+                    check(o.completed(), "应完成: " + o.detail());
+                    checkEquals(SessionEventType.PLAN_STEP, f.session().log().readAll().get(1).type(), "PLAN");
+                    checkEquals("collect", f.session().log().readAll().get(1).body(), "body");
+                    check(CompletionGate.allow(f.session(), CompletionClaim.PLAN, 1), "PLAN 门");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "fs.write 成功则 RESULT 带 locator 且 FILE 门过",
+                () -> {
+                    CountingHandler llm = CountingHandler.outputs(
+                            "syscall execution.fs.write\npath=a.txt\ncontent=hi", "done");
+                    Fixture f = factory.create(llm);
+                    f.bus().register("execution.fs.write", (ctx, call) -> SyscallResult.success("a.txt"));
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    TurnOutcome o = loop(f).run(f.turn(), LoopConfig.of("m"));
+                    check(o.completed(), "应完成: " + o.detail());
+                    var result = f.session().log().readAll().get(2);
+                    checkEquals(SessionEventType.TOOL_RESULT, result.type(), "RESULT");
+                    String locator = result.attrs().get("locator");
+                    check(locator != null && locator.length() == 64, "sha256 locator");
+                    check(f.session().blobs().get(locator).isPresent(), "blob 在店");
+                    check(CompletionGate.allow(f.session(), CompletionClaim.FILE, 1), "FILE 门");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "turn 内 overflow 压一步再 generate",
+                () -> {
+                    AtomicInteger replies = new AtomicInteger();
+                    AtomicInteger compact = new AtomicInteger();
+                    Fixture f = factory.create((ctx, call) -> {
+                        if ("compaction".equals(call.args().get("system"))) {
+                            compact.incrementAndGet();
+                            return SyscallResult.success("sum");
+                        }
+                        replies.incrementAndGet();
+                        return SyscallResult.success("hello");
+                    });
+                    for (int i = 0; i < 5; i++) {
+                        f.session().log().append(SessionEventType.USER_MESSAGE, "pre" + i, Map.of());
+                    }
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    LoopConfig cfg = new LoopConfig("m", "anthropic", "", 2, 3, 2);
+                    TurnOutcome o = loop(f).run(f.turn(), cfg);
+                    check(o.completed(), "应完成: " + o.detail());
+                    checkEquals(1, compact.get(), "overflow 压一步");
+                    checkEquals(1, replies.get(), "真正答复一次");
+                    check(f.session().log().readAll().stream()
+                            .anyMatch(e -> e.type() == SessionEventType.COMPACTION_CHECKPOINT), "有 checkpoint");
+                    checkIdle(f);
                 }));
         return List.copyOf(cases);
     }

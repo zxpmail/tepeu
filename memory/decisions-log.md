@@ -351,5 +351,24 @@
   3. **compose 发行默认** = `SqliteAssembly.file(dir)` → `dir/kernel.sqlite` + `dir/approvals.sqlite`。`MemoryAssembly` 仅 conformance / 单测。发行路径不得默认 `InMemoryApprovalStore`。`Wired` 实现 `AutoCloseable`。
   4. **ledger**：同连接 `record` 后 `readAll` 可见；store close 后再写抛 `SqliteStoreException`（fail-closed）。多副本 fencing / barrier 超时仍挂账。
   5. **本刀不包含**：多副本 fencing、timer 轮、哈希链、默认规则矩阵、live key 往返、`execution.*` 沙箱、Compaction 作业。口径 = **本机单写者内核可发行**；仍不得称 Agent OS / 骨架可演示 / 合规删除权。
-- **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。下一动作 = Compaction 挂 maintenance 窗，或审批规则矩阵，或 `execution.*` 沙箱（黄灯）。
+- **Decision — Compaction 挂窗 + 默认规则矩阵 + execution 囚笼（2026-08-23 第二十一轮，落码切片）**:
+  1. **主动压缩** = `CompactionWork` 挂 `SessionLoop.maintain`。经总线 `llm.generate`（占窗口 Metering），写回 `replaceRange`。不删审计事件；`seq > seedEnd` 才压；surface 条数 ≤ keepLast 或待压前缀全是 checkpoint → 停。触发式 turn 内压缩本刀不进。摘要质量不在本刀（fake 输出即可证伪代数）。
+  2. **默认规则矩阵** = `DefaultRuleMatrix`：`llm.*` / `execution.fs.read` / `execution.sandbox.probe` → ALLOW；`execution.fs.write` / `execution.proc.*` → NEED_APPROVAL；其余 DENY。compose 装配此矩阵（不是 ALLOW-all）。同 turn 回放 = 已有 C1：decide 后重试 consume 一次。人手旁路打 compose 总线仍过矩阵。
+  3. **execution 组件**（第 8 个）：工作区路径囚笼；`probe` 报 `isolation=partial`。`proc.spawn` 无 OS jail → `SANDBOX_UNAVAILABLE`，禁止静默直通。Policy=授权，Sandbox=隔离：批准 spawn 仍因无 jail 失败。
+  4. **本刀不包含**：live key、turn 内 overflow 压缩、bwrap/Job Object、PLAN_STEP 完成门、DoomLoop 第三刀改 NEED_APPROVAL。仍不得称骨架可演示。
+- **Decision — 五层骨架可演示（2026-08-23 第二十二轮，落码切片）**:
+  1. **进模诚实**：`LlmTransports.fromEnv()` 供调用方注入。compose / `SqliteAssembly` **不**读密钥，默认仍 fake。`LiveHttpTransportTest` 有 `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` 才烧；CI 无 key skip。cost 空 = n/a。
+  2. **控制循环**：`LoopConfig.compactOverflow`（默认 40）在每次 `llm.generate` 前若 live surface 超阈则 `CompactionWork` 一步。递减停机仍是 keepLast / 前缀全 checkpoint，不是模型质量。
+  3. **完成权**：主路推断声称：永远 REPLY；有工具则 TOOL_PAIR；有 `PLAN_STEP` 则 PLAN；`TOOL_RESULT.locator` 则 FILE（64-hex 且 `ContentStore` 可取）。`plan ...` 与 `syscall ...` 并列。成功 `execution.fs.write` persist-before-event 写 locator。
+  4. **执行缝**：Windows Job Object（JNA 5.19.1，`KILL_ON_JOB_CLOSE`）/ Linux `bwrap`（PATH 上才有）。spawn 只接受工作区相对 `path`。无 jail → `SANDBOX_UNAVAILABLE`。`probe` 报 `isolation=partial`（无 landlock / 无受限令牌，**禁止报 FULL**）+ `mechanism=job-object|bwrap|workspace-root` + `proc=available|unavailable`。
+  5. **审批做真**：`DefaultRuleMatrix.parse` 精确名覆盖；`SqliteAssembly` 读 `dir/policy.rules`。`/approve <id> allow|deny` 走 CommandDispatcher，写 AuditSink，不进会话事件。
+  6. **口径** = **本机 Agent OS 骨架可演示**。仍不得称企业 Agent OS / 完整 OS / GDPR 删除权。无 UI、无记忆平面、无多副本 fencing。
+- **Decision — 审查修补（2026-08-23 第二十三轮）**:
+  1. **compact × digest**：`replaceRange` 递增 `log.surfaceEpoch`。`LlmGenerateHandler` 把世代写入 ledger；`verifyPrevious` 在世代失配时跳过上笔 digest（压缩改写了 surface，不得 ASSERTION）。过真实 handler 的 compact→generate 用例。
+  2. **Job Object**：`CreateProcessW` + `CREATE_SUSPENDED`，入 job 且 `IsProcessInJob` 后 `ResumeThread`。禁止 start 后再 assign 的竞态。
+  3. **spawn 卫生**：环境白名单（剥离 `*API_KEY*` / `*SECRET*` 等）；stdout 按 8192 封顶读；`proc-*.out` 用后删；失败路径一律 `destroy`/`TerminateProcess`。bwrap `--clearenv` + `--ro-bind-try` `/usr` `/bin` `/lib` `/lib64`。
+  4. **审批绑 args**：`ArgDigest`（排序 `k=v` sha256）；ask 幂等与 consume 匹配 `(session, name, argsDigest)`。SQLite `args_digest`（旧库 ALTER，空 Map 摘要作默认）。`/approve` 必须 `record.sessionId == ctx.sessionId`。
+  5. **WorkspaceJail**：拒绝绝对路径；`NOFOLLOW_LINKS`；符号链接 / junction 一律拒；未存在文件看父路径 realpath 仍在根下。
+  6. **隔离仍是 partial**。Job Object 无 FS 限额；禁止报 FULL。
+- **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。下一动作按痛点：⑤ UI、记忆平面、多副本 fencing / timer 轮 / 哈希链；DoomLoop 第三刀改 NEED_APPROVAL 仍挂账。
 

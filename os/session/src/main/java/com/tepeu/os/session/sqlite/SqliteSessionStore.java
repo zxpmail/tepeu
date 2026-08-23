@@ -320,6 +320,17 @@ public final class SqliteSessionStore implements SessionStore, AutoCloseable {
         }
     }
 
+    static String getRegister(Connection c, String sessionId, String key) throws SQLException {
+        try (PreparedStatement ps = c.prepareStatement(
+                "SELECT v FROM registers WHERE session_id=? AND k=?")) {
+            ps.setString(1, sessionId);
+            ps.setString(2, key);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getString(1) : null;
+            }
+        }
+    }
+
     static void putRegister(Connection c, String sessionId, String key, String value) throws SQLException {
         try (PreparedStatement ps = c.prepareStatement(
                 "INSERT INTO registers(session_id, k, v) VALUES (?,?,?) "

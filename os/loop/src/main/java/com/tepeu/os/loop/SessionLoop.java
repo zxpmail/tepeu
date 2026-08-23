@@ -16,6 +16,7 @@ import com.tepeu.os.session.SessionStore;
 import com.tepeu.os.syscall.Syscall;
 import com.tepeu.os.syscall.SyscallResult;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -100,6 +101,11 @@ public final class SessionLoop {
                 boolean wantsContinue = true;
                 while (wantsContinue && steps < config.maxSteps()) {
                     steps++;
+                    try {
+                        maybeCompactOverflow(session, ctx, config);
+                    } catch (RuntimeException e) {
+                        return TurnOutcome.failed(steps, "overflow compact: " + e.getMessage());
+                    }
                     SyscallResult result;
                     try {
                         result = bus.invoke(ctx, new Syscall(SYSCALL_GENERATE, generateArgs(config)));
@@ -118,6 +124,11 @@ public final class SessionLoop {
                         }
                         continue;
                     }
+                    Optional<PlanDirective> plan = PlanDirective.parse(result.output());
+                    if (plan.isPresent()) {
+                        session.log().append(SessionEventType.PLAN_STEP, plan.get().body(), plan.get().attrs());
+                        continue;
+                    }
                     if (result.output().isBlank()) {
                         return TurnOutcome.incomplete(steps,
                                 "reply requires non-blank ASSISTANT_MESSAGE");
@@ -128,10 +139,11 @@ public final class SessionLoop {
                 if (wantsContinue) {
                     return TurnOutcome.stopped(steps, "maxSteps reached");
                 }
-                Optional<String> refuse = CompletionGate.refuseReason(
-                        session, CompletionClaim.REPLY, userSeq);
-                if (refuse.isPresent()) {
-                    return TurnOutcome.incomplete(steps, refuse.get());
+                for (CompletionClaim claim : CompletionGate.infer(session, userSeq)) {
+                    Optional<String> refuse = CompletionGate.refuseReason(session, claim, userSeq);
+                    if (refuse.isPresent()) {
+                        return TurnOutcome.incomplete(steps, refuse.get());
+                    }
                 }
                 return TurnOutcome.completed(steps);
             } finally {
@@ -217,7 +229,8 @@ public final class SessionLoop {
         }
         try {
             SyscallResult toolResult = bus.invoke(ctx, new Syscall(tool.name(), tool.args()));
-            session.log().append(SessionEventType.TOOL_RESULT, toolResult.output(), resultAttrs(toolResult));
+            session.log().append(SessionEventType.TOOL_RESULT, toolResult.output(),
+                    resultAttrs(session, tool, toolResult));
             return null;
         } catch (BusGuardException | PolicyDeniedException | ApprovalRequiredException e) {
             session.log().append(SessionEventType.TOOL_RESULT, String.valueOf(e.getMessage()),
@@ -230,10 +243,27 @@ public final class SessionLoop {
         return locks.computeIfAbsent(id.value(), k -> new Object());
     }
 
-    private static Map<String, String> resultAttrs(SyscallResult result) {
+    private void maybeCompactOverflow(Session session, TurnContext ctx, LoopConfig config) {
+        if (config.compactOverflow() < 1) {
+            return;
+        }
+        if (CompactionWork.liveSurface(session).size() <= config.compactOverflow()) {
+            return;
+        }
+        new CompactionWork(bus, config.model(), config.family(), config.compactKeepLast())
+                .step(session, ctx);
+    }
+
+    static final String FS_WRITE = "execution.fs.write";
+
+    private static Map<String, String> resultAttrs(Session session, ToolDirective tool, SyscallResult result) {
         Map<String, String> attrs = new LinkedHashMap<>();
         attrs.put("ok", Boolean.toString(result.ok()));
         result.errorCode().ifPresent(code -> attrs.put("errorCode", code));
+        if (result.ok() && FS_WRITE.equals(tool.name())) {
+            byte[] bytes = tool.args().getOrDefault("content", "").getBytes(StandardCharsets.UTF_8);
+            attrs.put("locator", session.blobs().put(bytes));
+        }
         return attrs;
     }
 

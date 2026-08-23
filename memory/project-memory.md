@@ -1,13 +1,13 @@
 # Project Memory — Tepeu（develop）
 
-当前：**本机单写者内核可发行**（SQLite WAL schema v1 + `SqliteAssembly`）。仍不是 Agent OS。规范 [ADR-016](./decisions-log.md)。下一刀：Compaction 挂 maintenance，或审批规则矩阵，或 execution.* 沙箱。
+当前：**本机 Agent OS 骨架可演示**（五层落码）。仍不是企业 Agent OS / 完整 OS。规范 [ADR-016](./decisions-log.md)。下一刀按痛点：⑤ UI、记忆平面、多副本 fencing。
 
 v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。**不要**按那份写 `os/`。
 
 ## Tech stack（develop）
 
 - Runtime: Java 21
-- 主线：`os/`（Maven；组件 session/policy/bus/llm/loop/orchestration/compose；词汇 identity/syscall；harness conformance）
+- 主线：`os/`（Maven；组件 session/policy/bus/llm/loop/orchestration/execution/compose；词汇 identity/syscall；harness conformance）
 - 验证：`mvn -f os/pom.xml test`
 - 持久化：SQLite WAL schema v1（发行 `SqliteAssembly` → `kernel.sqlite` + `approvals.sqlite`）；`MemoryAssembly` 仅测试
 - `llm.*`：**禁止** Spring AI `ChatModel`（ADR-016 第十轮；自研双协议族）
@@ -31,6 +31,8 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件
 - 不要把新能力倒进「大包」；默认实现跟组件走。组件 ≠ 插件（无 Ctx / 无热插）
 - Loop 不依赖 orchestration：`LoopConfig.system` 只转发；assemble 是调用方纪律
-- **本机单写者内核可发行** ≠ 五层可演示 ≠ 多副本 fencing ≠ 合规删除权。`MemoryAssembly` 不得当生产默认
+- **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离仍是 **partial**。compose 不读密钥。`MemoryAssembly` 不得当生产默认
+- 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
+- `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名
 - 不要在 `legacy/` 加功能
 - `Product-Spec` 七层 / 四智能体 / 记忆 P0 / WASM+V8 **不是** `os/` 现状

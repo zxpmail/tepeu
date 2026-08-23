@@ -16,6 +16,7 @@ import com.tepeu.os.session.SessionInbox;
 import com.tepeu.os.session.SessionLedger;
 import com.tepeu.os.session.SessionLog;
 import com.tepeu.os.session.SessionRegisters;
+import com.tepeu.os.session.SurfaceEpoch;
 import com.tepeu.os.session.conformance.SessionConformance;
 import com.tepeu.os.syscall.Usage;
 
@@ -266,6 +267,8 @@ final class SqliteSession implements Session {
                     u.setString(1, id.value());
                     u.executeUpdate();
                 }
+                SqliteSessionStore.putRegister(c, id.value(), SurfaceEpoch.KEY,
+                        SurfaceEpoch.next(SqliteSessionStore.getRegister(c, id.value(), SurfaceEpoch.KEY)));
                 return seq;
             });
         }

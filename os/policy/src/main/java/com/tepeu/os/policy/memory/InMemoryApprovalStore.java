@@ -2,6 +2,7 @@ package com.tepeu.os.policy.memory;
 
 import com.tepeu.os.policy.ApprovalRecord;
 import com.tepeu.os.policy.ApprovalStore;
+import com.tepeu.os.syscall.ArgDigest;
 import com.tepeu.os.syscall.Syscall;
 import com.tepeu.os.identity.TurnContext;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 /**
  * 单机内存审批通道 — conformance/测试用。生产默认 SQLite：审批是合规证据，
- * 禁内存默认（ADR-016 ApprovalStore 行）。ask 幂等（同 (session, syscall) 未决同 id）；
+ * 禁内存默认（ADR-016 ApprovalStore 行）。ask 幂等（同 (session, syscall, argsDigest) 未决同 id）；
  * decide 一次；consumeDecision 取走即消费（许可严格单次，第九轮 C1）。
  */
 public final class InMemoryApprovalStore implements ApprovalStore {
@@ -46,15 +47,16 @@ public final class InMemoryApprovalStore implements ApprovalStore {
         Objects.requireNonNull(syscall, "syscall");
         String sessionId = ctx.sessionId().value();
         String syscallName = syscall.name();
-        // 幂等：该 (session, syscall) 已有未决 asked → 返回同一 approvalId
+        String digest = ArgDigest.of(syscall.args());
         for (int i = entries.size() - 1; i >= 0; i--) {
             ApprovalRecord r = entries.get(i).record;
-            if (sessionId.equals(r.sessionId()) && syscallName.equals(r.syscallName()) && !r.decided()) {
+            if (sessionId.equals(r.sessionId()) && syscallName.equals(r.syscallName())
+                    && digest.equals(r.argsDigest()) && !r.decided()) {
                 return r.approvalId();
             }
         }
         String approvalId = UUID.randomUUID().toString();
-        entries.add(new Entry(new ApprovalRecord(approvalId, sessionId, syscallName,
+        entries.add(new Entry(new ApprovalRecord(approvalId, sessionId, syscallName, digest,
                 clock.instant(), null, null, null)));
         return approvalId;
     }
@@ -67,24 +69,35 @@ public final class InMemoryApprovalStore implements ApprovalStore {
         }
         Instant at = clock.instant();
         e.record = new ApprovalRecord(e.record.approvalId(), e.record.sessionId(),
-                e.record.syscallName(), e.record.askedAt(), Optional.of(at), Optional.of(allow),
-                Optional.ofNullable(decidedBy));
+                e.record.syscallName(), e.record.argsDigest(), e.record.askedAt(), Optional.of(at),
+                Optional.of(allow), Optional.ofNullable(decidedBy));
     }
 
     @Override
     public synchronized Optional<Boolean> consumeDecision(TurnContext ctx, Syscall syscall) {
         String sessionId = ctx.sessionId().value();
         String syscallName = syscall.name();
+        String digest = ArgDigest.of(syscall.args());
         for (int i = entries.size() - 1; i >= 0; i--) {
             Entry e = entries.get(i);
             ApprovalRecord r = e.record;
-            if (sessionId.equals(r.sessionId()) && syscallName.equals(r.syscallName())) {
+            if (sessionId.equals(r.sessionId()) && syscallName.equals(r.syscallName())
+                    && digest.equals(r.argsDigest())) {
                 if (r.decided() && !e.consumed) {
                     e.consumed = true;
                     return r.allow();
                 }
-                // 最新一条未决（重试将拿到同一 asked id）或已消费（单次）→ 无决策可用
                 return Optional.empty();
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public synchronized Optional<ApprovalRecord> get(String approvalId) {
+        for (Entry e : entries) {
+            if (e.record.approvalId().equals(Objects.requireNonNull(approvalId, "approvalId"))) {
+                return Optional.of(e.record);
             }
         }
         return Optional.empty();

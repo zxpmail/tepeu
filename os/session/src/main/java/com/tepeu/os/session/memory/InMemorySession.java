@@ -16,6 +16,7 @@ import com.tepeu.os.session.SessionInbox;
 import com.tepeu.os.session.SessionLedger;
 import com.tepeu.os.session.SessionLog;
 import com.tepeu.os.session.SessionRegisters;
+import com.tepeu.os.session.SurfaceEpoch;
 import com.tepeu.os.session.conformance.SessionConformance;
 import com.tepeu.os.syscall.Usage;
 
@@ -75,11 +76,11 @@ public final class InMemorySession implements Session {
         this.parentId = parentId == null ? Optional.empty() : parentId;
         this.forkFromEventId = forkFromEventId == null ? Optional.empty() : forkFromEventId;
         Clock c = clock == null ? Clock.systemUTC() : clock;
-        this.entries = new Entries(c, seedEvents, seedSurface, atSeq);
+        this.registers = new Registers();
+        this.entries = new Entries(c, seedEvents, seedSurface, atSeq, this.registers);
         this.seedEndSeq = this.entries.seedEndSeq();
         this.inbox = new Inbox(c);
         this.ledger = new Ledger(c);
-        this.registers = new Registers();
         for (Map.Entry<String, String> e : registerSeed.entrySet()) {
             if ("loop.state".equals(e.getKey())) {
                 continue;
@@ -187,18 +188,17 @@ public final class InMemorySession implements Session {
     /** entries：事实日志 + surface 替换投影（LogReplacePort 与 SessionLog 共享事件存储）。 */
     private static final class Entries implements SessionLog, LogReplacePort {
         private final Clock clock;
+        private final Registers registers;
         private long logSeq;
         private long seedEndSeq;
         private final List<SessionEvent> events = new ArrayList<>();
         /** null 表示 surface ≡ 全量日志中的模型可见事件；压缩后 / fork 后维护投影。 */
         private List<SessionEvent> surfaceOverride = null;
 
-        Entries(Clock clock) {
-            this(clock, List.of(), List.of(), 0L);
-        }
-
-        Entries(Clock clock, List<SessionEvent> seedEvents, List<SessionEvent> seedSurface, long atSeq) {
+        Entries(Clock clock, List<SessionEvent> seedEvents, List<SessionEvent> seedSurface, long atSeq,
+                Registers registers) {
             this.clock = clock;
+            this.registers = Objects.requireNonNull(registers, "registers");
             if (seedEvents == null || seedEvents.isEmpty()) {
                 this.logSeq = 0;
                 this.seedEndSeq = 0;
@@ -294,6 +294,7 @@ public final class InMemorySession implements Session {
                 next.add(checkpoint);
             }
             surfaceOverride = List.copyOf(next);
+            SurfaceEpoch.bump(registers);
             return s;
         }
 

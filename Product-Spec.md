@@ -10,7 +10,7 @@
 
 > **文档地位（2026-08-18）**：本文件是 **v1.0 产品规格**（七层 Harness、工作台、路线图）。  
 > **develop 重写**的 OS 规范以 [`memory/decisions-log.md`](memory/decisions-log.md) **ADR-016** + [`docs/os-baseplate.md`](docs/os-baseplate.md) 为准。  
-> 现状与禁止口径：[`docs/agent-os-gap.md`](docs/agent-os-gap.md)（当前 = kernel 切片）。  
+> 现状与禁止口径：[`docs/agent-os-gap.md`](docs/agent-os-gap.md)（当前 = 本机 Agent OS 骨架可演示；本文件仍是 v1 档案，不是 develop 规范）。  
 > **冲突时 ADR-016 为准。** 不得单独引用本节 §1.1 宣称「OS 已成形 / 已交付完整操作系统」。v1 行为标本见 `legacy/`。
 
 ---

@@ -20,7 +20,8 @@
         <module>bus</module>
         <module>llm</module>
         <module>loop</module>
-        <module>orchestration</module>
+            <module>orchestration</module>
+        <module>execution</module>
         <module>compose</module>
     </modules>
 
@@ -30,6 +31,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.4</junit.version>
         <sqlite-jdbc.version>3.53.2.1</sqlite-jdbc.version>
+        <jna.version>5.19.1</jna.version>
     </properties>
 
     <dependencyManagement>
@@ -81,6 +83,11 @@
             </dependency>
             <dependency>
                 <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
                 <artifactId>tepeu-os-compose</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -94,6 +101,16 @@
                 <groupId>org.xerial</groupId>
                 <artifactId>sqlite-jdbc</artifactId>
                 <version>${sqlite-jdbc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>${jna.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna-platform</artifactId>
+                <version>${jna.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
