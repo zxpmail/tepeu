@@ -7,6 +7,6 @@ package com.tepeu.os.session;
  * 有独立实现（非内存桩）再拆模块。
  */
 public interface Metering {
-    /** 开 turn 前预算门：本会话累计用量是否仍在预算内。 */
+    /** 开 turn 前预算门：本会话累计用量是否仍在预算内。实现只供数，不抛拒绝。 */
     boolean withinBudget(Session session);
 }

@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * 单机内存能力总线 — 入口：取消 → 卫兵 before → Policy（含同步重试式审批）→ handler → 卫兵 after。
+ * 单机内存能力总线 — 入口：取消 → 卫兵 before（deny>ask>allow）→ Policy（含同步重试式审批）→ handler → 卫兵 after。
  * C2 fail-closed（第九轮）：未装配 Policy、或 NEED_APPROVAL 而未装配审批通道，一律拒绝；
  * Policy/卫兵钩子异常一律规范化为拒绝，禁异常穿透（ADR-016 第三轮）。
  * 失败双通道（第九轮 C3）：拦截类走异常（BusGuard/PolicyDenied/ApprovalRequired，catch 方=调用方）；
@@ -71,18 +71,27 @@ public final class InMemoryCapabilityBus implements CapabilityBus {
         if (ctx.isCancelled()) {
             throw new BusGuardException("turn cancelled");
         }
+        PolicyVerdict guardAgg = PolicyVerdict.ALLOW;
         for (GuardHook g : guards) {
+            PolicyVerdict vote;
             try {
-                g.before(ctx, syscall);
+                vote = g.before(ctx, syscall);
             } catch (BusGuardException e) {
                 throw e;
             } catch (RuntimeException e) {
-                // fail-closed：卫兵自身故障按拒绝处理，不穿透
                 throw new BusGuardException("guard failed (fail-closed): " + e);
+            }
+            if (vote == null) {
+                throw new BusGuardException("guard returned null (fail-closed): syscall=" + syscall.name());
+            }
+            if (vote == PolicyVerdict.DENY) {
+                throw new BusGuardException("guard deny: syscall=" + syscall.name());
+            }
+            if (vote == PolicyVerdict.NEED_APPROVAL) {
+                guardAgg = PolicyVerdict.NEED_APPROVAL;
             }
         }
         if (policyHook == null) {
-            // C2：未装配 Policy 即拒绝（fail-closed），无默认放行
             throw new PolicyDeniedException(PolicyVerdict.DENY,
                     "policy hook not installed (fail-closed): syscall=" + syscall.name());
         }
@@ -90,7 +99,6 @@ public final class InMemoryCapabilityBus implements CapabilityBus {
         try {
             verdict = policyHook.evaluate(ctx, syscall);
         } catch (RuntimeException e) {
-            // fail-closed：策略钩子故障 = 拒绝
             throw new PolicyDeniedException(PolicyVerdict.DENY,
                     "policy hook failed (fail-closed): " + e);
         }
@@ -101,15 +109,15 @@ public final class InMemoryCapabilityBus implements CapabilityBus {
         if (verdict == PolicyVerdict.DENY) {
             throw new PolicyDeniedException(verdict, "policy=" + verdict + " syscall=" + syscall.name());
         }
-        if (verdict == PolicyVerdict.NEED_APPROVAL) {
+        boolean needsApproval = guardAgg == PolicyVerdict.NEED_APPROVAL
+                || verdict == PolicyVerdict.NEED_APPROVAL;
+        if (needsApproval) {
             ApprovalStore store = approvalStore;
             if (store == null) {
-                // C2：需审批而无审批通道 = 拒绝（fail-closed）
                 throw new PolicyDeniedException(PolicyVerdict.NEED_APPROVAL,
                         "approval required but no approval channel installed (fail-closed): syscall="
                                 + syscall.name());
             }
-            // C1 同步重试式：先消费既有决策；无决策则登记 asked 并抛出，由决策者 decide 后重试
             Optional<Boolean> decision = store.consumeDecision(ctx, syscall);
             if (decision.isEmpty()) {
                 throw new ApprovalRequiredException(store.ask(ctx, syscall), syscall.name());
@@ -118,7 +126,6 @@ public final class InMemoryCapabilityBus implements CapabilityBus {
                 throw new PolicyDeniedException(PolicyVerdict.NEED_APPROVAL,
                         "approval decided: deny syscall=" + syscall.name());
             }
-            // 决策=放行 → 落 handler（许可已消费，下次同调用重新走审批）
         }
         SyscallHandler handler = handlers.get(syscall.name());
         if (handler == null) {

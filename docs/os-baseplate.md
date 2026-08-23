@@ -138,13 +138,13 @@ os/
   bus/              组件：能力总线 + 卫兵
   llm/              组件：llm.* 派生式断言 + fake 传输
   loop/             组件：③ SessionLoop（claim / 有界 turn / 工具 / 完成门）
-  orchestration/    ③ 环索引（Command/Prompt 待落码）
+  orchestration/    组件：PromptAssembly + CommandDispatcher（Team 未落）
   compose/          组件：开机接线
   README.md         本底板索引
 legacy/             v1 只读标本
 ```
 
-调试：`mvn -f os/pom.xml -pl session test` / `-pl bus test` / `-pl loop test`。禁止在 `legacy/` 加功能。
+调试：`mvn -f os/pom.xml -pl session test` / `-pl bus test` / `-pl loop test` / `-pl orchestration test`。禁止在 `legacy/` 加功能。
 
 ---
 
@@ -170,8 +170,8 @@ legacy/             v1 只读标本
 | 项 | 来源 | 归属切片 | 状态 |
 |----|------|----------|------|
 | `SyscallResult` 基座计量槽位（usage/latency；两参照独立收敛） | TriniOS + AIOS C5 | `llm.*` 断言 / Metering | ✅ 已落码（第九轮：槽位 + `Usage` inclusive 双轨；cost 细化随 `llm.*`） |
-| ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed） | AIOS C6 + OpenCode + gnex3（usage 只增禁负禁篡改；写失败 tepeu 倾向 fail-closed——预算门供数源不可丢账，gnex3 降级放行记备选） | ledger / Metering | ◐ 端口与内存实现已落（第九轮）；barrier 语义随持久化实现 |
-| DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode + gnex3（形状：指纹归一化剥时间戳/随机参数 + NUDGE 模型可见） | ③ Loop | 挂账 |
+| ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed） | AIOS C6 + OpenCode + gnex3（usage 只增禁负禁篡改；写失败 tepeu 倾向 fail-closed——预算门供数源不可丢账，gnex3 降级放行记备选） | ledger / Metering | ✅ 单写者 SQLite WAL：同连接 record 后 readAll 可见；close 后再写 fail-closed（第二十轮）。多副本 barrier/超时仍挂账 |
+| DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode + gnex3（形状：指纹归一化剥时间戳/随机参数 + NUDGE 模型可见） | ③ Loop | ◐ 熔断+NUDGE 已落（第十七轮）；卫兵 verdict 已落（第十九轮）；DoomLoop 尚未把第三刀改成 NEED_APPROVAL |
 | CC §3 吸收项（终态转移表/恢复分级/分区并发/熔断/递减收益停机） | CC | ③ Loop 端口设计说明 | 挂账 |
 | 工具经总线组合调用另一工具是否算互引 | 审计 O5 | Tool 契约 | 挂账 |
 | 子代理审批 `asked/decided` 落哪个会话（父/子/delegationId） | 审计 O6 | SubagentAdaptor | 挂账 |
@@ -185,7 +185,7 @@ legacy/             v1 只读标本
 | ~~总线是否自动落 TOOL_CALL/TOOL_RESULT 事件~~ | ~~③ 编排落 entries~~ | ✅ 已裁并落码（第十二轮归属 ③；第十三轮：先落 CALL 再 invoke，拦截合成 RESULT） |
 | ~~registers 是否建通用 RegisterStore 端口~~ | ~~随 ③ Loop~~ | ✅ 已裁（第十二轮：`SessionRegisters` 挂在 session，不另开 jar；快照锁存仍挂账） |
 | ~~SessionLoop 会话串行域~~ | ~~倾向阻塞式+显式门~~ | ✅ 已裁（第十二轮：阻塞 `SessionLoop.run` + `loop.state` 门；非事件驱动） |
-| **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动 | 选型问询 + 五参照 + gnex3 | `llm.*` 断言切片 | ✅ 契约+fake 已落码（2026-08-22：`os/llm` derive/normalize/双族投影/digest 复核）；真 HTTP 一族一刀后续裁 |
+| **LlmProvider 实现选型**：自研双协议族优先 vs Spring AI 驱动 | 选型问询 + 五参照 + gnex3 | `llm.*` 断言切片 | ✅ 契约+fake 已落码；Anthropic HTTP 薄壳已落（第十四轮）；OpenAI HTTP 薄壳已落（第十五轮，JDK HttpClient，离线 stub） |
 | **timer 基础设施**：per-domain PQ 起步，>万级升时间轮；解「死租约可回收」 | Netty §2.1 | ① session | 挂账 |
 | **采样泄漏检测**（弱引用+GC 探测+1/N 采样） | Netty §2.2 | 生命周期审计切片 | 挂账 |
 | `llm.*` 重试协议：可重试分类封闭集 + requestId 幂等（流式从零重放）+ 熔断开路禁重试 | gnex3 | llm transport 切片 | 挂账 |
@@ -200,10 +200,10 @@ legacy/             v1 只读标本
 |-------|----------|----------|
 | ~~租约 TTL 记而不执~~ | ~~`InMemorySession`~~ | ✅ 已落码（时钟注入 + 惰性回收 + conformance 用例，2026-08-16） |
 | ~~syscall 注册表无确定性规范序~~ | ~~`InMemoryCapabilityBus.handlers`~~ | ✅ 已落码（ConcurrentSkipListMap + `registeredSyscalls()` + conformance，2026-08-22） |
-| `GuardHook` 无 verdict 载体（组合代数无实现前提） | `InMemoryCapabilityBus` | conformance 用例 / 端口演化 |
+| ~~`GuardHook` 无 verdict 载体（组合代数无实现前提）~~ | ~~`InMemoryCapabilityBus`~~ | ✅ 已落码（第十九轮：`before` 返回 PolicyVerdict；deny>ask>allow；ASK 走 ApprovalStore） |
 | ~~`InboxMessage` 无 priority（now/next/later 未落）~~ | ~~`InMemorySession`~~ | ✅ 已落码（第九轮：`Priority` 入签名 + 领取序用例） |
 | ~~ledger store 零代码（三 store 之一，内核必需端口 Metering 同缺）~~ | ~~kernel session 包~~ | ✅ 已落码（第九轮：`SessionLedger`/`LedgerEntry`/`Usage` + `Metering` 端口 + conformance 2 用例） |
-| fork 未实现（`forkFromEventId` 恒 empty；种子区校验缺位） | `InMemorySession` | ① session fork 切片 |
+| ~~fork 未实现（`forkFromEventId` 恒 empty；种子区校验缺位）~~ | ~~`InMemorySession`~~ | ✅ 已落码（第十九轮：`SessionStore.fork` + END_SEED + 禁伸种子区） |
 | ~~`SyscallResult` 无 usage/latency 计量槽位~~ | ~~kernel bus~~ | ✅ 已落码（第九轮：基座字段 + `Usage` 双轨） |
 
 ---
@@ -213,7 +213,7 @@ legacy/             v1 只读标本
 - **seq 由 append 点分配**，本日志内严格单调连续且唯一（无种子日志等值于 `log.length`；fork 场景种子事件**保留原 seq**、自身写入从 end-seed 后**续接同一单调空间**——ADR-016 第七轮）；append 点做 lossless 校验，坏事件在 append 失败，不在 flush 处。
 - 未知事件默认 **required-fail**：无 `ignorable: true` 标记时读者必须拒绝重建，禁静默丢弃。
 - **词汇表机制**（ADR-016 第六轮，三件）：per-type 版本化（schema 变更 bump `version`，持久化键 `type.version`，旧版本留作历史 decode，发布走 latest）；显式 manifest（重复定义启动失败）；**数量钉死测试**（新增事件必须显式改测试）。
-- 崩溃恢复**补合成闭合**：open turn 补 `turn/end{kind:'interrupted'}`，事件全保留，**不截断日志**。
+- 崩溃恢复**补合成闭合**：`Session.recover()` 为未配对 `TOOL_CALL` 补 `TOOL_RESULT{INTERRUPTED}`，不截断；`loop.state` 点查回 IDLE。内核不知 turn，不写 `turn/end` 事件。
 - fork/resume 写 `end-seed` 边界事件区分种子历史与自身写入。fork 必须携带全部替换/surface 记账；自身写入的 `replaceRange` 区间**不得伸进种子区**，越界 append 失败。
 - 附件 **persist-before-event**：二进制先落内容寻址存储（sha256），事件里只放 opaque 引用；超大工具输出 **spill** 落盘 + locator + retrievalHint。
 - `SYSTEM_NOTE` 已砍除（ADR-016 第八轮）：语义未定义者不入词汇表；需要时按 manifest 流程显式加回。

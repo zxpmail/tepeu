@@ -13,15 +13,16 @@
 
 ## 现网
 
-**组件（6）**
+**组件（7）**
 
 | 模块 | 一件事 | 独立测 |
 |------|--------|--------|
-| `session/` | 会话三 store + Metering 端口 | `mvn -f os/pom.xml -pl session test` |
-| `policy/` | Policy + 审批 | — |
+| `session/` | 会话三 store + Metering + fork/recover/CAS + AuditSink + SQLite WAL | `mvn -f os/pom.xml -pl session test` |
+| `policy/` | Policy + 审批（内存测试 / SQLite 发行） | `mvn -f os/pom.xml -pl policy test` |
 | `bus/` | 总线分发 + 卫兵 | `mvn -f os/pom.xml -pl bus test` |
-| `llm/` | llm.* 派生式断言 + fake 传输 | `mvn -f os/pom.xml -pl llm test` |
-| `loop/` | claim → 有界 turn（含工具）→ 完成证据门 | `mvn -f os/pom.xml -pl loop test` |
+| `llm/` | llm.* 派生式断言 + fake + Anthropic/OpenAI HTTP 薄壳 | `mvn -f os/pom.xml -pl llm test` |
+| `loop/` | claim → 有界 turn（含工具 / DoomLoop）→ 完成证据门；maintenance 窗 | `mvn -f os/pom.xml -pl loop test` |
+| `orchestration/` | PromptAssembly + CommandDispatcher（local/prompt） | `mvn -f os/pom.xml -pl orchestration test` |
 | `compose/` | 开机接线 | `mvn -f os/pom.xml -pl compose test` |
 
 **不是组件**
@@ -32,7 +33,7 @@
 | `syscall/` | 词汇：调用信封 + Usage |
 | `conformance/` | 测试 harness |
 
-尚未落码：maintenance / PromptAssembly / Command。`orchestration/` 仍是环索引。真 HTTP 随后一刀。
+尚未落码：Team / Subagent / LongTask / 路由三决策。PromptAssembly / Command 已在 `orchestration/`；Loop 不依赖该模块。
 
 ```bash
 mvn -f os/pom.xml test

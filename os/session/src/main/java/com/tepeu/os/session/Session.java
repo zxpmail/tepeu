@@ -21,6 +21,9 @@ public interface Session {
 
     Optional<String> forkFromEventId();
 
+    /** 种子边界 seq（END_SEED）；非 fork 则 empty。自身写入的 replaceRange 不得 ≤ 此值。 */
+    Optional<Long> seedEndSeq();
+
     SessionLog log();
 
     SessionInbox inbox();
@@ -30,4 +33,12 @@ public interface Session {
     SessionRegisters registers();
 
     LogReplacePort logReplace();
+
+    ContentStore blobs();
+
+    /**
+     * 崩溃补闭合：未配对 TOOL_CALL 补合成 TOOL_RESULT（INTERRUPTED），不截断日志。
+     * 若 registers 有 {@code loop.state} 且非 IDLE，点查写回 IDLE。返回补了几条 RESULT。
+     */
+    int recover();
 }

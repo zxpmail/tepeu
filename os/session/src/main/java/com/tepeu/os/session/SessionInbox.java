@@ -24,4 +24,10 @@ public interface SessionInbox {
 
     /** 放弃租约，消息可被再次领取。 */
     void nack(String claimId);
+
+    /** 累计投入次数（单调，含已消费）。maintenance 开窗 latch 用。 */
+    long enqueued();
+
+    /** 当前是否有可领取的 NOW（未持有有效租约，或死租约可回收）。 */
+    boolean hasClaimableNow();
 }

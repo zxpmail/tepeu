@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-session</artifactId>
     <name>Tepeu OS Session</name>
-    <description>会话三 store + Metering 端口 + 内存默认 + SessionConformance</description>
+    <description>会话三 store + Metering + SQLite WAL 发行插头 + SessionConformance</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -23,6 +23,10 @@
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-conformance</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

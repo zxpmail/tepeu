@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-llm</artifactId>
     <name>Tepeu OS Llm</name>
-    <description>llm.* 派生式断言 + 双协议族投影 + fake 传输</description>
+    <description>llm.* 派生式断言 + 双协议族投影 + fake / Anthropic HTTP / OpenAI HTTP</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>

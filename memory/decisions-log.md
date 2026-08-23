@@ -318,5 +318,38 @@
   2. **先落日志再执行**（兑现 gnex3 §2.2，归属第十二轮已裁给 ③）：`TOOL_CALL` 入 entries 后才 `bus.invoke`。拦截类异常（卫兵/Policy/审批）catch 后**合成** `TOOL_RESULT`（`ok=false` + errorCode）再 FAILED——禁止孤儿 CALL。执行类 `ok=false`（含未注册 `NOT_FOUND`）写 RESULT 后继续 generate。
   3. **不 import 具体 Tool 类**。禁止把 `llm.generate` 当工具再 invoke（STRUCTURAL + 合成 RESULT + FAILED）。工具名即总线 syscall 名。
   4. **完成仍过 REPLY 门**。成功路径：USER + (CALL/RESULT)* + 非空 ASSISTANT。仅工具打满 `maxSteps` = STOPPED，不得 completed。DoomLoop / TIMED_OUT / 一块多 tool_use / `execution.*` 沙箱仍挂账。
-- **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。Loop 答复+工具循环已落；下一动作 = llm 真 HTTP（一族一刀），或预算硬门进往返，或 maintenance。Java 沙箱选型单独立项（黄灯）。
+- **Decision — Anthropic HTTP 薄壳（2026-08-22 第十四轮，落码切片）**:
+  1. **JDK HttpClient**，不引入官方 SDK、不引入 Spring AI。`AnthropicHttpTransport` POST `{base}/v1/messages`；body = `prepared.wireJson`（投影 v2 必带 `max_tokens`，默认 1024，入 ledger attrs 供复核）。密钥只读 `ANTHROPIC_API_KEY`（可选 `ANTHROPIC_BASE_URL`）；compose 默认仍 fake，调用方注入传输。
+  2. **缝可观测**：请求头 `anthropic-version=2023-06-01` + `anthropic-beta=prompt-caching-2024-07-31`（投影仍写 cache_control）。HTTP 非 2xx / 非 JSON → `TRANSPORT`，不落 ledger。只拼接 `content[].type=text`；tool_use 映射仍挂账。cost 空 = n/a。
+  3. **本刀不包含**：OpenAI HTTP、重试协议、流式、live key 往返。离线 stub 证伪「发出的 body ≡ prepare」。
+- **Decision — OpenAI HTTP 薄壳（2026-08-23 第十五轮，落码切片）**:
+  1. **同一 JDK HttpClient 缝**，不引入官方 SDK / Spring AI。`OpenAiHttpTransport` POST `{base}/v1/chat/completions`；body = `prepared.wireJson`（投影 v1，无 cache_control）。密钥只读 `OPENAI_API_KEY`（可选 `OPENAI_BASE_URL`，默认 `https://api.openai.com`）；`Authorization: Bearer`。compose 默认仍 fake，调用方注入传输。Anthropic 族拒绝（CONFIG）。
+  2. **用量拆轨**：OpenAI `prompt_tokens` **含**缓存；`Usage.inputTokens` 是非缓存输入 → `input = prompt_tokens - prompt_tokens_details.cached_tokens`，`cacheRead = cached_tokens`，`cacheWrite = 0`（无对等字段）。只读 `choices[0].message.content`（string 或 `type=text` 数组）；tool_calls 映射仍挂账。HTTP 非 2xx / 非 JSON → `TRANSPORT`，不落 ledger。cost 空 = n/a。
+  3. **本刀不包含**：重试协议、流式、live key 往返、第三份投影。离线 stub 证伪「发出的 body ≡ prepare」。
+- **Decision — 预算硬门进往返（2026-08-23 第十六轮，落码切片）**:
+  1. **Metering 只供数**：`LedgerMetering` 从会话 ledger 派生 `usage.totalTokens()` 累计，和配置的 token 硬顶比较。无顶 = 不限；顶 0 = 零预算；**累计须严格小于顶**才 `withinBudget`。cost 空不参与（禁止假装有价）。Metering 不抛拒绝。
+  2. **开 turn 前拦**：`SessionLoop` 在 `maxSteps` 之后、claim 之前读 `withinBudget`；false → `STOPPED`/`BUDGET`，不 claim、不写 USER、不调 `llm.generate`，Inbox 消息仍在。Metering 抛异常 → fail-closed `FAILED`。默认 `LedgerMetering.unlimited()`，compose 不偷设顶。
+  3. **本刀不包含**：逐消息费用检查（第七轮单机裁决：开 turn 前 + provider `max_tokens` 兜底已在 Anthropic 投影）；人手旁路打总线不经 Loop，本刀不在 Policy/`llm.*` 入口再拦；默认规则矩阵 / 审批同 turn 回放仍挂账。
+- **Decision — Loop maintenance 窗 + DoomLoop（2026-08-23 第十七轮，落码切片）**:
+  1. **maintenance 独占 idle 窗口**：`SessionLoop.maintain`；`loop.state=MAINTENANCE`；running/maintenance 中再 `run`/`maintain` = INVALID。不 claim。强制上限（`MaintenanceConfig.maxWindow`，可注入时钟）；上限到点 → `STOPPED`/`MAINTENANCE_LIMIT`。开窗前若已有可领 NOW → 不开窗（`MAINTENANCE_NOW`）；窗内到达 NOW → 让位，消息仍在 Inbox。latch = 开窗时 `inbox.enqueued()` 写入 `loop.latch`（内存 Inbox 即 claim 队列，其后 now/next 无需另重放）。窗口预算独立（`windowMetering`，默认 unlimited）。干净结束 → `STOPPED`/`MAINTENANCE_DONE`（**不是**答复 COMPLETED）。主动压缩作业仍属 Compaction 缝，本刀只提供窗口。
+  2. **DoomLoop**：同工具同输入连续 **3** 次（OpenCode 阈值）→ 第三刀不 `invoke`；合成 `TOOL_RESULT`（`errorCode=DOOM_LOOP`，body=NUDGE，模型可见）。指纹剥 `timestamp/ts/time/random/nonce/uuid/requestId/request_id` 键。不新开事件类型。NEED_APPROVAL 并入总线审批通道仍待 GuardHook verdict 载体（本刀 = 停 turn 等人）。
+  3. **Inbox 水位**：`enqueued()` 单调；`hasClaimableNow()` 只认可领取 NOW。
+- **Decision — PromptAssembly + CommandDispatcher（2026-08-23 第十八轮，落码切片）**:
+  1. **orchestration 开成组件 jar**（不是第三份投影；Loop **不**依赖本模块）。`PromptAssembly` 按有序 Section 组装：STATIC → `system`；DYNAMIC → `dynamicBodies`（调用方作 user-role 快照，不混进 system）。超预算：STATIC 保前缀；DYNAMIC 从后往前（最具体优先），装不下则截最具体、更宽泛 DROP。weight = 字符数（不是 tokenizer）。收据 = `includedIds` + `bill`。不新开 `prompt_assembly` 事件（7 类词汇表钉死）。`skillCatalog` 仅 name/description/digest；正文另注册。无记忆平面则不得捏造 `memory_hits`。
+  2. **CommandDispatcher** 只见 local/prompt。解析行首 `/name args`；未知命令失败、不进 Inbox、不经模型。prompt 型 `inbox.enqueue(expansion, source=command:<name>)`，不调用 Loop。内置 `/help`（local）。local-jsx 仍属 ⑤。
+  3. **Loop 仍只转发 `LoopConfig.system`**。红线「须经 PromptAssembly」本刀 = 调用方/compose 纪律，不是 Loop 编译期依赖。compose 接线空 PromptAssembly + 已注册 Help 的 CommandDispatcher。AuditSink / Slash 宿主副作用仍缺。技能正文懒加载 = 调用时再 register 段；本刀不碰文件系统。
+- **Decision — 内核契约收口（2026-08-23 第十九轮，落码切片）**:
+  1. **fork**：`SessionStore.fork(source, atSeq)` 复制 `seq<=atSeq` 的审计事件（保留原 seq）与 surface 记账，写入 `END_SEED` 后续接同一单调空间。`replaceRange` 不得 `fromSeq <= seedEndSeq`。Inbox/ledger 不随种子。`loop.state` 不带 RUNNING 过叉。词汇表钉 8 类；`END_SEED` 只在审计日志、不进 surface / `derive`。
+  2. **卫兵 verdict**：`GuardHook.before` 返回 `PolicyVerdict`；聚合 deny > ask > allow。DENY/`BusGuardException` 仍中断且不调 Policy。ASK 与 Policy ASK 共用 `ApprovalStore`。卫兵 ALLOW 压不过 Policy DENY。
+  3. **AuditSink** 端口 + 内存实现；不进 entries。compose 接线。总线不自动落账（人手旁路由调用方写）。
+  4. **崩溃补闭合**：`Session.recover()` 为未配对 `TOOL_CALL` 补 `TOOL_RESULT{errorCode=INTERRUPTED}`，不截断；`loop.state` 若存在且非 IDLE 则点查写回 IDLE。内核仍不知 turn，不新开 `turn/end` 类型。
+  5. **persist-before-event**：`ContentStore`（sha256 CAS）；事件只放 locator。
+  6. **本刀不包含**：SQLite schema（② 插头，规范默认仍未写）；多副本 fencing；timer 轮；哈希链 tamper-evidence；默认规则矩阵。
+- **Decision — 本机单写者内核可发行（2026-08-23 第二十轮，落码切片）**:
+  1. **SessionStore 发行插头** = SQLite WAL schema v1（事件列 `type_version` 默认 1；`meta.schema_version=1`，不匹配 fail-closed）。单 JDBC 连接 + 互斥；`busy_timeout=5000`、`synchronous=FULL`。过同一套 `SessionConformance` / `forkSuite`。进程重启后事件、fork 种子区、`recover()`、blobs、AuditSink 仍在。依赖锁定 `org.xerial:sqlite-jdbc:3.53.2.1`。
+  2. **ApprovalStore 发行插头** = 独立 `approvals.sqlite`（policy 不共享 session 内部表）。过 `ApprovalConformance`；C1 语义不变（未决 ask 幂等、decide 一次、consume 严格单次）。
+  3. **compose 发行默认** = `SqliteAssembly.file(dir)` → `dir/kernel.sqlite` + `dir/approvals.sqlite`。`MemoryAssembly` 仅 conformance / 单测。发行路径不得默认 `InMemoryApprovalStore`。`Wired` 实现 `AutoCloseable`。
+  4. **ledger**：同连接 `record` 后 `readAll` 可见；store close 后再写抛 `SqliteStoreException`（fail-closed）。多副本 fencing / barrier 超时仍挂账。
+  5. **本刀不包含**：多副本 fencing、timer 轮、哈希链、默认规则矩阵、live key 往返、`execution.*` 沙箱、Compaction 作业。口径 = **本机单写者内核可发行**；仍不得称 Agent OS / 骨架可演示 / 合规删除权。
+- **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。下一动作 = Compaction 挂 maintenance 窗，或审批规则矩阵，或 `execution.*` 沙箱（黄灯）。
 

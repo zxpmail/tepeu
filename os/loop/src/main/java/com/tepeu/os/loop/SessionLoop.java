@@ -8,6 +8,8 @@ import com.tepeu.os.policy.ApprovalRequiredException;
 import com.tepeu.os.policy.PolicyDeniedException;
 import com.tepeu.os.session.ClaimLease;
 import com.tepeu.os.session.InboxMessage;
+import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.session.Metering;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEventType;
 import com.tepeu.os.session.SessionStore;
@@ -19,25 +21,35 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.time.Instant;
 
 /**
  * 会话主路：必经 Inbox/claim；llm.* 与工具都走总线；完成须过证据门。
  * 阻塞式 + 显式门。不 import 具体 Tool 类。
  * TOOL_CALL/TOOL_RESULT 由本组件写 entries，总线不自动落事件。
  * 工具：先落 TOOL_CALL 再 invoke；拦截失败合成 TOOL_RESULT。
+ * 开 turn 前读 Metering.withinBudget；超限不 claim（Metering 只供数）。
+ * maintenance 独占 idle 窗口（强制上限 / NOW 让位 / latch）。DoomLoop 熔断写 NUDGE。
  */
 public final class SessionLoop {
 
     public static final String SYSCALL_GENERATE = "llm.generate";
     public static final String REGISTER_STATE = "loop.state";
+    public static final String REGISTER_LATCH = "loop.latch";
 
     private final SessionStore sessions;
     private final CapabilityBus bus;
+    private final Metering metering;
     private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
 
     public SessionLoop(SessionStore sessions, CapabilityBus bus) {
+        this(sessions, bus, LedgerMetering.unlimited());
+    }
+
+    public SessionLoop(SessionStore sessions, CapabilityBus bus, Metering metering) {
         this.sessions = Objects.requireNonNull(sessions, "sessions");
         this.bus = Objects.requireNonNull(bus, "bus");
+        this.metering = Objects.requireNonNull(metering, "metering");
     }
 
     public TurnOutcome run(TurnContext ctx, LoopConfig config) {
@@ -54,6 +66,15 @@ public final class SessionLoop {
             }
             if (config.maxSteps() < 1) {
                 return TurnOutcome.stopped(0, "maxSteps < 1");
+            }
+            boolean within;
+            try {
+                within = metering.withinBudget(session);
+            } catch (RuntimeException e) {
+                return TurnOutcome.failed(0, "metering failed (fail-closed): " + e.getMessage());
+            }
+            if (!within) {
+                return TurnOutcome.stopped(0, "BUDGET");
             }
             session.registers().put(REGISTER_STATE, LoopState.RUNNING.name());
             int steps = 0;
@@ -120,6 +141,65 @@ public final class SessionLoop {
     }
 
     /**
+     * 独占 maintenance 窗口。不 claim。工作须协作让出。
+     * COMPLETED 不用在这条路上（完成仍是答复证据门）。
+     */
+    public TurnOutcome maintain(TurnContext ctx, MaintenanceConfig config, MaintenanceWork work) {
+        Objects.requireNonNull(ctx, "ctx");
+        Objects.requireNonNull(config, "config");
+        Objects.requireNonNull(work, "work");
+        Session session = sessions.get(ctx.sessionId()).orElse(null);
+        if (session == null) {
+            return TurnOutcome.invalid("session not found");
+        }
+        synchronized (lockFor(session.id())) {
+            LoopState current = readState(session);
+            if (current != LoopState.IDLE) {
+                return TurnOutcome.invalid("loop.state=" + current);
+            }
+            if (session.inbox().hasClaimableNow()) {
+                return TurnOutcome.stopped(0, "MAINTENANCE_NOW");
+            }
+            boolean within;
+            try {
+                within = config.windowMetering().withinBudget(session);
+            } catch (RuntimeException e) {
+                return TurnOutcome.failed(0, "metering failed (fail-closed): " + e.getMessage());
+            }
+            if (!within) {
+                return TurnOutcome.stopped(0, "BUDGET");
+            }
+            long latch = session.inbox().enqueued();
+            session.registers().put(REGISTER_LATCH, Long.toString(latch));
+            session.registers().put(REGISTER_STATE, LoopState.MAINTENANCE.name());
+            int steps = 0;
+            try {
+                Instant deadline = config.clock().instant().plus(config.maxWindow());
+                while (true) {
+                    if (!config.clock().instant().isBefore(deadline)) {
+                        return TurnOutcome.stopped(steps, "MAINTENANCE_LIMIT");
+                    }
+                    if (steps > 0 && session.inbox().hasClaimableNow()) {
+                        return TurnOutcome.stopped(steps, "MAINTENANCE_NOW");
+                    }
+                    boolean more;
+                    try {
+                        more = work.step(session, ctx);
+                    } catch (RuntimeException e) {
+                        return TurnOutcome.failed(steps, String.valueOf(e.getMessage()));
+                    }
+                    steps++;
+                    if (!more) {
+                        return TurnOutcome.stopped(steps, "MAINTENANCE_DONE");
+                    }
+                }
+            } finally {
+                session.registers().put(REGISTER_STATE, LoopState.IDLE.name());
+            }
+        }
+    }
+
+    /**
      * @return 非 null 则中止本轮；null 表示已成对落账，继续 generate。
      */
     private TurnOutcome invokeTool(Session session, TurnContext ctx, ToolDirective tool, int steps) {
@@ -129,6 +209,11 @@ public final class SessionLoop {
                     "loop will not invoke llm.generate as a tool",
                     interceptAttrs("STRUCTURAL"));
             return TurnOutcome.failed(steps, "cannot invoke llm.generate as a tool");
+        }
+        if (DoomLoop.tripped(session, tool.name(), tool.args())) {
+            session.log().append(SessionEventType.TOOL_RESULT, DoomLoop.nudge(tool.name()),
+                    interceptAttrs(DoomLoop.ERROR_CODE));
+            return TurnOutcome.failed(steps, DoomLoop.ERROR_CODE);
         }
         try {
             SyscallResult toolResult = bus.invoke(ctx, new Syscall(tool.name(), tool.args()));

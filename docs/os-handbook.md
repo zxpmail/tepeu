@@ -20,20 +20,21 @@
 
 ---
 
-## Loop 三态（答复+工具已落；maintenance 未进）
+## Loop 三态（答复+工具+maintenance 窗已落）
 
 ```text
  idle ──claim──► running ──释放 / 合成闭合──► idle
                     │
-                    │ 主动/后台压缩（独立预算）——未落码
+                    │ SessionLoop.maintain（独立预算；不 claim）
                     ▼
               maintenance（强制上限；latch=开窗 Inbox 水位）
-                    │ NOW 到达或上限到点 → 让位，重放其后 now/next
+                    │ NOW 到达或上限到点 → 让位；其后 now/next 仍在 Inbox
                     ▼
                   idle
 ```
 
-`loop.state` 在 registers。无效转移则停（running/maintenance 中不得再 run）。DoomLoop→ask 仍挂账。
+`loop.state` / `loop.latch` 在 registers。无效转移则停（running/maintenance 中不得再 run / maintain）。
+DoomLoop：同工具同输入连续 3 次 → 停执行 + NUDGE 入 TOOL_RESULT（模型可见）。卫兵 ASK 已能进审批通道；DoomLoop 第三刀尚未改成 NEED_APPROVAL。
 
 now 级抢占只切流式 chunk；本刀无流式。
 
@@ -51,7 +52,7 @@ now 级抢占只切流式 chunk；本刀无流式。
 | 计划 | `PLAN_STEP` | 只勾了 UI |
 | 用量 | ledger | 未知却报数字 → n/a |
 
-7 类词汇表无 `completed`。加类型走 manifest。
+7 类模型可见事件无 `completed`。第 8 类 `END_SEED` 只在审计日志，不进 surface。加类型走 manifest。
 
 ---
 
@@ -70,7 +71,7 @@ now 级抢占只切流式 chunk；本刀无流式。
 | `task_brief` | 长程唤醒摘要 |
 | `prior_reasoning` | 默认关 |
 
-ADR 所写「prompt_assembly 快照事件」**未入**词汇表。落地须 manifest 加类型或证明现有事件能还原 section id。
+ADR 所写「prompt_assembly 快照事件」**未入**词汇表。落地须 manifest 加类型或证明现有事件能还原 section id。本刀收据 = `includedIds` + `bill`，不新开事件类型。
 
 ---
 
@@ -80,9 +81,9 @@ ADR 所写「prompt_assembly 快照事件」**未入**词汇表。落地须 mani
 
 | 端口 | 规范单机 | conformance | 发行 |
 |------|----------|-------------|------|
-| SessionStore | SQLite/文件 | 内存 | schema 未写 |
-| InboxClaim | 进程内锁+TTL | 内存领取 | fencing 远期 |
-| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | 内存不得发行 |
+| SessionStore | SQLite WAL schema v1 | 内存 | `SqliteSessionStore`（单写者） |
+| InboxClaim | 进程内锁+TTL | 内存领取 | SQLite 同进程 TTL；fencing 远期 |
+| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | `SqliteApprovalStore`；`MemoryAssembly` 不得发行 |
 | Metering | 供数 | 端口有 | 未知价 n/a |
 
 ---
@@ -107,4 +108,4 @@ Policy≠沙箱。配额=入口拒。Metering 不裁决。Secret 不进模型通
 
 ## 仍不写
 
-`llm.*` 具体名 · 快照事件类型 · Java 沙箱 · SQLite schema · 调度公平 / tamper-evidence。TOOL 落账归属与 RegisterStore 薄端口已随第十二轮裁。见底板 §8.5。
+`llm.*` 具体名 · 快照事件类型 · Java 沙箱 · 调度公平 / tamper-evidence · 多副本 fencing。TOOL 落账归属与 RegisterStore 薄端口已随第十二轮裁。SQLite schema v1 已落（第二十轮）。见底板 §8.5。

@@ -1,7 +1,7 @@
 package com.tepeu.os.loop;
 
 /**
- * 完成声称。无新事件类型；证据只从现有 7 类 + ledger 还原。
+ * 完成声称。证据从模型可见事件 + ledger 还原；END_SEED 不是完成证据。
  */
 public enum CompletionClaim {
     /** 答复：声称之后须有非空 ASSISTANT_MESSAGE。 */

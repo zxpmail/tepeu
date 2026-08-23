@@ -5,7 +5,7 @@ import com.tepeu.os.syscall.Usage;
 
 import java.util.List;
 
-/** 传输缝。fake 先行；真 HTTP 一族一刀后续裁。 */
+/** 传输缝。fake 与 Anthropic / OpenAI HTTP 薄壳。 */
 public interface LlmTransport {
 
     record Reply(String output, Usage usage) {
@@ -18,9 +18,18 @@ public interface LlmTransport {
             ProtocolFamily family,
             String model,
             String system) {
+        return prepare(surface, family, model, system, AnthropicProjector.DEFAULT_MAX_TOKENS);
+    }
+
+    static PreparedRequest prepare(
+            List<SessionEvent> surface,
+            ProtocolFamily family,
+            String model,
+            String system,
+            int maxTokens) {
         List<CanonicalTurn> derived = LogDeriver.derive(surface);
         List<CanonicalTurn> normalized = SharedNormalizer.normalize(derived);
-        MapWire wire = project(family, model, system == null ? "" : system, normalized);
+        MapWire wire = project(family, model, system == null ? "" : system, normalized, maxTokens);
         String json = CanonicalJson.write(wire.root());
         long throughSeq = surface.isEmpty() ? 0L : surface.get(surface.size() - 1).seq();
         return new PreparedRequest(
@@ -36,9 +45,14 @@ public interface LlmTransport {
     }
 
     private static MapWire project(
-            ProtocolFamily family, String model, String system, List<CanonicalTurn> normalized) {
+            ProtocolFamily family,
+            String model,
+            String system,
+            List<CanonicalTurn> normalized,
+            int maxTokens) {
         return switch (family) {
-            case ANTHROPIC -> new MapWire(AnthropicProjector.project(model, system, normalized),
+            case ANTHROPIC -> new MapWire(
+                    AnthropicProjector.project(model, system, normalized, maxTokens),
                     AnthropicProjector.VERSION);
             case OPENAI -> new MapWire(OpenAiProjector.project(model, system, normalized),
                     OpenAiProjector.VERSION);

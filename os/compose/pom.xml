@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-compose</artifactId>
     <name>Tepeu OS Compose</name>
-    <description>开机接线：把组件插到端口上</description>
+    <description>开机接线：发行 SqliteAssembly / 测试 MemoryAssembly</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -39,6 +39,10 @@
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-loop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-orchestration</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

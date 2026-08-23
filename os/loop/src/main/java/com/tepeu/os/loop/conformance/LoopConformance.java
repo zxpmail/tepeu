@@ -3,32 +3,40 @@ package com.tepeu.os.loop.conformance;
 import com.tepeu.os.bus.BusGuardException;
 import com.tepeu.os.bus.CapabilityBus;
 import com.tepeu.os.conformance.ConformanceCase;
+import com.tepeu.os.conformance.MutableClock;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.loop.CompletionClaim;
 import com.tepeu.os.loop.CompletionGate;
+import com.tepeu.os.loop.DoomLoop;
 import com.tepeu.os.loop.LoopConfig;
 import com.tepeu.os.loop.LoopState;
+import com.tepeu.os.loop.MaintenanceConfig;
 import com.tepeu.os.loop.SessionLoop;
 import com.tepeu.os.loop.ToolDirective;
 import com.tepeu.os.loop.TurnOutcome;
 import com.tepeu.os.policy.PolicyVerdict;
+import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.session.Priority;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEventType;
 import com.tepeu.os.session.SessionStore;
 import com.tepeu.os.syscall.SyscallHandler;
 import com.tepeu.os.syscall.SyscallResult;
+import com.tepeu.os.syscall.Usage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.time.Duration;
 
 import static com.tepeu.os.conformance.ConformanceCheck.check;
 import static com.tepeu.os.conformance.ConformanceCheck.checkEquals;
 
 /**
- * Loop 套件：claim 主路、有界续跑（含工具）、完成证据门、拦截失败不 completed。
+ * Loop 套件：claim 主路、有界续跑（含工具）、完成证据门、开 turn 预算门、DoomLoop、maintenance 窗。
  */
 public final class LoopConformance {
 
@@ -272,6 +280,7 @@ public final class LoopConformance {
                         if ("echo".equals(call.name())) {
                             throw new BusGuardException("no-echo");
                         }
+                        return com.tepeu.os.policy.PolicyVerdict.ALLOW;
                     });
                     f.session().inbox().enqueue("q", Optional.empty());
                     TurnOutcome o = loop(f).run(f.turn(), LoopConfig.of("m"));
@@ -292,6 +301,174 @@ public final class LoopConformance {
                     checkEquals("STRUCTURAL", f.session().log().readAll().get(2).attrs().get("errorCode"), "code");
                     checkEquals(1, llm.calls.get(), "不得二次 generate");
                     checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "超预算 → STOPPED，不 claim、不调 llm",
+                () -> {
+                    CountingHandler llm = CountingHandler.ok("hello");
+                    Fixture f = factory.create(llm);
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    SessionLoop gated = new SessionLoop(f.store(), f.bus(), LedgerMetering.tokens(0));
+                    TurnOutcome o = gated.run(f.turn(), LoopConfig.of("m"));
+                    checkEquals(TurnOutcome.Kind.STOPPED, o.kind(), "kind");
+                    check(o.detail().contains("BUDGET"), "细节: " + o.detail());
+                    checkEquals(0, llm.calls.get(), "不得调 llm");
+                    check(f.session().log().readAll().isEmpty(), "log 应空");
+                    check(f.session().inbox().claimNext().isPresent(), "消息仍在 Inbox");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "ledger 已顶格 → 第二轮不 claim",
+                () -> {
+                    CountingHandler llm = CountingHandler.ok("hello");
+                    Fixture f = factory.create(llm);
+                    f.session().ledger().record("llm.generate", new Usage(1, 1, 0, 0));
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    SessionLoop gated = new SessionLoop(f.store(), f.bus(), LedgerMetering.tokens(2));
+                    TurnOutcome o = gated.run(f.turn(), LoopConfig.of("m"));
+                    checkEquals(TurnOutcome.Kind.STOPPED, o.kind(), "kind");
+                    checkEquals(0, llm.calls.get(), "不得调 llm");
+                    check(f.session().log().readAll().isEmpty(), "不得写 USER");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "未顶格仍 claim 并完成",
+                () -> {
+                    CountingHandler llm = CountingHandler.ok("hello");
+                    Fixture f = factory.create(llm);
+                    f.session().ledger().record("llm.generate", new Usage(1, 0, 0, 0));
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    SessionLoop gated = new SessionLoop(f.store(), f.bus(), LedgerMetering.tokens(3));
+                    TurnOutcome o = gated.run(f.turn(), LoopConfig.of("m"));
+                    check(o.completed(), "应完成: " + o.detail());
+                    checkEquals(1, llm.calls.get(), "一步");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "同工具同输入连续 3 次 → DOOM_LOOP，第三刀不执行，NUDGE 入 RESULT",
+                () -> {
+                    CountingHandler llm = CountingHandler.ok("syscall echo");
+                    Fixture f = factory.create(llm);
+                    AtomicInteger echo = new AtomicInteger();
+                    f.bus().register("echo", (ctx, call) -> {
+                        echo.incrementAndGet();
+                        return SyscallResult.success("ok");
+                    });
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    TurnOutcome o = loop(f).run(f.turn(), LoopConfig.of("m"));
+                    checkEquals(TurnOutcome.Kind.FAILED, o.kind(), "kind");
+                    check(o.detail().contains(DoomLoop.ERROR_CODE), "细节: " + o.detail());
+                    checkEquals(3, llm.calls.get(), "三次 generate");
+                    checkEquals(2, echo.get(), "第三刀不得执行");
+                    var log = f.session().log().readAll();
+                    checkEquals(7, log.size(), "USER + 3*(CALL RESULT)");
+                    checkEquals(SessionEventType.TOOL_RESULT, log.get(6).type(), "末条 RESULT");
+                    checkEquals(DoomLoop.ERROR_CODE, log.get(6).attrs().get("errorCode"), "code");
+                    check(log.get(6).body().startsWith(DoomLoop.ERROR_CODE), "NUDGE 模型可见");
+                    check(!o.completed(), "不得 completed");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "DoomLoop 指纹剥 timestamp 后仍算同输入",
+                () -> {
+                    CountingHandler llm = CountingHandler.outputs(
+                            "syscall echo\ntimestamp=1\ntext=hi",
+                            "syscall echo\ntimestamp=2\ntext=hi",
+                            "syscall echo\ntimestamp=3\ntext=hi");
+                    Fixture f = factory.create(llm);
+                    AtomicInteger echo = new AtomicInteger();
+                    f.bus().register("echo", (ctx, call) -> {
+                        echo.incrementAndGet();
+                        return SyscallResult.success("ok");
+                    });
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    TurnOutcome o = loop(f).run(f.turn(), LoopConfig.of("m"));
+                    checkEquals(TurnOutcome.Kind.FAILED, o.kind(), "kind");
+                    checkEquals(2, echo.get(), "剥键后第三次熔断");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "maintain 完成 → STOPPED MAINTENANCE_DONE，独占期内 run=INVALID",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    SessionLoop l = loop(f);
+                    AtomicBoolean nestedInvalid = new AtomicBoolean();
+                    TurnOutcome o = l.maintain(f.turn(), MaintenanceConfig.of(Duration.ofSeconds(5)), (s, c) -> {
+                        checkEquals(LoopState.MAINTENANCE.name(),
+                                s.registers().get(SessionLoop.REGISTER_STATE).orElse(""), "窗内态");
+                        check(s.registers().get(SessionLoop.REGISTER_LATCH).isPresent(), "latch");
+                        TurnOutcome nested = l.run(c, LoopConfig.of("m"));
+                        nestedInvalid.set(nested.kind() == TurnOutcome.Kind.INVALID);
+                        return false;
+                    });
+                    checkEquals(TurnOutcome.Kind.STOPPED, o.kind(), "kind");
+                    check(o.detail().contains("MAINTENANCE_DONE"), "细节: " + o.detail());
+                    check(!o.completed(), "maintenance 不是答复完成");
+                    check(nestedInvalid.get(), "窗内不得 run");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "maintenance 强制上限 → MAINTENANCE_LIMIT",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    MutableClock clock = new MutableClock();
+                    MaintenanceConfig cfg = new MaintenanceConfig(
+                            Duration.ofSeconds(10), clock, LedgerMetering.unlimited());
+                    TurnOutcome o = loop(f).maintain(f.turn(), cfg, (s, c) -> {
+                        clock.advance(Duration.ofSeconds(11));
+                        return true;
+                    });
+                    checkEquals(TurnOutcome.Kind.STOPPED, o.kind(), "kind");
+                    check(o.detail().contains("MAINTENANCE_LIMIT"), "细节: " + o.detail());
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "NOW 已在 Inbox → 不开窗",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    f.session().inbox().enqueue("now", Optional.empty(), Priority.NOW);
+                    AtomicInteger steps = new AtomicInteger();
+                    TurnOutcome o = loop(f).maintain(f.turn(), MaintenanceConfig.of(Duration.ofSeconds(5)),
+                            (s, c) -> {
+                                steps.incrementAndGet();
+                                return false;
+                            });
+                    checkEquals(TurnOutcome.Kind.STOPPED, o.kind(), "kind");
+                    check(o.detail().contains("MAINTENANCE_NOW"), "细节: " + o.detail());
+                    checkEquals(0, steps.get(), "不得步进");
+                    check(f.session().inbox().claimNext().isPresent(), "NOW 仍在");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "窗内到达 NOW → 让位，消息仍可领",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    TurnOutcome o = loop(f).maintain(f.turn(), MaintenanceConfig.of(Duration.ofSeconds(5)),
+                            (s, c) -> {
+                                s.inbox().enqueue("now", Optional.empty(), Priority.NOW);
+                                return true;
+                            });
+                    checkEquals(TurnOutcome.Kind.STOPPED, o.kind(), "kind");
+                    check(o.detail().contains("MAINTENANCE_NOW"), "细节: " + o.detail());
+                    check(f.session().inbox().hasClaimableNow(), "闭窗后 NOW 可领");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "maintenance 独立预算顶 → 不开窗",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    MaintenanceConfig cfg = new MaintenanceConfig(
+                            Duration.ofSeconds(5), java.time.Clock.systemUTC(), LedgerMetering.tokens(0));
+                    AtomicInteger steps = new AtomicInteger();
+                    TurnOutcome o = loop(f).maintain(f.turn(), cfg, (s, c) -> {
+                        steps.incrementAndGet();
+                        return false;
+                    });
+                    checkEquals(TurnOutcome.Kind.STOPPED, o.kind(), "kind");
+                    check(o.detail().contains("BUDGET"), "细节: " + o.detail());
+                    checkEquals(0, steps.get(), "不得步进");
+                    checkIdle(f);
+                }));
+        cases.add(new ConformanceCase("loop", "running 中禁止 maintain",
+                () -> {
+                    Fixture f = factory.create(CountingHandler.ok("x"));
+                    f.session().registers().put(SessionLoop.REGISTER_STATE, LoopState.RUNNING.name());
+                    TurnOutcome o = loop(f).maintain(f.turn(), MaintenanceConfig.of(Duration.ofSeconds(5)),
+                            (s, c) -> false);
+                    checkEquals(TurnOutcome.Kind.INVALID, o.kind(), "kind");
+                    checkEquals(LoopState.RUNNING.name(),
+                            f.session().registers().get(SessionLoop.REGISTER_STATE).orElse(""),
+                            "不得改别人的 running");
                 }));
         return List.copyOf(cases);
     }

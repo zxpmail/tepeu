@@ -47,14 +47,20 @@ public final class LlmConformance {
 
     public static List<ConformanceCase> suite(FixtureFactory factory) {
         List<ConformanceCase> cases = new ArrayList<>();
-        cases.add(new ConformanceCase("derive", "7 类事件均可派生（全定义）",
+        cases.add(new ConformanceCase("derive", "模型可见 7 类均可派生；END_SEED 不进 surface",
                 () -> {
                     Session s = factory.create().session();
+                    int visible = 0;
                     for (SessionEventType type : SessionEventType.values()) {
+                        if (type == SessionEventType.END_SEED) {
+                            continue;
+                        }
                         s.log().append(type, type.name(), Map.of());
+                        visible++;
                     }
                     var derived = LogDeriver.derive(s.logReplace().surface());
-                    checkEquals(7, derived.size(), "7 类各一拍");
+                    checkEquals(visible, derived.size(), "可见类各一拍");
+                    checkEquals(7, derived.size(), "7 类模型可见");
                     checkEquals(CanonicalRole.USER, derived.get(0).role(), "USER_MESSAGE");
                     checkEquals(CanonicalRole.TOOL, derived.get(3).role(), "TOOL_RESULT");
                     checkEquals(CanonicalRole.REASONING, derived.get(4).role(), "REASONING");

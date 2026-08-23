@@ -1,15 +1,15 @@
 # Project Memory — Tepeu（develop）
 
-当前：**kernel 切片 + llm(fake) + Loop 答复路径 + 工具循环，不是 Agent OS。** 规范 [ADR-016](./decisions-log.md)。下一刀：llm 真 HTTP，或预算硬门，或 maintenance。
+当前：**本机单写者内核可发行**（SQLite WAL schema v1 + `SqliteAssembly`）。仍不是 Agent OS。规范 [ADR-016](./decisions-log.md)。下一刀：Compaction 挂 maintenance，或审批规则矩阵，或 execution.* 沙箱。
 
 v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。**不要**按那份写 `os/`。
 
 ## Tech stack（develop）
 
 - Runtime: Java 21
-- 主线：`os/`（Maven；组件 session/policy/bus/llm/loop/compose；词汇 identity/syscall；harness conformance）
+- 主线：`os/`（Maven；组件 session/policy/bus/llm/loop/orchestration/compose；词汇 identity/syscall；harness conformance）
 - 验证：`mvn -f os/pom.xml test`
-- 持久化：SQLite WAL 是规范默认；schema 未写；conformance 现为内存
+- 持久化：SQLite WAL schema v1（发行 `SqliteAssembly` → `kernel.sqlite` + `approvals.sqlite`）；`MemoryAssembly` 仅测试
 - `llm.*`：**禁止** Spring AI `ChatModel`（ADR-016 第十轮；自研双协议族）
 - v1 工作台：`legacy/` / `main`（Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18）。禁止在 `legacy/` 加功能
 
@@ -30,5 +30,7 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 - 包管理器是 **Maven**，不是 Gradle。本机仓库常在 `D:\maven\repo`（非默认 `~/.m2`）
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件
 - 不要把新能力倒进「大包」；默认实现跟组件走。组件 ≠ 插件（无 Ctx / 无热插）
+- Loop 不依赖 orchestration：`LoopConfig.system` 只转发；assemble 是调用方纪律
+- **本机单写者内核可发行** ≠ 五层可演示 ≠ 多副本 fencing ≠ 合规删除权。`MemoryAssembly` 不得当生产默认
 - 不要在 `legacy/` 加功能
 - `Product-Spec` 七层 / 四智能体 / 记忆 P0 / WASM+V8 **不是** `os/` 现状

@@ -14,4 +14,10 @@ public interface SessionStore {
     Session create(Principal owner, Namespace namespace, Optional<SessionId> parentId);
 
     Optional<Session> get(SessionId id);
+
+    /**
+     * 从 {@code source} 在 {@code atSeq} 处 fork：种子事件保留原 seq，写入 END_SEED 后续接，
+     * 携带 surface 记账。{@code atSeq} 必须是源日志已有事件（空日志用 0）。
+     */
+    Session fork(SessionId source, long atSeq);
 }

@@ -125,6 +125,25 @@ public final class SessionConformance {
                     checkEquals(id, revived.messageId(), "回收的是同一条消息");
                     check(!revived.claimId().equals(lease.claimId()), "回收须发新租约 id");
                 }));
+        cases.add(new ConformanceCase("inbox", "enqueued 单调不因 ack 回退",
+                () -> {
+                    Session s = factory.newSession(Clock.systemUTC());
+                    checkEquals(0L, s.inbox().enqueued(), "空");
+                    s.inbox().enqueue("a", Optional.of("user"));
+                    s.inbox().enqueue("b", Optional.of("user"));
+                    checkEquals(2L, s.inbox().enqueued(), "投入 2");
+                    s.inbox().ack(s.inbox().claimNext().orElseThrow().claimId());
+                    checkEquals(2L, s.inbox().enqueued(), "ack 后仍 2");
+                }));
+        cases.add(new ConformanceCase("inbox", "hasClaimableNow 只认可领取的 NOW",
+                () -> {
+                    Session s = factory.newSession(Clock.systemUTC());
+                    check(!s.inbox().hasClaimableNow(), "空");
+                    s.inbox().enqueue("next", Optional.of("user"), com.tepeu.os.session.Priority.NEXT);
+                    check(!s.inbox().hasClaimableNow(), "仅 NEXT");
+                    s.inbox().enqueue("now", Optional.of("user"), com.tepeu.os.session.Priority.NOW);
+                    check(s.inbox().hasClaimableNow(), "有 NOW");
+                }));
 
         // ===== ledger（用量账本）=====
         cases.add(new ConformanceCase("ledger", "record 分配单调 seq，readAll 保序可派生消耗",
@@ -203,11 +222,11 @@ public final class SessionConformance {
                 }));
 
         // ===== 词汇表（第六/八轮 manifest 钉死）=====
-        cases.add(new ConformanceCase("vocabulary", "事件词汇表钉死 7 类",
+        cases.add(new ConformanceCase("vocabulary", "事件词汇表钉死 8 类（含 END_SEED）",
                 () -> {
                     Set<String> expected = Set.of(
                             "USER_MESSAGE", "ASSISTANT_MESSAGE", "TOOL_CALL", "TOOL_RESULT",
-                            "REASONING", "PLAN_STEP", "COMPACTION_CHECKPOINT");
+                            "REASONING", "PLAN_STEP", "COMPACTION_CHECKPOINT", "END_SEED");
                     Set<String> actual = Arrays.stream(SessionEventType.values())
                             .map(Enum::name)
                             .collect(Collectors.toSet());
@@ -217,7 +236,116 @@ public final class SessionConformance {
                                             .collect(Collectors.joining(","))
                                             .toLowerCase(Locale.ROOT));
                 }));
+        cases.add(new ConformanceCase("blobs", "persist-before-event：digest 可取回原字节，事件只放引用",
+                () -> {
+                    Session s = factory.newSession(Clock.systemUTC());
+                    byte[] raw = new byte[] {1, 2, 3, 9};
+                    String digest = s.blobs().put(raw);
+                    check(digest.matches("[0-9a-f]{64}"), "sha256 hex: " + digest);
+                    s.log().append(SessionEventType.USER_MESSAGE, "", Map.of("locator", digest));
+                    checkEquals(List.of((byte) 1, (byte) 2, (byte) 3, (byte) 9),
+                            toBoxed(s.blobs().get(digest).orElseThrow()), "原字节");
+                    checkEquals(digest, s.log().readAll().get(0).attrs().get("locator"), "事件只引用");
+                    checkEquals("", s.log().readAll().get(0).body(), "body 不含附件");
+                }));
+        cases.add(new ConformanceCase("recover", "未配对 TOOL_CALL 补 INTERRUPTED RESULT，不截断，loop.state 回 IDLE",
+                () -> {
+                    Session s = factory.newSession(Clock.systemUTC());
+                    s.log().append(SessionEventType.USER_MESSAGE, "q", Map.of());
+                    s.log().append(SessionEventType.TOOL_CALL, "echo", Map.of());
+                    s.log().append(SessionEventType.TOOL_CALL, "ls", Map.of());
+                    s.registers().put("loop.state", "RUNNING");
+                    int n = s.recover();
+                    checkEquals(2, n, "两条未闭合");
+                    checkEquals(5, s.log().readAll().size(), "不截断: USER+2 CALL+2 RESULT");
+                    checkEquals("INTERRUPTED", s.log().readAll().get(3).attrs().get("errorCode"), "第一条");
+                    checkEquals("INTERRUPTED", s.log().readAll().get(4).attrs().get("errorCode"), "第二条");
+                    checkEquals("IDLE", s.registers().get("loop.state").orElse(""), "点查回 idle");
+                    checkEquals(0, s.recover(), "幂等再 recover 零补");
+                }));
 
         return List.copyOf(cases);
+    }
+
+    public interface StoreFactory {
+        com.tepeu.os.session.SessionStore newStore(Clock clock);
+    }
+
+    public static List<ConformanceCase> forkSuite(StoreFactory factory) {
+        List<ConformanceCase> cases = new ArrayList<>();
+        cases.add(new ConformanceCase("fork", "种子保留原 seq，END_SEED 后续接，surface 无 END_SEED",
+                () -> {
+                    var store = factory.newStore(Clock.systemUTC());
+                    var owner = com.tepeu.os.identity.Principal.personal(
+                            new com.tepeu.os.identity.PrincipalId("fork-user"));
+                    var ns = com.tepeu.os.identity.Namespace.ofWorkspace(
+                            new com.tepeu.os.identity.WorkspaceId("fork-ws"));
+                    Session src = store.create(owner, ns, Optional.empty());
+                    src.log().append(SessionEventType.USER_MESSAGE, "a", Map.of());
+                    src.log().append(SessionEventType.ASSISTANT_MESSAGE, "b", Map.of());
+                    src.registers().put("model", "m1");
+                    src.registers().put("loop.state", "RUNNING");
+                    Session child = store.fork(src.id(), 2);
+                    checkEquals(1L, child.log().get(1).orElseThrow().seq(), "种子 seq 保留");
+                    checkEquals(2L, child.log().get(2).orElseThrow().seq(), "种子 seq 保留");
+                    checkEquals(SessionEventType.END_SEED, child.log().get(3).orElseThrow().type(), "边界");
+                    checkEquals(3L, child.seedEndSeq().orElse(-1L), "seedEnd");
+                    checkEquals(2, child.logReplace().surface().size(), "surface 不含 END_SEED");
+                    long live = child.log().append(SessionEventType.USER_MESSAGE, "c", Map.of());
+                    checkEquals(4L, live, "活写续接");
+                    checkEquals("m1", child.registers().get("model").orElse(""), "配置随种子");
+                    check(child.registers().get("loop.state").isEmpty()
+                            || "IDLE".equals(child.registers().get("loop.state").orElse("")),
+                            "不得带着 RUNNING");
+                    checkEquals(src.id().value() + "#2", child.forkFromEventId().orElse(""), "来源");
+                    check(store.get(child.id()).isPresent(), "store 可取回");
+                }));
+        cases.add(new ConformanceCase("fork", "replaceRange 不得伸进种子区；活写区间可替换",
+                () -> {
+                    var store = factory.newStore(Clock.systemUTC());
+                    var owner = com.tepeu.os.identity.Principal.personal(
+                            new com.tepeu.os.identity.PrincipalId("fork-user"));
+                    var ns = com.tepeu.os.identity.Namespace.ofWorkspace(
+                            new com.tepeu.os.identity.WorkspaceId("fork-ws"));
+                    Session src = store.create(owner, ns, Optional.empty());
+                    src.log().append(SessionEventType.USER_MESSAGE, "a", Map.of());
+                    src.log().append(SessionEventType.USER_MESSAGE, "b", Map.of());
+                    Session child = store.fork(src.id(), 2);
+                    expectThrows(IllegalArgumentException.class,
+                            () -> child.logReplace().replaceRange(1, 2, "no"));
+                    expectThrows(IllegalArgumentException.class,
+                            () -> child.logReplace().replaceRange(3, 3, "no-boundary"));
+                    child.log().append(SessionEventType.USER_MESSAGE, "c", Map.of());
+                    child.log().append(SessionEventType.USER_MESSAGE, "d", Map.of());
+                    child.logReplace().replaceRange(4, 5, "cd-sum");
+                    checkEquals(SessionEventType.COMPACTION_CHECKPOINT,
+                            child.logReplace().surface().get(child.logReplace().surface().size() - 1).type(),
+                            "活写可压");
+                    check(child.log().readAll().stream()
+                            .anyMatch(e -> e.type() == SessionEventType.USER_MESSAGE && "a".equals(e.body())),
+                            "种子审计仍在");
+                }));
+        cases.add(new ConformanceCase("fork", "未知 atSeq / 未知会话拒绝",
+                () -> {
+                    var store = factory.newStore(Clock.systemUTC());
+                    var owner = com.tepeu.os.identity.Principal.personal(
+                            new com.tepeu.os.identity.PrincipalId("fork-user"));
+                    var ns = com.tepeu.os.identity.Namespace.ofWorkspace(
+                            new com.tepeu.os.identity.WorkspaceId("fork-ws"));
+                    Session src = store.create(owner, ns, Optional.empty());
+                    src.log().append(SessionEventType.USER_MESSAGE, "a", Map.of());
+                    expectThrows(IllegalArgumentException.class, () -> store.fork(src.id(), 9));
+                    expectThrows(IllegalArgumentException.class,
+                            () -> store.fork(new com.tepeu.os.identity.SessionId("nope"), 0));
+                }));
+        return List.copyOf(cases);
+    }
+
+    private static List<Byte> toBoxed(byte[] raw) {
+        List<Byte> out = new ArrayList<>(raw.length);
+        for (byte b : raw) {
+            out.add(b);
+        }
+        return out;
     }
 }

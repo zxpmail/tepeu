@@ -47,6 +47,12 @@ public final class LlmGenerateHandler implements SyscallHandler {
             return SyscallResult.failure("CONFIG", e.getMessage());
         }
         String system = syscall.args().getOrDefault("system", "");
+        int maxTokens;
+        try {
+            maxTokens = parseMaxTokens(syscall.args().get("max_tokens"));
+        } catch (IllegalArgumentException e) {
+            return SyscallResult.failure("CONFIG", e.getMessage());
+        }
         Session session = sessions.get(ctx.sessionId()).orElse(null);
         if (session == null) {
             return SyscallResult.failure("NOT_FOUND", "session not found");
@@ -56,10 +62,17 @@ public final class LlmGenerateHandler implements SyscallHandler {
         if (replay != null) {
             return replay;
         }
-        PreparedRequest prepared = LlmTransport.prepare(surface, family, model, system);
-        LlmTransport.Reply reply = transport.complete(prepared);
-        session.ledger().record(NAME, reply.usage(), attrs(prepared, model, system));
-        return SyscallResult.success(reply.output(), reply.usage(), 0L);
+        PreparedRequest prepared = LlmTransport.prepare(surface, family, model, system, maxTokens);
+        LlmTransport.Reply reply;
+        long started = System.nanoTime();
+        try {
+            reply = transport.complete(prepared);
+        } catch (LlmTransportException e) {
+            return SyscallResult.failure(e.errorCode(), e.getMessage());
+        }
+        long latencyMs = Math.max(0L, (System.nanoTime() - started) / 1_000_000L);
+        session.ledger().record(NAME, reply.usage(), attrs(prepared, model, system, maxTokens));
+        return SyscallResult.success(reply.output(), reply.usage(), latencyMs);
     }
 
     /** 失配返回失败结果；无需复核返回 null。 */
@@ -77,11 +90,18 @@ public final class LlmGenerateHandler implements SyscallHandler {
             }
         }
         ProtocolFamily family = ProtocolFamily.parse(attrs.get("family"));
+        int maxTokens;
+        try {
+            maxTokens = parseMaxTokens(attrs.get("maxTokens"));
+        } catch (IllegalArgumentException e) {
+            return SyscallResult.failure("ASSERTION", "previous llm maxTokens: " + e.getMessage());
+        }
         PreparedRequest replay = LlmTransport.prepare(
                 prefix,
                 family,
                 attrs.getOrDefault("model", ""),
-                attrs.getOrDefault("system", ""));
+                attrs.getOrDefault("system", ""),
+                maxTokens);
         if (!replay.digest().equals(attrs.get("digest"))) {
             return SyscallResult.failure("ASSERTION", "previous llm prepare digest mismatch");
         }
@@ -99,7 +119,8 @@ public final class LlmGenerateHandler implements SyscallHandler {
         return null;
     }
 
-    private static Map<String, String> attrs(PreparedRequest prepared, String model, String system) {
+    private static Map<String, String> attrs(
+            PreparedRequest prepared, String model, String system, int maxTokens) {
         Map<String, String> attrs = new LinkedHashMap<>();
         attrs.put("digest", prepared.digest());
         attrs.put("deriveVersion", prepared.deriveVersion());
@@ -108,7 +129,23 @@ public final class LlmGenerateHandler implements SyscallHandler {
         attrs.put("family", prepared.family().name().toLowerCase());
         attrs.put("model", model);
         attrs.put("system", system);
+        attrs.put("maxTokens", Integer.toString(maxTokens));
         attrs.put("throughSeq", Long.toString(prepared.throughSeq()));
         return attrs;
+    }
+
+    private static int parseMaxTokens(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return AnthropicProjector.DEFAULT_MAX_TOKENS;
+        }
+        try {
+            int n = Integer.parseInt(raw.trim());
+            if (n < 1) {
+                throw new IllegalArgumentException("max_tokens < 1");
+            }
+            return n;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("max_tokens not an integer");
+        }
     }
 }

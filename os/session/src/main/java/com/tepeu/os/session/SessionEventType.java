@@ -12,5 +12,7 @@ public enum SessionEventType {
     TOOL_RESULT,
     REASONING,
     PLAN_STEP,
-    COMPACTION_CHECKPOINT
+    COMPACTION_CHECKPOINT,
+    /** fork/resume 种子边界；审计日志有、模型面（surface）无。 */
+    END_SEED
 }

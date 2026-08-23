@@ -134,7 +134,7 @@ public final class BusConformance {
                     bus.register("echo", (c, call) -> SyscallResult.success("ok"));
                     bus.addGuardHook(new GuardHook() {
                         @Override
-                        public void before(TurnContext c, Syscall call) {
+                        public PolicyVerdict before(TurnContext c, Syscall call) {
                             throw new IllegalStateException("guard infra broken");
                         }
                     });
@@ -251,8 +251,9 @@ public final class BusConformance {
                     List<String> trace = new ArrayList<>();
                     bus.addGuardHook(new GuardHook() {
                         @Override
-                        public void before(TurnContext c, Syscall call) {
+                        public PolicyVerdict before(TurnContext c, Syscall call) {
                             trace.add("before");
+                            return PolicyVerdict.ALLOW;
                         }
 
                         @Override
@@ -278,13 +279,51 @@ public final class BusConformance {
                     });
                     bus.addGuardHook(new GuardHook() {
                         @Override
-                        public void before(TurnContext c, Syscall call) {
+                        public PolicyVerdict before(TurnContext c, Syscall call) {
                             throw new com.tepeu.os.bus.BusGuardException("blocked");
                         }
                     });
                     expectThrows(com.tepeu.os.bus.BusGuardException.class,
                             () -> bus.invoke(turn(), new Syscall("echo", Map.of())));
                     checkEquals(0, policyCalls.get(), "卫兵中断时 Policy 不应被调用");
+                }));
+        cases.add(new ConformanceCase("guard-verdict", "deny > ask > allow：任一 DENY 即拒且不 ask",
+                () -> {
+                    CapabilityBus bus = factory.newBus();
+                    ApprovalStore approvals = factory.newApprovalStore();
+                    bus.setPolicyHook((c, call) -> PolicyVerdict.ALLOW);
+                    bus.setApprovalStore(approvals);
+                    bus.register("echo", (c, call) -> SyscallResult.success("ok"));
+                    bus.addGuardHook((c, call) -> PolicyVerdict.NEED_APPROVAL);
+                    bus.addGuardHook((c, call) -> PolicyVerdict.DENY);
+                    expectThrows(com.tepeu.os.bus.BusGuardException.class,
+                            () -> bus.invoke(turn(), new Syscall("echo", Map.of())));
+                    check(approvals.records().isEmpty(), "DENY 不得登记 asked");
+                }));
+        cases.add(new ConformanceCase("guard-verdict", "卫兵 ASK + Policy ALLOW 走审批通道",
+                () -> {
+                    CapabilityBus bus = factory.newBus();
+                    ApprovalStore approvals = factory.newApprovalStore();
+                    bus.setPolicyHook((c, call) -> PolicyVerdict.ALLOW);
+                    bus.setApprovalStore(approvals);
+                    bus.register("echo", (c, call) -> SyscallResult.success("ok"));
+                    bus.addGuardHook((c, call) -> PolicyVerdict.NEED_APPROVAL);
+                    TurnContext ctx = turn();
+                    Syscall call = new Syscall("echo", Map.of());
+                    ApprovalRequiredException asked = expectThrows(ApprovalRequiredException.class,
+                            () -> bus.invoke(ctx, call));
+                    approvals.decide(asked.approvalId(), true, "host");
+                    check(bus.invoke(ctx, call).ok(), "放行后执行");
+                }));
+        cases.add(new ConformanceCase("guard-verdict", "卫兵 ALLOW 压不过 Policy DENY",
+                () -> {
+                    CapabilityBus bus = factory.newBus();
+                    bus.setPolicyHook((c, call) -> PolicyVerdict.DENY);
+                    bus.register("echo", (c, call) -> SyscallResult.success("ok"));
+                    bus.addGuardHook((c, call) -> PolicyVerdict.ALLOW);
+                    PolicyDeniedException ex = expectThrows(PolicyDeniedException.class,
+                            () -> bus.invoke(turn(), new Syscall("echo", Map.of())));
+                    checkEquals(PolicyVerdict.DENY, ex.verdict(), "Policy DENY");
                 }));
 
         return List.copyOf(cases);
