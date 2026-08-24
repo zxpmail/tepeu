@@ -6,7 +6,7 @@
 
 **测试/conformance**：`MemoryAssembly` 仍是内存件。发行路径**禁止**默认 `InMemoryApprovalStore`。
 
-Policy：compose 装配 `PolicyRulesFile.builtins()`（syscall override + deny-path/deny-command + 内置清单）。`SequenceGuardHook` + `DoomLoopGuardHook` 注册于总线。
+Policy：compose 装配 `PolicyRulesFile.builtins()`（syscall override + deny-path/deny-command + 内置清单）。`SequenceGuardHook` + `DoomLoopGuardHook` 注册于总线。`Wired` 含 `ProjectionBus`（UI 增量通知）与 `KnowledgeSource`（默认 empty）。
 
 合同见 [`docs/os-handbook.md`](../../docs/os-handbook.md)「开机档」。
 

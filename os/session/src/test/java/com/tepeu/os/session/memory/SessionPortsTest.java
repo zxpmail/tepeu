@@ -8,6 +8,7 @@ import com.tepeu.os.identity.SessionId;
 import com.tepeu.os.identity.WorkspaceId;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionStore;
+import com.tepeu.os.session.conformance.ProjectionConformance;
 import com.tepeu.os.session.conformance.SessionConformance;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -69,6 +70,11 @@ class SessionPortsTest {
     private static Stream<DynamicTest> toDynamicTests(Iterable<ConformanceCase> cases) {
         return StreamSupport.stream(cases.spliterator(), false)
                 .map(c -> DynamicTest.dynamicTest(c.displayName(), c::run));
+    }
+
+    @TestFactory
+    Stream<DynamicTest> projectionConformance() {
+        return toDynamicTests(ProjectionConformance.suite(ProjectionConformance::minimalSession));
     }
 
     private static Session newSession(Clock clock) {

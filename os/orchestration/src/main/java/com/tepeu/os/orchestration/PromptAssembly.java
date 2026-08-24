@@ -82,6 +82,24 @@ public final class PromptAssembly {
         return Section.stat("skills", sb.toString());
     }
 
+    /**
+     * 记忆命中段 — 须有 {@link KnowledgeSource} 命中；每条带 sourceId 可追溯。
+     */
+    public static Section memoryHits(List<KnowledgeSource.Hit> hits) {
+        Objects.requireNonNull(hits, "hits");
+        if (hits.isEmpty()) {
+            throw new IllegalArgumentException("memory_hits requires non-empty hits");
+        }
+        StringBuilder sb = new StringBuilder();
+        for (KnowledgeSource.Hit hit : hits) {
+            if (!sb.isEmpty()) {
+                sb.append('\n');
+            }
+            sb.append(hit.sourceId()).append('\t').append(hit.snippet());
+        }
+        return Section.dyn("memory_hits", sb.toString());
+    }
+
     private static List<Section> pack(List<Section> source, int budget, List<Omission> bill, boolean stopAfterMiss) {
         List<Section> kept = new ArrayList<>();
         int used = 0;

@@ -8,7 +8,7 @@
 ## 当前阶段
 
 - develop：**本机 Agent OS 骨架可演示**（ADR-016 第二十二轮）+ 审查修补（第二十三轮）
-- 仍不是企业 Agent OS / 完整 OS；无 UI、无记忆平面
+- 仍不是企业 Agent OS / 完整 OS；**无完整 UI**（有 ProjectionBus v1）、**无向量记忆**（有 KnowledgeSource 端口）
 - 下一刀按痛点：⑤ UI、记忆平面、多副本 fencing
 
 ## 口径
@@ -30,13 +30,13 @@
 - 同日补：腾讯「Harness Engineering」文 → `tencent-harness-engineering.md` 降级为**勿当 os 参照**（与 `os/` 不同线，仅防混谈）；不列入吸收
 - 同日补：DEV.to 评测可观测管线 → `ai-eval-observability-pipeline.md`（运维姿态可借脱敏/诚实边界；非内核；勿开 observability jar）
 - 同日补：Terax ADE → `terax-ai.md`（⑤ 工作台；与 `os/` 不同线；勿当内核参照）
-- 2026-08-24：`DoomLoopGuardHook` 第三刀 NEED_APPROVAL；`ModelContext`/`RedactingContextShaper`；`PolicyRulesFile` + `SequenceGuardHook`
+- 2026-08-24：`ProjectionBus` + `SessionProjections`（UI 投影 v1）；`KnowledgeSource` + `PromptAssembly.memoryHits`
 
 ## 待办
 
 - live 往返未在 CI 烧（无 key skip）
 - 处置链 / 可配置 deny-sequence 规则面 — 见安全系列；未裁决前不空开 `gate/`·`response/`
-- ⑤ UI / 记忆平面
+- ⑤ UI / 完整 SSE 宿主 / 向量记忆
 - 多副本 fencing / timer 轮 / 哈希链 — 远期
 
 ## 调试

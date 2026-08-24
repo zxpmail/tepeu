@@ -57,8 +57,8 @@
 
 | 债 | 说明 |
 |----|------|
-| 记忆平面 | **无则产品话术闭嘴**（P0-b 保护；源自 [`work-docs-absorption.md`](./work-docs-absorption.md) §2.4） |
-| ⑤ UI / 产品面 | 非内核；骨架可演示 ≠ 可给非开发者用的工作台 |
+| ⑤ UI / 产品面 | **ProjectionBus v1**（增量通知 + since 游标；非 SSE 宿主）；完整工作台仍缺 |
+| 记忆平面 | **KnowledgeSource 端口** + `memory_hits` 段（须有 sourceId 命中）；无向量/图检索 |
 | live CI | 无 key 不烧；有钥匙才是真往返 |
 | 运行时安全九宫格对账 | 外部系列映射见 [`archive/reference/agent-runtime-security-series.md`](./archive/reference/agent-runtime-security-series.md)：工具行大半对齐；参数级白名单 / Gate 序列熔断 / 处置链 / Skill·MCP 格仍弱或未——**参照不是排期** |
 | Observation 归属 | v1 = `ModelContext` + `RedactingContextShaper`（compose 默认）；空 `observation/` 不预开 |

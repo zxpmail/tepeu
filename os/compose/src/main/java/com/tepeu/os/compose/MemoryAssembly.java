@@ -17,7 +17,9 @@ import com.tepeu.os.loop.DoomLoopGuardHook;
 import com.tepeu.os.loop.SequenceGuardHook;
 import com.tepeu.os.loop.SessionLoop;
 import com.tepeu.os.orchestration.CommandDispatcher;
+import com.tepeu.os.orchestration.EmptyKnowledgeSource;
 import com.tepeu.os.orchestration.HelpCommand;
+import com.tepeu.os.orchestration.KnowledgeSource;
 import com.tepeu.os.orchestration.PromptAssembly;
 import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.DefaultRuleMatrix;
@@ -27,8 +29,10 @@ import com.tepeu.os.policy.memory.InMemoryApprovalStore;
 import com.tepeu.os.session.AuditSink;
 import com.tepeu.os.session.LedgerMetering;
 import com.tepeu.os.session.Metering;
+import com.tepeu.os.session.ProjectionBus;
 import com.tepeu.os.session.SessionStore;
 import com.tepeu.os.session.memory.InMemoryAuditSink;
+import com.tepeu.os.session.memory.InMemoryProjectionBus;
 import com.tepeu.os.session.memory.InMemorySessionStore;
 
 import java.io.IOException;
@@ -52,7 +56,9 @@ public final class MemoryAssembly {
             PromptAssembly prompts,
             CommandDispatcher commands,
             AuditSink audit,
-            Path workspace) implements AutoCloseable {
+            Path workspace,
+            ProjectionBus projection,
+            KnowledgeSource knowledge) implements AutoCloseable {
         @Override
         public void close() {
             Exception first = null;
@@ -139,7 +145,10 @@ public final class MemoryAssembly {
         CommandDispatcher commands = new CommandDispatcher();
         commands.register(new HelpCommand(commands));
         commands.register(new ApproveCommand(approvals, audit));
-        return new Wired(sessions, bus, approvals, loop, prompts, commands, audit, workspace);
+        ProjectionBus projection = new InMemoryProjectionBus();
+        KnowledgeSource knowledge = new EmptyKnowledgeSource();
+        return new Wired(sessions, bus, approvals, loop, prompts, commands, audit, workspace, projection,
+                knowledge);
     }
 
     /** 发行默认：名级矩阵 + 参数级 deny（内置清单）。 */

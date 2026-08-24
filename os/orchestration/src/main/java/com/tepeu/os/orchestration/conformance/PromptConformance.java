@@ -82,6 +82,16 @@ public final class PromptConformance {
                     check(cat.body().contains("deadbeef"), "digest");
                     check(!cat.body().contains("function body"), "不得夹正文");
                 }));
+        cases.add(new ConformanceCase("prompt", "memory_hits 须有 KnowledgeSource 命中且带 sourceId",
+                () -> {
+                    PromptAssembly a = new PromptAssembly();
+                    a.register(Section.stat("base", "ok"));
+                    a.register(PromptAssembly.memoryHits(List.of(
+                            new com.tepeu.os.orchestration.KnowledgeSource.Hit("doc:1", "tepeu rule"))));
+                    AssembledPrompt p = a.assemble(200);
+                    check(p.includedIds().contains("memory_hits"), "应收录");
+                    checkEquals("doc:1\ttepeu rule", p.dynamicBodies().get(0), "正文");
+                }));
         cases.add(new ConformanceCase("prompt", "intoModel=false 不进组装",
                 () -> {
                     PromptAssembly a = new PromptAssembly();
