@@ -25,6 +25,7 @@
 | `orchestration/` | PromptAssembly + CommandDispatcher（local/prompt） | `mvn -f os/pom.xml -pl orchestration -am test` |
 | `execution/` | 工作区囚笼 + Job Object/bwrap（隔离 partial） | `mvn -f os/pom.xml -pl execution -am test` |
 | `compose/` | 开机接线 | `mvn -f os/pom.xml -pl compose -am test` |
+| `host/` | CLI 宿主（Spring Boot 4，无 Web） | `mvn -f os/pom.xml -pl host -am test` |
 
 **不是组件**
 

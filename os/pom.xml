@@ -23,6 +23,7 @@
             <module>orchestration</module>
         <module>execution</module>
         <module>compose</module>
+        <module>host</module>
     </modules>
 
     <properties>
@@ -89,6 +90,11 @@
             <dependency>
                 <groupId>com.tepeu</groupId>
                 <artifactId>tepeu-os-compose</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-host</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
