@@ -14,6 +14,7 @@ import com.tepeu.os.llm.ModelContext;
 import com.tepeu.os.llm.LlmGenerateHandler;
 import com.tepeu.os.llm.LlmTransport;
 import com.tepeu.os.loop.DoomLoopGuardHook;
+import com.tepeu.os.loop.SequenceGuardHook;
 import com.tepeu.os.loop.SessionLoop;
 import com.tepeu.os.orchestration.CommandDispatcher;
 import com.tepeu.os.orchestration.HelpCommand;
@@ -21,9 +22,7 @@ import com.tepeu.os.orchestration.PromptAssembly;
 import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.DefaultRuleMatrix;
 import com.tepeu.os.policy.PolicyHook;
-import com.tepeu.os.policy.PolicyHooks;
-import com.tepeu.os.policy.SensitiveCommandPolicy;
-import com.tepeu.os.policy.SensitivePathPolicy;
+import com.tepeu.os.policy.PolicyRulesFile;
 import com.tepeu.os.policy.memory.InMemoryApprovalStore;
 import com.tepeu.os.session.AuditSink;
 import com.tepeu.os.session.LedgerMetering;
@@ -131,6 +130,7 @@ public final class MemoryAssembly {
         bus.setApprovalStore(approvals);
         bus.setPolicyHook(policy);
         bus.addGuardHook(new DoomLoopGuardHook(sessions));
+        bus.addGuardHook(new SequenceGuardHook(sessions));
         bus.register(LlmGenerateHandler.NAME, new LlmGenerateHandler(sessions, transport));
         registerExecution(bus, workspace);
         ModelContext.install(ContextShapers.defaults());
@@ -142,19 +142,18 @@ public final class MemoryAssembly {
         return new Wired(sessions, bus, approvals, loop, prompts, commands, audit, workspace);
     }
 
-    /** 发行默认：名级矩阵 + 敏感路径/命令参数 DENY。 */
+    /** 发行默认：名级矩阵 + 参数级 deny（内置清单）。 */
     public static PolicyHook defaultPolicy() {
-        return PolicyHooks.compose(
-                DefaultRuleMatrix.defaults(),
-                SensitivePathPolicy.defaults(),
-                SensitiveCommandPolicy.defaults());
+        return PolicyRulesFile.builtins().composePolicy();
     }
 
     public static PolicyHook defaultPolicy(DefaultRuleMatrix matrix) {
-        return PolicyHooks.compose(
-                matrix,
-                SensitivePathPolicy.defaults(),
-                SensitiveCommandPolicy.defaults());
+        PolicyRulesFile base = PolicyRulesFile.builtins();
+        return new PolicyRulesFile(matrix, base.denyPaths(), base.denyCommands()).composePolicy();
+    }
+
+    public static PolicyHook defaultPolicy(PolicyRulesFile rules) {
+        return rules.composePolicy();
     }
 
     private static void registerExecution(InMemoryCapabilityBus bus, Path workspace) {

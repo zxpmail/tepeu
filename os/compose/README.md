@@ -6,7 +6,7 @@
 
 **测试/conformance**：`MemoryAssembly` 仍是内存件。发行路径**禁止**默认 `InMemoryApprovalStore`。
 
-Policy：compose 装配 `DefaultRuleMatrix` + `SensitivePathPolicy` + `SensitiveCommandPolicy`（llm.* 放行，写盘/进程 ASK，敏感路径/命令 DENY，未知 DENY）。`ModelContext.install(ContextShapers.defaults())` 装观测 redact。
+Policy：compose 装配 `PolicyRulesFile.builtins()`（syscall override + deny-path/deny-command + 内置清单）。`SequenceGuardHook` + `DoomLoopGuardHook` 注册于总线。
 
 合同见 [`docs/os-handbook.md`](../../docs/os-handbook.md)「开机档」。
 

@@ -383,6 +383,25 @@ public final class LoopConformance {
                     checkEquals(2, echo.get(), "剥键后第三次熔断");
                     checkIdle(f);
                 }));
+        cases.add(new ConformanceCase("loop", "序列熔断：fs.read 后 proc.spawn → guard DENY",
+                () -> {
+                    CountingHandler llm = CountingHandler.outputs(
+                            "syscall execution.fs.read\npath=x",
+                            "syscall execution.proc.spawn\npath=run.sh");
+                    Fixture f = factory.create(llm);
+                    AtomicInteger spawn = new AtomicInteger();
+                    f.bus().register("execution.fs.read", (ctx, call) -> SyscallResult.success("data"));
+                    f.bus().register("execution.proc.spawn", (ctx, call) -> {
+                        spawn.incrementAndGet();
+                        return SyscallResult.success("ok");
+                    });
+                    f.session().inbox().enqueue("q", Optional.empty());
+                    TurnOutcome o = loop(f).run(f.turn(), LoopConfig.of("m"));
+                    checkEquals(TurnOutcome.Kind.FAILED, o.kind(), "kind");
+                    checkEquals(0, spawn.get(), "spawn 不得执行");
+                    check(o.detail().contains("guard deny"), "细节: " + o.detail());
+                    checkIdle(f);
+                }));
         cases.add(new ConformanceCase("loop", "maintain 完成 → STOPPED MAINTENANCE_DONE，独占期内 run=INVALID",
                 () -> {
                     Fixture f = factory.create(CountingHandler.ok("x"));

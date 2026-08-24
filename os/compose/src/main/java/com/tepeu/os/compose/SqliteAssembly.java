@@ -2,7 +2,7 @@ package com.tepeu.os.compose;
 
 import com.tepeu.os.llm.FakeLlmTransport;
 import com.tepeu.os.llm.LlmTransport;
-import com.tepeu.os.policy.DefaultRuleMatrix;
+import com.tepeu.os.policy.PolicyRulesFile;
 import com.tepeu.os.policy.sqlite.SqliteApprovalStore;
 import com.tepeu.os.session.LedgerMetering;
 import com.tepeu.os.session.Metering;
@@ -17,7 +17,7 @@ import java.nio.file.Path;
 /**
  * 本机单写者发行接线 — 四端口生产默认落 SQLite WAL。
  * {@code MemoryAssembly} 仅 conformance / 单测；发行禁止默认 {@code InMemoryApprovalStore}。
- * 可选 {@code dir/policy.rules} 覆盖默认矩阵。llm 默认 fake；密钥由调用方注入传输。
+ * 可选 {@code dir/policy.rules}：syscall override + {@code deny-path}/{@code deny-command}。llm 默认 fake。
  */
 public final class SqliteAssembly {
 
@@ -36,17 +36,17 @@ public final class SqliteAssembly {
         }
         SqliteSessionStore sessions = new SqliteSessionStore(dir.resolve("kernel.sqlite"));
         SqliteApprovalStore approvals = new SqliteApprovalStore(dir.resolve("approvals.sqlite"));
-        DefaultRuleMatrix matrix = loadMatrix(dir.resolve("policy.rules"));
+        PolicyRulesFile rules = loadRules(dir.resolve("policy.rules"));
         return MemoryAssembly.wire(sessions, approvals, sessions.audit(), transport, metering,
-                dir.resolve("workspace"), MemoryAssembly.defaultPolicy(matrix));
+                dir.resolve("workspace"), MemoryAssembly.defaultPolicy(rules));
     }
 
-    static DefaultRuleMatrix loadMatrix(Path rules) {
+    static PolicyRulesFile loadRules(Path rules) {
         if (rules == null || !Files.isRegularFile(rules)) {
-            return DefaultRuleMatrix.defaults();
+            return PolicyRulesFile.builtins();
         }
         try {
-            return DefaultRuleMatrix.parse(Files.readString(rules, StandardCharsets.UTF_8));
+            return PolicyRulesFile.parse(Files.readString(rules, StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

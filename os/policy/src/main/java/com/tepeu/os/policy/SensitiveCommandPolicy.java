@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public final class SensitiveCommandPolicy implements PolicyHook {
 
-    private static final List<String> DENY_FRAGMENTS = List.of(
+    private static final List<String> DEFAULT_DENY_FRAGMENTS = List.of(
             "powershell -enc",
             "-encodedcommand",
             "rm -rf",
@@ -22,8 +22,14 @@ public final class SensitiveCommandPolicy implements PolicyHook {
 
     private static final List<String> METACHAR = List.of("|", "&&", "||", ";", ">", "<", "`", "$(");
 
+    private final List<String> denyFragments;
+
+    public SensitiveCommandPolicy(List<String> denyFragments) {
+        this.denyFragments = List.copyOf(denyFragments == null ? DEFAULT_DENY_FRAGMENTS : denyFragments);
+    }
+
     public static SensitiveCommandPolicy defaults() {
-        return new SensitiveCommandPolicy();
+        return new SensitiveCommandPolicy(DEFAULT_DENY_FRAGMENTS);
     }
 
     @Override
@@ -42,7 +48,7 @@ public final class SensitiveCommandPolicy implements PolicyHook {
         if (normalized.isEmpty()) {
             return PolicyVerdict.ALLOW;
         }
-        for (String fragment : DENY_FRAGMENTS) {
+        for (String fragment : denyFragments) {
             if (normalized.contains(fragment)) {
                 return PolicyVerdict.DENY;
             }

@@ -13,14 +13,20 @@ import java.util.Objects;
  */
 public final class SensitivePathPolicy implements PolicyHook {
 
-    private static final List<String> DENY_FRAGMENTS = List.of(
+    private static final List<String> DEFAULT_DENY_FRAGMENTS = List.of(
             ".env",
             ".git/",
             ".ssh/",
             "id_rsa");
 
+    private final List<String> denyFragments;
+
+    public SensitivePathPolicy(List<String> denyFragments) {
+        this.denyFragments = List.copyOf(denyFragments == null ? DEFAULT_DENY_FRAGMENTS : denyFragments);
+    }
+
     public static SensitivePathPolicy defaults() {
-        return new SensitivePathPolicy();
+        return new SensitivePathPolicy(DEFAULT_DENY_FRAGMENTS);
     }
 
     @Override
@@ -36,7 +42,7 @@ public final class SensitivePathPolicy implements PolicyHook {
             return PolicyVerdict.ALLOW;
         }
         String norm = path.replace('\\', '/').toLowerCase(Locale.ROOT);
-        for (String fragment : DENY_FRAGMENTS) {
+        for (String fragment : denyFragments) {
             if (matches(norm, fragment)) {
                 return PolicyVerdict.DENY;
             }

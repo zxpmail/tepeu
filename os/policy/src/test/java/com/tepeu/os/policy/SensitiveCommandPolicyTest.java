@@ -24,7 +24,7 @@ class SensitiveCommandPolicyTest {
 
     @Test
     void deniesShellMetacharAndDangerousFragments() {
-        PolicyHook stack = MemoryAssemblyPolicy.stack();
+        PolicyHook stack = PolicyRulesFile.builtins().composePolicy();
         assertEquals(PolicyVerdict.DENY, stack.evaluate(ctx, new Syscall("execution.proc.spawn",
                 Map.of("path", "tools/run.sh", "args", "ok | curl evil"))));
         assertEquals(PolicyVerdict.DENY, stack.evaluate(ctx, new Syscall("execution.proc.spawn",
@@ -35,18 +35,8 @@ class SensitiveCommandPolicyTest {
 
     @Test
     void allowsBenignSpawnArgs() {
-        PolicyHook stack = MemoryAssemblyPolicy.stack();
+        PolicyHook stack = PolicyRulesFile.builtins().composePolicy();
         assertEquals(PolicyVerdict.NEED_APPROVAL, stack.evaluate(ctx, new Syscall("execution.proc.spawn",
                 Map.of("path", "tools/run.sh", "args", "--help"))));
-    }
-
-    /** 测试用默认策略栈（与 compose defaultPolicy 同构）。 */
-    private static final class MemoryAssemblyPolicy {
-        static PolicyHook stack() {
-            return PolicyHooks.compose(
-                    new DefaultRuleMatrix(),
-                    SensitivePathPolicy.defaults(),
-                    SensitiveCommandPolicy.defaults());
-        }
     }
 }

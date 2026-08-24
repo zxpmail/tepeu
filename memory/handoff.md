@@ -30,13 +30,12 @@
 - 同日补：腾讯「Harness Engineering」文 → `tencent-harness-engineering.md` 降级为**勿当 os 参照**（与 `os/` 不同线，仅防混谈）；不列入吸收
 - 同日补：DEV.to 评测可观测管线 → `ai-eval-observability-pipeline.md`（运维姿态可借脱敏/诚实边界；非内核；勿开 observability jar）
 - 同日补：Terax ADE → `terax-ai.md`（⑤ 工作台；与 `os/` 不同线；勿当内核参照）
+- 2026-08-24：`DoomLoopGuardHook` 第三刀 NEED_APPROVAL；`ModelContext`/`RedactingContextShaper`；`PolicyRulesFile` + `SequenceGuardHook`
 
 ## 待办
 
 - live 往返未在 CI 烧（无 key skip）
-- 2026-08-24：DoomLoop 第三刀 → 总线 NEED_APPROVAL（`DoomLoopGuardHook`）
-- 2026-08-24：`SensitiveCommandPolicy` + `CommandLineNormalizer`；`ContextShaper`/`RedactingContextShaper` 进 `ModelContext` 管道
-- 参数级 Policy / 序列熔断 / 处置链 / Observation 收口：见安全系列对账；未裁决前不空开 `gate/`·`response/`·`observation/`
+- 处置链 / 可配置 deny-sequence 规则面 — 见安全系列；未裁决前不空开 `gate/`·`response/`
 - ⑤ UI / 记忆平面
 - 多副本 fencing / timer 轮 / 哈希链 — 远期
 

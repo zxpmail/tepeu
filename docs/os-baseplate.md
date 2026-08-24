@@ -197,7 +197,8 @@ legacy/             v1 只读标本
 | 修剪证物保护 + spill 容量纪律（TTL/单条上限/证物类不可修剪） | gnex3 | Compaction | 挂账 |
 | 注册表/工具集版本化快照锁存：增量=新版本，in-flight turn 锁存旧快照 | gnex3 | ③/RegisterStore（同裁） | 挂账 |
 | Observation 组件候选：收口 surface + derive/normalize + shape；Gate 改观测经此管道；空 jar 不预开 | EnvHarness 机制对账 + 安全系列 §6 | 观测管道 / 日后可选 `observation/` | ◐ `ModelContext` + `ContextShaper`/`RedactingContextShaper` v1 已落 llm；PromptAssembly 仍独立 |
-| 参数级 Policy（敏感路径/命令 DENY 叠名级矩阵） | 安全系列 §1–§3 | policy | ✅ `SensitivePathPolicy` + `SensitiveCommandPolicy` + `CommandLineNormalizer`（2026-08-24） |
+| 参数级 Policy（敏感路径/命令 DENY 叠名级矩阵） | 安全系列 §1–§3 | policy | ✅ `PolicyRulesFile` + path/command deny（2026-08-24） |
+| 跨工具序列熔断（TOOL_CALL 后缀指纹） | 安全系列 §2–§3 | ③ Loop 卫兵 | ✅ `ToolSequence` + `SequenceGuardHook`（2026-08-24） |
 
 **设计-代码 drift 现状**（conformance 切片的用例来源；消除即销账）：
 
