@@ -3,7 +3,7 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-23
+**Last updated**: 2026-08-24
 
 ## 当前阶段
 
@@ -25,11 +25,18 @@
 - 第九–二十一轮：四端口、Loop、llm HTTP、SQLite 发行、Compaction 窗、DefaultRuleMatrix、execution 囚笼
 - 第二十二轮：live 测试（opt-in）、turn 内 overflow 压缩、PLAN/FILE 完成门、OS jail、`/approve` + `policy.rules`
 - 第二十三轮：surfaceEpoch、Job CREATE_SUSPENDED、env 白名单、stdout 封顶、argsDigest、jail NOFOLLOW、文档口径对齐
+- 2026-08-24：外部「Agent 运行时安全」系列开篇+工具 2–4 篇中肯对账落入 `docs/archive/reference/agent-runtime-security-series.md`（九宫格≠九 jar；gate/response 空 jar 不预开）
+- 同日补：EnvHarness 机制同构（Gate=边界脚本；观测可改/verifier 不可改；Observation 组件候选）写入安全系列 §6 + 底板 §3.3 / §8.5 挂账；未开 jar、未裁 ADR
+- 同日补：腾讯「Harness Engineering」文 → `tencent-harness-engineering.md` 降级为**勿当 os 参照**（与 `os/` 不同线，仅防混谈）；不列入吸收
+- 同日补：DEV.to 评测可观测管线 → `ai-eval-observability-pipeline.md`（运维姿态可借脱敏/诚实边界；非内核；勿开 observability jar）
+- 同日补：Terax ADE → `terax-ai.md`（⑤ 工作台；与 `os/` 不同线；勿当内核参照）
 
 ## 待办
 
 - live 往返未在 CI 烧（无 key skip）
-- DoomLoop 第三刀仍是 NUDGE 不是 NEED_APPROVAL
+- 2026-08-24：DoomLoop 第三刀 → 总线 NEED_APPROVAL（`DoomLoopGuardHook`）
+- 2026-08-24：`SensitiveCommandPolicy` + `CommandLineNormalizer`；`ContextShaper`/`RedactingContextShaper` 进 `ModelContext` 管道
+- 参数级 Policy / 序列熔断 / 处置链 / Observation 收口：见安全系列对账；未裁决前不空开 `gate/`·`response/`·`observation/`
 - ⑤ UI / 记忆平面
 - 多副本 fencing / timer 轮 / 哈希链 — 远期
 
@@ -37,5 +44,6 @@
 
 ```bash
 mvn -f os/pom.xml test
-# live（可选）：ANTHROPIC_API_KEY=... mvn -f os/pom.xml -pl llm test
+mvn -f os/pom.xml -pl compose -am test
+# live（可选）：ANTHROPIC_API_KEY=... mvn -f os/pom.xml -pl llm -am test
 ```

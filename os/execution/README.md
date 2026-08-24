@@ -7,5 +7,5 @@
 Policy=授权，Sandbox=隔离。写盘/进程默认 ASK（`DefaultRuleMatrix`）；批准之后仍须过 jail。
 
 ```bash
-mvn -f os/pom.xml -pl execution test
+mvn -f os/pom.xml -pl execution -am test
 ```

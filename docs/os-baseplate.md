@@ -81,6 +81,8 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 `LoopRuntime`（三态 idle|maintenance|running；维护窗强制上限与 latch；抢占边界）· `SubagentAdaptor`（工具对父有效集只减不增；delegationDepth 单调下界；取消拓扑）· `TeamAdaptor`（preset 图）· `LongTaskAdaptor`（预约-复核；终态消息溯源）· `PromptAssembly`（静态 Section/动态 PromptContext 分离；技能两段懒加载；超预算丢弃出账单）· `ReasoningPresenter` · `CommandDispatcher`（local/prompt 两型）· **路由三决策**（ThreadRouter 贴当前 / FlowRouter 选 Loop-vs-preset / ModelRouter 透传选型）。
 细则：ADR-016 第一/三/四轮。对账存档见 [`archive/reference/`](./archive/reference/)。
 
+**Observation（组件候选，未开 jar）**：模型可见视图管道——surface 投影 + `derive`/`normalize` + **shape/redact**（`ContextShaper` / `RedactingContextShaper`）。v1 入口 **`ModelContext.view`** = derive ∘ normalize ∘ shape（默认 shaper=`none`；compose 装配 `ContextShapers.defaults()`）。与 Policy（判动作）正交；Gate 改「看见什么」须经此管道，不得旁路拼消息。红线仍是 §6-6 与「模型可见 ⟺ 日志可还原（shape 只改观测面，entries 不动）」。PromptAssembly 静/动段仍独立。机制同构参照：[EnvHarness × Gate × Observation](./archive/reference/agent-runtime-security-series.md#6-envharness--gate--observation机制对账)。
+
 ### 3.4 ⑤/② 支撑服务（非内核契约）
 
 `ProjectionBus`（通知非真相；下发前按查看者 ACL 过滤）· `Secret`（branded 引用/重解析禁缓存/结果不进模型通道/克制品不是边界）· `Identity`/`OrgNamespace` · `KnowledgeSource`（知识→Section 唯一内容源）。
@@ -145,7 +147,7 @@ os/
 legacy/             v1 只读标本
 ```
 
-调试：`mvn -f os/pom.xml test`；单模块 `-pl session` / `policy` / `bus` / `llm` / `loop` / `orchestration` / `execution` / `compose`。禁止在 `legacy/` 加功能。
+调试：`mvn -f os/pom.xml test`；单模块必须带 `-am`（SNAPSHOT 未 install 时否则解析失败），例如 `-pl compose -am test`。禁止在 `legacy/` 加功能。
 
 ---
 
@@ -172,7 +174,7 @@ legacy/             v1 只读标本
 |----|------|----------|------|
 | `SyscallResult` 基座计量槽位（usage/latency；两参照独立收敛） | TriniOS + AIOS C5 | `llm.*` 断言 / Metering | ✅ 已落码（第九轮：槽位 + `Usage` inclusive 双轨；cost 细化随 `llm.*`） |
 | ledger 写入协议 + read-your-writes barrier 超时语义（倾向 fail-closed） | AIOS C6 + OpenCode + gnex3（usage 只增禁负禁篡改；写失败 tepeu 倾向 fail-closed——预算门供数源不可丢账，gnex3 降级放行记备选） | ledger / Metering | ✅ 单写者 SQLite WAL：同连接 record 后 readAll 可见；close 后再写 fail-closed（第二十轮）。多副本 barrier/超时仍挂账 |
-| DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode + gnex3（形状：指纹归一化剥时间戳/随机参数 + NUDGE 模型可见） | ③ Loop | ◐ 熔断+NUDGE 已落（第十七轮）；卫兵 verdict 已落（第十九轮）；DoomLoop 尚未把第三刀改成 NEED_APPROVAL |
+| DoomLoop 熔断（同工具同输入 N 次→ask）入卫兵类型 | OpenCode + gnex3（形状：指纹归一化剥时间戳/随机参数 + NUDGE 模型可见） | ③ Loop | ✅ 第三刀 NEED_APPROVAL（`DoomLoopGuardHook` + ApprovalStore；2026-08-24） |
 | CC §3 吸收项（终态转移表/恢复分级/分区并发/熔断/递减收益停机） | CC | ③ Loop 端口设计说明 | 挂账 |
 | 工具经总线组合调用另一工具是否算互引 | 审计 O5 | Tool 契约 | 挂账 |
 | 子代理审批 `asked/decided` 落哪个会话（父/子/delegationId） | 审计 O6 | SubagentAdaptor | 挂账 |
@@ -194,6 +196,8 @@ legacy/             v1 只读标本
 | TIMED_OUT 一等结果：超时产成对 TOOL_RESULT 标记（禁静默成功/禁悬挂/禁自动重试） | gnex3 | Tool 契约 | 挂账 |
 | 修剪证物保护 + spill 容量纪律（TTL/单条上限/证物类不可修剪） | gnex3 | Compaction | 挂账 |
 | 注册表/工具集版本化快照锁存：增量=新版本，in-flight turn 锁存旧快照 | gnex3 | ③/RegisterStore（同裁） | 挂账 |
+| Observation 组件候选：收口 surface + derive/normalize + shape；Gate 改观测经此管道；空 jar 不预开 | EnvHarness 机制对账 + 安全系列 §6 | 观测管道 / 日后可选 `observation/` | ◐ `ModelContext` + `ContextShaper`/`RedactingContextShaper` v1 已落 llm；PromptAssembly 仍独立 |
+| 参数级 Policy（敏感路径/命令 DENY 叠名级矩阵） | 安全系列 §1–§3 | policy | ✅ `SensitivePathPolicy` + `SensitiveCommandPolicy` + `CommandLineNormalizer`（2026-08-24） |
 
 **设计-代码 drift 现状**（conformance 切片的用例来源；消除即销账）：
 

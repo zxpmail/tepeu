@@ -9,6 +9,7 @@ import com.tepeu.os.identity.PrincipalId;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.identity.WorkspaceId;
 import com.tepeu.os.loop.conformance.LoopConformance;
+import com.tepeu.os.loop.DoomLoopGuardHook;
 import com.tepeu.os.policy.PolicyVerdict;
 import com.tepeu.os.policy.memory.InMemoryApprovalStore;
 import com.tepeu.os.session.Session;
@@ -34,6 +35,7 @@ class LoopPortsTest {
             InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
             bus.setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
             bus.setApprovalStore(new InMemoryApprovalStore());
+            bus.addGuardHook(new DoomLoopGuardHook(store));
             bus.register(SessionLoop.SYSCALL_GENERATE, llm);
             return new LoopConformance.Fixture() {
                 @Override

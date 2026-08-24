@@ -8,10 +8,10 @@
 
 未做：真 HTTP tool_use 映射。PromptAssembly / Command 在 `orchestration/`，Loop 不依赖（`LoopConfig.system` 只转发）。
 开 turn 前：`Metering.withinBudget` 为 false 则 STOPPED，不 claim。
-DoomLoop：同工具同输入连续 3 次熔断，NUDGE 写入 TOOL_RESULT。
+DoomLoop：同工具同输入连续 3 次 → 总线卫兵 NEED_APPROVAL（第三刀须审批）。
 maintenance：`SessionLoop.maintain` 独占窗口（强制上限 / NOW 让位 / latch=`inbox.enqueued()`）。
 压缩：`CompactionWork` 挂该窗；turn 内若 live surface 超过 `LoopConfig.compactOverflow`（默认 40）则在下一次 generate 前压一步。不删审计；种子区不压。
 
 ```bash
-mvn -f os/pom.xml -pl loop test
+mvn -f os/pom.xml -pl loop -am test
 ```

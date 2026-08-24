@@ -1,7 +1,7 @@
 # tepeu 距 Agent OS 还差什么
 
 > **地位**：诚实度对照。规范 ADR-016 + [`os-baseplate.md`](./os-baseplate.md)；独有章 [`os-handbook.md`](./os-handbook.md)。v1 规格不是上级文档。  
-> **日期**：2026-08-23。
+> **日期**：2026-08-24。
 
 ---
 
@@ -26,7 +26,8 @@
 | 第十轮 LlmProvider / 派生式断言 | **fake 已落码**；**Anthropic + OpenAI HTTP 薄壳已落**；live 测试 opt-in（无 key skip）；cost 仍 n/a |
 | ③ Loop 答复 + 工具循环 | **claim →（overflow 压缩）→ generate →（syscall 工具 / plan / DoomLoop）→ 完成门**；`maintain` 窗 + `CompactionWork` |
 | ③ PromptAssembly / Command | 静/动分离 + 超预算账单；Slash local/prompt + `/approve`。Team / 路由未落 |
-| DefaultRuleMatrix | llm.* ALLOW；写盘/进程 ASK；未知 DENY。可覆盖。同 turn 回放 = C1 consume 一次 |
+| DefaultRuleMatrix | llm.* ALLOW；写盘/进程 ASK；未知 DENY。**叠加** 参数级：`SensitivePathPolicy` + `SensitiveCommandPolicy` |
+| Observation 归属 | v1 = `ModelContext` + `RedactingContextShaper`（compose 默认）；PromptAssembly 仍独立 |
 | execution.* | 工作区路径囚笼 + Job Object / bwrap；probe 报 **partial**；无 jail 时 spawn 失败可见。≠ landlock / 完整沙箱 |
 
 **未有**：⑤ UI、记忆平面、多副本 fencing。`SqliteAssembly` 的 llm 默认仍 fake（传输由调用方注入）。
@@ -59,6 +60,11 @@
 | 记忆平面 | **无则产品话术闭嘴**（P0-b 保护；源自 [`work-docs-absorption.md`](./work-docs-absorption.md) §2.4） |
 | ⑤ UI / 产品面 | 非内核；骨架可演示 ≠ 可给非开发者用的工作台 |
 | live CI | 无 key 不烧；有钥匙才是真往返 |
+| 运行时安全九宫格对账 | 外部系列映射见 [`archive/reference/agent-runtime-security-series.md`](./archive/reference/agent-runtime-security-series.md)：工具行大半对齐；参数级白名单 / Gate 序列熔断 / 处置链 / Skill·MCP 格仍弱或未——**参照不是排期** |
+| Observation 归属 | v1 = `ModelContext` + `RedactingContextShaper`（compose 默认）；空 `observation/` 不预开 |
+| 腾讯 Harness 六支柱 | [`tencent-harness-engineering.md`](./archive/reference/tencent-harness-engineering.md)：**与 `os/` 不同线**，仅防混谈；勿当吸收参照、勿开 `harness/` jar |
+| AI 评测可观测管线 | [`ai-eval-observability-pipeline.md`](./archive/reference/ai-eval-observability-pipeline.md)：边缘+OTel 脱敏姿态可借；**非**内核组件；勿开 `observability/` jar |
+| Terax ADE | [`terax-ai.md`](./archive/reference/terax-ai.md)：⑤ 终端工作台；**与 `os/` 不同线**；将来 UI 可扫，勿当内核参照 |
 
 ---
 

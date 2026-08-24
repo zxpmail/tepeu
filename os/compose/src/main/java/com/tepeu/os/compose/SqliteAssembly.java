@@ -38,7 +38,7 @@ public final class SqliteAssembly {
         SqliteApprovalStore approvals = new SqliteApprovalStore(dir.resolve("approvals.sqlite"));
         DefaultRuleMatrix matrix = loadMatrix(dir.resolve("policy.rules"));
         return MemoryAssembly.wire(sessions, approvals, sessions.audit(), transport, metering,
-                dir.resolve("workspace"), matrix);
+                dir.resolve("workspace"), MemoryAssembly.defaultPolicy(matrix));
     }
 
     static DefaultRuleMatrix loadMatrix(Path rules) {

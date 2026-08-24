@@ -13,8 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 同工具同输入连续 N 次熔断。指纹剥时间戳/随机参数键。
- * NUDGE 写入 TOOL_RESULT（模型可见，不新开事件类型）。
+ * 同工具同输入连续 N 次 → 第三刀经总线卫兵 {@link PolicyVerdict#NEED_APPROVAL}（见 {@link DoomLoopGuardHook}）。
+ * 指纹剥时间戳/随机参数键。
  */
 public final class DoomLoop {
 

@@ -34,7 +34,7 @@
 ```
 
 `loop.state` / `loop.latch` 在 registers。无效转移则停（running/maintenance 中不得再 run / maintain）。
-DoomLoop：同工具同输入连续 3 次 → 停执行 + NUDGE 入 TOOL_RESULT（模型可见）。卫兵 ASK 已能进审批通道；DoomLoop 第三刀尚未改成 NEED_APPROVAL。
+DoomLoop：同工具同输入连续 3 次 → `DoomLoopGuardHook` 返回 NEED_APPROVAL（停执行 + APPROVAL 入 TOOL_RESULT）；批准后 `consumeDecision` 单次许可可重试。
 
 now 级抢占只切流式 chunk；本刀无流式。
 

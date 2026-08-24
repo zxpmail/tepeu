@@ -9,5 +9,5 @@ PromptAssembly：STATIC → system；DYNAMIC → `dynamicBodies`（user-role 快
 CommandDispatcher：只见 local / prompt。未知 `/name` 失败，不进 Inbox。prompt 型 `inbox.enqueue`，不跑 Loop。compose 预注册 `/help` 与 `/approve`（approve 在 compose，写 AuditSink）。
 
 ```bash
-mvn -f os/pom.xml -pl orchestration test
+mvn -f os/pom.xml -pl orchestration -am test
 ```

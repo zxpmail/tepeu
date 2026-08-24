@@ -6,4 +6,4 @@
 
 发行入口：`SqliteAssembly.file(dir)` → `kernel.sqlite` + `approvals.sqlite` + `workspace/` + 可选 `policy.rules`。llm 默认 fake；密钥由调用方注入。`MemoryAssembly` 仅测试。隔离仍报 **partial**。压缩后 `log.surfaceEpoch` 跳过上笔 digest；审批绑 argsDigest。
 
-下一刀按痛点：⑤ UI、记忆平面、多副本 fencing。禁止称企业 Agent OS / 完整 OS。
+下一刀按痛点：⑤ UI、记忆平面、多副本 fencing。禁止称企业 Agent OS / 完整 OS。运行时安全九宫格：[docs/archive/reference/agent-runtime-security-series.md](docs/archive/reference/agent-runtime-security-series.md)。不同线勿当内核参照：[tencent-harness-engineering.md](docs/archive/reference/tencent-harness-engineering.md)、[ai-eval-observability-pipeline.md](docs/archive/reference/ai-eval-observability-pipeline.md)、[terax-ai.md](docs/archive/reference/terax-ai.md)。

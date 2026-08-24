@@ -23,7 +23,8 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 
 冲突时：**ADR-016 > 底板 > 手册独有章 > v1 规格**。参照在 `docs/archive/`。禁止再开对账轮、再写第三份投影。
 
-吸收：`docs/legacy-absorption.md` · `docs/work-docs-absorption.md` · `docs/archive/reference/gnex3-reference.md`
+吸收：`docs/legacy-absorption.md` · `docs/work-docs-absorption.md` · `docs/archive/reference/gnex3-reference.md` · `docs/archive/reference/agent-runtime-security-series.md`（九宫格对账；Gate=边界脚本；Observation/Context 候选；空 jar 不预开）  
+勿吸内核：`tencent-harness-engineering.md`（AI Coding）；`ai-eval-observability-pipeline.md`（评测可观测运维）；`terax-ai.md`（⑤ ADE 产品，不同线）
 
 ## Gotchas（develop 仍有效）
 

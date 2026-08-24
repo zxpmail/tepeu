@@ -37,7 +37,7 @@ import static com.tepeu.os.conformance.ConformanceCheck.check;
 import static com.tepeu.os.conformance.ConformanceCheck.checkEquals;
 
 /**
- * Loop 套件：claim 主路、有界续跑（含工具）、完成证据门（REPLY/TOOL_PAIR/PLAN/FILE）、overflow 压缩、开 turn 预算门、DoomLoop、maintenance 窗。
+ * Loop 套件：claim 主路、有界续跑（含工具）、完成证据门（REPLY/TOOL_PAIR/PLAN/FILE）、overflow 压缩、开 turn 预算门、DoomLoop→NEED_APPROVAL、maintenance 窗。
  */
 public final class LoopConformance {
 
@@ -342,7 +342,7 @@ public final class LoopConformance {
                     checkEquals(1, llm.calls.get(), "一步");
                     checkIdle(f);
                 }));
-        cases.add(new ConformanceCase("loop", "同工具同输入连续 3 次 → DOOM_LOOP，第三刀不执行，NUDGE 入 RESULT",
+        cases.add(new ConformanceCase("loop", "同工具同输入连续 3 次 → NEED_APPROVAL，第三刀不执行，APPROVAL 入 RESULT",
                 () -> {
                     CountingHandler llm = CountingHandler.ok("syscall echo");
                     Fixture f = factory.create(llm);
@@ -354,14 +354,14 @@ public final class LoopConformance {
                     f.session().inbox().enqueue("q", Optional.empty());
                     TurnOutcome o = loop(f).run(f.turn(), LoopConfig.of("m"));
                     checkEquals(TurnOutcome.Kind.FAILED, o.kind(), "kind");
-                    check(o.detail().contains(DoomLoop.ERROR_CODE), "细节: " + o.detail());
+                    check(o.detail().contains("approval") || o.detail().contains("Approval"),
+                            "细节应含审批: " + o.detail());
                     checkEquals(3, llm.calls.get(), "三次 generate");
                     checkEquals(2, echo.get(), "第三刀不得执行");
                     var log = f.session().log().readAll();
                     checkEquals(7, log.size(), "USER + 3*(CALL RESULT)");
                     checkEquals(SessionEventType.TOOL_RESULT, log.get(6).type(), "末条 RESULT");
-                    checkEquals(DoomLoop.ERROR_CODE, log.get(6).attrs().get("errorCode"), "code");
-                    check(log.get(6).body().startsWith(DoomLoop.ERROR_CODE), "NUDGE 模型可见");
+                    checkEquals("APPROVAL", log.get(6).attrs().get("errorCode"), "code");
                     check(!o.completed(), "不得 completed");
                     checkIdle(f);
                 }));

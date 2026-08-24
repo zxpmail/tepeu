@@ -7,10 +7,16 @@ import com.tepeu.os.llm.FakeLlmTransport;
 import com.tepeu.os.llm.LlmGenerateHandler;
 import com.tepeu.os.llm.LlmTransport;
 import com.tepeu.os.llm.LogDeriver;
+import com.tepeu.os.llm.CanonicalTurn;
+import com.tepeu.os.llm.ContextShaper;
+import com.tepeu.os.llm.ContextShapers;
+import com.tepeu.os.llm.ModelContext;
+import com.tepeu.os.llm.RedactingContextShaper;
 import com.tepeu.os.llm.PreparedRequest;
 import com.tepeu.os.llm.ProtocolFamily;
 import com.tepeu.os.llm.SharedNormalizer;
 import com.tepeu.os.session.Session;
+import com.tepeu.os.session.SessionEvent;
 import com.tepeu.os.session.SessionEventType;
 import com.tepeu.os.session.SessionStore;
 import com.tepeu.os.syscall.Syscall;
@@ -73,6 +79,35 @@ public final class LlmConformance {
                     var n = SharedNormalizer.normalize(LogDeriver.derive(s.logReplace().surface()));
                     checkEquals(1, n.size(), "应合并为一条");
                     checkEquals("a\nb", n.get(0).body(), "合并正文");
+                }));
+        cases.add(new ConformanceCase("context", "replaceRange 后 ModelContext 只见 checkpoint",
+                () -> {
+                    Session s = factory.create().session();
+                    s.log().append(SessionEventType.USER_MESSAGE, "a", Map.of());
+                    s.log().append(SessionEventType.USER_MESSAGE, "b", Map.of());
+                    s.log().append(SessionEventType.USER_MESSAGE, "c", Map.of());
+                    List<SessionEvent> surface = s.logReplace().surface();
+                    SessionEvent from = surface.get(0);
+                    SessionEvent to = surface.get(1);
+                    s.logReplace().replaceRange(from.seq(), to.seq(), "compacted");
+                    var view = ModelContext.view(s);
+                    checkEquals(2, view.size(), "checkpoint + tail");
+                    checkEquals(SessionEventType.COMPACTION_CHECKPOINT, view.get(0).source(), "首条为 checkpoint");
+                    checkEquals("compacted", view.get(0).body(), "压缩正文");
+                    checkEquals("c", view.get(1).body(), "保留尾部");
+                }));
+        cases.add(new ConformanceCase("context", "ContextShaper redact 不改 USER；TOOL_RESULT 可截断",
+                () -> {
+                    ContextShaper shaper = ContextShapers.redacting(128);
+                    CanonicalTurn user = new CanonicalTurn(
+                            CanonicalRole.USER, SessionEventType.USER_MESSAGE, "plain question", Map.of());
+                    CanonicalTurn tool = new CanonicalTurn(
+                            CanonicalRole.TOOL, SessionEventType.TOOL_RESULT, "y".repeat(200), Map.of());
+                    List<CanonicalTurn> shaped = shaper.shape(List.of(user, tool));
+                    checkEquals("plain question", shaped.get(0).body(), "USER 不截长度");
+                    checkEquals("[REDACTED]", RedactingContextShaper.redactSecrets("sk-abcdefgh12345678"),
+                            "密钥打码");
+                    check(shaped.get(1).body().endsWith("...[truncated]"), "工具结果截断");
                 }));
         cases.add(new ConformanceCase("prepare", "同一 surface 两次 prepare digest 相等",
                 () -> {

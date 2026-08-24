@@ -8,9 +8,12 @@ import com.tepeu.os.execution.FsWriteHandler;
 import com.tepeu.os.execution.ProcSpawnHandler;
 import com.tepeu.os.execution.SandboxPolicy;
 import com.tepeu.os.execution.SandboxProbeHandler;
+import com.tepeu.os.llm.ContextShapers;
 import com.tepeu.os.llm.FakeLlmTransport;
+import com.tepeu.os.llm.ModelContext;
 import com.tepeu.os.llm.LlmGenerateHandler;
 import com.tepeu.os.llm.LlmTransport;
+import com.tepeu.os.loop.DoomLoopGuardHook;
 import com.tepeu.os.loop.SessionLoop;
 import com.tepeu.os.orchestration.CommandDispatcher;
 import com.tepeu.os.orchestration.HelpCommand;
@@ -18,6 +21,9 @@ import com.tepeu.os.orchestration.PromptAssembly;
 import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.DefaultRuleMatrix;
 import com.tepeu.os.policy.PolicyHook;
+import com.tepeu.os.policy.PolicyHooks;
+import com.tepeu.os.policy.SensitiveCommandPolicy;
+import com.tepeu.os.policy.SensitivePathPolicy;
 import com.tepeu.os.policy.memory.InMemoryApprovalStore;
 import com.tepeu.os.session.AuditSink;
 import com.tepeu.os.session.LedgerMetering;
@@ -105,7 +111,7 @@ public final class MemoryAssembly {
             LlmTransport transport,
             Metering metering,
             Path workspace) {
-        return wire(sessions, approvals, audit, transport, metering, workspace, new DefaultRuleMatrix());
+        return wire(sessions, approvals, audit, transport, metering, workspace, defaultPolicy());
     }
 
     static Wired wire(
@@ -124,14 +130,31 @@ public final class MemoryAssembly {
         InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
         bus.setApprovalStore(approvals);
         bus.setPolicyHook(policy);
+        bus.addGuardHook(new DoomLoopGuardHook(sessions));
         bus.register(LlmGenerateHandler.NAME, new LlmGenerateHandler(sessions, transport));
         registerExecution(bus, workspace);
+        ModelContext.install(ContextShapers.defaults());
         SessionLoop loop = new SessionLoop(sessions, bus, metering);
         PromptAssembly prompts = new PromptAssembly();
         CommandDispatcher commands = new CommandDispatcher();
         commands.register(new HelpCommand(commands));
         commands.register(new ApproveCommand(approvals, audit));
         return new Wired(sessions, bus, approvals, loop, prompts, commands, audit, workspace);
+    }
+
+    /** 发行默认：名级矩阵 + 敏感路径/命令参数 DENY。 */
+    public static PolicyHook defaultPolicy() {
+        return PolicyHooks.compose(
+                DefaultRuleMatrix.defaults(),
+                SensitivePathPolicy.defaults(),
+                SensitiveCommandPolicy.defaults());
+    }
+
+    public static PolicyHook defaultPolicy(DefaultRuleMatrix matrix) {
+        return PolicyHooks.compose(
+                matrix,
+                SensitivePathPolicy.defaults(),
+                SensitiveCommandPolicy.defaults());
     }
 
     private static void registerExecution(InMemoryCapabilityBus bus, Path workspace) {

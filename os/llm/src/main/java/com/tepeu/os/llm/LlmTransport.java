@@ -27,8 +27,7 @@ public interface LlmTransport {
             String model,
             String system,
             int maxTokens) {
-        List<CanonicalTurn> derived = LogDeriver.derive(surface);
-        List<CanonicalTurn> normalized = SharedNormalizer.normalize(derived);
+        List<CanonicalTurn> normalized = ModelContext.view(surface);
         MapWire wire = project(family, model, system == null ? "" : system, normalized, maxTokens);
         String json = CanonicalJson.write(wire.root());
         long throughSeq = surface.isEmpty() ? 0L : surface.get(surface.size() - 1).seq();

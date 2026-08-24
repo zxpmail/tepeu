@@ -6,10 +6,10 @@
 
 **测试/conformance**：`MemoryAssembly` 仍是内存件。发行路径**禁止**默认 `InMemoryApprovalStore`。
 
-Policy：compose 装配 `DefaultRuleMatrix`（llm.* 放行，写盘/进程 ASK，未知 DENY）。裸总线未装配仍 fail-closed。不是偷偷 ALLOW-all。
+Policy：compose 装配 `DefaultRuleMatrix` + `SensitivePathPolicy` + `SensitiveCommandPolicy`（llm.* 放行，写盘/进程 ASK，敏感路径/命令 DENY，未知 DENY）。`ModelContext.install(ContextShapers.defaults())` 装观测 redact。
 
 合同见 [`docs/os-handbook.md`](../../docs/os-handbook.md)「开机档」。
 
 ```bash
-mvn -f os/pom.xml -pl compose test
+mvn -f os/pom.xml -pl compose -am test
 ```

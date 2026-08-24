@@ -30,7 +30,7 @@ import java.time.Instant;
  * TOOL_CALL/TOOL_RESULT 由本组件写 entries，总线不自动落事件。
  * 工具：先落 TOOL_CALL 再 invoke；拦截失败合成 TOOL_RESULT。
  * 开 turn 前读 Metering.withinBudget；超限不 claim（Metering 只供数）。
- * maintenance 独占 idle 窗口（强制上限 / NOW 让位 / latch）。DoomLoop 熔断写 NUDGE。
+ * maintenance 独占 idle 窗口（强制上限 / NOW 让位 / latch）。DoomLoop 第三刀 → 总线 NEED_APPROVAL。
  */
 public final class SessionLoop {
 
@@ -221,11 +221,6 @@ public final class SessionLoop {
                     "loop will not invoke llm.generate as a tool",
                     interceptAttrs("STRUCTURAL"));
             return TurnOutcome.failed(steps, "cannot invoke llm.generate as a tool");
-        }
-        if (DoomLoop.tripped(session, tool.name(), tool.args())) {
-            session.log().append(SessionEventType.TOOL_RESULT, DoomLoop.nudge(tool.name()),
-                    interceptAttrs(DoomLoop.ERROR_CODE));
-            return TurnOutcome.failed(steps, DoomLoop.ERROR_CODE);
         }
         try {
             SyscallResult toolResult = bus.invoke(ctx, new Syscall(tool.name(), tool.args()));
