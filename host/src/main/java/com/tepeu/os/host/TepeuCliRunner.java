@@ -10,6 +10,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * CLI 入口 — 无参 REPL；{@code chat}/{@code help} 子命令。
+ * 实现 {@link ExitCodeGenerator}，由 {@link TepeuHostApplication} 优雅退出（可关 SQLite）。
+ * {@code tepeu.cli.enabled=false} 时不注册（单测避免卡住 Scanner）。
+ */
 @Component
 @ConditionalOnProperty(name = "tepeu.cli.enabled", havingValue = "true", matchIfMissing = true)
 public final class TepeuCliRunner implements ApplicationRunner, ExitCodeGenerator {
@@ -48,6 +53,7 @@ public final class TepeuCliRunner implements ApplicationRunner, ExitCodeGenerato
         return exitCode;
     }
 
+    /** 单次对话；COMPLETED / EMPTY / 退出 meta → 0，失败 → 1，用法错 → 2。 */
     private int runChat(List<String> messageParts) {
         if (messageParts.isEmpty()) {
             System.err.println("usage: chat <message>");
@@ -64,6 +70,7 @@ public final class TepeuCliRunner implements ApplicationRunner, ExitCodeGenerato
         return outcome.completed() || outcome.kind() == TurnOutcome.Kind.EMPTY ? 0 : 1;
     }
 
+    /** 交互 REPL，直到 :quit / EOF。 */
     private int runInteractive() {
         System.out.println("Tepeu OS CLI — session=" + cli.sessionId().value());
         System.out.println("Enter message, /command, or :quit");

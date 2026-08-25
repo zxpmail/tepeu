@@ -21,6 +21,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 单会话 CLI 门面 — 一行输入分发给 Slash / meta / Inbox+Loop。
+ * 每次进程启动新建 Session（尚无 resume）；完成证据仍由 Loop CompletionGate 判定。
+ */
 @Component
 public final class CliSession {
 
@@ -28,6 +32,7 @@ public final class CliSession {
     private final Session session;
     private final TurnContext turnContext;
     private final LoopConfig loopConfig;
+    /** ProjectionBus since 游标（与 entries seq 同型）。 */
     private long projectionCursor;
 
     CliSession(MemoryAssembly.Wired kernel, TepeuHostProperties props, LoopConfig loopConfig) {
@@ -43,6 +48,16 @@ public final class CliSession {
         return session.id();
     }
 
+    /**
+     * 处理一行输入。
+     * <ul>
+     *   <li>{@code :meta} — 宿主元命令（不经 Slash / Loop）</li>
+     *   <li>{@code /slash} — CommandDispatcher（local 不跑 Loop；prompt 型入队后再跑）</li>
+     *   <li>其余 — Inbox enqueue → SessionLoop.run</li>
+     * </ul>
+     *
+     * @return 空行返回 null；成功 local Slash / :session 返回 COMPLETED（便于 exit 0）
+     */
     TurnOutcome handleLine(String line) {
         String text = line == null ? "" : line.strip();
         if (text.isEmpty()) {
@@ -70,6 +85,7 @@ public final class CliSession {
             }
             return TurnOutcome.completed(0);
         }
+        // PROMPT 型：dispatch 已 enqueue，再跑 Loop
         return runLoop();
     }
 
@@ -80,6 +96,7 @@ public final class CliSession {
         return outcome;
     }
 
+    /** {@code :session} / {@code :quit}；未知 meta 记 FAILED。 */
     private TurnOutcome handleMeta(String meta) {
         return switch (meta.toLowerCase()) {
             case "session" -> {
@@ -94,6 +111,7 @@ public final class CliSession {
         };
     }
 
+    /** 增量读真相、推 ProjectionBus，并打印助手/工具摘要。 */
     private void flushProjection() {
         long before = projectionCursor;
         List<SessionEvent> fresh = SessionProjections.since(session, before);
@@ -110,11 +128,12 @@ public final class CliSession {
                 }
                 case TOOL_CALL -> System.out.println("[tool call] " + event.body());
                 case TOOL_RESULT -> System.out.println("[tool result] " + truncate(event.body(), 200));
-                default -> { /* USER_MESSAGE etc. omitted in CLI */ }
+                default -> { /* USER_MESSAGE 等 CLI 省略 */ }
             }
         }
     }
 
+    /** 非 COMPLETED/EMPTY 时打印结局，避免成功路径刷屏。 */
     private static void printOutcomeSummary(TurnOutcome outcome) {
         if (outcome.kind() != TurnOutcome.Kind.COMPLETED && outcome.kind() != TurnOutcome.Kind.EMPTY) {
             System.out.println("[" + outcome.kind() + "] " + outcome.detail());
@@ -131,6 +150,7 @@ public final class CliSession {
         return body.substring(0, max) + "…";
     }
 
+    /** REPL 退出约定：STOPPED + detail=cli exit。 */
     boolean isExit(TurnOutcome outcome) {
         return outcome != null && outcome.kind() == TurnOutcome.Kind.STOPPED
                 && "cli exit".equals(outcome.detail());

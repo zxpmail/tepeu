@@ -29,16 +29,28 @@ mvn -f host/pom.xml test
 |----|------|------|
 | `tepeu.data-dir` | `~/.tepeu` | kernel.sqlite + workspace |
 | `tepeu.model` | `claude-sonnet-4-20250514` | LoopConfig.model；OpenAI 族且仍为此默认时改用 `gpt-4o-mini` |
-| `tepeu.family` | （空） | 空则随传输推导；可强制 `anthropic` / `openai` |
+| `tepeu.family` | （空） | 空则随 env key 推导；可强制 `anthropic` / `openai` |
+| `tepeu.base-url` | （空） | 优先于 `OPENAI_BASE_URL` / `ANTHROPIC_BASE_URL`；空则用 env 或协议默认 |
+| `tepeu.api-key` | （空） | **次于** env `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`；勿提交真实密钥 |
 | `tepeu.principal-id` | `cli-user` | 会话 owner |
 | `tepeu.workspace-id` | `default` | workspace |
-| `tepeu.fake-llm` | `false` | true 强制 fake；否则读 `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
+| `tepeu.fake-llm` | `false` | true 强制 fake |
 | `tepeu.prompt-budget` | `8000` | PromptAssembly 字符预算 |
 | `tepeu.cli.enabled` | `true` | 测试可关，避免 REPL 阻塞 |
 
-宿主**可以**读 LLM 环境变量（compose **不**读）。`LoopConfig.family` 与传输对齐；system 经 `PromptAssembly`（至少 `base` 段）。
+**DeepSeek（properties + Windows env key）**：
 
-退出码：`SpringApplication.exit` + `ExitCodeGenerator`（`chat` 成功 Slash 为 0，不再裸 `System.exit`）。
+```properties
+tepeu.family=openai
+tepeu.base-url=https://api.deepseek.com
+tepeu.model=deepseek-chat
+```
+
+```powershell
+$env:OPENAI_API_KEY = "sk-..."   # 系统环境变量亦可
+```
+
+`LoopConfig.family` 与传输对齐；system 经 `PromptAssembly`（至少 `base` 段）。退出码：`SpringApplication.exit` + `ExitCodeGenerator`。
 
 ## REPL
 
