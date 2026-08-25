@@ -3,7 +3,7 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-25（identity 词汇注释已记入 task-history）
+**Last updated**: 2026-08-25（session 插头注释与日志口径已记入）
 
 ## 当前阶段
 
@@ -36,6 +36,8 @@
 - 2026-08-25：`identity/` 词汇 Javadoc + `package-info`（不是组件、Id≠实体、AgentKind 预留、TurnContext §6-4）；无运行时 logger
 - 2026-08-25：`syscall/` 词汇 `package-info` + 类型边界（信封≠总线；Usage/ArgDigest 职责钉死）
 - 2026-08-25：`session/` 组件 `package-info` + 端口边界（三 store / Audit≠entries / Inbox≠调度器 / Projection≠真相）
+- 2026-08-25：`session.memory`/`sqlite`/`conformance` package-info；日志口径=entries/ledger/AuditSink（无 slf4j）；AttrsJson 手写理由；单写者≠多副本
+- 2026-08-25：session conformance 套件迁 `src/test`；`ClaimLease.DEFAULT_TTL`；`tepeu-os-conformance` 仅 test scope
 
 ## 待办
 

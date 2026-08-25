@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/** 人手审计落同一 kernel.sqlite；不进会话 entries。 */
 final class SqliteAuditSink implements AuditSink {
 
     private final SqliteSessionStore store;

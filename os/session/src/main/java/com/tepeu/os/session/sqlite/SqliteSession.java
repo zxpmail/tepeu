@@ -17,7 +17,6 @@ import com.tepeu.os.session.SessionLedger;
 import com.tepeu.os.session.SessionLog;
 import com.tepeu.os.session.SessionRegisters;
 import com.tepeu.os.session.SurfaceEpoch;
-import com.tepeu.os.session.conformance.SessionConformance;
 import com.tepeu.os.syscall.Usage;
 
 import java.security.MessageDigest;
@@ -36,6 +35,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 一张 SQLite 会话行上的 Session 聚合 — 三 store + Inbox/claim + surface，语义对齐 {@code memory.InMemorySession}。
+ * 包内实现；对外只经 {@link SqliteSessionStore}。
+ */
 final class SqliteSession implements Session {
 
     private final SqliteSessionStore store;
@@ -356,7 +359,7 @@ final class SqliteSession implements Session {
                     return Optional.empty();
                 }
                 String claimId = UUID.randomUUID().toString();
-                long expires = now + SessionConformance.LEASE_TTL.toMillis();
+                long expires = now + ClaimLease.DEFAULT_TTL.toMillis();
                 try (PreparedStatement u = c.prepareStatement(
                         "UPDATE inbox SET claim_id=?, expires_at=? WHERE session_id=? AND message_id=?")) {
                     u.setString(1, claimId);

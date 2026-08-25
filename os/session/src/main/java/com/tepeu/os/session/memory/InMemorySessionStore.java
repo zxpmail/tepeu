@@ -17,7 +17,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 单机内存会话工厂/存取 — conformance/测试用；生产默认 SQLite（ADR-016 Adaptor 表）。
+ * 单机内存会话工厂/存取 — conformance / 测试 / MemoryAssembly。
+ * 进程内 Map；发行默认 SQLite。勿当多副本或「记忆平面」。
  */
 public final class InMemorySessionStore implements SessionStore {
 

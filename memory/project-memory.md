@@ -33,7 +33,8 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件
 - 不要把新能力倒进「大包」；默认实现跟组件走。组件 ≠ 插件（无 Ctx / 无热插）
 - Loop 不依赖 orchestration：`LoopConfig.system` 只转发；assemble 是调用方纪律
-- `identity`/`syscall` 是词汇；`session` 是组件：边界写在 `package-info` / 端口 Javadoc；词汇**不**加 slf4j。任务收口须记 `task-history`
+- `identity`/`syscall` 是词汇；`session` 是组件：边界写在 `package-info` / 端口 Javadoc；词汇与 session **不**加 slf4j（真相=entries/ledger/AuditSink；运维 log 在 host）
+- `session.memory` / `session.sqlite` = 单写者插头（同端口合同）；多副本须另实现 fencing，禁止多开暗示。端口验收套件在 `src/test`，不进发行 jar。任务收口须记 `task-history`
 - **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离仍是 **partial**。compose 不读密钥。`MemoryAssembly` 不得当生产默认
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名

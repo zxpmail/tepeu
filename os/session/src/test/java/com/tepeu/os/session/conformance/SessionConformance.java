@@ -24,14 +24,14 @@ import static com.tepeu.os.conformance.ConformanceCheck.checkEquals;
 import static com.tepeu.os.conformance.ConformanceCheck.expectThrows;
 
 /**
- * Session 端口 conformance 套件 — 任何 SessionStore 实现必须全绿。
- * 契约来源：底板 §4-3（三 store）/ §9（事件日志立规）/ ADR-016 第四·五·六·七·八轮。
- * 工厂必须接受可注入时钟（TTL/超时可测试性）。
+ * Session 端口 conformance 套件（测试）— 任何 SessionStore 实现必须全绿。
+ * 契约：底板三 store / §9 事件日志 / ADR-016；工厂须可注入时钟。
+ * TTL 以 {@link ClaimLease#DEFAULT_TTL} 为准。
  */
 public final class SessionConformance {
 
-    /** 与实现约定的默认租约 TTL（第七轮：死租约可回收）。 */
-    public static final Duration LEASE_TTL = Duration.ofSeconds(300);
+    /** 与 {@link ClaimLease#DEFAULT_TTL} 同值，测例内短写。 */
+    public static final Duration LEASE_TTL = ClaimLease.DEFAULT_TTL;
 
     public interface SessionFactory {
         Session newSession(Clock clock);

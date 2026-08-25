@@ -2,6 +2,8 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-25 | session-conform-testsrc | **conformance 迁 test + ClaimLease.DEFAULT_TTL** | 套件不进发行 jar；TTL 生产常量；conformance dep=test |
+| 2026-08-25 | session-adaptor-docs | **session memory/sqlite/conformance 注释+日志口径** | 单写者插头；真相=entries/Audit；无 slf4j；AttrsJson 手写理由 |
 | 2026-08-25 | session-port-javadoc | **session 组件 package-info + 端口边界** | 三 store/Audit≠entries/Inbox≠调度器；多副本仍挂账 |
 | 2026-08-25 | syscall-vocab-javadoc | **syscall 词汇边界写入 package-info** | 非组件；信封≠总线；与 identity 对称 |
 | 2026-08-25 | identity-vocab-javadoc | **identity 词汇边界注释** | package-info + 各类型钉「不是什么」/预留/§6-4；无 slf4j |

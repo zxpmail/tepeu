@@ -8,6 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 
+/**
+ * SQLite 连接与 schema v1 — 包内基础设施，非对外端口。
+ * WAL + busy_timeout + synchronous=FULL；版本不匹配 fail-closed。
+ */
 final class Sqlite {
 
     static final int SCHEMA_VERSION = 1;

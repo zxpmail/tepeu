@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** 内存 CAS：digest = sha256 hex。 */
+/** 内存 CAS：digest = sha256 hex；进程内，非发行默认。 */
 public final class InMemoryContentStore implements ContentStore {
 
     private final Map<String, byte[]> blobs = new ConcurrentHashMap<>();

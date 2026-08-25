@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-session</artifactId>
     <name>Tepeu OS Session</name>
-    <description>组件：会话三 store + Inbox/claim + Metering + AuditSink + SQLite WAL；conformance</description>
+    <description>组件：会话三 store + Inbox/claim + Metering + AuditSink + SQLite WAL</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -23,6 +23,7 @@
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-conformance</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>

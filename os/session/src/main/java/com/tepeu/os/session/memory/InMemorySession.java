@@ -17,7 +17,6 @@ import com.tepeu.os.session.SessionLedger;
 import com.tepeu.os.session.SessionLog;
 import com.tepeu.os.session.SessionRegisters;
 import com.tepeu.os.session.SurfaceEpoch;
-import com.tepeu.os.session.conformance.SessionConformance;
 import com.tepeu.os.syscall.Usage;
 
 import java.time.Clock;
@@ -32,12 +31,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 单机内存会话 — 三 store（entries / registers / ledger）+ Inbox+claim + surface 替换。
- * 时钟可注入（TTL/超时可测试性）；租约过期在领取点惰性回收（ADR-016 第七轮：死租约可回收）。
+ * 单机内存会话 — 三 store + Inbox/claim + surface；语义与 sqlite 插头对齐。
+ * 时钟可注入；死租约惰性回收。各组件自锁，勿当多副本范本。
  */
 public final class InMemorySession implements Session {
 
-    static final Duration LEASE_TTL = SessionConformance.LEASE_TTL;
+    static final Duration LEASE_TTL = ClaimLease.DEFAULT_TTL;
 
     private final SessionId id;
     private final Namespace namespace;

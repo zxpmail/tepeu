@@ -4,7 +4,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-/** Map&lt;String,String&gt; 最小 JSON。session 不得依赖 llm CanonicalJson。 */
+/**
+ * 扁平 {@code Map<String,String>} ↔ JSON 对象 — 仅供 SQLite attrs 列。
+ * <p>
+ * 刻意手写：session 不得依赖 llm 的 CanonicalJson（依赖方向）；
+ * 不为 attrs 引入 Jackson/Gson（依赖面）。不支持嵌套/数组；不完整 Unicode 转义。
+ * 写入键序稳定（TreeMap），便于对账。
+ */
 final class AttrsJson {
 
     private AttrsJson() {

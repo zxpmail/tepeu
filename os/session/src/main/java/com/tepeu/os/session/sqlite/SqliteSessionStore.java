@@ -26,8 +26,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * SQLite WAL SessionStore — 发行默认插头。过同一套 SessionConformance。
- * 单连接 + 互斥：单写者本机；多副本 fencing 仍远期。
+ * SQLite WAL SessionStore — 发行默认插头；与 memory 过同一套测试 conformance。
+ * 单连接 + 互斥 = 本机单写者。多副本 fencing 仍远期；勿多进程同开一文件。
+ * 持久化真相仍是 entries/ledger/AuditSink 表，不是 slf4j。
  */
 public final class SqliteSessionStore implements SessionStore, AutoCloseable {
 

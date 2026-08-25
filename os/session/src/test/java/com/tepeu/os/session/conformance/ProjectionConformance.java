@@ -20,6 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.tepeu.os.conformance.ConformanceCheck.check;
 import static com.tepeu.os.conformance.ConformanceCheck.checkEquals;
 
+/**
+ * ProjectionBus / SessionProjections conformance — 通知非真相；catch-up 游标 = entry seq。
+ */
 public final class ProjectionConformance {
 
     @FunctionalInterface
