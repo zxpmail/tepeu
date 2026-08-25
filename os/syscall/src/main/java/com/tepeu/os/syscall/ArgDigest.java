@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * syscall args 指纹 — 审批绑定 (session, name, digest)，空 Map 摘要稳定。
+ * syscall {@code args} 指纹 — 审批绑定 {@code (session, name, digest)}；键排序后 SHA-256。
+ * 空 Map 摘要稳定；不解析业务语义。
  */
 public final class ArgDigest {
 

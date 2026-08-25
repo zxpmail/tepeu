@@ -4,8 +4,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * syscall 结果 — 计量槽为基座字段（TriniOS/AIOS 两票收敛，ADR-016 挂账落码）；
- * 失败不抛穿：ok=false + errorCode 即失败可见。
+ * syscall 执行结果 — 计量槽为基座字段（ADR-016）；与总线「拦截抛异常」正交。
+ * <p>
+ * 执行失败不抛穿：{@code ok=false} + {@code errorCode} 即失败可见。
+ * {@code cost}/{@link Usage} 空 = 未知，禁止假装有价。
  */
 public record SyscallResult(
         boolean ok,

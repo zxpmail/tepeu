@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-syscall</artifactId>
     <name>Tepeu OS Syscall</name>
-    <description>syscall 信封：请求 / 处理器 / 结果 / Usage</description>
+    <description>syscall 词汇信封（非组件）：请求 / Handler / 结果 / Usage / ArgDigest；分发在 bus</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>

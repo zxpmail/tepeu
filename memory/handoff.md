@@ -34,6 +34,7 @@
 - 2026-08-24：`ProjectionBus` + `SessionProjections`（UI 投影 v1）；`KnowledgeSource` + `PromptAssembly.memoryHits`
 - 2026-08-24→25：`host/` CLI（Spring Boot 4）；**已从 `os/host` 挪到仓库根**（非组件）
 - 2026-08-25：`identity/` 词汇 Javadoc + `package-info`（不是组件、Id≠实体、AgentKind 预留、TurnContext §6-4）；无运行时 logger
+- 2026-08-25：`syscall/` 词汇 `package-info` + 类型边界（信封≠总线；Usage/ArgDigest 职责钉死）
 
 ## 待办
 
