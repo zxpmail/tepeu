@@ -145,9 +145,10 @@ os/
   compose/          组件：开机接线
   README.md         本底板索引
 legacy/             v1 只读标本
+host/               ⑤ CLI 宿主（仓库根；非 os 组件；依赖 compose）
 ```
 
-调试：`mvn -f os/pom.xml test`；单模块必须带 `-am`（SNAPSHOT 未 install 时否则解析失败），例如 `-pl compose -am test`。禁止在 `legacy/` 加功能。
+调试：`mvn -f os/pom.xml test`；单模块必须带 `-am`（SNAPSHOT 未 install 时否则解析失败），例如 `-pl compose -am test`。宿主：`mvn -f os/pom.xml install -DskipTests && mvn -f host/pom.xml test`。禁止在 `legacy/` 加功能。
 
 ---
 

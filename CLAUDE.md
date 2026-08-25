@@ -93,6 +93,7 @@ description: Comprehensive CLAUDE.md template — 通用行为规则 + 项目填
 ```
 Runtime: Java 21
 Mainline: os/（Maven；组件 session/policy/bus/llm/loop/orchestration/execution/compose；词汇 identity/syscall）
+Host: host/（⑤ CLI；Spring Boot 4.0.7 无 Web；依赖 compose；非 os 组件）
 Database: SQLite WAL schema v1（发行 `SqliteAssembly`；`MemoryAssembly` 仅测试）
 llm.*: 禁止 Spring AI ChatModel（ADR-016 第十轮）
 ```
@@ -103,6 +104,7 @@ v1 工作台（`legacy/` / `main`，禁止当 `os/` 现状）：Spring Boot 4.0.
 
 ```
 os/               重写主线：组件 session/policy/bus/llm/loop/orchestration/execution/compose；词汇 identity/syscall
+host/             ⑤ CLI 宿主（Spring Boot；不进 os/；依赖 tepeu-os-compose）
 legacy/           v1 只读标本（backend / frontend / experiments / scripts）——禁止加功能
 docs/             底板（os-baseplate.md）· 手册独有章 · 诚实度 · archive/
 memory/           项目记忆与交接

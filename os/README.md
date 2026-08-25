@@ -25,7 +25,6 @@
 | `orchestration/` | PromptAssembly + CommandDispatcher（local/prompt） | `mvn -f os/pom.xml -pl orchestration -am test` |
 | `execution/` | 工作区囚笼 + Job Object/bwrap（隔离 partial） | `mvn -f os/pom.xml -pl execution -am test` |
 | `compose/` | 开机接线 | `mvn -f os/pom.xml -pl compose -am test` |
-| `host/` | CLI 宿主（Spring Boot 4，无 Web） | `mvn -f os/pom.xml -pl host -am test` |
 
 **不是组件**
 
@@ -34,6 +33,8 @@
 | `identity/` | 词汇：谁 / 在哪 / 哪次会话 / TurnContext |
 | `syscall/` | 词汇：调用信封 + Usage |
 | `conformance/` | 测试 harness |
+
+**⑤ 应用（仓库根，不在本树）**：[`../host/`](../host/) — Spring Boot 4 CLI 宿主，依赖 compose；UI/SSE 后续。
 
 尚未落码：Team / Subagent / LongTask / 路由三决策。PromptAssembly / Command 已在 `orchestration/`；Loop 不依赖该模块。
 

@@ -3,22 +3,23 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-24
+**Last updated**: 2026-08-25
 
 ## 当前阶段
 
-- develop：**本机 Agent OS 骨架可演示**（ADR-016 第二十二轮）+ 审查修补（第二十三轮）
-- 仍不是企业 Agent OS / 完整 OS；**无完整 UI**（有 ProjectionBus v1）、**无向量记忆**（有 KnowledgeSource 端口）
-- 下一刀按痛点：⑤ UI、记忆平面、多副本 fencing
+- develop：**本机 Agent OS 骨架可演示** + **⑤ CLI 宿主**（仓库根 `host/`，非 os 组件）
+- 仍不是企业 Agent OS / 完整 OS；**无完整 UI**（有 ProjectionBus v1 + CLI）、**无向量记忆**（有 KnowledgeSource 端口）
+- 下一刀按痛点：⑤ UI/SSE、记忆平面、多副本 fencing
 
 ## 口径
 
 - **组件（8）**：session / policy / bus / llm / loop / orchestration / execution / compose
 - **不是组件**：identity、syscall（词汇）；conformance（harness）
+- **⑤ 应用**：`host/`（Spring Boot 4 CLI；依赖 compose；**不在 `os/` 内**）
 - Loop **不**依赖 orchestration。CompactionWork 在 loop，经总线 llm.*。
 - execution 隔离 = **partial**。spawn：Windows `CREATE_SUSPENDED` 入 Job 再跑；Linux bwrap + ro-bind-try。无 jail 时失败可见。
 - 压缩后 `log.surfaceEpoch` 跳过上笔 llm digest 复核。审批绑 `argsDigest`。`/approve` 校验会话。
-- compose **不**读 API 密钥。live 测试有 key 才烧。
+- compose **不**读 API 密钥；host **可以**读。live 测试有 key 才烧。
 
 ## 已完成
 
@@ -31,18 +32,20 @@
 - 同日补：DEV.to 评测可观测管线 → `ai-eval-observability-pipeline.md`（运维姿态可借脱敏/诚实边界；非内核；勿开 observability jar）
 - 同日补：Terax ADE → `terax-ai.md`（⑤ 工作台；与 `os/` 不同线；勿当内核参照）
 - 2026-08-24：`ProjectionBus` + `SessionProjections`（UI 投影 v1）；`KnowledgeSource` + `PromptAssembly.memoryHits`
+- 2026-08-24→25：`host/` CLI（Spring Boot 4）；**已从 `os/host` 挪到仓库根**（非组件）
 
 ## 待办
 
 - live 往返未在 CI 烧（无 key skip）
 - 处置链 / 可配置 deny-sequence 规则面 — 见安全系列；未裁决前不空开 `gate/`·`response/`
-- ⑤ UI / 完整 SSE 宿主 / 向量记忆
+- ⑤ UI / 完整 SSE / 向量记忆
 - 多副本 fencing / timer 轮 / 哈希链 — 远期
 
 ## 调试
 
 ```bash
 mvn -f os/pom.xml test
-mvn -f os/pom.xml -pl compose -am test
+mvn -f os/pom.xml install -DskipTests
+mvn -f host/pom.xml test
 # live（可选）：ANTHROPIC_API_KEY=... mvn -f os/pom.xml -pl llm -am test
 ```

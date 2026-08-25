@@ -8,7 +8,8 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 
 - Runtime: Java 21
 - 主线：`os/`（Maven；组件 session/policy/bus/llm/loop/orchestration/execution/compose；词汇 identity/syscall；harness conformance）
-- 验证：`mvn -f os/pom.xml test`
+- ⑤ 应用：`host/`（Spring Boot 4.0.7 CLI；依赖 compose；**非 os 组件**）
+- 验证：`mvn -f os/pom.xml test`；宿主 `mvn -f os/pom.xml install -DskipTests && mvn -f host/pom.xml test`
 - 持久化：SQLite WAL schema v1（发行 `SqliteAssembly` → `kernel.sqlite` + `approvals.sqlite`）；`MemoryAssembly` 仅测试
 - `llm.*`：**禁止** Spring AI `ChatModel`（ADR-016 第十轮；自研双协议族）
 - v1 工作台：`legacy/` / `main`（Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18）。禁止在 `legacy/` 加功能
@@ -16,7 +17,7 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 ## Architecture（develop）
 
 - 洋葱：① 内核概念 → ② 插头 → ③ 编排（④ 已并入）→ ⑤ 应用。物理单元 = 组件（一件事一模块）；洋葱是依赖方向不是两个大 jar
-- 新代码只进 `os/`。根目录 `backend/` `frontend/` 已迁 `legacy/`
+- 内核新代码进 `os/`；⑤ 宿主进根目录 `host/`。根目录 `backend/` `frontend/` 已迁 `legacy/`
 - `Product-Spec.md` 是 v1 档案（Forge 门要求留在根目录），不是 `os/` 规范
 
 ## 口径
