@@ -1,7 +1,8 @@
 package com.tepeu.os.session;
 
 /**
- * surface 世代 — {@code replaceRange} 后模型读面改写，上笔 llm digest 不再对当前 surface 成立。
+ * surface 世代键 — 存在 {@link SessionRegisters}（{@link #KEY}），不是第四个 store。
+ * {@code replaceRange} 后 bump；上笔 llm digest 与当前 surface 不对齐则跳过复核（防 ASSERTION）。
  */
 public final class SurfaceEpoch {
 

@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 用量账本端口（ledger）— append-only；消耗从 ledger 派生，
- * 预算上限属 Metering/Policy 配置面（ADR-016 第五/七轮）。
+ * 用量账本端口（ledger）— append-only 用量真相（三 store 之一）。
+ * 消耗从 ledger 派生；预算上限属 {@link Metering}/Policy 配置面。
+ * 不是计费引擎；写失败本机倾向 fail-closed（多副本 barrier 仍挂账）。
  */
 public interface SessionLedger {
     /** 记一笔用量，返回分配的账本序号（单调连续）。 */

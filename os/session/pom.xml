@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-session</artifactId>
     <name>Tepeu OS Session</name>
-    <description>会话三 store + Metering + SQLite WAL 发行插头 + SessionConformance</description>
+    <description>组件：会话三 store + Inbox/claim + Metering + AuditSink + SQLite WAL；conformance</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>

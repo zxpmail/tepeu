@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 会话投影辅助 — 增量读真相 + 推通知（since 游标 = 持久 entry id 同型）。
+ * 会话投影辅助 — 从 entries 增量读 + 可选推入 {@link ProjectionBus}。
+ * since 游标 = 持久 entry seq 同型；读的是真相，bus 仍只是通知。
  */
 public final class SessionProjections {
 

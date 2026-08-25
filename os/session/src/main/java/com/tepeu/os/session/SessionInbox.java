@@ -4,7 +4,7 @@ import java.util.Optional;
 
 /**
  * 有序 Inbox — 编排器禁止旁路拼消息，必须经此领取（红线 §6-1）。
- * 领取顺序 NOW > NEXT > LATER，同级 FIFO（ADR-016 第四轮）。
+ * 领取序 NOW &gt; NEXT &gt; LATER，同级 FIFO。Inbox/claim = 进场与租约，<b>不是</b>调度器。
  */
 public interface SessionInbox {
     /** 投入一条用户/注入输入（默认 NEXT）。 */

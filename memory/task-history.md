@@ -2,6 +2,7 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-25 | session-port-javadoc | **session 组件 package-info + 端口边界** | 三 store/Audit≠entries/Inbox≠调度器；多副本仍挂账 |
 | 2026-08-25 | syscall-vocab-javadoc | **syscall 词汇边界写入 package-info** | 非组件；信封≠总线；与 identity 对称 |
 | 2026-08-25 | identity-vocab-javadoc | **identity 词汇边界注释** | package-info + 各类型钉「不是什么」/预留/§6-4；无 slf4j |
 | 2026-08-25 | host-config-comments | **host base-url 可配 + 中文注释** | tepeu.base-url/api-key；Javadoc 中文 |

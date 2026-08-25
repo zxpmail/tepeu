@@ -7,8 +7,9 @@ import com.tepeu.os.identity.SessionId;
 import java.util.Optional;
 
 /**
- * 会话聚合端口：三 store（entries / registers / ledger）+ Inbox+claim + 关系 + surface 替换。
+ * 会话聚合端口 — 三 store（entries / registers / ledger）+ Inbox/claim + 关系 + surface 替换。
  * 「每个载荷恰好属于三者之一，没有第四个地方」（ADR-016 第五轮）。
+ * 人手审计走 {@link AuditSink}，不经本聚合冒充对话事实。
  */
 public interface Session {
     SessionId id();
