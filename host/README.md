@@ -28,13 +28,17 @@ mvn -f host/pom.xml test
 | 键 | 默认 | 说明 |
 |----|------|------|
 | `tepeu.data-dir` | `~/.tepeu` | kernel.sqlite + workspace |
-| `tepeu.model` | `claude-sonnet-4-20250514` | LoopConfig.model |
+| `tepeu.model` | `claude-sonnet-4-20250514` | LoopConfig.model；OpenAI 族且仍为此默认时改用 `gpt-4o-mini` |
+| `tepeu.family` | （空） | 空则随传输推导；可强制 `anthropic` / `openai` |
 | `tepeu.principal-id` | `cli-user` | 会话 owner |
 | `tepeu.workspace-id` | `default` | workspace |
 | `tepeu.fake-llm` | `false` | true 强制 fake；否则读 `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
+| `tepeu.prompt-budget` | `8000` | PromptAssembly 字符预算 |
 | `tepeu.cli.enabled` | `true` | 测试可关，避免 REPL 阻塞 |
 
-宿主**可以**读 LLM 环境变量（compose **不**读）。
+宿主**可以**读 LLM 环境变量（compose **不**读）。`LoopConfig.family` 与传输对齐；system 经 `PromptAssembly`（至少 `base` 段）。
+
+退出码：`SpringApplication.exit` + `ExitCodeGenerator`（`chat` 成功 Slash 为 0，不再裸 `System.exit`）。
 
 ## REPL
 

@@ -9,9 +9,12 @@ public class TepeuHostProperties {
 
     private Path dataDir = Path.of(System.getProperty("user.home"), ".tepeu");
     private String model = "claude-sonnet-4-20250514";
+    /** 空 = 随传输族推导（Anthropic / OpenAI / fake→anthropic）。 */
+    private String family = "";
     private String principalId = "cli-user";
     private String workspaceId = "default";
     private boolean fakeLlm;
+    private int promptBudget = 8000;
 
     public Path dataDir() {
         return dataDir;
@@ -27,6 +30,14 @@ public class TepeuHostProperties {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public String family() {
+        return family;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
     }
 
     public String principalId() {
@@ -51,5 +62,13 @@ public class TepeuHostProperties {
 
     public void setFakeLlm(boolean fakeLlm) {
         this.fakeLlm = fakeLlm;
+    }
+
+    public int promptBudget() {
+        return promptBudget;
+    }
+
+    public void setPromptBudget(int promptBudget) {
+        this.promptBudget = promptBudget;
     }
 }

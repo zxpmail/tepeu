@@ -12,6 +12,6 @@ public final class TepeuHostApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(TepeuHostApplication.class, args);
+        System.exit(SpringApplication.exit(SpringApplication.run(TepeuHostApplication.class, args)));
     }
 }

@@ -56,4 +56,11 @@ class HostSmokeTest {
         assertNotNull(outcome);
         assertTrue(outcome.completed(), () -> String.valueOf(outcome));
     }
+
+    @Test
+    void slashHelpCompletesWithoutLoop() {
+        TurnOutcome outcome = cli.handleLine("/help");
+        assertNotNull(outcome);
+        assertTrue(outcome.completed(), () -> String.valueOf(outcome));
+    }
 }

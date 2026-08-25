@@ -30,13 +30,13 @@ public final class CliSession {
     private final LoopConfig loopConfig;
     private long projectionCursor;
 
-    CliSession(MemoryAssembly.Wired kernel, TepeuHostProperties props) {
+    CliSession(MemoryAssembly.Wired kernel, TepeuHostProperties props, LoopConfig loopConfig) {
         this.kernel = kernel;
+        this.loopConfig = loopConfig;
         Principal owner = Principal.personal(new PrincipalId(props.principalId()));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId(props.workspaceId()));
         this.session = kernel.sessions().create(owner, ns, Optional.empty());
         this.turnContext = new TurnContext(owner, ns, session.id(), Optional.empty());
-        this.loopConfig = LoopConfig.of(props.model());
     }
 
     SessionId sessionId() {
@@ -62,13 +62,13 @@ public final class CliSession {
         CommandResult result = kernel.commands().dispatch(turnContext, session, line);
         if (!result.ok()) {
             System.out.println(result.output());
-            return null;
+            return TurnOutcome.failed(0, result.output());
         }
         if (result.kind() == CommandKind.LOCAL) {
             if (!result.output().isBlank()) {
                 System.out.println(result.output());
             }
-            return null;
+            return TurnOutcome.completed(0);
         }
         return runLoop();
     }
@@ -84,12 +84,12 @@ public final class CliSession {
         return switch (meta.toLowerCase()) {
             case "session" -> {
                 System.out.println("session=" + session.id().value());
-                yield null;
+                yield TurnOutcome.completed(0);
             }
             case "quit", "exit" -> TurnOutcome.stopped(0, "cli exit");
             default -> {
                 System.out.println("unknown meta command; use :session :quit");
-                yield null;
+                yield TurnOutcome.failed(0, "unknown meta");
             }
         };
     }
