@@ -2,6 +2,7 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-25 | identity-vocab-javadoc | **identity 词汇边界注释** | package-info + 各类型钉「不是什么」/预留/§6-4；无 slf4j |
 | 2026-08-25 | host-config-comments | **host base-url 可配 + 中文注释** | tepeu.base-url/api-key；Javadoc 中文 |
 | 2026-08-25 | host-fix | **host family/exit/PromptAssembly** | 传输族对齐；ExitCodeGenerator；base 段经 PromptAssembly |
 | 2026-08-25 | host-out-of-os | **host 挪出 os/** | 根目录 host/；artifact tepeu-host；非内核组件 |

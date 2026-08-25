@@ -5,13 +5,16 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 跨环显式上下文 — 禁止用单例 Tool.bind 代替（红线 §6-4）。
- * 取消为标志位：入口与 chunk 边界检查，不做线程 interrupt 乱杀（ADR-016 第四轮）。
+ * 跨环显式上下文 — syscall / Loop / Policy 的公共入参。
+ * <p>
+ * 红线（底板 §6-4）：禁止用单例 Tool.bind 或隐式 ThreadLocal 代替本对象。
+ * 取消为标志位：入口与流式 chunk 边界检查；不做线程 {@code interrupt} 乱杀（ADR-016 第四轮）。
  */
 public final class TurnContext {
     private final Principal principal;
     private final Namespace namespace;
     private final SessionId sessionId;
+    /** 子代理 / 委派链 id；空 = 主会话本 turn。 */
     private final Optional<String> delegationId;
     private final AtomicBoolean cancelled;
 
@@ -43,6 +46,7 @@ public final class TurnContext {
         return delegationId;
     }
 
+    /** 协作取消：置位后下游在边界处停；不保证打断已在飞的阻塞 IO。 */
     public void cancel() {
         cancelled.set(true);
     }

@@ -3,7 +3,7 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-25
+**Last updated**: 2026-08-25（identity 词汇注释已记入 task-history）
 
 ## 当前阶段
 
@@ -33,6 +33,7 @@
 - 同日补：Terax ADE → `terax-ai.md`（⑤ 工作台；与 `os/` 不同线；勿当内核参照）
 - 2026-08-24：`ProjectionBus` + `SessionProjections`（UI 投影 v1）；`KnowledgeSource` + `PromptAssembly.memoryHits`
 - 2026-08-24→25：`host/` CLI（Spring Boot 4）；**已从 `os/host` 挪到仓库根**（非组件）
+- 2026-08-25：`identity/` 词汇 Javadoc + `package-info`（不是组件、Id≠实体、AgentKind 预留、TurnContext §6-4）；无运行时 logger
 
 ## 待办
 
