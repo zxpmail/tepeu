@@ -81,10 +81,17 @@ ADR 所写「prompt_assembly 快照事件」**未入**词汇表。落地须 mani
 
 | 端口 | 规范单机 | conformance | 发行 |
 |------|----------|-------------|------|
-| SessionStore | SQLite WAL schema v1 | 内存 | `SqliteSessionStore`（单写者） |
+| SessionStore | SQLite WAL schema v1 | 内存 | persist：`SqliteSessionStore`（单写者） |
 | InboxClaim | 进程内锁+TTL | 内存领取 | SQLite 同进程 TTL；fencing 远期 |
-| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | `SqliteApprovalStore`；`MemoryAssembly` 不得发行 |
+| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | persist：`SqliteApprovalStore`；内存夹具不得发行 |
 | Metering | 供数 | 端口有 | 未知价 n/a |
+
+支撑端口**不是**开机四件套。缺 ProjectionBus **不**等于缺内核。业务只依赖接口；本机默认插头可换，其他组件可不实现。
+
+| 端口 | 本骨架 | 其他组件 | 升版 |
+|------|--------|----------|------|
+| ProjectionBus | 接口；compose 默认 `LocalProjectionBus` | 可实现 / 可不实现 / 可不订阅 | Redis/NATS/MQ 同一接口另插头；不在本骨架引入 broker。drop/消费者失败须运维可见，不进 entries |
+| KnowledgeSource | 接口；默认 empty | 可实现 / 可不实现 | 向量/图检索仍欠 |
 
 ---
 

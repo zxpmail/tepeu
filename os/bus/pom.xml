@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-bus</artifactId>
     <name>Tepeu OS Bus</name>
-    <description>能力总线分发 + 卫兵 + BusConformance</description>
+    <description>能力总线分发 + 卫兵</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -22,11 +22,19 @@
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-policy</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-identity</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-conformance</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -34,4 +42,26 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test-jar</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>com/tepeu/os/bus/conformance/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-compose</artifactId>
     <name>Tepeu OS Compose</name>
-    <description>开机接线：发行 SqliteAssembly / 测试 MemoryAssembly</description>
+    <description>开机接线：发行 SqliteAssembly；内存内核在测试源</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -22,11 +22,29 @@
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-session</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-syscall</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-policy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-persist</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-policy</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -46,7 +64,26 @@
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-orchestration</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-execution</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-conformance</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-bus</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

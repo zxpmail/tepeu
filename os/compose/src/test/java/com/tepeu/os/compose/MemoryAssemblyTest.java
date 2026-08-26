@@ -33,7 +33,7 @@ class MemoryAssemblyTest {
 
     @Test
     void wiresSessionAndAllowBus() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("compose-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("compose-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -52,7 +52,7 @@ class MemoryAssemblyTest {
 
     @Test
     void wiresLoopReplyPath() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("loop-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("loop-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -70,7 +70,7 @@ class MemoryAssemblyTest {
 
     @Test
     void budgetGateBlocksSecondTurnWithoutClaim() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory(
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory(
                 new FakeLlmTransport(), LedgerMetering.tokens(2));
         Principal owner = Principal.personal(new PrincipalId("budget-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("budget-ws"));
@@ -95,7 +95,7 @@ class MemoryAssemblyTest {
 
     @Test
     void helpCommandDoesNotGenerate() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("help-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("help-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -112,7 +112,7 @@ class MemoryAssemblyTest {
 
     @Test
     void assembledSystemForwardsToLoop() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("prompt-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("prompt-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -130,7 +130,7 @@ class MemoryAssemblyTest {
 
     @Test
     void auditSinkDoesNotWriteSessionLog() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("audit-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("audit-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());

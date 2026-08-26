@@ -22,11 +22,19 @@
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-session</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-syscall</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-conformance</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

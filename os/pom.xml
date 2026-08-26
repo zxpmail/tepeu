@@ -17,6 +17,7 @@
         <module>syscall</module>
         <module>session</module>
         <module>policy</module>
+        <module>persist</module>
         <module>bus</module>
         <module>llm</module>
         <module>loop</module>
@@ -59,6 +60,11 @@
             <dependency>
                 <groupId>com.tepeu</groupId>
                 <artifactId>tepeu-os-policy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-persist</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -130,6 +136,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.4.2</version>
                 </plugin>
             </plugins>
         </pluginManagement>

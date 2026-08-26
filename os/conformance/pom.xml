@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-conformance</artifactId>
     <name>Tepeu OS Conformance Harness</name>
-    <description>conformance 用例载体（Pi /testing）</description>
+    <description>conformance 用例载体；套件在各组件 src/test</description>
     <dependencies>
         <!-- none -->
     </dependencies>

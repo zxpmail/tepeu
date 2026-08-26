@@ -141,6 +141,7 @@
     | `ApprovalStore`（属 Policy 旁路状态） | 本地 SQLite（**审批是合规证据，禁内存默认**） | 共享存储 |
     | `ProjectionBus` | 本机直推 SSE | Redis/NATS 等 Pub/Sub（只做通知/投影，**不是**消息真相；下发前按**查看者 ACL** 过滤，防越权泄露） |
     | `Execution` | 本地盘/进程 | 共享盘 / 远程沙箱 |
+  - **ProjectionBus 形态（2026-08-26，钉接口、不引入 broker）**：契约是接口；本机路径也只依赖该接口，不把 `LocalProjectionBus` 写成第二份契约。本骨架默认插头 = 进程内 `LocalProjectionBus`（compose 接线）。其他组件（loop / llm / bus / host…）**可以实现、也可以不实现、可以不订阅**——支撑服务不是内核必需四端口。Redis/NATS/MQ 是同一接口的另一插头，**升版再落**；本骨架不引入 broker、不把开机绑死到中间件。慢消费者 drop 与消费者失败必须运维可见（JDK `System.Logger`，**不**进 entries / AuditSink，**不**因此给 session 加 slf4j）。
   - **双真相域（裁决）**：  
     - **会话日志** = 对话 + Agent 工具事实的真相（模型可见 ⟺ 可还原）。  
     - **AuditSink** = 人手宿主操作等审计真相（企业导出必含）；**不**写入冒充对话的会话事实。  
@@ -370,5 +371,8 @@
   4. **审批绑 args**：`ArgDigest`（排序 `k=v` sha256）；ask 幂等与 consume 匹配 `(session, name, argsDigest)`。SQLite `args_digest`（旧库 ALTER，空 Map 摘要作默认）。`/approve` 必须 `record.sessionId == ctx.sessionId`。
   5. **WorkspaceJail**：拒绝绝对路径；`NOFOLLOW_LINKS`；符号链接 / junction 一律拒；未存在文件看父路径 realpath 仍在根下。
   6. **隔离仍是 partial**。Job Object 无 FS 限额；禁止报 FULL。
+- **Decision — 库是组件（2026-08-26）**:
+  领域组件（session / policy）只暴露端口，**不持有 JDBC**。持久化是独立组件 `persist`：方言、连接、schema、迁移只在这里。本骨架插头 = `persist.sqlite`（`SqliteSessionStore` + `SqliteApprovalStore`）。compose 只接线。换库 = persist 另写插头（或另开配方），session/policy/loop/llm **不改**。
+  修正第十一轮「默认实现跟组件走」对**存储**的适用范围：领域默认（如 `LocalProjectionBus`）仍跟组件；**JDBC/方言跟 persist**，禁止每组件一份 JDBC。
 - **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。下一动作按痛点：⑤ UI、记忆平面、多副本 fencing / timer 轮 / 哈希链；DoomLoop 第三刀改 NEED_APPROVAL 仍挂账。
 

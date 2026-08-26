@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-policy</artifactId>
     <name>Tepeu OS Policy</name>
-    <description>Policy 封闭 union + 审批通道（内存测试 / SQLite 发行）</description>
+    <description>Policy 封闭 union + 审批通道（端口；JDBC 在 persist；内存夹具在 src/test）</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -23,10 +23,7 @@
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-conformance</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -34,4 +31,27 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test-jar</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>com/tepeu/os/policy/memory/InMemory*.class</include>
+                                <include>com/tepeu/os/policy/conformance/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -5,12 +5,14 @@ import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
 import com.tepeu.os.identity.WorkspaceId;
+import com.tepeu.os.session.LocalProjectionBus;
 import com.tepeu.os.session.ProjectionBus;
 import com.tepeu.os.session.Session;
+import com.tepeu.os.session.SessionEvent;
 import com.tepeu.os.session.SessionEventType;
 import com.tepeu.os.session.SessionProjections;
-import com.tepeu.os.session.memory.InMemoryProjectionBus;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +49,7 @@ public final class ProjectionConformance {
         cases.add(new ConformanceCase("projection", "catchUp 推通知且更新游标",
                 () -> {
                     Session session = factory.create();
-                    ProjectionBus bus = new InMemoryProjectionBus();
+                    ProjectionBus bus = new LocalProjectionBus();
                     List<String> bodies = new ArrayList<>();
                     bus.subscribe(session.id(), e -> bodies.add(e.body()));
                     session.log().append(SessionEventType.USER_MESSAGE, "hi", Map.of());
@@ -63,23 +65,60 @@ public final class ProjectionConformance {
         cases.add(new ConformanceCase("projection", "pending 达 cap 则 drop 订阅",
                 () -> {
                     Session session = factory.create();
-                    InMemoryProjectionBus bus = new InMemoryProjectionBus(1);
+                    LocalProjectionBus bus = new LocalProjectionBus(1);
                     AtomicInteger received = new AtomicInteger();
                     String sub = bus.subscribe(session.id(), e -> {
                         received.incrementAndGet();
                         if (received.get() == 1) {
-                            bus.publish(session.id(), new com.tepeu.os.session.SessionEvent(
-                                    99, SessionEventType.USER_MESSAGE, java.time.Instant.now(), "nested", Map.of()));
+                            bus.publish(session.id(), event(99, "nested"));
                         }
                     });
-                    bus.publish(session.id(), new com.tepeu.os.session.SessionEvent(
-                            1, SessionEventType.USER_MESSAGE, java.time.Instant.now(), "one", Map.of()));
-                    bus.publish(session.id(), new com.tepeu.os.session.SessionEvent(
-                            2, SessionEventType.USER_MESSAGE, java.time.Instant.now(), "two", Map.of()));
+                    bus.publish(session.id(), event(1, "one"));
+                    bus.publish(session.id(), event(2, "two"));
                     checkEquals(1, received.get(), "嵌套 publish 时 outer 第二条应 drop");
                     bus.unsubscribe(sub);
                 }));
+        cases.add(new ConformanceCase("projection", "drop 须记诊断",
+                () -> {
+                    Session session = factory.create();
+                    List<String> notes = new ArrayList<>();
+                    LocalProjectionBus bus = new LocalProjectionBus(1, notes::add);
+                    AtomicInteger received = new AtomicInteger();
+                    bus.subscribe(session.id(), e -> {
+                        received.incrementAndGet();
+                        if (received.get() == 1) {
+                            bus.publish(session.id(), event(99, "nested"));
+                        }
+                    });
+                    bus.publish(session.id(), event(1, "one"));
+                    bus.publish(session.id(), event(2, "two"));
+                    check(notes.stream().anyMatch(n -> n.contains("drop")), "drop 诊断");
+                    check(notes.stream().anyMatch(n -> n.contains("component=session")), "含组件");
+                    check(notes.stream().anyMatch(n -> n.contains("class=LocalProjectionBus")), "含类");
+                    check(notes.stream().anyMatch(n -> n.contains(session.id().value())), "含 session");
+                }));
+        cases.add(new ConformanceCase("projection", "消费者异常不阻断其他订阅",
+                () -> {
+                    Session session = factory.create();
+                    List<String> notes = new ArrayList<>();
+                    List<String> ok = new ArrayList<>();
+                    LocalProjectionBus bus = new LocalProjectionBus(64, notes::add);
+                    bus.subscribe(session.id(), e -> {
+                        throw new RuntimeException("boom");
+                    });
+                    bus.subscribe(session.id(), e -> ok.add(e.body()));
+                    bus.publish(session.id(), event(1, "hi"));
+                    checkEquals(1, ok.size(), "另一订阅仍收到");
+                    checkEquals("hi", ok.get(0), "body");
+                    check(notes.stream().anyMatch(n -> n.contains("consumer failed")), "失败诊断");
+                    check(notes.stream().anyMatch(n -> n.contains("component=session")), "含组件");
+                    check(notes.stream().anyMatch(n -> n.contains("class=LocalProjectionBus")), "含类");
+                }));
         return cases;
+    }
+
+    private static SessionEvent event(long seq, String body) {
+        return new SessionEvent(seq, SessionEventType.USER_MESSAGE, Instant.now(), body, Map.of());
     }
 
     public static Session minimalSession() {

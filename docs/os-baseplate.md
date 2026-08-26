@@ -85,7 +85,7 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 
 ### 3.4 ⑤/② 支撑服务（非内核契约）
 
-`ProjectionBus`（通知非真相；下发前按查看者 ACL 过滤）· `Secret`（branded 引用/重解析禁缓存/结果不进模型通道/克制品不是边界）· `Identity`/`OrgNamespace` · `KnowledgeSource`（知识→Section 唯一内容源）。
+`ProjectionBus`（通知非真相；契约=接口；本机默认 `LocalProjectionBus` 只是插头；其他组件可实现可不实现、可不订阅；Redis/NATS/MQ 升版再换，本骨架不引入 broker；drop/消费者失败须运维可见、不进 entries；下发前按查看者 ACL 过滤仍挂账）· `Secret`（branded 引用/重解析禁缓存/结果不进模型通道/克制品不是边界）· `Identity`/`OrgNamespace` · `KnowledgeSource`（知识→Section 唯一内容源）。
 
 ---
 
@@ -128,7 +128,7 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 
 ## 7. 代码骨架落点（develop）
 
-洋葱是依赖方向，不是 jar。物理单元 = **组件**（一件事一个 Maven 模块；默认实现跟组件走）。组件 ≠ 插件。
+洋葱是依赖方向，不是 jar。物理单元 = **组件**（一件事一个 Maven 模块；领域默认跟组件走；**JDBC/方言只在 persist**）。组件 ≠ 插件。
 
 ```text
 os/
@@ -198,7 +198,7 @@ host/               ⑤ CLI 宿主（仓库根；非 os 组件；依赖 compose�
 | 修剪证物保护 + spill 容量纪律（TTL/单条上限/证物类不可修剪） | gnex3 | Compaction | 挂账 |
 | 注册表/工具集版本化快照锁存：增量=新版本，in-flight turn 锁存旧快照 | gnex3 | ③/RegisterStore（同裁） | 挂账 |
 | Observation 组件候选：收口 surface + derive/normalize + shape；Gate 改观测经此管道；空 jar 不预开 | EnvHarness 机制对账 + 安全系列 §6 | 观测管道 / 日后可选 `observation/` | ◐ `ModelContext` + shape v1；PromptAssembly 仍独立 |
-| ProjectionBus（增量通知，非真相） | 底板 §3.4 + opencode/pi 参照 | ⑤ 支撑 / session | ◐ `ProjectionBus` + `SessionProjections` v1（2026-08-24） |
+| ProjectionBus（增量通知，非真相） | 底板 §3.4 + opencode/pi 参照 | ⑤ 支撑 / session | ◐ 接口 + 本机插头 `LocalProjectionBus` + `SessionProjections` v1；MQ/Redis/NATS 升版；ACL 仍挂账 |
 | KnowledgeSource（知识→Section） | ADR-016 第三轮 | orchestration | ◐ 端口 + `EmptyKnowledgeSource` + `memory_hits`（2026-08-24） |
 | 参数级 Policy（敏感路径/命令 DENY 叠名级矩阵） | 安全系列 §1–§3 | policy | ✅ `PolicyRulesFile` + path/command deny（2026-08-24） |
 | 跨工具序列熔断（TOOL_CALL 后缀指纹） | 安全系列 §2–§3 | ③ Loop 卫兵 | ✅ `ToolSequence` + `SequenceGuardHook`（2026-08-24） |

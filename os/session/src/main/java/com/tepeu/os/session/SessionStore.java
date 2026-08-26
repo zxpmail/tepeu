@@ -8,7 +8,7 @@ import java.util.Optional;
 
 /**
  * 会话工厂 / 存取端口（内核必需端口之一）。
- * 持久化细节在 ②：{@code memory} / {@code sqlite} 过同一测试 conformance。
+ * 持久化细节在 persist 组件（发行 SQLite 插头）与测试源 memory 夹具；本接口不含 JDBC。
  * 不是 Registry 单例；多副本 fencing 未做（单写者发行）。
  */
 public interface SessionStore {

@@ -9,7 +9,6 @@ import com.tepeu.os.execution.ProcSpawnHandler;
 import com.tepeu.os.execution.SandboxPolicy;
 import com.tepeu.os.execution.SandboxProbeHandler;
 import com.tepeu.os.llm.ContextShapers;
-import com.tepeu.os.llm.FakeLlmTransport;
 import com.tepeu.os.llm.ModelContext;
 import com.tepeu.os.llm.LlmGenerateHandler;
 import com.tepeu.os.llm.LlmTransport;
@@ -25,15 +24,11 @@ import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.DefaultRuleMatrix;
 import com.tepeu.os.policy.PolicyHook;
 import com.tepeu.os.policy.PolicyRulesFile;
-import com.tepeu.os.policy.memory.InMemoryApprovalStore;
 import com.tepeu.os.session.AuditSink;
-import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.session.LocalProjectionBus;
 import com.tepeu.os.session.Metering;
 import com.tepeu.os.session.ProjectionBus;
 import com.tepeu.os.session.SessionStore;
-import com.tepeu.os.session.memory.InMemoryAuditSink;
-import com.tepeu.os.session.memory.InMemoryProjectionBus;
-import com.tepeu.os.session.memory.InMemorySessionStore;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -41,8 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * 单机内存接线 — compose 只组装，不承载业务。仅 conformance / 单测。
- * 发行默认见 {@link SqliteAssembly}。
+ * 开机接线 — compose 只组装，不承载业务。
+ * 发行入口 {@link SqliteAssembly}。内存内核工厂在测试源，不进本类。
  * 默认装 {@link DefaultRuleMatrix}（不是 ALLOW-all）；裸总线未装配仍 C2。
  * execution.* 工作区囚笼，隔离报 partial。llm 默认 fake。
  */
@@ -57,6 +52,7 @@ public final class MemoryAssembly {
             CommandDispatcher commands,
             AuditSink audit,
             Path workspace,
+            /** 投影端口；本骨架默认 {@link LocalProjectionBus}，不是契约。MQ 升版可换。 */
             ProjectionBus projection,
             KnowledgeSource knowledge) implements AutoCloseable {
         @Override
@@ -88,25 +84,6 @@ public final class MemoryAssembly {
     }
 
     private MemoryAssembly() {
-    }
-
-    public static Wired memory() {
-        return memory(new FakeLlmTransport());
-    }
-
-    public static Wired memory(LlmTransport transport) {
-        return memory(transport, LedgerMetering.unlimited());
-    }
-
-    public static Wired memory(LlmTransport transport, Metering metering) {
-        InMemorySessionStore sessions = new InMemorySessionStore();
-        InMemoryApprovalStore approvals = new InMemoryApprovalStore();
-        try {
-            Path workspace = Files.createTempDirectory("tepeu-mem-ws-");
-            return wire(sessions, approvals, new InMemoryAuditSink(), transport, metering, workspace);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
     static Wired wire(
@@ -145,7 +122,8 @@ public final class MemoryAssembly {
         CommandDispatcher commands = new CommandDispatcher();
         commands.register(new HelpCommand(commands));
         commands.register(new ApproveCommand(approvals, audit));
-        ProjectionBus projection = new InMemoryProjectionBus();
+        // 本骨架默认插头；业务只认 ProjectionBus。MQ/Redis 升版再换，此处不引入 broker。
+        ProjectionBus projection = new LocalProjectionBus();
         KnowledgeSource knowledge = new EmptyKnowledgeSource();
         return new Wired(sessions, bus, approvals, loop, prompts, commands, audit, workspace, projection,
                 knowledge);

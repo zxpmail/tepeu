@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-session</artifactId>
     <name>Tepeu OS Session</name>
-    <description>组件：会话三 store + Inbox/claim + Metering + AuditSink + SQLite WAL</description>
+    <description>组件：会话三 store + Inbox/claim + Metering + AuditSink（持久化端口；JDBC 在 persist）</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -26,13 +26,32 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test-jar</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>com/tepeu/os/session/memory/InMemory*.class</include>
+                                <include>com/tepeu/os/session/conformance/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

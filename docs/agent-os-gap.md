@@ -57,7 +57,7 @@
 
 | 债 | 说明 |
 |----|------|
-| ⑤ UI / 产品面 | **CLI 宿主** [`host/`](../host/)（Spring Boot 4，无 Web）+ ProjectionBus v1；完整工作台 / SSE 仍缺 |
+| ⑤ UI / 产品面 | **CLI 宿主** [`host/`](../host/)（Spring Boot 4，无 Web）+ `ProjectionBus` 接口 / 本机插头；完整工作台 / SSE / MQ 插头仍缺（升版） |
 | 记忆平面 | **KnowledgeSource 端口** + `memory_hits` 段（须有 sourceId 命中）；无向量/图检索 |
 | live CI | 无 key 不烧；有钥匙才是真往返 |
 | 运行时安全九宫格对账 | 外部系列映射见 [`archive/reference/agent-runtime-security-series.md`](./archive/reference/agent-runtime-security-series.md)：工具行大半对齐；参数级白名单 / Gate 序列熔断 / 处置链 / Skill·MCP 格仍弱或未——**参照不是排期** |

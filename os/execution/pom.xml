@@ -21,10 +21,6 @@
             <artifactId>tepeu-os-syscall</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-conformance</artifactId>
-        </dependency>
-        <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
         </dependency>

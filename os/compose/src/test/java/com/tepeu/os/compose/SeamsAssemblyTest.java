@@ -34,7 +34,7 @@ class SeamsAssemblyTest {
 
     @Test
     void defaultMatrixAllowsGenerateWithoutCallerAllow() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("mx-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("mx-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -46,7 +46,7 @@ class SeamsAssemblyTest {
 
     @Test
     void writeAskThenSameTurnReplayAfterDecide() throws Exception {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("ap-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("ap-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -63,7 +63,7 @@ class SeamsAssemblyTest {
 
     @Test
     void unknownDeniedAndProcFailsVisibleAfterApprove() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("ex-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("ex-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -97,7 +97,7 @@ class SeamsAssemblyTest {
 
     @Test
     void approveCommandDecidesAndAudits() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("ap-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("ap-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -116,7 +116,7 @@ class SeamsAssemblyTest {
 
     @Test
     void approveCommandRejectsOtherSession() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("ap-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("ap-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -135,7 +135,7 @@ class SeamsAssemblyTest {
 
     @Test
     void compactThenGenerateDoesNotAssertion() {
-        MemoryAssembly.Wired wired = MemoryAssembly.memory();
+        MemoryAssembly.Wired wired = InMemoryAssembly.memory();
         Principal owner = Principal.personal(new PrincipalId("cp-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("cp-ws"));
         Session session = wired.sessions().create(owner, ns, Optional.empty());

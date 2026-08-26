@@ -3,10 +3,10 @@ package com.tepeu.os.compose;
 import com.tepeu.os.llm.FakeLlmTransport;
 import com.tepeu.os.llm.LlmTransport;
 import com.tepeu.os.policy.PolicyRulesFile;
-import com.tepeu.os.policy.sqlite.SqliteApprovalStore;
+import com.tepeu.os.persist.sqlite.SqliteApprovalStore;
+import com.tepeu.os.persist.sqlite.SqliteSessionStore;
 import com.tepeu.os.session.LedgerMetering;
 import com.tepeu.os.session.Metering;
-import com.tepeu.os.session.sqlite.SqliteSessionStore;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -16,7 +16,8 @@ import java.nio.file.Path;
 
 /**
  * 本机单写者发行接线 — 四端口生产默认落 SQLite WAL。
- * {@code MemoryAssembly} 仅 conformance / 单测；发行禁止默认 {@code InMemoryApprovalStore}。
+ * 内存内核工厂在测试源 {@code InMemoryAssembly}，不进发行。发行禁止默认内存 ApprovalStore。
+ * SQLite 插头来自 persist 组件，本类只接线。
  * 可选 {@code dir/policy.rules}：syscall override + {@code deny-path}/{@code deny-command}。llm 默认 fake。
  */
 public final class SqliteAssembly {
