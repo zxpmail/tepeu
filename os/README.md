@@ -8,18 +8,19 @@
 ## 规则
 
 - **组件** = 有人能单独拥有、最好能单独测的能力。一个类型不够成组件。
-- 领域组件只暴露端口。JDBC/方言只在 `persist`。compose 只接线。空 README 可留，空 jar 不预开。
+- 领域组件只暴露端口。JDBC/方言只在 `persist/sqlite`。`Persist` 契约在 `persist/api`。compose 只接线。空 README 可留，空 jar 不预开。
 - 新代码只进 `os/` 某模块；禁止在 `legacy/` 加功能。
 
 ## 现网
 
-**组件（9）**
+**组件（10）**
 
 | 模块 | 一件事 | 独立测 |
 |------|--------|--------|
 | `session/` | 会话三 store + Metering + fork/recover/CAS + AuditSink（端口，无 JDBC） | `mvn -f os/pom.xml -pl session -am test` |
 | `policy/` | Policy + 审批 + DefaultRuleMatrix（端口，无 JDBC） | `mvn -f os/pom.xml -pl policy -am test` |
-| `persist/` | 库：JDBC/方言；实现 session/policy 存储端口 | `mvn -f os/pom.xml -pl persist -am test` |
+| `persist/` | 库引擎：`api` 契约 `Persist` + `sqlite` 插头 | `mvn -f os/persist/pom.xml test` |
+| `observation/` | 模型可见管道：derive ∘ normalize ∘ shape；入口 `Observation.view` | `mvn -f os/pom.xml -pl observation -am test` |
 | `bus/` | 总线分发 + 卫兵 | `mvn -f os/pom.xml -pl bus -am test` |
 | `llm/` | llm.* 派生式断言 + fake + Anthropic/OpenAI HTTP 薄壳 + live opt-in | `mvn -f os/pom.xml -pl llm -am test` |
 | `loop/` | claim → 有界 turn → 完成门；overflow 压缩；maintenance 窗 | `mvn -f os/pom.xml -pl loop -am test` |

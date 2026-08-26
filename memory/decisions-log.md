@@ -374,5 +374,9 @@
 - **Decision — 库是组件（2026-08-26）**:
   领域组件（session / policy）只暴露端口，**不持有 JDBC**。持久化是独立组件 `persist`：方言、连接、schema、迁移只在这里。本骨架插头 = `persist.sqlite`（`SqliteSessionStore` + `SqliteApprovalStore`）。compose 只接线。换库 = persist 另写插头（或另开配方），session/policy/loop/llm **不改**。
   修正第十一轮「默认实现跟组件走」对**存储**的适用范围：领域默认（如 `LocalProjectionBus`）仍跟组件；**JDBC/方言跟 persist**，禁止每组件一份 JDBC。
+- **Decision — persist 引擎插头（2026-08-26）**:
+  compose 选 `Persist`（发行 `SqlitePersist.file(dir)`），**不是**再写一份 `SessionStore` 当换库点。`os/` 只列 `persist/`（聚合）。契约在 `persist/api`（`tepeu-os-persist`，无 JDBC）；SQLite 在 `persist/sqlite`（`tepeu-os-persist-sqlite`）。不得与契约同 jar，也不得把插头抬成 `os/` 一级模块。session / policy 仍只认领域端口。会话与审批可分库 / 分 schema（隔离），JDBC 栈只有一份（`SqliteDb`）。PG/MySQL 升版在 persist 下另开子模块。不做成通用 KV / ORM。
+- **Decision — Observation 是组件（2026-08-26）**:
+  模型可见管道单独拥有：`os/observation`，入口 **`Observation.view`** = derive ∘ normalize ∘ shape。读 `session.surface`，不持久化，**不是第四 store**。压缩仍经 loop 的日志替换端口；PromptAssembly 静/动段仍独立。llm 只负责协议族投影与传输，依赖 observation，不得旁路拼 messages。compose 发行默认 `Observation.install(ContextShapers.defaults())`。不抄外部 harness 的 context 插件组。
 - **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。下一动作按痛点：⑤ UI、记忆平面、多副本 fencing / timer 轮 / 哈希链；DoomLoop 第三刀改 NEED_APPROVAL 仍挂账。
 

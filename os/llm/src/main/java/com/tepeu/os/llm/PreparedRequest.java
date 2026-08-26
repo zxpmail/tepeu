@@ -1,5 +1,7 @@
 package com.tepeu.os.llm;
 
+import com.tepeu.os.observation.CanonicalTurn;
+
 import java.util.List;
 import java.util.Objects;
 

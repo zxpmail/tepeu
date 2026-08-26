@@ -3,7 +3,7 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-26（persist 库组件；session/policy 不持有 JDBC）
+**Last updated**: 2026-08-26（persist 聚合：api 契约 + sqlite 插头）
 
 ## 当前阶段
 
@@ -13,7 +13,7 @@
 
 ## 口径
 
-- **组件（9）**：session / policy / persist / bus / llm / loop / orchestration / execution / compose
+- **组件（10）**：session / policy / persist / observation / bus / llm / loop / orchestration / execution / compose
 - **不是组件**：identity、syscall（词汇）；conformance（harness）
 - **⑤ 应用**：`host/`（Spring Boot 4 CLI；依赖 compose；**不在 `os/` 内**）
 - Loop **不**依赖 orchestration。CompactionWork 在 loop，经总线 llm.*。
@@ -44,6 +44,9 @@
 - 2026-08-26：钉死 ProjectionBus 形态——契约是接口；本机也只依赖接口；其他组件可实现可不实现；MQ/Redis 升版再落，本骨架不引入 broker
 - 2026-08-26：`LocalProjectionBus` drop / 消费者失败走 JDK `System.Logger`（不进 entries、不加 slf4j）；消费者异常不阻断其他订阅
 - 2026-08-26：抽出 `persist` 库组件；session/policy 只留端口；JDBC 只在 persist.sqlite
+- 2026-08-26：抽出 `observation` 组件；入口 `Observation.view`（derive ∘ normalize ∘ shape）；llm 只投影+传输；PromptAssembly 仍独立
+- 2026-08-26：persist 引擎插头 `Persist`；compose 选 `SqlitePersist.file(dir)`；会话/审批分库、一套 JDBC
+- 2026-08-26：`Persist` 与 SQLite 分 jar，且 sqlite 嵌在 `persist/sqlite`（`os/` 不并列 persist-sqlite）
 
 ## 待办
 

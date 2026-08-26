@@ -2,6 +2,10 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-26 | persist-nested-pom | **persist POM 嵌套** | os 只列 persist/；api+sqlite 子模块；插头不抬一级 |
+| 2026-08-26 | persist-split-jar | **Persist 与 sqlite 分 jar** | 契约 persist；插头 persist-sqlite；compose 依赖插头 |
+| 2026-08-26 | persist-engine | **persist 引擎插头** | compose 选 Persist；sqlite 一套 JDBC 分两库；不是再写一份 SessionStore |
+| 2026-08-26 | observation-entry | **模型可见管道成组件** | 入口 Observation.view；llm 只投影+传输；不是第四 store；PromptAssembly 仍独立 |
 | 2026-08-26 | persist-component | **库是组件** | JDBC 只在 persist；session/policy 只暴露端口；compose 接线；换库不改领域 |
 | 2026-08-26 | projection-log-locate | **投影诊断带组件/类** | 每条日志 `component=session class=LocalProjectionBus` |
 | 2026-08-26 | projection-bus-log | **投影诊断可见** | drop/消费者失败记 JDK System.Logger；不进 entries；不加 slf4j；异常不阻断其他订阅 |

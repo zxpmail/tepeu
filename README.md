@@ -17,7 +17,7 @@ develop 按 [ADR-016](memory/decisions-log.md) 重建 Agent OS **内核**。当�
 docs/os-baseplate.md   实施底板（必读）
 docs/os-handbook.md    独有章（时序 / 开机 / 威胁）
 docs/archive/          已吸入 ADR 的参照与 v1 草稿（不是规范）
-os/                    新骨架（9 组件：session/policy/persist/bus/llm/loop/orchestration/execution/compose）
+os/                    新骨架（10 组件：session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose）
 legacy/                v1 只读标本
 memory/                ADR（ADR-016 规范）
 ```

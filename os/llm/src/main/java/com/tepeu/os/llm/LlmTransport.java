@@ -1,5 +1,9 @@
 package com.tepeu.os.llm;
 
+import com.tepeu.os.observation.CanonicalTurn;
+import com.tepeu.os.observation.LogDeriver;
+import com.tepeu.os.observation.Observation;
+import com.tepeu.os.observation.SharedNormalizer;
 import com.tepeu.os.session.SessionEvent;
 import com.tepeu.os.syscall.Usage;
 
@@ -27,7 +31,7 @@ public interface LlmTransport {
             String model,
             String system,
             int maxTokens) {
-        List<CanonicalTurn> normalized = ModelContext.view(surface);
+        List<CanonicalTurn> normalized = Observation.view(surface);
         MapWire wire = project(family, model, system == null ? "" : system, normalized, maxTokens);
         String json = CanonicalJson.write(wire.root());
         long throughSeq = surface.isEmpty() ? 0L : surface.get(surface.size() - 1).seq();

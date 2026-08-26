@@ -58,7 +58,7 @@ now 级抢占只切流式 chunk；本刀无流式。
 
 ## PromptAssembly Section
 
-禁止 Orchestrator 巨型 system 串。
+禁止 Orchestrator 巨型 system 串。模型可见**对话**管道在 `observation`（`Observation.view`）；本组件只管 system 静/动段，不经 derive。
 
 | id | 来源 |
 |----|------|
@@ -81,9 +81,9 @@ ADR 所写「prompt_assembly 快照事件」**未入**词汇表。落地须 mani
 
 | 端口 | 规范单机 | conformance | 发行 |
 |------|----------|-------------|------|
-| SessionStore | SQLite WAL schema v1 | 内存 | persist：`SqliteSessionStore`（单写者） |
+| SessionStore | SQLite WAL schema v1 | 内存 | persist 引擎 `SqlitePersist` → `SqliteSessionStore`（单写者） |
 | InboxClaim | 进程内锁+TTL | 内存领取 | SQLite 同进程 TTL；fencing 远期 |
-| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | persist：`SqliteApprovalStore`；内存夹具不得发行 |
+| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | 同一引擎分库 `approvals.sqlite`；内存夹具不得发行 |
 | Metering | 供数 | 端口有 | 未知价 n/a |
 
 支撑端口**不是**开机四件套。缺 ProjectionBus **不**等于缺内核。业务只依赖接口；本机默认插头可换，其他组件可不实现。

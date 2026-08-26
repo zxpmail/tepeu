@@ -19,6 +19,7 @@
         <module>policy</module>
         <module>persist</module>
         <module>bus</module>
+        <module>observation</module>
         <module>llm</module>
         <module>loop</module>
             <module>orchestration</module>
@@ -69,7 +70,17 @@
             </dependency>
             <dependency>
                 <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-persist-sqlite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
                 <artifactId>tepeu-os-bus</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-os-observation</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

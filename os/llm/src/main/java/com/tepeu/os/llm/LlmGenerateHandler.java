@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * llm.generate — args 只带 config；messages 恒 derive(surface)。
+ * llm.generate — args 只带 config；messages 恒 {@code Observation.view(surface)}。
  * 上笔 digest 失配则失败可见、不发传输。
  */
 public final class LlmGenerateHandler implements SyscallHandler {

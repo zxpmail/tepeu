@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.tepeu</groupId>
+        <artifactId>tepeu-os-persist-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>tepeu-os-persist</artifactId>
+    <name>Tepeu OS Persist API</name>
+    <description>库引擎契约 Persist。无 JDBC。</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-session</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-policy</artifactId>
+        </dependency>
+    </dependencies>
+</project>

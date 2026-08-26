@@ -8,53 +8,12 @@
         <artifactId>tepeu-os</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>tepeu-os-persist</artifactId>
+    <artifactId>tepeu-os-persist-parent</artifactId>
+    <packaging>pom</packaging>
     <name>Tepeu OS Persist</name>
-    <description>库组件：JDBC/方言只在这里。实现 session/policy 的存储端口；领域组件不持有 JDBC。</description>
-    <dependencies>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-identity</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-syscall</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-session</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-session</artifactId>
-            <version>${project.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-policy</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-policy</artifactId>
-            <version>${project.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-conformance</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <description>库组件：契约 api + 引擎插头 sqlite。os/ 只列本目录。</description>
+    <modules>
+        <module>api</module>
+        <module>sqlite</module>
+    </modules>
 </project>

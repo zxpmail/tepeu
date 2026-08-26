@@ -10,8 +10,8 @@
 - 对外可叫 ToolGate / 处置中心；对内落在 **syscall 总线入口：取消 → 卫兵 → Policy → 分发**，复用 `deny > ask > allow`、fail-closed、审批单次。
 - **Gate = 边界上执行脚本**；脚本意图（安全拦截 / 教学调难度 / 别的）是配置面，不是架构原语。
 - **观测可改、verifier 不可改**——对生产同样成立（脱敏、截断、合成模型可见结果都是观测面；完成门 / 审批证据 / 已落账真相不动）。
-- **Observation 按理是组件**（模型可见视图管道）；现状散在 surface + `derive`/`normalize` + PromptAssembly——先收口归属，**空 jar 不预开**。
-- **空 jar 不预开**：先长能力 + conformance，再考虑拆 `gate/` / `response/` / `observation/`。
+- **Observation 是组件**（模型可见视图管道）：`os/observation`，入口 `Observation.view`。PromptAssembly 仍独立。gate/response **空 jar 不预开**。
+- **空 jar 不预开**：先长能力 + conformance，再考虑拆 `gate/` / `response/`。
 - 显式债务（运行中能力撤销、资源隔离边界、tamper-evidence）见底板 §8 / gap——**是债不是排期**。
 
 ---
@@ -195,16 +195,16 @@ EnvHarness 与 Tepeu 门禁是**同一物种**：在标准接口上插可编程�
 
 ### 6.3 Observation 应是组件
 
-「看见什么」按理单独拥有；现状散落：
+「看见什么」单独拥有（已开 jar）：
 
-| 现状碎片 | 归属 |
-|----------|------|
+| 碎片 | 归属 |
+|------|------|
 | `session` surface | 压缩后的模型读面 |
-| `llm` `derive` ∘ `normalize` | 发往模型的 messages |
-| `orchestration` PromptAssembly | system / 动态段 |
+| `observation` `Observation.view` | derive ∘ normalize ∘ shape |
+| `orchestration` PromptAssembly | system / 动态段（仍独立） |
 | 零星合成 TOOL_RESULT | DoomLoop / 拦截占位 |
 
-**目标分工（未拆 jar 前先当口径）**
+**目标分工**
 
 ```
 Policy / 卫兵  → 判动作（能不能做）
@@ -214,7 +214,7 @@ Gate           → 编排跑脚本；改观测时调用 Observation，不旁路�
 ```
 
 Observation **不是**旁路可见通道：仍服从「模型可见 ⟺ 日志可还原」与 `derive(log) ∘ normalize == sent`。  
-节奏：先收口主人与 conformance → 再考虑 `os/observation/`；**空 jar 不预开**。EnvRigger（按失败轨迹自动改 Rule）是训练产品，**不**进 develop 主线。
+已开 `os/observation/`（入口 `Observation.view`）。PromptAssembly 仍独立。EnvRigger（按失败轨迹自动改 Rule）是训练产品，**不**进 develop 主线。
 
 ### 6.4 禁止读法
 
@@ -222,7 +222,7 @@ Observation **不是**旁路可见通道：仍服从「模型可见 ⟺ 日志�
 |------|----------|
 | EnvHarness = 你们的 ToolGate 产品 | 机制同构；目的可配置（教或防） |
 | 观测可改 = 可改 entries / 完成门 | 只改视图管道；verifier 神圣 |
-| 立刻开 observation/ / 拉 ALFWorld 栈 | 参照；先归属后 jar |
+| 立刻拉 ALFWorld 栈进内核 | 参照；observation 已开，不抄教学环境 |
 
 ---
 

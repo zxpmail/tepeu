@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-llm</artifactId>
     <name>Tepeu OS Llm</name>
-    <description>llm.* 派生式断言 + 双协议族投影 + fake / Anthropic HTTP / OpenAI HTTP</description>
+    <description>llm.* 派生式断言 + 双协议族投影 + fake / Anthropic HTTP / OpenAI HTTP；管道在 observation</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -19,6 +19,10 @@
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-session</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-observation</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>

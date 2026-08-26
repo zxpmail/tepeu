@@ -2,9 +2,8 @@ package com.tepeu.os.compose;
 
 import com.tepeu.os.llm.FakeLlmTransport;
 import com.tepeu.os.llm.LlmTransport;
+import com.tepeu.os.persist.sqlite.SqlitePersist;
 import com.tepeu.os.policy.PolicyRulesFile;
-import com.tepeu.os.persist.sqlite.SqliteApprovalStore;
-import com.tepeu.os.persist.sqlite.SqliteSessionStore;
 import com.tepeu.os.session.LedgerMetering;
 import com.tepeu.os.session.Metering;
 
@@ -17,7 +16,7 @@ import java.nio.file.Path;
 /**
  * 本机单写者发行接线 — 四端口生产默认落 SQLite WAL。
  * 内存内核工厂在测试源 {@code InMemoryAssembly}，不进发行。发行禁止默认内存 ApprovalStore。
- * SQLite 插头来自 persist 组件，本类只接线。
+ * SQLite 引擎插头来自 persist（{@link SqlitePersist}），本类只接线。
  * 可选 {@code dir/policy.rules}：syscall override + {@code deny-path}/{@code deny-command}。llm 默认 fake。
  */
 public final class SqliteAssembly {
@@ -35,10 +34,9 @@ public final class SqliteAssembly {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        SqliteSessionStore sessions = new SqliteSessionStore(dir.resolve("kernel.sqlite"));
-        SqliteApprovalStore approvals = new SqliteApprovalStore(dir.resolve("approvals.sqlite"));
+        SqlitePersist persist = SqlitePersist.file(dir);
         PolicyRulesFile rules = loadRules(dir.resolve("policy.rules"));
-        return MemoryAssembly.wire(sessions, approvals, sessions.audit(), transport, metering,
+        return MemoryAssembly.wire(persist.sessions(), persist.approvals(), persist.audit(), transport, metering,
                 dir.resolve("workspace"), MemoryAssembly.defaultPolicy(rules));
     }
 

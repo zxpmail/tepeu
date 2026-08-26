@@ -1,9 +1,14 @@
 # persist — 库组件
 
-领域组件（session / policy）只暴露端口。JDBC、schema、方言只在本模块。
+`os/` 只列本目录。子模块：
 
-本骨架默认插头：`sqlite` 包（`SqliteSessionStore` + `SqliteApprovalStore`）。换库 = 本组件另写插头（或另开配方），session/policy **不改**。
+| 目录 | artifact | 角色 |
+|------|----------|------|
+| `api/` | `tepeu-os-persist` | 契约 `Persist`，无 JDBC |
+| `sqlite/` | `tepeu-os-persist-sqlite` | SQLite 插头 |
+
+compose 选 `SqlitePersist.file(dir)`。PG 升版在本目录另开子模块，不把 JDBC 写进 `api/`。
 
 ```bash
-mvn -f os/pom.xml -pl persist -am test
+mvn -f os/persist/pom.xml test
 ```

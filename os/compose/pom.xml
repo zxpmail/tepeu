@@ -37,7 +37,7 @@
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-persist</artifactId>
+            <artifactId>tepeu-os-persist-sqlite</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -49,6 +49,10 @@
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-bus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-observation</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>

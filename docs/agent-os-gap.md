@@ -27,7 +27,7 @@
 | ③ Loop 答复 + 工具循环 | **claim →（overflow 压缩）→ generate →（syscall 工具 / plan / DoomLoop）→ 完成门**；`maintain` 窗 + `CompactionWork` |
 | ③ PromptAssembly / Command | 静/动分离 + 超预算账单；Slash local/prompt + `/approve`。Team / 路由未落 |
 | DefaultRuleMatrix | llm.* ALLOW；写盘/进程 ASK；未知 DENY。**叠加** 参数级：`SensitivePathPolicy` + `SensitiveCommandPolicy` |
-| Observation 归属 | v1 = `ModelContext` + `RedactingContextShaper`（compose 默认）；PromptAssembly 仍独立 |
+| Observation 归属 | `os/observation` 入口 `Observation.view` + `RedactingContextShaper`（compose 默认）；PromptAssembly 仍独立 |
 | execution.* | 工作区路径囚笼 + Job Object / bwrap；probe 报 **partial**；无 jail 时 spawn 失败可见。≠ landlock / 完整沙箱 |
 
 **未有**：⑤ UI、记忆平面、多副本 fencing。`SqliteAssembly` 的 llm 默认仍 fake（传输由调用方注入）。
@@ -61,7 +61,7 @@
 | 记忆平面 | **KnowledgeSource 端口** + `memory_hits` 段（须有 sourceId 命中）；无向量/图检索 |
 | live CI | 无 key 不烧；有钥匙才是真往返 |
 | 运行时安全九宫格对账 | 外部系列映射见 [`archive/reference/agent-runtime-security-series.md`](./archive/reference/agent-runtime-security-series.md)：工具行大半对齐；参数级白名单 / Gate 序列熔断 / 处置链 / Skill·MCP 格仍弱或未——**参照不是排期** |
-| Observation 归属 | v1 = `ModelContext` + `RedactingContextShaper`（compose 默认）；空 `observation/` 不预开 |
+| Observation 归属 | `os/observation` 已开；入口 `Observation.view`。gate/response 空 jar 仍不预开 |
 | 腾讯 Harness 六支柱 | [`tencent-harness-engineering.md`](./archive/reference/tencent-harness-engineering.md)：**与 `os/` 不同线**，仅防混谈；勿当吸收参照、勿开 `harness/` jar |
 | AI 评测可观测管线 | [`ai-eval-observability-pipeline.md`](./archive/reference/ai-eval-observability-pipeline.md)：边缘+OTel 脱敏姿态可借；**非**内核组件；勿开 `observability/` jar |
 | Terax ADE | [`terax-ai.md`](./archive/reference/terax-ai.md)：⑤ 终端工作台；**与 `os/` 不同线**；将来 UI 可扫，勿当内核参照 |
