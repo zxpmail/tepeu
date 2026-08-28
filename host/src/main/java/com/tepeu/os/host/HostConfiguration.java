@@ -11,16 +11,26 @@ import com.tepeu.os.loop.LoopConfig;
 import com.tepeu.os.orchestration.AssembledPrompt;
 import com.tepeu.os.orchestration.PromptAssembly;
 import com.tepeu.os.orchestration.Section;
+import com.tepeu.os.persist.Persist;
+import com.tepeu.os.persist.PersistEngine;
+import com.tepeu.os.persist.PersistEngines;
 import com.tepeu.os.session.LedgerMetering;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import javax.sql.DataSource;
 
 import java.util.Optional;
 
 /**
- * 开机接线 — SqliteAssembly + LLM 传输 + LoopConfig（含 PromptAssembly.base）。
+ * ⑤ 装配根 — 把 os 对象挂进 Spring。os 用 spring-jdbc，不起 Boot 容器。
+ * {@link Persist} / {@link LlmTransport} / {@link MemoryAssembly.Wired} 都是工厂方法 bean。
  * compose 不读密钥；本类可读 env / properties。
  */
 @Configuration
@@ -33,10 +43,49 @@ class HostConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(HostConfiguration.class);
 
-    /** 发行内核：SQLite WAL + 默认 Policy/卫兵；关闭时 destroyMethod=close。 */
+    /** 对外是 {@link Persist}。连接由本方法建，组件不关库。 */
     @Bean(destroyMethod = "close")
-    MemoryAssembly.Wired kernel(TepeuHostProperties props, LlmTransport transport) {
-        return SqliteAssembly.file(props.dataDir(), transport, LedgerMetering.unlimited());
+    @Primary
+    Persist persist(TepeuHostProperties props) {
+        return Persist.jdbc(openDataSource(props.kernelJdbcUrl(), props.datasourceUsername(), props.datasourcePassword()));
+    }
+
+    @Bean(destroyMethod = "close")
+    Persist approvalsPersist(TepeuHostProperties props) {
+        return Persist.jdbc(openDataSource(props.approvalsJdbcUrl(), props.datasourceUsername(), props.datasourcePassword()));
+    }
+
+    private static DataSource openDataSource(String url, String username, String password) {
+        var builder = DataSourceBuilder.create().url(url);
+        if (!username.isBlank()) {
+            builder.username(username);
+        }
+        if (!password.isBlank()) {
+            builder.password(password);
+        }
+        DataSource ds = builder.build();
+        PersistEngine engine = PersistEngines.forUrl(url);
+        if (ds instanceof HikariDataSource hikari) {
+            if (engine.maxPoolSize() > 0) {
+                hikari.setMaximumPoolSize(engine.maxPoolSize());
+                hikari.setMinimumIdle(0);
+            }
+            if (!engine.connectionInitSql().isBlank()) {
+                hikari.setConnectionInitSql(engine.connectionInitSql());
+            }
+        }
+        engine.prepare(ds, url);
+        return ds;
+    }
+
+    @Bean(destroyMethod = "close")
+    MemoryAssembly.Wired kernel(
+            TepeuHostProperties props,
+            Persist persist,
+            @Qualifier("approvalsPersist") Persist approvalsPersist,
+            LlmTransport transport) {
+        return SqliteAssembly.file(props.dataDir(), persist, approvalsPersist, transport,
+                LedgerMetering.unlimited());
     }
 
     /**

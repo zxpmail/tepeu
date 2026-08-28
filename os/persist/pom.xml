@@ -11,7 +11,7 @@
     <artifactId>tepeu-os-persist-parent</artifactId>
     <packaging>pom</packaging>
     <name>Tepeu OS Persist</name>
-    <description>库组件：契约 api + 引擎插头 sqlite。os/ 只列本目录。</description>
+    <description>库：PersistEngine 契约 + sqlite 实现。os/ 只列本目录。</description>
     <modules>
         <module>api</module>
         <module>sqlite</module>

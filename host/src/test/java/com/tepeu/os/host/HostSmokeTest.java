@@ -35,6 +35,10 @@ class HostSmokeTest {
     @DynamicPropertySource
     static void hostProps(DynamicPropertyRegistry registry) {
         registry.add("tepeu.data-dir", () -> DATA_DIR.toString());
+        registry.add("tepeu.datasource.url",
+                () -> "jdbc:sqlite:" + DATA_DIR.resolve("sess.sqlite").toAbsolutePath().toString().replace('\\', '/'));
+        registry.add("tepeu.datasource.approvals-url",
+                () -> "jdbc:sqlite:" + DATA_DIR.resolve("appr.sqlite").toAbsolutePath().toString().replace('\\', '/'));
         registry.add("tepeu.fake-llm", () -> "true");
         registry.add("tepeu.cli.enabled", () -> "false");
     }
@@ -48,6 +52,12 @@ class HostSmokeTest {
     @AfterAll
     void closeKernel() throws Exception {
         kernel.close();
+    }
+
+    @Test
+    void sqlitePathsComeFromHostConfig() {
+        assertTrue(Files.isRegularFile(DATA_DIR.resolve("sess.sqlite")));
+        assertTrue(Files.isRegularFile(DATA_DIR.resolve("appr.sqlite")));
     }
 
     @Test

@@ -2,42 +2,42 @@ package com.tepeu.os.compose;
 
 import com.tepeu.os.llm.FakeLlmTransport;
 import com.tepeu.os.llm.LlmTransport;
-import com.tepeu.os.persist.sqlite.SqlitePersist;
+import com.tepeu.os.persist.Persist;
 import com.tepeu.os.policy.PolicyRulesFile;
 import com.tepeu.os.session.LedgerMetering;
 import com.tepeu.os.session.Metering;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
- * 本机单写者发行接线 — 四端口生产默认落 SQLite WAL。
- * 内存内核工厂在测试源 {@code InMemoryAssembly}，不进发行。发行禁止默认内存 ApprovalStore。
- * SQLite 引擎插头来自 persist（{@link SqlitePersist}），本类只接线。
- * 可选 {@code dir/policy.rules}：syscall override + {@code deny-path}/{@code deny-command}。llm 默认 fake。
+ * 本机单写者发行接线。只认已打开的 {@link Persist}，不拼文件名、不关库。
+ * 路径与开/关由 host 配置 / Boot 生命周期决定。
  */
 public final class SqliteAssembly {
 
     private SqliteAssembly() {
     }
 
-    public static MemoryAssembly.Wired file(Path dir) {
-        return file(dir, new FakeLlmTransport(), LedgerMetering.unlimited());
+    public static MemoryAssembly.Wired file(Path dir, Persist kernel, Persist approvals) {
+        return file(dir, kernel, approvals, new FakeLlmTransport(), LedgerMetering.unlimited());
     }
 
-    public static MemoryAssembly.Wired file(Path dir, LlmTransport transport, Metering metering) {
+    public static MemoryAssembly.Wired file(
+            Path dir, Persist kernel, Persist approvals, LlmTransport transport, Metering metering) {
+        Objects.requireNonNull(kernel, "kernel");
+        Objects.requireNonNull(approvals, "approvals");
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        SqlitePersist persist = SqlitePersist.file(dir);
         PolicyRulesFile rules = loadRules(dir.resolve("policy.rules"));
-        return MemoryAssembly.wire(persist.sessions(), persist.approvals(), persist.audit(), transport, metering,
-                dir.resolve("workspace"), MemoryAssembly.defaultPolicy(rules));
+        return MemoryAssembly.wire(kernel, approvals, transport, metering, dir.resolve("workspace"),
+                MemoryAssembly.defaultPolicy(rules));
     }
 
     static PolicyRulesFile loadRules(Path rules) {

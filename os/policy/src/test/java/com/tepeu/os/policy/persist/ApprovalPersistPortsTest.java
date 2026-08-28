@@ -1,4 +1,4 @@
-package com.tepeu.os.persist.sqlite;
+package com.tepeu.os.policy.persist;
 
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
@@ -6,6 +6,9 @@ import com.tepeu.os.identity.PrincipalId;
 import com.tepeu.os.identity.SessionId;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.identity.WorkspaceId;
+import com.tepeu.os.persist.sqlite.SqliteDataSources;
+import org.springframework.transaction.TransactionException;
+import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.conformance.ApprovalConformance;
 import com.tepeu.os.syscall.Syscall;
 import org.junit.jupiter.api.AfterAll;
@@ -28,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SqliteApprovalPortsTest {
+class ApprovalPersistPortsTest {
 
     private static final List<AutoCloseable> OPEN = new CopyOnWriteArrayList<>();
 
@@ -46,38 +49,40 @@ class SqliteApprovalPortsTest {
 
     @TestFactory
     Stream<DynamicTest> approvalConformance() {
-        return StreamSupport.stream(ApprovalConformance.suite(() -> openStore()).spliterator(), false)
+        return StreamSupport.stream(ApprovalConformance.suite(ApprovalPersistPortsTest::openStore).spliterator(), false)
                 .map(c -> DynamicTest.dynamicTest(c.displayName(), c::run));
     }
 
     @Test
     void restartKeepsAskedAndFailClosedAfterClose() throws Exception {
         Path dir = Files.createTempDirectory("tepeu-appr-restart-");
-        Path db = dir.resolve("approvals.sqlite");
         TurnContext ctx = turn("s1");
         Syscall call = new Syscall("dangerous", Map.of());
         String approvalId;
-        try (SqliteApprovalStore store = new SqliteApprovalStore(db)) {
+        try (var persist = SqliteDataSources.access(dir.resolve("approvals.sqlite"))) {
+            ApprovalStore store = ApprovalPersistence.open(persist);
             approvalId = store.ask(ctx, call);
             assertEquals(approvalId, store.ask(ctx, call));
         }
-        try (SqliteApprovalStore store = new SqliteApprovalStore(db)) {
+        try (var persist = SqliteDataSources.access(dir.resolve("approvals.sqlite"))) {
+            ApprovalStore store = ApprovalPersistence.open(persist);
             assertEquals(approvalId, store.ask(ctx, call));
             store.decide(approvalId, true, "host");
             assertEquals(true, store.consumeDecision(ctx, call).orElseThrow());
             assertTrue(store.consumeDecision(ctx, call).isEmpty());
         }
-        SqliteApprovalStore closed = new SqliteApprovalStore(db);
-        closed.close();
-        assertThrows(SqliteStoreException.class, () -> closed.ask(ctx, call));
+        var persist = SqliteDataSources.access(dir.resolve("approvals.sqlite"));
+        ApprovalStore closed = ApprovalPersistence.open(persist);
+        persist.close();
+        assertThrows(TransactionException.class, () -> closed.ask(ctx, call));
     }
 
-    private static SqliteApprovalStore openStore() {
+    private static ApprovalStore openStore() {
         try {
             Path dir = Files.createTempDirectory("tepeu-appr-");
-            SqliteApprovalStore store = new SqliteApprovalStore(dir.resolve("approvals.sqlite"));
-            OPEN.add(store);
-            return store;
+            var persist = SqliteDataSources.access(dir.resolve("approvals.sqlite"));
+            OPEN.add(persist);
+            return ApprovalPersistence.open(persist);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

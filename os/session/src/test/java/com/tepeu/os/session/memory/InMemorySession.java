@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 单机内存会话 — 测试夹具；语义与 sqlite 插头对齐。不进发行 jar。
+ * 单机内存会话 — 测试夹具；语义与 sqlite 实现对齐。不进发行 jar。
  */
 public final class InMemorySession implements Session {
 

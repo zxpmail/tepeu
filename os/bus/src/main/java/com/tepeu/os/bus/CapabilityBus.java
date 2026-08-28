@@ -12,7 +12,7 @@ import com.tepeu.os.syscall.SyscallResult;
  * → handler → 卫兵 after。未装配 Policy / 审批通道即拒绝（fail-closed，C1/C2 第九轮）。
  */
 public interface CapabilityBus {
-    /** 注册插头；同名禁止重复。 */
+    /** 注册 {@link SyscallHandler}；同名禁止重复。 */
     void register(String name, SyscallHandler handler);
 
     /** 装配 Policy（未装配即拒绝）。 */

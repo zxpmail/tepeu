@@ -1,8 +1,5 @@
 /**
- * persist 组件 — 库引擎契约 {@link com.tepeu.os.persist.Persist}。无 JDBC。
- * compose 选本接口，不是再写一份 SessionStore。session / policy 只认领域端口。
- * <p>
- * SQLite 插头在 {@code persist/sqlite}（{@link com.tepeu.os.persist.sqlite.SqlitePersist}）。
- * Postgres / MySQL 升版另模块实现本接口。
+ * persist 组件 — 访问口是 {@link Persist}；引擎口是 {@link PersistEngine}。
+ * 领域组件只访问，不建连接、不关库。实现在 persist/sqlite。
  */
 package com.tepeu.os.persist;

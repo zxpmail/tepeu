@@ -5,6 +5,7 @@
 工具：模型输出首行 `syscall <name>` → 先落 `TOOL_CALL` 再 `bus.invoke` → 落 `TOOL_RESULT`。成功 `execution.fs.write` 会把内容写入 ContentStore 并在 RESULT 放 `locator`。
 计划：首行 `plan ...` → 落 `PLAN_STEP`。
 完成：主路永远过 REPLY；有工具则 TOOL_PAIR；有 PLAN_STEP 则 PLAN；有 locator 则 FILE。
+完成权唯一：控制循环可并行，宣布结束只许账本 + `CompletionGate`；工具/模型自报不是终态。
 
 未做：真 HTTP tool_use 映射。PromptAssembly / Command 在 `orchestration/`，Loop 不依赖（`LoopConfig.system` 只转发）。
 开 turn 前：`Metering.withinBudget` 为 false 则 STOPPED，不 claim。

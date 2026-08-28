@@ -11,15 +11,20 @@
     </parent>
     <artifactId>tepeu-os-persist</artifactId>
     <name>Tepeu OS Persist API</name>
-    <description>库引擎契约 Persist。无 JDBC。</description>
+    <description>persist 契约：Persist 访问口 + PersistEngine。实现在 persist/sqlite。</description>
     <dependencies>
         <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-session</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-policy</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

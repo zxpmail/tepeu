@@ -3,7 +3,7 @@ package com.tepeu.os.loop;
 import java.util.Objects;
 
 /**
- * 一轮结果。COMPLETED 仅当完成证据门放行；SSE/idle 不是完成。
+ * 一轮结果。COMPLETED 仅当完成证据门放行；SSE/idle/工具自报不是完成。
  */
 public record TurnOutcome(Kind kind, int steps, String detail) {
 

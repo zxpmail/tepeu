@@ -1,6 +1,6 @@
-# sqlite — persist 的 SQLite 插头
+# sqlite — persist 的 SQLite DataSource
 
-实现 `Persist`（`SqlitePersist.file(dir)`）。会话 `kernel.sqlite` 与审批 `approvals.sqlite` 分库，JDBC 走 `SqliteDb`。
+`SqliteEngine` 实现 `PersistEngine`。测试夹具 `SqliteDataSources.access` 返回 `Persist`。不知道 Session / Approval。发行：host 建连接后 `Persist.jdbc`。
 
 ```bash
 mvn -f os/pom.xml -pl persist/sqlite -am test

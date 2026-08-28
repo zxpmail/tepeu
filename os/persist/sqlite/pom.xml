@@ -11,46 +11,15 @@
     </parent>
     <artifactId>tepeu-os-persist-sqlite</artifactId>
     <name>Tepeu OS Persist SQLite</name>
-    <description>persist 的 SQLite 插头。实现 Persist；JDBC 只在这里。</description>
+    <description>PersistEngine 的 SQLite 实现。无领域类型；PRAGMA 只在这里。</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-persist</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-identity</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-syscall</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-session</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-session</artifactId>
-            <version>${project.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-policy</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-policy</artifactId>
-            <version>${project.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-os-conformance</artifactId>
-            <scope>test</scope>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>

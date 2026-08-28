@@ -1,21 +1,25 @@
 package com.tepeu.os.persist;
 
-import com.tepeu.os.policy.ApprovalStore;
-import com.tepeu.os.session.AuditSink;
-import com.tepeu.os.session.SessionStore;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionCallback;
+
+import javax.sql.DataSource;
 
 /**
- * persist 引擎插头。compose 选这个，不是再写一份 {@link SessionStore}。
- * session / policy 仍只认领域端口。分库 / 分 schema 是隔离，不是第二套 JDBC 栈。
- * 本骨架插头在 {@code persist/sqlite}：{@link com.tepeu.os.persist.sqlite.SqlitePersist}。PG/MySQL 升版在 persist 下另开子模块。
+ * 统一访问口。不知道 Session / Approval。
+ * 调用方只跑 SQL / 事务，不建连接、不关库。关库由持有本对象的宿主（host / 测试）负责。
  */
 public interface Persist extends AutoCloseable {
 
-    SessionStore sessions();
+    JdbcTemplate jdbc();
 
-    ApprovalStore approvals();
+    <T> T tx(TransactionCallback<T> work);
 
-    AuditSink audit();
+    void script(String ddl);
+
+    static Persist jdbc(DataSource dataSource) {
+        return new JdbcPersist(dataSource);
+    }
 
     @Override
     void close();

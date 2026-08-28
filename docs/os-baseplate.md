@@ -85,7 +85,7 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 
 ### 3.4 ⑤/② 支撑服务（非内核契约）
 
-`ProjectionBus`（通知非真相；契约=接口；本机默认 `LocalProjectionBus` 只是插头；其他组件可实现可不实现、可不订阅；Redis/NATS/MQ 升版再换，本骨架不引入 broker；drop/消费者失败须运维可见、不进 entries；下发前按查看者 ACL 过滤仍挂账）· `Secret`（branded 引用/重解析禁缓存/结果不进模型通道/克制品不是边界）· `Identity`/`OrgNamespace` · `KnowledgeSource`（知识→Section 唯一内容源）。
+`ProjectionBus`（通知非真相；契约=接口；本机默认 `LocalProjectionBus` 只是实现；其他组件可实现可不实现、可不订阅；Redis/NATS/MQ 升版再换，本骨架不引入 broker；drop/消费者失败须运维可见、不进 entries；下发前按查看者 ACL 过滤仍挂账）· `Secret`（branded 引用/重解析禁缓存/结果不进模型通道/克制品不是边界）· `Identity`/`OrgNamespace` · `KnowledgeSource`（知识→Section 唯一内容源）。
 
 ---
 
@@ -112,7 +112,7 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 
 ---
 
-## 6. 硬规矩（实现红线，7 条）
+## 6. 硬规矩（实现红线，8 条）
 
 1. 禁止编排器旁路拼消息（必经 Inbox/claim）。  
 2. 禁止 Loop import 具体 Tool 类；工具互引禁止。  
@@ -120,7 +120,8 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 4. TurnContext 显式传递；禁止单例 Tool bind 当跨请求真相。  
 5. 压缩/LLM 走总线，受卫兵与 Metering。  
 6. `llm.*` 入口断言：`derive(log) ∘ normalize == sent` **逐字节相等**（`normalize` 为版本化纯函数、版本号落日志；provider 侧合法变形只准发生在 normalize 内）、config 与 folded header 相等（「模型可见⟺日志可还原」的机器检查，违反即失败可见）。  
-7. 取消时为未派发 call 写**合成错误结果**（保 tool_call↔result 配对与 replay 有效）；调度器自身故障**不伪造**结果，只 drain 后抛——哪类失败可补占位、哪类必须诚实缺口，显式分界。
+7. 取消时为未派发 call 写**合成错误结果**（保 tool_call↔result 配对与 replay 有效）；调度器自身故障**不伪造**结果，只 drain 后抛——哪类失败可补占位、哪类必须诚实缺口，显式分界。  
+8. **完成权唯一，控制循环不唯一。** 主路 / maintenance / 工具 / 将来 Team 可并行。**证据**只在 entries，**宣判**只许 ③ `CompletionGate`（读账本；内核没有 `waitpid`）。工具回报、模型声称、投影、SSE / idle / Todo 都不是终态。未把「还能不能再试」统一入账本前，禁止另开成功/再试旁路。
 
 （dsh 双模原则与裁决限期落码已移出红线：前者见 ADR-016；后者见 §8.5 头部。）
 
@@ -128,7 +129,7 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 
 ## 7. 代码骨架落点（develop）
 
-洋葱是依赖方向，不是 jar。物理单元 = **组件**（一件事一个 Maven 模块；领域默认跟组件走；**JDBC/方言只在 persist/sqlite**；契约 `Persist` 在 persist/api）。组件 ≠ 插件。
+洋葱是依赖方向，不是 jar。物理单元 = **组件**（一件事一个 Maven 模块；领域默认跟组件走；**JDBC 只在 persist/sqlite**；`Persist` 是引擎口，无领域类型）。组件 ≠ 插件。
 
 ```text
 os/
@@ -137,7 +138,7 @@ os/
   conformance/      测试 harness
   session/          组件：会话三 store + Metering 端口
   policy/           组件：Policy + 审批
-  persist/          组件：库引擎（api = Persist 契约；sqlite = 插头）
+  persist/          组件：库（api = Persist 接口；sqlite = JDBC 实现）
   observation/      组件：模型可见管道（Observation.view）
   bus/              组件：能力总线 + 卫兵
   llm/              组件：llm.* 派生式断言 + fake / HTTP 薄壳（compose 默认 fake）
@@ -156,7 +157,7 @@ host/               ⑤ CLI 宿主（仓库根；非 os 组件；依赖 compose�
 
 ## 8. 显式债务与待裁决
 
-**类比诚实度**：当前内核 = syscall 表 + 事件日志 + 卫兵（journal-first），**不是**完整 OS。以下是欠账，不许靠 OS 类比暗示已具备：
+**类比诚实度**：当前内核 = syscall 表 + 事件日志 + 卫兵（journal-first），**不是**完整 OS。「OS」指分层纪律，不是已有调度 / 隔离 / 进程模型。内核有 Inbox/claim，**没有调度器**；不为了更像 OS 开调度切片。以下是欠账，不许靠 OS 类比暗示已具备：
 
 | 债务 | 说明 |
 |------|------|
@@ -195,6 +196,7 @@ host/               ⑤ CLI 宿主（仓库根；非 os 组件；依赖 compose�
 | **timer 基础设施**：per-domain PQ 起步，>万级升时间轮；解「死租约可回收」 | Netty §2.1 | ① session | 挂账 |
 | **采样泄漏检测**（弱引用+GC 探测+1/N 采样） | Netty §2.2 | 生命周期审计切片 | 挂账 |
 | `llm.*` 重试协议：可重试分类封闭集 + requestId 幂等（流式从零重放）+ 熔断开路禁重试 | gnex3 | llm transport 切片 | 挂账 |
+| 重试资格统一入账本（哪步成败、还能不能再试；现散在 DoomLoop / claim TTL / 预算） | 完成权红线 §6-8 | session / ③ Loop | 挂账 |
 | registers 终态单调：终态值禁被晚到/重放旧值回退 | gnex3 | registers / ③ Loop | 挂账 |
 | TIMED_OUT 一等结果：超时产成对 TOOL_RESULT 标记（禁静默成功/禁悬挂/禁自动重试） | gnex3 | Tool 契约 | 挂账 |
 | 修剪证物保护 + spill 容量纪律（TTL/单条上限/证物类不可修剪） | gnex3 | Compaction | 挂账 |

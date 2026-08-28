@@ -12,12 +12,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
- * {@link ProjectionBus} 的本机默认插头 — 进程内订阅/推送。
+ * {@link ProjectionBus} 的本机默认实现 — 进程内订阅/推送。
  * 不是契约本身，不是消息真相，不是记忆平面，不是必装中间件。
  * 慢消费者 bounded 背压：队列满则关闭该订阅，并记运维诊断（JDK {@link Logger}，不是 slf4j、不进 entries）。
- * 每条诊断带 {@code component=session class=LocalProjectionBus}，便于和别的插头区分。
+ * 每条诊断带 {@code component=session class=LocalProjectionBus}，便于和别的实现区分。
  * 消费者异常同样可见，且不阻断同会话其他订阅。
- * 其他组件不需要实现本类；MQ 升版另写插头即可。{@code InMemory*} 留给测试夹具。
+ * 其他组件不需要实现本类；MQ 升版另写实现即可。{@code InMemory*} 留给测试夹具。
  */
 public final class LocalProjectionBus implements ProjectionBus {
 

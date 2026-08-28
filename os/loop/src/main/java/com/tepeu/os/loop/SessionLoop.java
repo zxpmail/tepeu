@@ -26,6 +26,7 @@ import java.time.Instant;
 
 /**
  * 会话主路：必经 Inbox/claim；llm.* 与工具都走总线；完成须过证据门。
+ * 对人说「这轮完了」只许本类，且必须先过 {@link CompletionGate}；工具自报不是终态。
  * 阻塞式 + 显式门。不 import 具体 Tool 类。
  * TOOL_CALL/TOOL_RESULT 由本组件写 entries，总线不自动落事件。
  * 工具：先落 TOOL_CALL 再 invoke；拦截失败合成 TOOL_RESULT。

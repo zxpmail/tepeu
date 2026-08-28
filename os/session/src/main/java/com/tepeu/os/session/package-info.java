@@ -10,7 +10,8 @@
  * 「每个载荷恰好属于三者之一，没有第四个地方」。
  * {@link com.tepeu.os.session.AuditSink} 是人手旁路审计，<b>不</b>进 entries。
  * {@link com.tepeu.os.session.ProjectionBus} 是通知接口，不是真相；
- * {@link com.tepeu.os.session.LocalProjectionBus} 只是本机默认插头。
+ * 完成权读 entries，不在投影、不在工具自报。
+ * {@link com.tepeu.os.session.LocalProjectionBus} 只是本机默认实现。
  * 其他组件可实现可不实现、可不订阅；MQ/Redis 升版再换，本骨架不引入 broker。
  * 模型可见管道（derive/normalize/shape）在 observation；本组件只提供 surface。
  * <p>
@@ -20,7 +21,7 @@
  * {@code System.Logger} 记 drop / 消费者失败（运维诊断，不是会话真相）；其余运维 log 在 {@code host/}。
  * <p>
  * 不做：Loop / Policy / syscall 分发 / UI / JDBC。内核不知道 turn。
- * 持久化插头在 persist（单写者 SQLite）；多副本须另实现 fencing，禁止暗示可多开。
+ * 持久化适配器在 {@code session.persist}，只认 {@link com.tepeu.os.persist.Persist}。多副本须另实现 fencing。
  * 端口验收套件与会话内存夹具在 {@code src/test}，不进发行 jar。
  */
 package com.tepeu.os.session;

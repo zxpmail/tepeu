@@ -349,7 +349,7 @@
 - **Decision — 本机单写者内核可发行（2026-08-23 第二十轮，落码切片）**:
   1. **SessionStore 发行插头** = SQLite WAL schema v1（事件列 `type_version` 默认 1；`meta.schema_version=1`，不匹配 fail-closed）。单 JDBC 连接 + 互斥；`busy_timeout=5000`、`synchronous=FULL`。过同一套 `SessionConformance` / `forkSuite`。进程重启后事件、fork 种子区、`recover()`、blobs、AuditSink 仍在。依赖锁定 `org.xerial:sqlite-jdbc:3.53.2.1`。
   2. **ApprovalStore 发行插头** = 独立 `approvals.sqlite`（policy 不共享 session 内部表）。过 `ApprovalConformance`；C1 语义不变（未决 ask 幂等、decide 一次、consume 严格单次）。
-  3. **compose 发行默认** = `SqliteAssembly.file(dir)` → `dir/kernel.sqlite` + `dir/approvals.sqlite`。`MemoryAssembly` 仅 conformance / 单测。发行路径不得默认 `InMemoryApprovalStore`。`Wired` 实现 `AutoCloseable`。
+  3. **compose 发行默认** = host 按配置打开两份 `PersistStore` → `SqliteAssembly.file(dir, kernel, approvals)`。`MemoryAssembly` 仅 conformance / 单测。发行路径不得默认 `InMemoryApprovalStore`。`Wired` 实现 `AutoCloseable`。
   4. **ledger**：同连接 `record` 后 `readAll` 可见；store close 后再写抛 `SqliteStoreException`（fail-closed）。多副本 fencing / barrier 超时仍挂账。
   5. **本刀不包含**：多副本 fencing、timer 轮、哈希链、默认规则矩阵、live key 往返、`execution.*` 沙箱、Compaction 作业。口径 = **本机单写者内核可发行**；仍不得称 Agent OS / 骨架可演示 / 合规删除权。
 - **Decision — Compaction 挂窗 + 默认规则矩阵 + execution 囚笼（2026-08-23 第二十一轮，落码切片）**:
@@ -372,11 +372,36 @@
   5. **WorkspaceJail**：拒绝绝对路径；`NOFOLLOW_LINKS`；符号链接 / junction 一律拒；未存在文件看父路径 realpath 仍在根下。
   6. **隔离仍是 partial**。Job Object 无 FS 限额；禁止报 FULL。
 - **Decision — 库是组件（2026-08-26）**:
-  领域组件（session / policy）只暴露端口，**不持有 JDBC**。持久化是独立组件 `persist`：方言、连接、schema、迁移只在这里。本骨架插头 = `persist.sqlite`（`SqliteSessionStore` + `SqliteApprovalStore`）。compose 只接线。换库 = persist 另写插头（或另开配方），session/policy/loop/llm **不改**。
+  领域组件（session / policy）只暴露端口，**不持有 JDBC**。持久化是独立组件 `persist`：方言、连接、schema、迁移只在这里。本骨架实现 = `persist.sqlite`（`SqliteSessionStore` + `SqliteApprovalStore`）。compose 只接线。换库 = persist 另写实现（或另开配方），session/policy/loop/llm **不改**。
   修正第十一轮「默认实现跟组件走」对**存储**的适用范围：领域默认（如 `LocalProjectionBus`）仍跟组件；**JDBC/方言跟 persist**，禁止每组件一份 JDBC。
-- **Decision — persist 引擎插头（2026-08-26）**:
-  compose 选 `Persist`（发行 `SqlitePersist.file(dir)`），**不是**再写一份 `SessionStore` 当换库点。`os/` 只列 `persist/`（聚合）。契约在 `persist/api`（`tepeu-os-persist`，无 JDBC）；SQLite 在 `persist/sqlite`（`tepeu-os-persist-sqlite`）。不得与契约同 jar，也不得把插头抬成 `os/` 一级模块。session / policy 仍只认领域端口。会话与审批可分库 / 分 schema（隔离），JDBC 栈只有一份（`SqliteDb`）。PG/MySQL 升版在 persist 下另开子模块。不做成通用 KV / ORM。
+- **Decision — persist 是引擎，不是会话门面（2026-08-27）**:
+  修正 2026-08-26「Persist = CRUD 把手返回 SessionStore」：引擎口是一份已打开的库（`PersistStore`：tx / SQL / close）。**不知道** Session / Approval / Principal。`persist/api` 不依赖 session / policy。
+  领域适配器在 `session.persist` / `policy.persist`：DDL、映射、`SessionPersistence` / `ApprovalPersistence`。JDBC 仍只在 `persist/sqlite`。compose 接线：`SessionPersistence.open(kernelStore)`。
+  换库 = 换引擎实现 **并** 改领域适配器里的 SQL。loop / llm / host 业务面不改。收回「换库 session/policy 一行不改」。
+  不做成通用文档库、不上 ORM、session **不** import `java.sql`。
+- **Decision — Persist 是统一访问口（2026-08-28）**:
+  session / policy / compose 只认 `Persist`：`jdbc()` / `tx()` / `script()`。不建连接、不关库。关库由 host bean / 测试 `close()`。底层仍是 Spring JDBC，不复活 `PersistRow` / `PersistTx`。`PersistEngine` 仍只管准备连接。
+- **Decision — persist/api = PersistEngine，连接仍是 DataSource（2026-08-28）**:
+  修正「没有便携引擎接口」。连接口仍是 `javax.sql.DataSource`（Spring `DataSourceBuilder`）。引擎口是 `persist/api` 的 `PersistEngine`（accepts / prepare / 池提示），sqlite 经 ServiceLoader 登记。host **不** import sqlite。不复活 `PersistStore` / Tx / Row。适配器只认 DataSource；换库方言仍改适配器 SQL。
+- **Decision — 可换口是 Spring DataSource，不是自制开库工厂（2026-08-28）**:
+  `javax.sql.DataSource` 是连接口。host 用 Boot `DataSourceBuilder`（Hikari）；`tepeu.datasource.url` 空则约定 sqlite 文件。适配器只认 `DataSource`，DDL 用 Spring `ResourceDatabasePopulator`。换 MySQL：换 URL + 改适配器方言 + 加驱动，不要在 host 写 URL 前缀分支。
+- **Decision — 路径与开/关走配置，不是 store(name)（2026-08-28）**:
+  修正 2026-08-27「`Persist.store(name)` 开具名库」：路径、开库、关库是 SQLite / 宿主配置的事，不是引擎注册表。删除 `Persist` 接口。
+  host `tepeu.datasource.url` / `approvals-url`（空则约定 `jdbc:sqlite:<data-dir>/kernel.sqlite`）。compose 只接 `DataSource`。
+- **Decision — 最小引入 Spring JDBC，删假引擎口（2026-08-28）**:
+  借 Boot 皮：约定 > 配置 > 编码。`os/` 依赖 `spring-jdbc` / `spring-tx` **7.0.8**（对齐 Boot 4.0.7），**不起** Spring Boot 容器，不上 JPA / Spring Data / `@Repository`。
+  删除 `PersistStore` / `PersistWork` / `PersistTx` / `PersistRow`。适配器直接 `JdbcTemplate` + `TransactionTemplate`。账本代数仍是显式 SQL。
+  host 把 `DataSource` 挂成 bean（`destroyMethod=close`）。loop / bus / llm 仍是普通对象。
+- **Decision — ⑤ Spring 只装配，os 不进容器实现（2026-08-27）**:
+  Spring Boot 停在 `host/`。组件是普通构造器 / 工厂 + `close()`。host 用 `@Bean` 把 `DataSource`、`LlmTransport`、`MemoryAssembly.Wired` 挂进容器。不把 JPA 写进 persist。
 - **Decision — Observation 是组件（2026-08-26）**:
   模型可见管道单独拥有：`os/observation`，入口 **`Observation.view`** = derive ∘ normalize ∘ shape。读 `session.surface`，不持久化，**不是第四 store**。压缩仍经 loop 的日志替换端口；PromptAssembly 静/动段仍独立。llm 只负责协议族投影与传输，依赖 observation，不得旁路拼 messages。compose 发行默认 `Observation.install(ContextShapers.defaults())`。不抄外部 harness 的 context 插件组。
-- **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。下一动作按痛点：⑤ UI、记忆平面、多副本 fencing / timer 轮 / 哈希链；DoomLoop 第三刀改 NEED_APPROVAL 仍挂账。
+- **Decision — 完成权唯一，控制循环不唯一（2026-08-27）**:
+  第十二/二十二轮「完成=证据门」补半句：要唯一的不是循环条数，是**谁有权说结束、还能不能再试**（账本 + `CompletionGate`）。控制循环可并行（主路 / maintenance / 工具 / 将来 Team）。`SessionLoop` 对人说「这轮完了」，但是 Coordinator 出口，不是第二份真相——必须先过门，门只读 entries。工具回报、模型声称、投影、SSE / idle / Todo 都是材料。教训：多处都能宣布结束（菜谱走完叫成功、再派一次当还在修、看不见失败就空等）比循环多更致命。重试资格尚未统一入账本（现散在 DoomLoop / claim TTL / 预算），§8.5 挂账；未统一前禁止另开成功/再试旁路。不新开事件类型、不新开组件。红线 §6-8。
+- **Decision — 组织原则与 OS 类比（2026-08-27）**:
+  系统结构继续本 ADR 洋葱，**不改成「按 CC 模式」**。CC 只吸 ③ 机制，不吸整机；maintenance 独占窗口是反 CC fire-and-forget。
+  完成落点要写准：**证据在 ① entries，宣判在 ③ `CompletionGate`（`loop/`）**。不要说「完成权在内核」——内核没有 `waitpid`。
+  内核有 Inbox/claim（进场 + 租约 + `NOW>NEXT>LATER`），**没有调度器**。不为了更像 OS 开调度切片；调度公平仍是底板 §8 债。
+  「OS」= 分层纪律（用户态走唯一门、真相进账本、Loop 不进内核）。当前 = journal-first 骨架，与真 OS（调度 / 隔离 / 进程模型）差得多。口径停在「本机 Agent OS 骨架可演示」。
+- **Forward**: 实施以 `docs/os-baseplate.md` + `os/` 为准。下一动作按痛点：⑤ UI、记忆平面、多副本 fencing / timer 轮 / 哈希链；DoomLoop 第三刀改 NEED_APPROVAL 仍挂账。不为了类比完整 OS 开调度器。
 

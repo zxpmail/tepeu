@@ -3,7 +3,7 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-26（persist 聚合：api 契约 + sqlite 插头）
+**Last updated**: 2026-08-28（Persist 访问口；组件不关库）
 
 ## 当前阶段
 
@@ -20,6 +20,8 @@
 - execution 隔离 = **partial**。spawn：Windows `CREATE_SUSPENDED` 入 Job 再跑；Linux bwrap + ro-bind-try。无 jail 时失败可见。
 - 压缩后 `log.surfaceEpoch` 跳过上笔 llm digest 复核。审批绑 `argsDigest`。`/approve` 校验会话。
 - compose **不**读 API 密钥；host **可以**读。live 测试有 key 才烧。
+- 完成：证据在 ① entries，宣判在 ③ `CompletionGate`。内核有 Inbox/claim，**没有调度器**。不改成「按 CC 模式」。不为了更像 OS 开调度切片。
+- persist：访问口 = `Persist`（jdbc/tx/script）；引擎口 = `PersistEngine`。session/policy/compose 不建连接、不关库。host `DataSourceBuilder` 后 `Persist.jdbc`。换方言仍改适配器 SQL。`os/` 不启 Boot，不上 ORM。
 
 ## 已完成
 
@@ -45,8 +47,15 @@
 - 2026-08-26：`LocalProjectionBus` drop / 消费者失败走 JDK `System.Logger`（不进 entries、不加 slf4j）；消费者异常不阻断其他订阅
 - 2026-08-26：抽出 `persist` 库组件；session/policy 只留端口；JDBC 只在 persist.sqlite
 - 2026-08-26：抽出 `observation` 组件；入口 `Observation.view`（derive ∘ normalize ∘ shape）；llm 只投影+传输；PromptAssembly 仍独立
-- 2026-08-26：persist 引擎插头 `Persist`；compose 选 `SqlitePersist.file(dir)`；会话/审批分库、一套 JDBC
-- 2026-08-26：`Persist` 与 SQLite 分 jar，且 sqlite 嵌在 `persist/sqlite`（`os/` 不并列 persist-sqlite）
+- 2026-08-26：persist 引擎接口 `Persist`；host 选 `SqlitePersist.file`；compose 只接线；会话/审批分库、一套 JDBC
+- 2026-08-26：persist.sqlite 开库/关库/JDBC 回滚走 JDK `System.Logger`（`component=persist class=...`）；schema 表有注释；不加 slf4j，不进 entries
+- 2026-08-27：`Persist` 无 `open`；调用方只认接口 CRUD；sqlite 是 JDBC 实现（无 ORM）；host 注入
+- 2026-08-27：host 把 `Persist` 挂成 Spring bean 再交给 compose；`os/` 仍零 Spring
+- 2026-08-27：完成权唯一、控制循环不唯一（ADR-016 + 红线 §6-8）。`completed` 只由 entries + `CompletionGate`。重试资格统一入账本仍挂账
+- 2026-08-27：组织原则与 OS 类比——证据在①、宣判在③；Inbox≠调度器；不按 CC 整机；不为更像 OS 开调度切片
+- 2026-08-27：Persist 收成引擎（`store(name)`）；session/policy 适配器落领域；persist/api 不再依赖 session/policy
+- 2026-08-28：删 `Persist.store(name)`；host `tepeu.sqlite.*` 配路径
+- 2026-08-28：最小引入 spring-jdbc 7.0.8；删 PersistStore/Tx/Row；`SqliteDataSources` + JdbcTemplate
 
 ## 待办
 
@@ -54,6 +63,7 @@
 - 处置链 / 可配置 deny-sequence 规则面 — 见安全系列；未裁决前不空开 `gate/`·`response/`
 - ⑤ UI / 完整 SSE / 向量记忆
 - 多副本 fencing / timer 轮 / 哈希链 — 远期
+- 重试资格统一入账本（哪步成败、还能不能再试）— 未统一前禁止另开成功/再试旁路
 
 ## 调试
 

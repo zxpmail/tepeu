@@ -24,6 +24,7 @@ import java.util.Optional;
 /**
  * 单会话 CLI 门面 — 一行输入分发给 Slash / meta / Inbox+Loop。
  * 每次进程启动新建 Session（尚无 resume）；完成证据仍由 Loop CompletionGate 判定。
+ * CLI 打印与 local Slash 的 exit 0 不是 Agent 终态。
  */
 @Component
 public final class CliSession {

@@ -24,12 +24,14 @@ import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.DefaultRuleMatrix;
 import com.tepeu.os.policy.PolicyHook;
 import com.tepeu.os.policy.PolicyRulesFile;
+import com.tepeu.os.policy.persist.ApprovalPersistence;
 import com.tepeu.os.session.AuditSink;
+import com.tepeu.os.session.persist.SessionPersistence;
 import com.tepeu.os.session.LocalProjectionBus;
 import com.tepeu.os.session.Metering;
 import com.tepeu.os.session.ProjectionBus;
+import com.tepeu.os.persist.Persist;
 import com.tepeu.os.session.SessionStore;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -54,23 +56,31 @@ public final class MemoryAssembly {
             Path workspace,
             /** 投影端口；本骨架默认 {@link LocalProjectionBus}，不是契约。MQ 升版可换。 */
             ProjectionBus projection,
-            KnowledgeSource knowledge) implements AutoCloseable {
+            KnowledgeSource knowledge,
+            /** 发行路径由调用方注入 Persist；内存夹具为 null，close 时关内存 store。 */
+            Persist kernelDb,
+            Persist approvalsDb) implements AutoCloseable {
         @Override
         public void close() {
             Exception first = null;
-            if (sessions instanceof AutoCloseable c) {
-                try {
-                    c.close();
-                } catch (Exception e) {
-                    first = e;
-                }
-            }
-            if (approvals instanceof AutoCloseable c) {
-                try {
-                    c.close();
-                } catch (Exception e) {
-                    if (first == null) {
+            if (kernelDb != null || approvalsDb != null) {
+                first = closeQuiet(kernelDb, null);
+                first = closeQuiet(approvalsDb, first);
+            } else {
+                if (sessions instanceof AutoCloseable c) {
+                    try {
+                        c.close();
+                    } catch (Exception e) {
                         first = e;
+                    }
+                }
+                if (approvals instanceof AutoCloseable c) {
+                    try {
+                        c.close();
+                    } catch (Exception e) {
+                        if (first == null) {
+                            first = e;
+                        }
                     }
                 }
             }
@@ -79,6 +89,18 @@ public final class MemoryAssembly {
             }
             if (first != null) {
                 throw new IllegalStateException("close assembly", first);
+            }
+        }
+
+        private static Exception closeQuiet(AutoCloseable c, Exception first) {
+            if (c == null) {
+                return first;
+            }
+            try {
+                c.close();
+                return first;
+            } catch (Exception e) {
+                return first == null ? e : first;
             }
         }
     }
@@ -104,6 +126,32 @@ public final class MemoryAssembly {
             Metering metering,
             Path workspace,
             PolicyHook policy) {
+        return wire(sessions, approvals, audit, transport, metering, workspace, policy, null, null);
+    }
+
+    static Wired wire(
+            Persist kernelDb,
+            Persist approvalsDb,
+            LlmTransport transport,
+            Metering metering,
+            Path workspace,
+            PolicyHook policy) {
+        SessionPersistence session = SessionPersistence.open(kernelDb);
+        ApprovalStore approvals = ApprovalPersistence.open(approvalsDb);
+        return wire(session.sessions(), approvals, session.audit(), transport, metering, workspace,
+                policy, kernelDb, approvalsDb);
+    }
+
+    static Wired wire(
+            SessionStore sessions,
+            ApprovalStore approvals,
+            AuditSink audit,
+            LlmTransport transport,
+            Metering metering,
+            Path workspace,
+            PolicyHook policy,
+            Persist kernelDb,
+            Persist approvalsDb) {
         try {
             Files.createDirectories(workspace);
         } catch (IOException e) {
@@ -122,11 +170,11 @@ public final class MemoryAssembly {
         CommandDispatcher commands = new CommandDispatcher();
         commands.register(new HelpCommand(commands));
         commands.register(new ApproveCommand(approvals, audit));
-        // 本骨架默认插头；业务只认 ProjectionBus。MQ/Redis 升版再换，此处不引入 broker。
+        // 本骨架默认实现；业务只认 ProjectionBus 接口。MQ/Redis 升版再换，此处不引入 broker。
         ProjectionBus projection = new LocalProjectionBus();
         KnowledgeSource knowledge = new EmptyKnowledgeSource();
         return new Wired(sessions, bus, approvals, loop, prompts, commands, audit, workspace, projection,
-                knowledge);
+                knowledge, kernelDb, approvalsDb);
     }
 
     /** 发行默认：名级矩阵 + 参数级 deny（内置清单）。 */

@@ -7,7 +7,7 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 ## Tech stack（develop）
 
 - Runtime: Java 21
-- 主线：`os/`（Maven；组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为插头；词汇 identity/syscall；harness conformance）
+- 主线：`os/`（Maven；组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为实现；词汇 identity/syscall；harness conformance）
 - ⑤ 应用：`host/`（Spring Boot 4.0.7 CLI；依赖 compose；**非 os 组件**）
 - 验证：`mvn -f os/pom.xml test`；宿主 `mvn -f os/pom.xml install -DskipTests && mvn -f host/pom.xml test`
 - 持久化：SQLite WAL schema v1（发行 `SqliteAssembly` → `kernel.sqlite` + `approvals.sqlite`）；内存内核 `InMemoryAssembly` 仅测试
@@ -33,10 +33,12 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件
 - 不要把新能力倒进「大包」；领域默认跟组件走。JDBC/方言只在 `persist`。组件 ≠ 插件（无 Ctx / 无热插）
 - Loop 不依赖 orchestration：`LoopConfig.system` 只转发；assemble 是调用方纪律
-- `identity`/`syscall` 是词汇；`session` 是组件：边界写在 `package-info` / 端口 Javadoc；词汇与 session **不**加 slf4j（真相=entries/ledger/AuditSink；运维 log 在 host）。`LocalProjectionBus` 用 JDK `System.Logger` 记 drop/消费者失败，不进 entries
-- `session` 只暴露端口，JDBC 在 `persist/sqlite`（契约 `Persist` 在 `persist/api`，无 JDBC）。会话与审批分库，一套 JDBC。会话内存夹具在 `src/test/.../memory`，经 test-jar 给下游测试。`InMemory*` 仅测试夹具。`ProjectionBus` 是接口（本机路径也只认接口）；`LocalProjectionBus` 是本骨架默认插头，不是第二份契约。其他组件可实现可不实现、可不订阅。MQ/Redis/NATS 升版再换，本骨架不引入 broker。模型可见管道在 `observation`（入口 `Observation.view`）；llm 只投影+传输。端口验收套件在各组件 `src/test`，不进发行 jar。任务收口须记 `task-history`
+- `identity`/`syscall` 是词汇；`session` 是组件：边界写在 `package-info` / 端口 Javadoc；词汇与 session **不**加 slf4j（真相=entries/ledger/AuditSink；运维 log 在 host）。`LocalProjectionBus` 用 JDK `System.Logger` 记 drop/消费者失败，不进 entries。`persist.sqlite` 同样：开库/关库/JDBC 回滚走 `System.Logger`（`component=persist class=...`），SQL 行不进运维日志
+- persist：访问口是 `Persist`（jdbc/tx/script）；引擎口是 `PersistEngine`（ServiceLoader）。session/policy 不建连接、不关库。host `DataSourceBuilder` 后 `Persist.jdbc`。`SqliteDataSources.access` 是测试夹具。换方言仍改适配器 SQL。`os/` 依赖 spring-jdbc 7.0.8，不起 Boot 容器，不上 ORM。会话内存夹具在 `src/test/.../memory`，经 test-jar 给下游测试。`InMemory*` 仅测试夹具。`ProjectionBus` 是接口（本机路径也只认接口）；`LocalProjectionBus` 是本骨架默认实现，不是第二份契约。其他组件可实现可不实现、可不订阅。MQ/Redis/NATS 升版再换，本骨架不引入 broker。模型可见管道在 `observation`（入口 `Observation.view`）；llm 只投影+传输。端口验收套件在各组件 `src/test`，不进发行 jar。任务收口须记 `task-history`
 - **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离仍是 **partial**。compose 不读密钥。`InMemoryAssembly` 不得当生产默认
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名
+- 控制循环可多（Loop / maintain / 工具 / 将来 Team）；**禁止第二处宣布 completed**。证据在 entries，宣判在 ③ `CompletionGate`——不要说「完成权在内核」。不要在 host / orchestration / execution / 工具自报成功终态。重试资格尚未统一入账本，禁止另开成功/再试旁路
+- 「OS」= 分层纪律，不是完整 OS。内核有 Inbox/claim，**没有调度器**。不为了更像 OS 开调度切片。不要改成「按 CC 模式做」；CC 只吸 ③ 机制
 - 不要在 `legacy/` 加功能
 - `Product-Spec` 七层 / 四智能体 / 记忆 P0 / WASM+V8 **不是** `os/` 现状

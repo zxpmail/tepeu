@@ -37,7 +37,12 @@
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-persist</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-persist-sqlite</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>

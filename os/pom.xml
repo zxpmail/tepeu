@@ -15,9 +15,9 @@
         <module>identity</module>
         <module>conformance</module>
         <module>syscall</module>
+        <module>persist</module>
         <module>session</module>
         <module>policy</module>
-        <module>persist</module>
         <module>bus</module>
         <module>observation</module>
         <module>llm</module>
@@ -33,6 +33,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.4</junit.version>
         <sqlite-jdbc.version>3.53.2.1</sqlite-jdbc.version>
+        <spring-framework.version>7.0.8</spring-framework.version>
         <jna.version>5.19.1</jna.version>
     </properties>
 
@@ -113,6 +114,16 @@
                 <artifactId>junit-jupiter</artifactId>
                 <version>${junit.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring-framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+                <version>${spring-framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xerial</groupId>

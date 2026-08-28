@@ -14,8 +14,10 @@
 | syscall | 过唯一门的能力调用 | HTTP 路由 |
 | 三 store | entries / registers / ledger | 第四个抽屉 |
 | Inbox/claim | 进场与租约 | 调度器 |
+| 内核 | journal-first：总线 + 三 store + 卫兵 | 完整 OS / 调度器 / `waitpid` |
 | Policy | 授权 | 隔离 |
-| 完成 | 证据写入 | SSE 结束 / Todo 勾完 |
+| 完成 | 证据在 entries；宣判在 ③ `CompletionGate` | worker 自报 / SSE / Todo / idle / 投影 / 「完成权在内核」 |
+| 完成权 | 谁有权说结束、还能不能再试 | 「全世界只有一条控制循环」 / 「按 CC 模式做」 |
 | Harness | v1 能力壳 | develop 内核 |
 
 ---
@@ -42,14 +44,16 @@ now 级抢占只切流式 chunk；本刀无流式。
 
 ## 完成证据（无新事件类型）
 
-完成 = 声称之物能从 entries / locator / ledger 还原。SSE 结束、Todo 勾完、回到 idle **不是**完成。`CompletionGate` 钉答复、工具成对、PLAN_STEP、FILE locator（须能从 ContentStore 取回）。Loop 主路永远过 REPLY；其余声称按本 turn 实际发生推断。
+控制循环可以很多（主路 turn、maintenance、工具、将来 Team），**宣布结束只能一处**。证据在 ① entries，宣判在 ③ `CompletionGate`（读账本；内核没有 `waitpid`）。Loop 对外吐 `TurnOutcome.completed` 是对人说话，自己喊也不算。工具 `TOOL_RESULT`、模型说「做完了」、投影、CLI 打出字，都是材料，不是终态。系统结构继续洋葱，不改成「按 CC 模式」；CC 只吸 ③ 机制。
+
+完成 = 声称之物能从 entries / locator / ledger 还原。SSE 结束、Todo 勾完、回到 idle **不是**完成。`CompletionGate` 钉答复、工具成对、PLAN_STEP、FILE locator（须能从 ContentStore 取回）。Loop 主路永远过 REPLY；其余声称按本 turn 实际发生推断。重试资格尚未统一入账本（现散在 DoomLoop / claim / 预算），禁止另开成功/再试旁路。
 
 | 声称 | 载体 | 不够则不得 completed |
 |------|------|----------------------|
 | 答复 | `ASSISTANT_MESSAGE` | 只有 reasoning/plan |
 | 工具 | `TOOL_CALL`+`TOOL_RESULT` 成对 | 缺 result（取消须合成错误） |
 | 文件/大结果 | sha256 locator | 只有路径字符串 |
-| 计划 | `PLAN_STEP` | 只勾了 UI |
+| 计划 | `PLAN_STEP` | 只勾了 UI；记了步 ≠ 那步成了 |
 | 用量 | ledger | 未知却报数字 → n/a |
 
 7 类模型可见事件无 `completed`。第 8 类 `END_SEED` 只在审计日志，不进 surface。加类型走 manifest。
@@ -81,16 +85,16 @@ ADR 所写「prompt_assembly 快照事件」**未入**词汇表。落地须 mani
 
 | 端口 | 规范单机 | conformance | 发行 |
 |------|----------|-------------|------|
-| SessionStore | SQLite WAL schema v1 | 内存 | persist 引擎 `SqlitePersist` → `SqliteSessionStore`（单写者） |
+| SessionStore | SQLite WAL schema v1 | 内存 | host 打开 `Persist`；`SessionPersistence` 只访问 |
 | InboxClaim | 进程内锁+TTL | 内存领取 | SQLite 同进程 TTL；fencing 远期 |
-| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | 同一引擎分库 `approvals.sqlite`；内存夹具不得发行 |
+| ApprovalStore | SQLite（**禁内存默认**） | 内存仅测试 | host 第二份 Spring `DataSource`；内存夹具不得发行 |
 | Metering | 供数 | 端口有 | 未知价 n/a |
 
-支撑端口**不是**开机四件套。缺 ProjectionBus **不**等于缺内核。业务只依赖接口；本机默认插头可换，其他组件可不实现。
+支撑端口**不是**开机四件套。缺 ProjectionBus **不**等于缺内核。业务只依赖接口；本机默认实现可换，其他组件可不实现。
 
 | 端口 | 本骨架 | 其他组件 | 升版 |
 |------|--------|----------|------|
-| ProjectionBus | 接口；compose 默认 `LocalProjectionBus` | 可实现 / 可不实现 / 可不订阅 | Redis/NATS/MQ 同一接口另插头；不在本骨架引入 broker。drop/消费者失败须运维可见，不进 entries |
+| ProjectionBus | 接口；compose 默认 `LocalProjectionBus` | 可实现 / 可不实现 / 可不订阅 | Redis/NATS/MQ 同一接口另一实现；不在本骨架引入 broker。drop/消费者失败须运维可见，不进 entries |
 | KnowledgeSource | 接口；默认 empty | 可实现 / 可不实现 | 向量/图检索仍欠 |
 
 ---
@@ -107,7 +111,7 @@ Policy≠沙箱。配额=入口拒。Metering 不裁决。Secret 不进模型通
 | 密钥 | Secret 缝 |
 | 工作区文件 | execution.*（路径囚笼；隔离 partial） |
 
-禁止：模型当策略引擎；静默未沙箱直通；日志当密钥柜；v1 无认证当 develop 已开门；caller 可选审计；ProjectionBus 当真相。
+禁止：模型当策略引擎；静默未沙箱直通；日志当密钥柜；v1 无认证当 develop 已开门；caller 可选审计；ProjectionBus 当真相；host / orchestration / execution / 工具自报 `completed`。
 
 删除权 vs append-only：**未裁**，不得称合规。
 
@@ -115,4 +119,4 @@ Policy≠沙箱。配额=入口拒。Metering 不裁决。Secret 不进模型通
 
 ## 仍不写
 
-`llm.*` 具体名 · 快照事件类型 · Java 沙箱 · 调度公平 / tamper-evidence · 多副本 fencing。TOOL 落账归属与 RegisterStore 薄端口已随第十二轮裁。SQLite schema v1 已落（第二十轮）。见底板 §8.5。
+`llm.*` 具体名 · 快照事件类型 · Java 沙箱 · 调度公平 / tamper-evidence · 多副本 fencing。不为了更像 OS 开调度器。TOOL 落账归属与 RegisterStore 薄端口已随第十二轮裁。SQLite schema v1 已落（第二十轮）。见底板 §8.5。

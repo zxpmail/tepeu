@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * 完成证据门：无证据不得 completed。SSE / Todo / 回到 idle 不是完成。
+ * 控制循环可并行；宣布结束只许本门读 entries。工具回报、模型声称、投影都不是终态。
  */
 public final class CompletionGate {
 

@@ -11,7 +11,7 @@
 
 **当前 = 本机 Agent OS 骨架可演示**（五层落码 + 可证伪）。**不是**企业 Agent OS，**不是**完整 OS。
 
-`os/README` 身份陈述是**目标态文案**；实现进度见该文件状态表。底板 §8 已钉：**不许靠 OS 类比暗示已具备完整 OS。**
+`os/README` 身份陈述是**目标态文案**；实现进度见该文件状态表。底板 §8 已钉：**不许靠 OS 类比暗示已具备完整 OS。** 「OS」= 分层纪律。内核有 Inbox/claim，没有调度器；完成宣判在 ③，不在内核。
 
 ---
 
@@ -42,7 +42,7 @@
 |----|-----|------|--------|
 | **1** | **进模诚实** | HTTP 薄壳 + `LlmTransports.fromEnv`；live 测试有 key 才烧；compose 不读密钥；cost = n/a | live 往返 |
 | **2** | **控制循环** | turn 内 overflow 压缩（默认阈 40）+ maintain 作业；递减停机 = keepLast / 全 checkpoint，不是模型质量 | ③ Loop / Compaction |
-| **3** | **完成权** | 主路 REPLY 必过；推断 TOOL_PAIR / PLAN / FILE（locator ∈ ContentStore） | ③ Loop |
+| **3** | **完成权** | 主路 REPLY 必过；推断 TOOL_PAIR / PLAN / FILE（locator ∈ ContentStore）。控制循环可多，宣布结束只许账本+门 | ③ Loop |
 | **4** | **执行缝** | Job Object / bwrap；隔离仍 **partial**（禁止报 FULL） | Execution |
 | **5** | **预算/审批做真** | 开 turn 预算门 + 默认矩阵 + `/approve` + `policy.rules` | Policy / Loop |
 

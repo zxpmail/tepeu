@@ -2,6 +2,14 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-08-28 | persist-access | **Persist=统一访问口** | 组件只 jdbc/tx/script；关库在 host/测试；不复活 PersistRow |
+| 2026-08-28 | persist-engine-api | **persist/api=PersistEngine** | 连接仍是 DataSource；引擎口 ServiceLoader；host 不 import sqlite |
+| 2026-08-28 | persist-spring-ds | **可换口=Spring DataSource** | 删 HostDataSources；host DataSourceBuilder+Hikari |
+| 2026-08-28 | persist-jdbc-url | **开库认 JDBC URL** | 删 open(Path) 引擎口；tepeu.datasource.url |
+| 2026-08-28 | persist-spring-jdbc | **最小 Spring JDBC** | 删 PersistStore/Tx/Row；os 不启 Boot、不上 ORM |
+| 2026-08-27 | persist-engine-invert | **Persist 不认识 Session** | 适配器回 session/policy；换库改 SQL |
+| 2026-08-27 | os-analogy-honesty | **组织原则与 OS 类比** | 证据在①、宣判在③；不为像 OS 开调度切片 |
+| 2026-08-27 | completion-authority | **完成权唯一、控制循环不唯一** | completed 只许账本+门 |
 | 2026-08-26 | persist-nested-pom | **persist POM 嵌套** | os 只列 persist/；api+sqlite 子模块；插头不抬一级 |
 | 2026-08-26 | persist-split-jar | **Persist 与 sqlite 分 jar** | 契约 persist；插头 persist-sqlite；compose 依赖插头 |
 | 2026-08-26 | persist-engine | **persist 引擎插头** | compose 选 Persist；sqlite 一套 JDBC 分两库；不是再写一份 SessionStore |

@@ -29,8 +29,22 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-compose</artifactId>
+            <version>${tepeu-os.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-persist</artifactId>
+            <version>${tepeu-os.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-persist-sqlite</artifactId>
             <version>${tepeu-os.version}</version>
         </dependency>
         <!-- 与 os/ 锁定同版，避免 Boot BOM 拉低 sqlite-jdbc -->

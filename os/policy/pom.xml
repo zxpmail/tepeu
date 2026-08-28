@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tepeu-os-policy</artifactId>
     <name>Tepeu OS Policy</name>
-    <description>Policy 封闭 union + 审批通道（端口；JDBC 在 persist；内存夹具在 src/test）</description>
+    <description>Policy 封闭 union + 审批通道（适配器 Spring JDBC；内存夹具在 src/test）</description>
     <dependencies>
         <dependency>
             <groupId>com.tepeu</groupId>
@@ -19,6 +19,19 @@
         <dependency>
             <groupId>com.tepeu</groupId>
             <artifactId>tepeu-os-syscall</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-persist</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tepeu</groupId>
+            <artifactId>tepeu-os-persist-sqlite</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tepeu</groupId>

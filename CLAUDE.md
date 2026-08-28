@@ -92,9 +92,9 @@ description: Comprehensive CLAUDE.md template — 通用行为规则 + 项目填
 
 ```
 Runtime: Java 21
-Mainline: os/（Maven；组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为插头；词汇 identity/syscall）
+Mainline: os/（Maven；组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为实现；词汇 identity/syscall）
 Host: host/（⑤ CLI；Spring Boot 4.0.7 无 Web；依赖 compose；非 os 组件）
-Database: persist/api 契约 + persist/sqlite 插头（SQLite WAL schema v1；发行 `SqlitePersist`；内存内核 `InMemoryAssembly` 仅测试）
+Database: 访问口是 persist/api `Persist`（组件只访问，不关库）；引擎口是 `PersistEngine`；host `DataSourceBuilder` 建连接后包成 Persist；适配器 Spring JDBC 7.0.8（无 ORM）；内存内核 `InMemoryAssembly` 仅测试
 llm.*: 禁止 Spring AI ChatModel（ADR-016 第十轮）
 ```
 
@@ -103,7 +103,7 @@ v1 工作台（`legacy/` / `main`，禁止当 `os/` 现状）：Spring Boot 4.0.
 ## ✏️ 项目结构（develop 重写阶段）
 
 ```
-os/               重写主线：组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为插头；词汇 identity/syscall
+os/               重写主线：组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为实现；词汇 identity/syscall
 host/             ⑤ CLI 宿主（Spring Boot；不进 os/；依赖 tepeu-os-compose）
 legacy/           v1 只读标本（backend / frontend / experiments / scripts）——禁止加功能
 docs/             底板（os-baseplate.md）· 手册独有章 · 诚实度 · archive/
