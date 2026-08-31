@@ -161,3 +161,11 @@
 - **C1**：claude-code-main **不是 git 仓库**，无 commit 可钉；文档头已记 v2.8.4 + 日期弱钉，行号会漂。关键论断引用时**先重验再依赖**。
 - **C2**：六路报告的行号只抽查复核了 7 处（Terminal 表 / DANGEROUS 段 / 配对兜底 / passthrough→ask / 全量池重建 / cron idle / QueryGuard 状态），其余未复核；CCB 是三方复原工程（内含未跑 lint 的损坏代码），**引用以机制为准、行号为辅**。
 - **C3**：本文所有「CC 证明 X 可行」的论断都带规模前提——CC 的方案在千万级会话下成立，不代表单机 tepeu 需要同款复杂度；§5 不照搬清单是护栏，但每条「吸收」也该问一句：tepeu 的规模下这笔复杂度买回什么。
+
+---
+
+## 8. `C:\claude-code-main` 复核（2026-08-31）
+
+`claude-code-best` **2.4.3**，仍非 git。机制与 08-16 探查同族（`src/query/transitions.ts` 仍是 Terminal / Continue 表，多了 `blocking_limit` / `image_error` 等产品码）。
+
+**不新吸收、不新挂 §8.5。** 该进内核的已经进了（deny>ask>allow、规范序、fork/END_SEED、STATIC/DYNAMIC、local/prompt、INTERRUPTED、审批单次）。底板还挂着的「CC §3」是 Loop 端口笔记（转移表/恢复分级/分区并发/熔断/递减停机），不是这份目录新发现的。10 种 Terminal 不必扩 `TurnOutcome`。后台 agent 停后复活、MCP 空挂 5 分钟——Team / TIMED_OUT 已有账，不因本树再挂。

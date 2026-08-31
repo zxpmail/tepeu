@@ -3,7 +3,7 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-28（Persist 访问口；组件不关库）
+**Last updated**: 2026-08-31（Maka 对账入档；未改内核）
 
 ## 当前阶段
 
@@ -56,6 +56,21 @@
 - 2026-08-27：Persist 收成引擎（`store(name)`）；session/policy 适配器落领域；persist/api 不再依赖 session/policy
 - 2026-08-28：删 `Persist.store(name)`；host `tepeu.sqlite.*` 配路径
 - 2026-08-28：最小引入 spring-jdbc 7.0.8；删 PersistStore/Tx/Row；`SqliteDataSources` + JdbcTemplate
+- 2026-08-29：外部 `C:\grok-bot-0.18-reconstructed-main` 对账 → `docs/archive/reference/grok-bot-reference.md`。⑤ 不同线；WAL/完成通道/`directionEpoch` 可扫。不立项、不新开 ADR。Inference Router / Local Docker 是重建新增。
+- 同日补 §8：外部「路由/动态工具/多Agent/Docker」四条裁定。动态工具 hint（18 静/9 hint）可记进 PromptAssembly 笔记；12KB/×10 无源码锚。多 Agent 是长驻队友 + executor 两层，勿混成工作群、勿开调度。
+- 同日 §9：工具集三层对照留 archive。第十轮已裁 tools 序。
+- 2026-08-31：`apache/maka` → `docs/archive/reference/maka-reference.md`。对照留 archive。不立项。AI SDK / Graph / Eval / 无界步数不借。
+- 同日裁定：Grok/Maka **不进底板**。已撤 §8.5 四行（工具集三层、checkpoint 覆盖、晚到终态、缺 RESULT）及 gap / project-memory 注入。未改 `os/`。
+- 同日 `C:\gnex-core-v2`：只看 V2 文档+近改（不管 v3）。无新吸收项。见 `gnex3-reference.md` §6。
+- 同日 `C:\claude-code-main`（cc-best 2.4.3）：与 08-16 对账同族。无新吸收项。见 `claude-code-reference.md` §8。
+- 同日 `C:\GenericAgent-main`：不同线。无吸收项。见 `genericagent-reference.md`。
+- 同日 `C:\test\goose-main`：⑤ Rust Agent。无新吸收项。见 `goose-reference.md`。
+- 同日 `C:\test\deer-flow-main`：LangGraph 工作台。无新吸收项。见 `deer-flow-reference.md`。
+- 同日 [LifeOS](https://github.com/danielmiessler/LifeOS)：个人意图层。无新吸收项。见 `lifeos-reference.md`。
+- 同日 [AIOS](https://github.com/agiresearch/AIOS)：与 08-16 对账同族。无新吸收项。见 `aios-reference.md` §8。
+- 同日 [OSONE-AI](https://github.com/zerobob623-bit/OSONE-AI)：家居 Jarvis。无吸收项。见 `osone-ai-reference.md`。
+- 同日 [OSONE](https://github.com/Common-joeAI/OSONE)：愿景空壳。无吸收项。见 `osone-reference.md`。勿与 OSONE-AI 混。
+- 同日 [earthwalker/agent-os](https://github.com/earthwalker17/agent-os)：编码 harness。无新吸收项。见 `earthwalker-agent-os-reference.md`。勿与本仓 `agent-os-gap.md` 混。
 
 ## 待办
 

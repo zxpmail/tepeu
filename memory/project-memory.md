@@ -25,7 +25,7 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 冲突时：**ADR-016 > 底板 > 手册独有章 > v1 规格**。参照在 `docs/archive/`。禁止再开对账轮、再写第三份投影。
 
 吸收：`docs/legacy-absorption.md` · `docs/work-docs-absorption.md` · `docs/archive/reference/gnex3-reference.md` · `docs/archive/reference/agent-runtime-security-series.md`（九宫格对账；Gate=边界脚本；Observation 已开 jar；gate/response 空 jar 不预开）  
-勿吸内核：`tencent-harness-engineering.md`（AI Coding）；`ai-eval-observability-pipeline.md`（评测可观测运维）；`terax-ai.md`（⑤ ADE 产品，不同线）
+勿吸内核：`tencent-harness-engineering.md`（AI Coding）；`ai-eval-observability-pipeline.md`（评测可观测运维）；`terax-ai.md`（⑤ ADE 产品，不同线）；`grok-bot-reference.md`（⑤ Computer-Use + 重建 host；WAL/完成通道/`directionEpoch` 可扫，勿按 35 槽改组件；Router/Local Docker 是重建新增）；`maka-reference.md`（log-first 同线工作台；机制可扫，勿开 Graph/Eval jar，勿降级 `llm.*` 断言）；`genericagent-reference.md`（个人 Computer-Use + 技能自结晶；不同线，循环自报完成，不吸）；`goose-reference.md`（Rust 本机 Agent + MCP；状态=对话投影已有同形，不吸 AlwaysAllow / 调度器）；`deer-flow-reference.md`（LangGraph 超级 Agent 工作台；`/goal`+评估器当完成门，不吸）；`lifeos-reference.md`（个人意图层，骑在 CC 一类 harness 上；名字带 OS，不是内核）；`aios-reference.md`（学术「LLM as OS」；C4/C5/C6 已落，不因 HEAD 再开调度）；`osone-ai-reference.md`（Gemini+Tuya 家居 Jarvis；不同线）；`osone-reference.md`（Common-joeAI 愿景仓；叙事空壳，勿与前者混）；`earthwalker-agent-os-reference.md`（本机编码 harness；绿构建当完成，不进内核）
 
 ## Gotchas（develop 仍有效）
 

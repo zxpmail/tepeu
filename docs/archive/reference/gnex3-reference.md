@@ -91,3 +91,41 @@ tepeu 落法：§9 spill 条目补三属性——TTL、单条上限、证物不�
 - **§8.5 新增 4 行挂账**（retry 协议 / 终态单调 / TIMED_OUT / 证物保护+spill 容量），**并入 3 行既有挂账备注**（先落日志再执行 / DoomLoop 形状 / ledger 写失败语义——倾向与 gnex3 相反，登记为备选），**快照锁存随 RegisterStore 同裁**。
 - **ADR-016 第十轮** = 本参照 + LlmProvider 选型裁决（自研双协议族）+ 断言形态升格（派生式）；落码切片 = `llm.*` 断言切片（os/llm 新模块），随下刀兑现。
 - 零运行时影响：gnex3 不进依赖、不进代码，仅规则入账。
+
+---
+
+## 6. `C:\gnex-core-v2` 文档与近改（2026-08-31，不管 v3）
+
+只看 `docs/v2.0/Agent核心/` 近两周改动 + `memory/decisions-log` 里 ADR-066/074/075/076，以及 08-27 之后的 runtime 提交。**不读 `docs/v3.0`。不新挂 §8.5。**
+
+近改主线：A–G 宪章装卸（ADR-074/075）、闸门方案 `GATE-G-DRAFT`（ADR-076：取消认定/脏单开跑要机器位，过≠守住）、看门狗账本先行（僵尸租约）、SSE keepalive、菜谱 REMOTE_2XX。`SESSION-EVENT-LOOP` 仍是「三套调度收成一套」——**与 Tepeu「内核无调度器」相反，不借。**
+
+| V2 文档句 | 对 Tepeu | 吸不吸 |
+|-----------|----------|--------|
+| G 是代码咬，不进 system（`GATE-G`） | Policy / CompletionGate 已在代码 | 不 |
+| 完成权一份，循环体不必一份（ADR-066，平面文档同句） | 已冻 | 不 |
+| 触顶 = 部分结果，不得 completed | `maxSteps` → STOPPED | 不 |
+| 子权限开局钉死；allow-once 一次 | 子只减不增；审批单次 consume | 不 |
+| 拒绝四种分标：用户 / 策略 / 批准超时 / 机器闸 | 现有 ASK/DENY，无「批准卡超时」独立标 | 有超时卡再分，现在不挂 |
+| 取消只认平台白名单，模型自报不当认定 | 现无用户取消一等入口 | 做取消时翻 `GATE-G` §1 停止轴 |
+| 工具结果/可写槽当数据（G22/G24）；装载前扫描（G18） | `Observation.view` 现只脱敏截断 | shape 加档时对照，不新开闸组件 |
+| 脏单不自洽不得开跑 | Team 未落 | 不 |
+| Coord 只派不干；D 按主题、禁止整本灌 | 产品/Prompt 配方。A–G 宪章不进 `os/` | 不 |
+| 账本先行再 resume；看门狗不是第二调度 | 无续跑产品；禁止第二处 completed 已有 | 不 |
+| SSE 注释行 keepalive | 无 ⑤ UI | 不 |
+
+**近两周代码（08-27～31，不管 v3 文档）**
+
+| 提交在修什么 | 代码里实际做了什么 | 吸不吸 |
+|--------------|-------------------|--------|
+| 菜谱完成门 + `UNDELIVERED` | 流程 ok 但无 `REMOTE_2XX` → 单独终态，不是 SUCCESS | 不。你们已有 incomplete ≠ completed。不新开终态词 |
+| `CompletionEvidenceGatePort` | 唯一出口；循环禁止自写 completed | 不。就是 `CompletionGate` |
+| `RetryReasonCodes` + 看门狗 | 确定性失败（4xx/针打尽）零再派；预算一份 | 不。llm 重试封闭集已挂。不抄菜谱码表 |
+| `RunLeaseWatchdog` 账本先行 | 已有终态 / 终态晚于心跳 / 确定性码 / 预算拒 → skip 并清僵尸租约；过期后再等 grace 才当死 | 无续跑/看门狗产品。**账本读失败仍再派**是 fail-open，勿抄 |
+| P1 卡死自愈 | RUNNING 超时 → STALLED → 软中断 → 超次 CANCELLED | 他们的事件环线程卡死。你们是同步 `SessionLoop` + inbox TTL，不是这套 |
+| P4 `RUN_END` 写穿 | 终态进 `agent_run_event`，重启从账本投影 | 你们 entries 已是 SoR |
+| P5 孙代级联取消 | 父停则 cancelByParentRunId | Team 未落 |
+| SSE comment keepalive | 注释行 ping，不进 replay seq | 无 ⑤。做 SSE 时翻，不进内核 |
+| D 主题装卸 | `DThemeRouter` | 产品 prompt，不进 `os/` |
+
+**裁定：近两周 V2 代码也没有该进底板的新不变量。** 唯一以后可对的实现细节：租约过期后先 grace 再当死（防慢工具误抢）；以及看门狗读账失败仍再派是反面标本。未跑其测试。

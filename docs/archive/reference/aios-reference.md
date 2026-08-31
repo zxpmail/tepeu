@@ -83,3 +83,13 @@
 2. 抢占边界（C4）与计量槽位（C5）分别写入 Loop 端口设计说明与 `llm.*` 切片，无需新裁决。
 3. C6（barrier 超时语义）挂在 ledger/Metering 切片待裁，记入悬置清单。
 4. 切片优先级不变：② conformance → `llm.*` 断言 → ③ Loop 端口。
+
+---
+
+## 8. GitHub HEAD 复核（2026-08-31）
+
+来源：https://github.com/agiresearch/AIOS（README + `aios/{scheduler,syscall,context,memory,storage,tool}` 目录仍在）。未再 clone、未重跑 08-16 行号。
+
+模块还是那一套：FIFO/RR 调度器、syscall 链、上下文/记忆/存储/工具当资源管理器。Cerebrum 仍是 SDK。Computer-use 走 VM+MCP。`aios-rs` 仍自称脚手架。
+
+**不新吸收、不新挂 §8.5。** C4 抢占边界、C5 计量槽、C6 写屏障已在底板落地或挂过多副本。内核无调度器——不为了更像这篇论文开调度切片。fail-open / 零隔离 / 对话历史在 SDK 侧，仍是反面。
