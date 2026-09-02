@@ -14,4 +14,4 @@
 
 **向后兼容**：缺失该字段 → 路由按 `auto-fix` 处理（保持现状，fail-open）。
 
-**复用先例**：`judgment-spectrum.md` S5（Human only, do not auto-fix）→ `ask-user`；`review-dimension-checklist.md` 预存死代码（mention only）→ `ask-user`/`no-op`；`workflow.md` Insight bucket → `no-op`。
+**复用先例**：`judgment-spectrum.md` S5（Human only, do not auto-fix）→ `ask-user`；切口争议（新组件/端口/schema/完成权）→ `ask-user`；方法级优雅 / 第二次重复 → `no-op`；`review-dimension-checklist.md` 预存死代码（mention only）→ `ask-user`/`no-op`；`workflow.md` Insight bucket → `no-op`。

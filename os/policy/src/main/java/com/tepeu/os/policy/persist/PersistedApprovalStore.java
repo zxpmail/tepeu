@@ -18,7 +18,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-/** 审批适配器 — SQL 在这里，Spring JDBC 执行。 */
+/**
+ * 审批适配器 — SQL 在这里，Spring JDBC 执行。
+ * <p>
+ * 不建连接、不 {@code close} Persist。键是 (session, syscall, argsDigest)，不单绑名字。
+ * 行数据是 ApprovalStore 真相，不写 slf4j、不打 SQL 行。人手盖章走 Slash + AuditSink。
+ */
 final class PersistedApprovalStore implements ApprovalStore {
 
     private final Persist persist;
@@ -35,6 +40,9 @@ final class PersistedApprovalStore implements ApprovalStore {
         return persist.tx(work);
     }
 
+    /**
+     * 登记 asked。同一会话、同一 syscall、同一 digest 若已有未决单，幂等返回该 id。
+     */
     @Override
     public String ask(TurnContext ctx, Syscall syscall) {
         Objects.requireNonNull(ctx, "ctx");
@@ -60,6 +68,9 @@ final class PersistedApprovalStore implements ApprovalStore {
         });
     }
 
+    /**
+     * 落 decided。未知 id 或已决则抛，不覆盖。本方法不写 AuditSink（人手路径在 compose）。
+     */
     @Override
     public void decide(String approvalId, boolean allow, String decidedBy) {
         Objects.requireNonNull(approvalId, "approvalId");
@@ -81,6 +92,10 @@ final class PersistedApprovalStore implements ApprovalStore {
         });
     }
 
+    /**
+     * 取走最新一张同键单的决策。未决、已消费、无行 → empty（总线再 ASK / DENY）。
+     * 取走即 {@code consumed=1}，不能再用。
+     */
     @Override
     public Optional<Boolean> consumeDecision(TurnContext ctx, Syscall syscall) {
         String sessionId = ctx.sessionId().value();
@@ -111,6 +126,7 @@ final class PersistedApprovalStore implements ApprovalStore {
         });
     }
 
+    /** 按 id 读；不存在 empty。Slash {@code /approve} 用它校验本会话。 */
     @Override
     public Optional<ApprovalRecord> get(String approvalId) {
         Objects.requireNonNull(approvalId, "approvalId");

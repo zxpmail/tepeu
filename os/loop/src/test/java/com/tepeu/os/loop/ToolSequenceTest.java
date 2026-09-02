@@ -1,5 +1,6 @@
 package com.tepeu.os.loop;
 
+import com.tepeu.os.loop.local.ToolSequence;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;

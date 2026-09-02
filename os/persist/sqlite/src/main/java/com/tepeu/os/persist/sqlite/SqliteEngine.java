@@ -3,6 +3,8 @@ package com.tepeu.os.persist.sqlite;
 import com.tepeu.os.persist.PersistEngine;
 
 import javax.sql.DataSource;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -12,6 +14,9 @@ import java.util.Objects;
 /** SQLite：建目录 + PRAGMA。经 {@code META-INF/services} 登记。 */
 public final class SqliteEngine implements PersistEngine {
 
+    private static final Logger LOG = System.getLogger(SqliteEngine.class.getName());
+    private static final String COMPONENT = "persist";
+    private static final String CLASS_NAME = SqliteEngine.class.getSimpleName();
     private static final String SQLITE = "jdbc:sqlite:";
 
     @Override
@@ -49,7 +54,9 @@ public final class SqliteEngine implements PersistEngine {
                 s.execute("PRAGMA synchronous=FULL");
             }
         } catch (Exception e) {
-            throw new IllegalStateException("prepare sqlite " + jdbcUrl, e);
+            LOG.log(Level.WARNING, "component={0} class={1} prepare failed type={2}",
+                    COMPONENT, CLASS_NAME, e.getClass().getSimpleName());
+            throw new IllegalStateException("prepare sqlite", e);
         }
     }
 

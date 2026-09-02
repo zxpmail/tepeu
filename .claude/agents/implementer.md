@@ -52,6 +52,7 @@ color: green
     - **project_context**: Project structure, tech stack, existing code style
     - **design_specs** (optional): Precise design values (if design tool MCP is available)
     - **memory_context** (optional): Relevant entries from project-memory.md and decisions-log.md
+    - **cut_list** (string[] | `"none"`): Approved cuts for this Task (new type / extract / port reuse). Do not invent cuts not listed. Third isomorphic copy in the same component → extract and report in `concerns`. New `os/` component, new port, schema, or second `completed` exit → `NEEDS_CONTEXT`, do not implement. Protocol: `../skills/_shared/cut-before-fill.md`
 
 [Output]
     **Structured report** containing the following fields:
@@ -72,6 +73,7 @@ color: green
     - project_context (string) -- Project context
     - design_specs (string | null) -- Design spec values (optional)
     - memory_context (string | null) -- Relevant memory entries (optional)
+    - cut_list (string[] | "none") -- Approved cuts; fill only; third copy must extract
 
     **Data returned by Sub-Agent**:
     - status (enum) -- Execution status

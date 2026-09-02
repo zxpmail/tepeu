@@ -7,6 +7,8 @@ import com.tepeu.os.orchestration.CommandResult;
 import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.session.AuditSink;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -14,6 +16,10 @@ import java.util.Objects;
 
 /** /approve &lt;id&gt; allow|deny — local，写 AuditSink，不进会话事件。 */
 public final class ApproveCommand implements CommandHandler {
+
+    private static final Logger LOG = System.getLogger(ApproveCommand.class.getName());
+    private static final String COMPONENT = "compose";
+    private static final String CLASS_NAME = ApproveCommand.class.getSimpleName();
 
     private final ApprovalStore approvals;
     private final AuditSink audit;
@@ -64,9 +70,13 @@ public final class ApproveCommand implements CommandHandler {
         try {
             approvals.decide(id, allow, actor);
         } catch (RuntimeException e) {
+            LOG.log(Level.WARNING, "component={0} class={1} session={2} approval={3} decide failed",
+                    COMPONENT, CLASS_NAME, ctx.sessionId().value(), id);
             return CommandResult.failure(String.valueOf(e.getMessage()));
         }
         audit.record(actor, "approve", id, Map.of("allow", Boolean.toString(allow)));
+        LOG.log(Level.INFO, "component={0} class={1} session={2} approval={3} allow={4}",
+                COMPONENT, CLASS_NAME, ctx.sessionId().value(), id, allow);
         return CommandResult.local(allow ? "allowed " + id : "denied " + id);
     }
 }

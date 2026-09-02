@@ -1,5 +1,7 @@
 package com.tepeu.os.observation;
 
+import com.tepeu.os.observation.local.RedactingContextShaper;
+import com.tepeu.os.observation.local.ContextShapers;
 import com.tepeu.os.session.SessionEventType;
 import org.junit.jupiter.api.Test;
 

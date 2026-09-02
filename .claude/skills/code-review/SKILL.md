@@ -40,7 +40,7 @@ requires: []
 <!-- end: dependency-check -->
 <!-- begin: shared-discipline -->
 [Shared Discipline]
-    Review 时重点查 Surgical Changes + Simplicity First → `../_shared/karpathy-discipline.md`
+    Review 时重点查切口清单 + Surgical Changes + Simplicity First → `../_shared/karpathy-discipline.md` + `../_shared/cut-before-fill.md`
     每条 finding 带 `action`（auto-fix/ask-user/no-op，谁来修）→ `../_shared/finding-actions.md`
 
 <!-- end: shared-discipline -->
@@ -93,8 +93,9 @@ requires: []
 
     Must-have dimensions:
     - **Functional Completeness**: every Spec requirement has a code implementation
-    - **Surgical Changes Audit**: every changed line traces to the original request
-    - **Simplicity First Audit**: no over-engineering or speculative abstraction
+    - **Cut List Audit**: design 维只挑战切口（新组件/端口/schema/完成权/第三次该抽未抽）；方法级优雅不是 Must-fix
+    - **Surgical Changes Audit**: every changed line traces to the original request（清单内提取除外）
+    - **Simplicity First Audit**: no over-engineering or speculative abstraction（第三次强制抽除外）
     - **Security Scan**: hardcoded credentials, XSS, SQL injection, path leakage
     - **Type Safety**: no `any`, `@ts-ignore`, unsafe casts
 

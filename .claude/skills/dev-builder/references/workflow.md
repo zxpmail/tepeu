@@ -147,7 +147,7 @@
         - Baseline 已保存
         - Scope 已声明
         - **Phase Nature 已读取（Backend/UI/Data/Integration）— dispatch 决策已定**
-        - 下一步 → [Phase Execution Flow] Step 0: 感知天理
+        - 下一步 → [Phase Execution Flow] Step 0: 感知天理 → Step 0.5 Cut List
 
     [Phase Execution Flow]
         Step 0: 感知天理 — 从已有代码提取本项目代码风格（Phase 2+ 必做）
@@ -157,6 +157,13 @@
             读完之后不用做任何事——只是让模型的注意力激活这些模式。
             这样进入 Step 1 时，模型已经站在"这个项目的代码风格"的上下文里了。
             模型看到后续 Task 时，它会自然续写出符合本项目风格的代码。
+
+        Step 0.5: Cut List — 切先于填（写码前必做）
+            协议 → `../../_shared/cut-before-fill.md`。未写清单禁止进入 Step 2 写码。
+            1. 指定同一组件内一块近邻当纹理（或 `package-info` + 底板）
+            2. 列出本 Phase 的切口：新组件 / 新端口 / 新 public 类型 / schema / 完成权 / 提取；或写 `cut_list: none`
+            3. 上表须人批的项 → 停下问用户，不要边填边发明
+            4. 每个 Task 的 implementer 包带同一份 `cut_list`（或该 Task 子集）
 
         Step 1: Plan + TaskList
             This step is a prerequisite for coding, cannot be skipped, does not require user confirmation. No code can be written without a Plan and TaskList.
@@ -214,6 +221,7 @@
             3b. If DESIGN.md exists, read matching component tokens and color/typography refs for this Task (overrides Brief for pixel values)
             4. If design tool MCP is connected, find the design page corresponding to this Task through the design tool, read the exact values for that page and its components. Re-read for each Task, don't rely on memory
             5. Clarify the delivery goal for this Task: what functionality to implement, what visual result to achieve
+            5b. Confirm `cut_list` for this Task（或 `none`）。清单外不得新开组件/端口/schema。第三次同构必须抽。
 
             *(If Nature Gate skipped implementer, skip steps 6–9 below and write directly)*
 

@@ -13,6 +13,7 @@
         - Full review (/code-review) -> all Spec features
         - Phase review (triggered by dev-builder Phase completion verification) -> current Phase's delivery checklist
         - Task review (triggered by dev-builder per-Task review) -> current Task's delivery checklist
+        Locate `cut_list`（implementer 包 / 任务计划 / 或标 `none`）。design 维按 `../../_shared/cut-before-fill.md` 只挑战切口。
 
     [Step 2: Parallel Agent Dispatch] (for moderate/complex changes)
         **Default**: If `change_complexity` is omitted, treat as **simple** (quick aggregator pass only).

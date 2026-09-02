@@ -1,9 +1,12 @@
 package com.tepeu.os.llm;
 
+import com.tepeu.os.llm.local.OpenAiProjector;
+import com.tepeu.os.llm.local.AnthropicProjector;
+import com.tepeu.os.llm.local.CanonicalJson;
 import com.tepeu.os.observation.CanonicalTurn;
-import com.tepeu.os.observation.LogDeriver;
+import com.tepeu.os.observation.local.LogDeriver;
 import com.tepeu.os.observation.Observation;
-import com.tepeu.os.observation.SharedNormalizer;
+import com.tepeu.os.observation.local.SharedNormalizer;
 import com.tepeu.os.session.SessionEvent;
 import com.tepeu.os.syscall.Usage;
 

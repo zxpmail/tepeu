@@ -1,6 +1,7 @@
 package com.tepeu.os.bus.memory;
 
 import com.tepeu.os.bus.CapabilityBus;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.bus.conformance.BusConformance;
 import com.tepeu.os.conformance.ConformanceCase;
 import com.tepeu.os.policy.ApprovalStore;
@@ -21,7 +22,7 @@ class BusPortsTest {
         BusConformance.BusFactory factory = new BusConformance.BusFactory() {
             @Override
             public CapabilityBus newBus() {
-                return new InMemoryCapabilityBus();
+                return new LocalCapabilityBus();
             }
 
             @Override

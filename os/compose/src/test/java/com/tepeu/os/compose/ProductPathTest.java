@@ -5,16 +5,16 @@ import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.identity.WorkspaceId;
-import com.tepeu.os.llm.FakeLlmTransport;
+import com.tepeu.os.llm.local.FakeLlmTransport;
 import com.tepeu.os.loop.LoopConfig;
 import com.tepeu.os.loop.TurnOutcome;
 import com.tepeu.os.orchestration.KnowledgeSource;
-import com.tepeu.os.orchestration.PromptAssembly;
+import com.tepeu.os.orchestration.local.PromptAssembly;
 import com.tepeu.os.orchestration.memory.InMemoryKnowledgeSource;
 import com.tepeu.os.policy.memory.InMemoryApprovalStore;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEventType;
-import com.tepeu.os.session.SessionProjections;
+import com.tepeu.os.session.local.SessionProjections;
 import com.tepeu.os.session.memory.InMemoryAuditSink;
 import com.tepeu.os.session.memory.InMemorySessionStore;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class ProductPathTest {
                 new InMemoryApprovalStore(),
                 new InMemoryAuditSink(),
                 new FakeLlmTransport(),
-                com.tepeu.os.session.LedgerMetering.unlimited(),
+                com.tepeu.os.session.local.LedgerMetering.unlimited(),
                 Path.of("."),
                 MemoryAssembly.defaultPolicy());
         Session session = store.create(

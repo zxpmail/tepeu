@@ -19,7 +19,8 @@
 2. 对每个模块回答：  
    - 接口是否 **深而窄**（Ousterhout）？  
    - 是否与 **统一语言** / taste 一致？  
-   - 有无 **重复逻辑** 可合并（Surgical — 只提 1 个具体 refactor 建议）？  
+   - 角色档是否还在（端口 / persist / 测试夹具）？根包是否在摊实现？词汇层是否在堆 `*Utils`？（泥球前兆，见 `.forge/project-taste.md`）  
+   - 有无 **重复逻辑** 可合并（Surgical — 只提 1 个具体 refactor 建议；不为优雅打乱角色）？  
 3. 输出 **Health Notes**（≤20 行）+ **最多 3 条** 可执行建议（每条：目标文件、意图、Verify by）。  
 4. 重大决策 → 提议写入 `memory/decisions-log.md`；**不**自动改 DEV-PLAN 除非用户确认 replan。
 

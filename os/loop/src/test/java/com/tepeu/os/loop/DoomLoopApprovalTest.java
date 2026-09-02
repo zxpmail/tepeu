@@ -1,6 +1,7 @@
 package com.tepeu.os.loop;
 
-import com.tepeu.os.bus.memory.InMemoryCapabilityBus;
+import com.tepeu.os.loop.local.DoomLoopGuardHook;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
@@ -33,7 +34,7 @@ class DoomLoopApprovalTest {
                 Namespace.ofWorkspace(new WorkspaceId("doom-ws")),
                 Optional.empty());
         InMemoryApprovalStore approvals = new InMemoryApprovalStore();
-        InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
+        LocalCapabilityBus bus = new LocalCapabilityBus();
         bus.setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
         bus.setApprovalStore(approvals);
         bus.addGuardHook(new DoomLoopGuardHook(store));

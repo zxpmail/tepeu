@@ -15,7 +15,9 @@ import com.tepeu.os.orchestration.CommandResult;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEvent;
 import com.tepeu.os.session.SessionEventType;
-import com.tepeu.os.session.SessionProjections;
+import com.tepeu.os.session.local.SessionProjections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,6 +30,8 @@ import java.util.Optional;
  */
 @Component
 public final class CliSession {
+
+    private static final Logger log = LoggerFactory.getLogger(CliSession.class);
 
     private final MemoryAssembly.Wired kernel;
     private final Session session;
@@ -43,6 +47,7 @@ public final class CliSession {
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId(props.workspaceId()));
         this.session = kernel.sessions().create(owner, ns, Optional.empty());
         this.turnContext = new TurnContext(owner, ns, session.id(), Optional.empty());
+        log.info("component=host session={} surface=created", session.id().value());
     }
 
     SessionId sessionId() {
@@ -75,12 +80,17 @@ public final class CliSession {
     }
 
     private TurnOutcome handleSlash(String line) {
+        String name = CommandDispatcher.parse(line).map(CommandDispatcher.Parsed::name).orElse("-");
         CommandResult result = kernel.commands().dispatch(turnContext, session, line);
         if (!result.ok()) {
+            log.warn("component=host session={} surface=slash name={} ok=false",
+                    session.id().value(), name);
             System.out.println(result.output());
             return TurnOutcome.failed(0, result.output());
         }
         if (result.kind() == CommandKind.LOCAL) {
+            log.info("component=host session={} surface=slash name={} ok=true",
+                    session.id().value(), name);
             if (!result.output().isBlank()) {
                 System.out.println(result.output());
             }
@@ -92,6 +102,8 @@ public final class CliSession {
 
     private TurnOutcome runLoop() {
         TurnOutcome outcome = kernel.loop().run(turnContext, loopConfig);
+        log.info("component=host session={} surface=loop kind={} steps={}",
+                session.id().value(), outcome.kind(), outcome.steps());
         flushProjection();
         printOutcomeSummary(outcome);
         return outcome;

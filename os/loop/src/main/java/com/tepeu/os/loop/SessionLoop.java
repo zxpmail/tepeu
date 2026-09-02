@@ -8,7 +8,8 @@ import com.tepeu.os.policy.ApprovalRequiredException;
 import com.tepeu.os.policy.PolicyDeniedException;
 import com.tepeu.os.session.ClaimLease;
 import com.tepeu.os.session.InboxMessage;
-import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.loop.local.CompactionWork;
+import com.tepeu.os.session.local.LedgerMetering;
 import com.tepeu.os.session.Metering;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEventType;
@@ -16,6 +17,8 @@ import com.tepeu.os.session.SessionStore;
 import com.tepeu.os.syscall.Syscall;
 import com.tepeu.os.syscall.SyscallResult;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -39,6 +42,10 @@ public final class SessionLoop {
     public static final String REGISTER_STATE = "loop.state";
     public static final String REGISTER_LATCH = "loop.latch";
 
+    private static final Logger LOG = System.getLogger(SessionLoop.class.getName());
+    private static final String COMPONENT = "loop";
+    private static final String CLASS_NAME = SessionLoop.class.getSimpleName();
+
     private final SessionStore sessions;
     private final CapabilityBus bus;
     private final Metering metering;
@@ -59,37 +66,38 @@ public final class SessionLoop {
         Objects.requireNonNull(config, "config");
         Session session = sessions.get(ctx.sessionId()).orElse(null);
         if (session == null) {
-            return TurnOutcome.invalid("session not found");
+            return finish(ctx, TurnOutcome.invalid("session not found"));
         }
         synchronized (lockFor(session.id())) {
             LoopState current = readState(session);
             if (current != LoopState.IDLE) {
-                return TurnOutcome.invalid("loop.state=" + current);
+                return finish(ctx, TurnOutcome.invalid("loop.state=" + current));
             }
             if (config.maxSteps() < 1) {
-                return TurnOutcome.stopped(0, "maxSteps < 1");
+                return finish(ctx, TurnOutcome.stopped(0, "maxSteps < 1"));
             }
             boolean within;
             try {
                 within = metering.withinBudget(session);
             } catch (RuntimeException e) {
-                return TurnOutcome.failed(0, "metering failed (fail-closed): " + e.getMessage());
+                return finish(ctx, TurnOutcome.failed(0,
+                        "metering failed (fail-closed): " + String.valueOf(e.getMessage())));
             }
             if (!within) {
-                return TurnOutcome.stopped(0, "BUDGET");
+                return finish(ctx, TurnOutcome.stopped(0, "BUDGET"));
             }
             session.registers().put(REGISTER_STATE, LoopState.RUNNING.name());
             int steps = 0;
             try {
                 Optional<ClaimLease> leaseOpt = session.inbox().claimNext();
                 if (leaseOpt.isEmpty()) {
-                    return TurnOutcome.empty();
+                    return finish(ctx, TurnOutcome.empty());
                 }
                 ClaimLease lease = leaseOpt.get();
                 InboxMessage msg = session.inbox().claimed(lease.claimId()).orElse(null);
                 if (msg == null) {
                     session.inbox().nack(lease.claimId());
-                    return TurnOutcome.failed(0, "claimed message missing");
+                    return finish(ctx, TurnOutcome.failed(0, "claimed message missing"));
                 }
                 long userSeq;
                 try {
@@ -97,7 +105,7 @@ public final class SessionLoop {
                     session.inbox().ack(lease.claimId());
                 } catch (RuntimeException e) {
                     session.inbox().nack(lease.claimId());
-                    return TurnOutcome.failed(0, String.valueOf(e.getMessage()));
+                    return finish(ctx, TurnOutcome.failed(0, String.valueOf(e.getMessage())));
                 }
                 boolean wantsContinue = true;
                 while (wantsContinue && steps < config.maxSteps()) {
@@ -105,23 +113,24 @@ public final class SessionLoop {
                     try {
                         maybeCompactOverflow(session, ctx, config);
                     } catch (RuntimeException e) {
-                        return TurnOutcome.failed(steps, "overflow compact: " + e.getMessage());
+                        return finish(ctx, TurnOutcome.failed(steps,
+                                "overflow compact: " + String.valueOf(e.getMessage())));
                     }
                     SyscallResult result;
                     try {
                         result = bus.invoke(ctx, new Syscall(SYSCALL_GENERATE, generateArgs(config)));
                     } catch (BusGuardException | PolicyDeniedException | ApprovalRequiredException e) {
-                        return TurnOutcome.failed(steps, e.getMessage());
+                        return finish(ctx, TurnOutcome.failed(steps, String.valueOf(e.getMessage())));
                     }
                     if (!result.ok()) {
-                        return TurnOutcome.failed(steps,
-                                result.errorCode().orElse("FAILED") + ": " + result.output());
+                        return finish(ctx, TurnOutcome.failed(steps,
+                                result.errorCode().orElse("FAILED")));
                     }
                     Optional<ToolDirective> tool = ToolDirective.parse(result.output());
                     if (tool.isPresent()) {
                         TurnOutcome halt = invokeTool(session, ctx, tool.get(), steps);
                         if (halt != null) {
-                            return halt;
+                            return finish(ctx, halt);
                         }
                         continue;
                     }
@@ -131,22 +140,22 @@ public final class SessionLoop {
                         continue;
                     }
                     if (result.output().isBlank()) {
-                        return TurnOutcome.incomplete(steps,
-                                "reply requires non-blank ASSISTANT_MESSAGE");
+                        return finish(ctx, TurnOutcome.incomplete(steps,
+                                "reply requires non-blank ASSISTANT_MESSAGE"));
                     }
                     session.log().append(SessionEventType.ASSISTANT_MESSAGE, result.output(), Map.of());
                     wantsContinue = false;
                 }
                 if (wantsContinue) {
-                    return TurnOutcome.stopped(steps, "maxSteps reached");
+                    return finish(ctx, TurnOutcome.stopped(steps, "maxSteps reached"));
                 }
                 for (CompletionClaim claim : CompletionGate.infer(session, userSeq)) {
                     Optional<String> refuse = CompletionGate.refuseReason(session, claim, userSeq);
                     if (refuse.isPresent()) {
-                        return TurnOutcome.incomplete(steps, refuse.get());
+                        return finish(ctx, TurnOutcome.incomplete(steps, refuse.get()));
                     }
                 }
-                return TurnOutcome.completed(steps);
+                return finish(ctx, TurnOutcome.completed(steps));
             } finally {
                 session.registers().put(REGISTER_STATE, LoopState.IDLE.name());
             }
@@ -163,24 +172,25 @@ public final class SessionLoop {
         Objects.requireNonNull(work, "work");
         Session session = sessions.get(ctx.sessionId()).orElse(null);
         if (session == null) {
-            return TurnOutcome.invalid("session not found");
+            return finish(ctx, TurnOutcome.invalid("session not found"));
         }
         synchronized (lockFor(session.id())) {
             LoopState current = readState(session);
             if (current != LoopState.IDLE) {
-                return TurnOutcome.invalid("loop.state=" + current);
+                return finish(ctx, TurnOutcome.invalid("loop.state=" + current));
             }
             if (session.inbox().hasClaimableNow()) {
-                return TurnOutcome.stopped(0, "MAINTENANCE_NOW");
+                return finish(ctx, TurnOutcome.stopped(0, "MAINTENANCE_NOW"));
             }
             boolean within;
             try {
                 within = config.windowMetering().withinBudget(session);
             } catch (RuntimeException e) {
-                return TurnOutcome.failed(0, "metering failed (fail-closed): " + e.getMessage());
+                return finish(ctx, TurnOutcome.failed(0,
+                        "metering failed (fail-closed): " + String.valueOf(e.getMessage())));
             }
             if (!within) {
-                return TurnOutcome.stopped(0, "BUDGET");
+                return finish(ctx, TurnOutcome.stopped(0, "BUDGET"));
             }
             long latch = session.inbox().enqueued();
             session.registers().put(REGISTER_LATCH, Long.toString(latch));
@@ -190,20 +200,20 @@ public final class SessionLoop {
                 Instant deadline = config.clock().instant().plus(config.maxWindow());
                 while (true) {
                     if (!config.clock().instant().isBefore(deadline)) {
-                        return TurnOutcome.stopped(steps, "MAINTENANCE_LIMIT");
+                        return finish(ctx, TurnOutcome.stopped(steps, "MAINTENANCE_LIMIT"));
                     }
                     if (steps > 0 && session.inbox().hasClaimableNow()) {
-                        return TurnOutcome.stopped(steps, "MAINTENANCE_NOW");
+                        return finish(ctx, TurnOutcome.stopped(steps, "MAINTENANCE_NOW"));
                     }
                     boolean more;
                     try {
                         more = work.step(session, ctx);
                     } catch (RuntimeException e) {
-                        return TurnOutcome.failed(steps, String.valueOf(e.getMessage()));
+                        return finish(ctx, TurnOutcome.failed(steps, String.valueOf(e.getMessage())));
                     }
                     steps++;
                     if (!more) {
-                        return TurnOutcome.stopped(steps, "MAINTENANCE_DONE");
+                        return finish(ctx, TurnOutcome.stopped(steps, "MAINTENANCE_DONE"));
                     }
                 }
             } finally {
@@ -231,7 +241,7 @@ public final class SessionLoop {
         } catch (BusGuardException | PolicyDeniedException | ApprovalRequiredException e) {
             session.log().append(SessionEventType.TOOL_RESULT, String.valueOf(e.getMessage()),
                     interceptAttrs(interceptCode(e)));
-            return TurnOutcome.failed(steps, e.getMessage());
+            return TurnOutcome.failed(steps, String.valueOf(e.getMessage()));
         }
     }
 
@@ -248,6 +258,18 @@ public final class SessionLoop {
         }
         new CompactionWork(bus, config.model(), config.family(), config.compactKeepLast())
                 .step(session, ctx);
+    }
+
+    /** 引擎层一轮结局。不打 inbox / 模型正文。host 另记 CLI 面。 */
+    private static TurnOutcome finish(TurnContext ctx, TurnOutcome outcome) {
+        Level level = switch (outcome.kind()) {
+            case FAILED, INVALID -> Level.WARNING;
+            default -> Level.INFO;
+        };
+        LOG.log(level, "component={0} class={1} session={2} kind={3} steps={4} reason={5}",
+                COMPONENT, CLASS_NAME, ctx.sessionId().value(),
+                outcome.kind(), String.valueOf(outcome.steps()), outcome.detail());
+        return outcome;
     }
 
     static final String FS_WRITE = "execution.fs.write";

@@ -16,7 +16,7 @@ import com.tepeu.os.session.SessionInbox;
 import com.tepeu.os.session.SessionLedger;
 import com.tepeu.os.session.SessionLog;
 import com.tepeu.os.session.SessionRegisters;
-import com.tepeu.os.session.SurfaceEpoch;
+import com.tepeu.os.session.local.SurfaceEpoch;
 import com.tepeu.os.syscall.Usage;
 
 import java.time.Clock;

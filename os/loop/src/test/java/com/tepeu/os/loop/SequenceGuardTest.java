@@ -1,6 +1,7 @@
 package com.tepeu.os.loop;
 
-import com.tepeu.os.bus.memory.InMemoryCapabilityBus;
+import com.tepeu.os.loop.local.SequenceGuardHook;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
@@ -31,7 +32,7 @@ class SequenceGuardTest {
                 Principal.personal(new PrincipalId("seq-user")),
                 Namespace.ofWorkspace(new WorkspaceId("seq-ws")),
                 Optional.empty());
-        InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
+        LocalCapabilityBus bus = new LocalCapabilityBus();
         bus.setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
         bus.setApprovalStore(new InMemoryApprovalStore());
         bus.addGuardHook(new SequenceGuardHook(store));

@@ -5,12 +5,12 @@ import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
 import com.tepeu.os.identity.WorkspaceId;
-import com.tepeu.os.session.LocalProjectionBus;
+import com.tepeu.os.session.local.LocalProjectionBus;
 import com.tepeu.os.session.ProjectionBus;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEvent;
 import com.tepeu.os.session.SessionEventType;
-import com.tepeu.os.session.SessionProjections;
+import com.tepeu.os.session.local.SessionProjections;
 
 import java.time.Instant;
 import java.util.ArrayList;

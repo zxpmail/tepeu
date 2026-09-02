@@ -1,5 +1,9 @@
 package com.tepeu.os.llm;
 
+import com.tepeu.os.llm.local.LlmGenerateHandler;
+import com.tepeu.os.llm.local.AnthropicHttpTransport;
+import com.tepeu.os.llm.local.AnthropicProjector;
+import com.tepeu.os.llm.local.CanonicalJson;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;

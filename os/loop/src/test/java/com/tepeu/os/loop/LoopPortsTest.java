@@ -1,7 +1,7 @@
 package com.tepeu.os.loop;
 
 import com.tepeu.os.bus.CapabilityBus;
-import com.tepeu.os.bus.memory.InMemoryCapabilityBus;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.conformance.ConformanceCase;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
@@ -9,8 +9,8 @@ import com.tepeu.os.identity.PrincipalId;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.identity.WorkspaceId;
 import com.tepeu.os.loop.conformance.LoopConformance;
-import com.tepeu.os.loop.DoomLoopGuardHook;
-import com.tepeu.os.loop.SequenceGuardHook;
+import com.tepeu.os.loop.local.DoomLoopGuardHook;
+import com.tepeu.os.loop.local.SequenceGuardHook;
 import com.tepeu.os.policy.PolicyVerdict;
 import com.tepeu.os.policy.memory.InMemoryApprovalStore;
 import com.tepeu.os.session.Session;
@@ -33,7 +33,7 @@ class LoopPortsTest {
                     Principal.personal(new PrincipalId("loop-user")),
                     Namespace.ofWorkspace(new WorkspaceId("loop-ws")),
                     Optional.empty());
-            InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
+            LocalCapabilityBus bus = new LocalCapabilityBus();
             bus.setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
             bus.setApprovalStore(new InMemoryApprovalStore());
             bus.addGuardHook(new DoomLoopGuardHook(store));

@@ -1,5 +1,7 @@
 package com.tepeu.os.loop;
 
+import com.tepeu.os.loop.local.CompactionWork;
+
 import java.util.Objects;
 
 /**

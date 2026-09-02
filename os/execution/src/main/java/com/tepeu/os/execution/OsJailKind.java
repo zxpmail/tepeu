@@ -1,5 +1,8 @@
 package com.tepeu.os.execution;
 
+import com.tepeu.os.execution.local.BwrapJail;
+import com.tepeu.os.execution.local.WindowsJob;
+
 /**
  * OS 级进程 jail 探测。隔离仍报 {@link SandboxIsolation#PARTIAL}（无 landlock / 无受限令牌）。
  * 无 jail 时 spawn 必须失败可见。

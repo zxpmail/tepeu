@@ -1,6 +1,6 @@
 package com.tepeu.os.loop;
 
-import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.session.local.LedgerMetering;
 import com.tepeu.os.session.Metering;
 
 import java.time.Clock;

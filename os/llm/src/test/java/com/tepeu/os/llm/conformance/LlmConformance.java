@@ -2,13 +2,13 @@ package com.tepeu.os.llm.conformance;
 
 import com.tepeu.os.conformance.ConformanceCase;
 import com.tepeu.os.identity.TurnContext;
-import com.tepeu.os.llm.FakeLlmTransport;
-import com.tepeu.os.llm.LlmGenerateHandler;
+import com.tepeu.os.llm.local.FakeLlmTransport;
+import com.tepeu.os.llm.local.LlmGenerateHandler;
 import com.tepeu.os.llm.LlmTransport;
 import com.tepeu.os.llm.PreparedRequest;
 import com.tepeu.os.llm.ProtocolFamily;
-import com.tepeu.os.observation.LogDeriver;
-import com.tepeu.os.observation.SharedNormalizer;
+import com.tepeu.os.observation.local.LogDeriver;
+import com.tepeu.os.observation.local.SharedNormalizer;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEventType;
 import com.tepeu.os.session.SessionStore;

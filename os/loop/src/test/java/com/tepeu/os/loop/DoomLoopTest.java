@@ -1,5 +1,6 @@
 package com.tepeu.os.loop;
 
+import com.tepeu.os.loop.local.DoomLoop;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

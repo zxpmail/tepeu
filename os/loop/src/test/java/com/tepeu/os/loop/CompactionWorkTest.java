@@ -1,6 +1,7 @@
 package com.tepeu.os.loop;
 
-import com.tepeu.os.bus.memory.InMemoryCapabilityBus;
+import com.tepeu.os.loop.local.CompactionWork;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
@@ -31,7 +32,7 @@ class CompactionWorkTest {
                 Principal.personal(new PrincipalId("c-user")),
                 Namespace.ofWorkspace(new WorkspaceId("c-ws")),
                 Optional.empty());
-        InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
+        LocalCapabilityBus bus = new LocalCapabilityBus();
         bus.setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
         bus.setApprovalStore(new InMemoryApprovalStore());
         AtomicInteger llmCalls = new AtomicInteger();
@@ -71,7 +72,7 @@ class CompactionWorkTest {
         child.log().append(SessionEventType.USER_MESSAGE, "live-1", Map.of());
         child.log().append(SessionEventType.USER_MESSAGE, "live-2", Map.of());
         child.log().append(SessionEventType.USER_MESSAGE, "live-3", Map.of());
-        InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
+        LocalCapabilityBus bus = new LocalCapabilityBus();
         bus.setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
         bus.setApprovalStore(new InMemoryApprovalStore());
         bus.register(SessionLoop.SYSCALL_GENERATE, (ctx, call) -> SyscallResult.success("sum"));
@@ -95,7 +96,7 @@ class CompactionWorkTest {
                 Namespace.ofWorkspace(new WorkspaceId("c-ws")),
                 Optional.empty());
         session.log().append(SessionEventType.USER_MESSAGE, "only", Map.of());
-        InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
+        LocalCapabilityBus bus = new LocalCapabilityBus();
         bus.setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
         bus.setApprovalStore(new InMemoryApprovalStore());
         AtomicInteger llmCalls = new AtomicInteger();

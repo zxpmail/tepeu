@@ -1,33 +1,33 @@
 package com.tepeu.os.compose;
 
 import com.tepeu.os.bus.CapabilityBus;
-import com.tepeu.os.bus.memory.InMemoryCapabilityBus;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.execution.ExecutionNames;
-import com.tepeu.os.execution.FsReadHandler;
-import com.tepeu.os.execution.FsWriteHandler;
-import com.tepeu.os.execution.ProcSpawnHandler;
+import com.tepeu.os.execution.local.FsReadHandler;
+import com.tepeu.os.execution.local.FsWriteHandler;
+import com.tepeu.os.execution.local.ProcSpawnHandler;
 import com.tepeu.os.execution.SandboxPolicy;
-import com.tepeu.os.execution.SandboxProbeHandler;
-import com.tepeu.os.llm.LlmGenerateHandler;
+import com.tepeu.os.execution.local.SandboxProbeHandler;
+import com.tepeu.os.llm.local.LlmGenerateHandler;
 import com.tepeu.os.llm.LlmTransport;
-import com.tepeu.os.loop.DoomLoopGuardHook;
-import com.tepeu.os.loop.SequenceGuardHook;
+import com.tepeu.os.loop.local.DoomLoopGuardHook;
+import com.tepeu.os.loop.local.SequenceGuardHook;
 import com.tepeu.os.loop.SessionLoop;
-import com.tepeu.os.observation.ContextShapers;
+import com.tepeu.os.observation.local.ContextShapers;
 import com.tepeu.os.observation.Observation;
 import com.tepeu.os.orchestration.CommandDispatcher;
-import com.tepeu.os.orchestration.EmptyKnowledgeSource;
-import com.tepeu.os.orchestration.HelpCommand;
+import com.tepeu.os.orchestration.local.EmptyKnowledgeSource;
+import com.tepeu.os.orchestration.local.HelpCommand;
 import com.tepeu.os.orchestration.KnowledgeSource;
-import com.tepeu.os.orchestration.PromptAssembly;
+import com.tepeu.os.orchestration.local.PromptAssembly;
 import com.tepeu.os.policy.ApprovalStore;
-import com.tepeu.os.policy.DefaultRuleMatrix;
+import com.tepeu.os.policy.local.DefaultRuleMatrix;
 import com.tepeu.os.policy.PolicyHook;
-import com.tepeu.os.policy.PolicyRulesFile;
+import com.tepeu.os.policy.local.PolicyRulesFile;
 import com.tepeu.os.policy.persist.ApprovalPersistence;
 import com.tepeu.os.session.AuditSink;
 import com.tepeu.os.session.persist.SessionPersistence;
-import com.tepeu.os.session.LocalProjectionBus;
+import com.tepeu.os.session.local.LocalProjectionBus;
 import com.tepeu.os.session.Metering;
 import com.tepeu.os.session.ProjectionBus;
 import com.tepeu.os.persist.Persist;
@@ -54,7 +54,7 @@ public final class MemoryAssembly {
             CommandDispatcher commands,
             AuditSink audit,
             Path workspace,
-            /** 投影端口；本骨架默认 {@link LocalProjectionBus}，不是契约。MQ 升版可换。 */
+            /** 投影端口。业务只认接口；本机默认插头另接。 */
             ProjectionBus projection,
             KnowledgeSource knowledge,
             /** 发行路径由调用方注入 Persist；内存夹具为 null，close 时关内存 store。 */
@@ -157,7 +157,7 @@ public final class MemoryAssembly {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        InMemoryCapabilityBus bus = new InMemoryCapabilityBus();
+        LocalCapabilityBus bus = new LocalCapabilityBus();
         bus.setApprovalStore(approvals);
         bus.setPolicyHook(policy);
         bus.addGuardHook(new DoomLoopGuardHook(sessions));
@@ -170,7 +170,7 @@ public final class MemoryAssembly {
         CommandDispatcher commands = new CommandDispatcher();
         commands.register(new HelpCommand(commands));
         commands.register(new ApproveCommand(approvals, audit));
-        // 本骨架默认实现；业务只认 ProjectionBus 接口。MQ/Redis 升版再换，此处不引入 broker。
+        // 本机默认插头。升版换 MQ 时由此注入或改这一行，不要改 LocalProjectionBus。不引 broker。
         ProjectionBus projection = new LocalProjectionBus();
         KnowledgeSource knowledge = new EmptyKnowledgeSource();
         return new Wired(sessions, bus, approvals, loop, prompts, commands, audit, workspace, projection,
@@ -191,7 +191,7 @@ public final class MemoryAssembly {
         return rules.composePolicy();
     }
 
-    private static void registerExecution(InMemoryCapabilityBus bus, Path workspace) {
+    private static void registerExecution(LocalCapabilityBus bus, Path workspace) {
         SandboxPolicy sandbox = new SandboxPolicy(workspace);
         bus.register(ExecutionNames.FS_READ, new FsReadHandler(sandbox));
         bus.register(ExecutionNames.FS_WRITE, new FsWriteHandler(sandbox));

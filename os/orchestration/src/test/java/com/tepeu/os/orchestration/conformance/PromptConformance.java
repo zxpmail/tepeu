@@ -2,7 +2,7 @@ package com.tepeu.os.orchestration.conformance;
 
 import com.tepeu.os.conformance.ConformanceCase;
 import com.tepeu.os.orchestration.AssembledPrompt;
-import com.tepeu.os.orchestration.PromptAssembly;
+import com.tepeu.os.orchestration.local.PromptAssembly;
 import com.tepeu.os.orchestration.Section;
 import com.tepeu.os.orchestration.SectionKind;
 

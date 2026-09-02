@@ -1,6 +1,9 @@
 package com.tepeu.os.policy.persist;
 
-/** 审批库 DDL。persist 只负责执行。 */
+/**
+ * 审批库 DDL。persist 只负责 {@code script}，不拥有这些表。
+ * {@code args_digest} 与 syscall 参数绑定；{@code consumed} 保证 decide 后只能取走一次。
+ */
 final class ApprovalSchema {
 
     static final String DDL = """

@@ -131,8 +131,8 @@ Skill 细节 → `design-maker/references/design-md-freeze.md`、`templates/desi
 | # | 原则 | 一句话 |
 |---|------|--------|
 | 1 | Think Before Coding | 不猜；有歧义先问；有 tradeoff 先摆 |
-| 2 | Simplicity First | 最少代码；不写未来抽象 |
-| 3 | Surgical Changes | 只改必须改的 |
+| 2 | Simplicity First | 最少代码；不写未来抽象（第三次同构必须抽，见 cut-before-fill） |
+| 3 | Surgical Changes | 只改必须改的（清单内提取不算 drive-by） |
 | 4 | Goal-Driven Execution | 可验证成功标准；测试/检查循环直到通过 |
 
 详情 → `.claude/skills/*/SKILL.md` 内 Behavior Rules，或 `behavior-rules.md`

@@ -1,5 +1,6 @@
 package com.tepeu.os.policy;
 
+import com.tepeu.os.policy.local.CommandLineNormalizer;
 import com.tepeu.os.syscall.Syscall;
 import org.junit.jupiter.api.Test;
 

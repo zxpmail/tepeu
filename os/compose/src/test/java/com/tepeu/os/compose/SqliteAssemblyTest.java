@@ -2,7 +2,7 @@ package com.tepeu.os.compose;
 
 import com.tepeu.os.bus.CapabilityBus;
 import com.tepeu.os.bus.conformance.BusConformance;
-import com.tepeu.os.bus.memory.InMemoryCapabilityBus;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
@@ -118,7 +118,7 @@ class SqliteAssemblyTest {
         BusConformance.BusFactory factory = new BusConformance.BusFactory() {
             @Override
             public CapabilityBus newBus() {
-                return new InMemoryCapabilityBus();
+                return new LocalCapabilityBus();
             }
 
             @Override

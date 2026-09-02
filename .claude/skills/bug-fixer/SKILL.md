@@ -50,6 +50,7 @@ requires: []
 <!-- begin: shared-discipline -->
 [Shared Discipline]
     Karpathy 四原则 → `../_shared/karpathy-discipline.md`（bug 场景：先证据后改码；最小修复）
+    Bug 默认不抽类型/组件；例外见 `../_shared/cut-before-fill.md`「Bug 修复」
     只修 `auto-fix` finding；`ask-user`（意图/产品行为/死代码决策）已被上游 escalate → `../_shared/finding-actions.md`
 
 <!-- end: shared-discipline -->

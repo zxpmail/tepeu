@@ -1,5 +1,6 @@
 package com.tepeu.os.policy;
 
+import com.tepeu.os.policy.local.DefaultRuleMatrix;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;

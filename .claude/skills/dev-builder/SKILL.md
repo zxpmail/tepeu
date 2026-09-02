@@ -62,6 +62,7 @@ requires: []
 <!-- begin: shared-discipline -->
 [Shared Discipline]
     Karpathy 四原则 → `../_shared/karpathy-discipline.md`（全文 `core/docs/behavior-rules.md`）
+    切先于填 → `../_shared/cut-before-fill.md`（写码前 Cut List；第三次同构必须抽）
     finding 的 `action` 三分（auto-fix/ask-user/no-op）驱动 Step 14.6 立即 escalate → `../_shared/finding-actions.md`
 
 <!-- end: shared-discipline -->
@@ -100,7 +101,7 @@ requires: []
         ├── sub-agent-isolation.md
         ├── phase-completion-assessment.md
         └── zoom-out-pass.md
-    ../_shared/                     # 跨 Skill 共享指针
+    ../_shared/                     # 跨 Skill 共享指针（含 cut-before-fill.md）
     ```
 
 <!-- end: file-structure -->

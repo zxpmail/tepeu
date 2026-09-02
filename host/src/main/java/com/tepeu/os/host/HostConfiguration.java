@@ -2,19 +2,19 @@ package com.tepeu.os.host;
 
 import com.tepeu.os.compose.MemoryAssembly;
 import com.tepeu.os.compose.SqliteAssembly;
-import com.tepeu.os.llm.AnthropicHttpTransport;
-import com.tepeu.os.llm.FakeLlmTransport;
+import com.tepeu.os.llm.local.AnthropicHttpTransport;
+import com.tepeu.os.llm.local.FakeLlmTransport;
 import com.tepeu.os.llm.LlmTransport;
-import com.tepeu.os.llm.OpenAiHttpTransport;
+import com.tepeu.os.llm.local.OpenAiHttpTransport;
 import com.tepeu.os.llm.ProtocolFamily;
 import com.tepeu.os.loop.LoopConfig;
 import com.tepeu.os.orchestration.AssembledPrompt;
-import com.tepeu.os.orchestration.PromptAssembly;
+import com.tepeu.os.orchestration.local.PromptAssembly;
 import com.tepeu.os.orchestration.Section;
 import com.tepeu.os.persist.Persist;
 import com.tepeu.os.persist.PersistEngine;
 import com.tepeu.os.persist.PersistEngines;
-import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.session.local.LedgerMetering;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +23,12 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionCallback;
 
 import javax.sql.DataSource;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -47,15 +50,17 @@ class HostConfiguration {
     @Bean(destroyMethod = "close")
     @Primary
     Persist persist(TepeuHostProperties props) {
-        return Persist.jdbc(openDataSource(props.kernelJdbcUrl(), props.datasourceUsername(), props.datasourcePassword()));
+        return labeled("kernel", Persist.jdbc(openDataSource("kernel", props.kernelJdbcUrl(),
+                props.datasourceUsername(), props.datasourcePassword())));
     }
 
     @Bean(destroyMethod = "close")
     Persist approvalsPersist(TepeuHostProperties props) {
-        return Persist.jdbc(openDataSource(props.approvalsJdbcUrl(), props.datasourceUsername(), props.datasourcePassword()));
+        return labeled("approvals", Persist.jdbc(openDataSource("approvals", props.approvalsJdbcUrl(),
+                props.datasourceUsername(), props.datasourcePassword())));
     }
 
-    private static DataSource openDataSource(String url, String username, String password) {
+    private static DataSource openDataSource(String name, String url, String username, String password) {
         var builder = DataSourceBuilder.create().url(url);
         if (!username.isBlank()) {
             builder.username(username);
@@ -75,6 +80,7 @@ class HostConfiguration {
             }
         }
         engine.prepare(ds, url);
+        log.info("component=host persist={} prepared", name);
         return ds;
     }
 
@@ -95,22 +101,22 @@ class HostConfiguration {
     @Bean
     LlmTransport llmTransport(TepeuHostProperties props) {
         if (props.fakeLlm()) {
-            log.info("LLM: fake (tepeu.fake-llm=true)");
+            log.info("component=host llm=fake reason=flag");
             return new FakeLlmTransport();
         }
         Optional<ProtocolFamily> familyOpt = resolveTransportFamily(props);
         if (familyOpt.isEmpty()) {
-            log.warn("No API key (env or tepeu.api-key); using FakeLlmTransport");
+            log.warn("component=host llm=fake reason=no-key");
             return new FakeLlmTransport();
         }
         ProtocolFamily family = familyOpt.get();
         String key = resolveApiKey(props, family);
         if (key.isEmpty()) {
-            log.warn("No API key for family={}; using FakeLlmTransport", family.name().toLowerCase());
+            log.warn("component=host llm=fake family={} reason=no-key", family.name().toLowerCase());
             return new FakeLlmTransport();
         }
         String base = resolveBaseUrl(props, family);
-        log.info("LLM: {} baseUrl={}", family.name().toLowerCase(), base);
+        log.info("component=host llm={} baseUrl={}", family.name().toLowerCase(), base);
         return switch (family) {
             case OPENAI -> OpenAiHttpTransport.jdk(base, key);
             case ANTHROPIC -> AnthropicHttpTransport.jdk(base, key);
@@ -123,7 +129,7 @@ class HostConfiguration {
         ProtocolFamily family = resolveFamily(props, transport);
         String model = resolveModel(props, family);
         AssembledPrompt assembled = assemblePrompt(kernel.prompts(), props.promptBudget());
-        log.info("LoopConfig model={} family={}", model, family.name().toLowerCase());
+        log.info("component=host loop model={} family={}", model, family.name().toLowerCase());
         return new LoopConfig(model, family.name().toLowerCase(), assembled.system(), LoopConfig.DEFAULT_MAX_STEPS);
     }
 
@@ -149,7 +155,7 @@ class HostConfiguration {
             return fromEnv.strip();
         }
         if (notBlank(props.apiKey())) {
-            log.warn("Using tepeu.api-key from properties; prefer {} env for secrets", envName);
+            log.warn("component=host secret=properties prefer={}", envName);
             return props.apiKey().strip();
         }
         return "";
@@ -199,7 +205,7 @@ class HostConfiguration {
             return family == ProtocolFamily.OPENAI ? DEFAULT_OPENAI_MODEL : DEFAULT_ANTHROPIC_MODEL;
         }
         if (family == ProtocolFamily.OPENAI && DEFAULT_ANTHROPIC_MODEL.equals(model)) {
-            log.warn("tepeu.model looks Anthropic-default with OpenAI transport; using {}", DEFAULT_OPENAI_MODEL);
+            log.warn("component=host model=mismatch using={}", DEFAULT_OPENAI_MODEL);
             return DEFAULT_OPENAI_MODEL;
         }
         return model;
@@ -215,5 +221,51 @@ class HostConfiguration {
 
     private static boolean notBlank(String s) {
         return s != null && !s.isBlank();
+    }
+
+    /** host 标两套库。不进 Persist 口，避免看起来像第四 store。 */
+    private static Persist labeled(String name, Persist persist) {
+        return new HostPersist(name, persist);
+    }
+
+    private static final class HostPersist implements Persist {
+        private final String name;
+        private final Persist inner;
+
+        HostPersist(String name, Persist inner) {
+            this.name = Objects.requireNonNull(name, "name");
+            this.inner = Objects.requireNonNull(inner, "inner");
+        }
+
+        @Override
+        public JdbcTemplate jdbc() {
+            return inner.jdbc();
+        }
+
+        @Override
+        public <T> T tx(TransactionCallback<T> work) {
+            try {
+                return inner.tx(work);
+            } catch (RuntimeException e) {
+                log.warn("component=host persist={} tx failed type={}", name, e.getClass().getSimpleName());
+                throw e;
+            }
+        }
+
+        @Override
+        public void script(String ddl) {
+            inner.script(ddl);
+        }
+
+        @Override
+        public void close() {
+            try {
+                inner.close();
+            } catch (RuntimeException e) {
+                log.warn("component=host persist={} close failed type={}", name, e.getClass().getSimpleName());
+                throw e;
+            }
+            log.info("component=host persist={} closed", name);
+        }
     }
 }

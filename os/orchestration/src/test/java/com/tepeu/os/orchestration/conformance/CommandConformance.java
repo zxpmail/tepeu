@@ -10,7 +10,7 @@ import com.tepeu.os.orchestration.CommandDispatcher;
 import com.tepeu.os.orchestration.CommandHandler;
 import com.tepeu.os.orchestration.CommandKind;
 import com.tepeu.os.orchestration.CommandResult;
-import com.tepeu.os.orchestration.HelpCommand;
+import com.tepeu.os.orchestration.local.HelpCommand;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.memory.InMemorySessionStore;
 

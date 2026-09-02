@@ -20,11 +20,12 @@
 **Web-First**: Suspicious patterns or security concerns → WebSearch before concluding.
 
 **⚠️ 当前 Task 行动摘要（放在最后是因为注意力集中于此）**:
-1. 读 diff + 相关函数上下文
-2. 逐行审查：条件/边界/空值/async/错误处理
-3. 检查安全维度（XSS/路径泄露/凭据硬编码）+ 回归范围
-4. 每条 finding 有 file:line + 场景 + 影响 + 建议
-5. 编译通过 ≠ 功能正确——审查逻辑而非编译
-6. 按严重度排序 findings
+1. 读 diff + 相关函数上下文；先对 Cut List（或标 `none`）
+2. design 维只挑战切口（新组件/端口/schema/完成权/第三次该抽未抽）
+3. 逐行审查：条件/边界/空值/async/错误处理（bug 维）
+4. 检查安全维度（XSS/路径泄露/凭据硬编码）+ 回归范围
+5. 每条 finding 有 file:line + 场景 + 影响 + 建议 + `action`
+6. 方法级优雅 / 第二次重复 / 能机器化的 nit → Insight 或 `no-op`，不是 Must-fix
+7. 按严重度排序 findings
 
 **Transformer 注意力说明**：本文开头（Zero Trust Claims、Evidence is King）利用 primacy bias，结尾（本摘要）利用 recency bias。中间的内容重复出现时会自动引起注意——模型是模式匹配系统，读到 Step 编号或具体命令时自然加权。

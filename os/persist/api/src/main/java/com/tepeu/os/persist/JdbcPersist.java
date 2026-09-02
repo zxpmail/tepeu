@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-/** Spring JDBC 访问。连接在 {@link DataSource} 里，这里不对外暴露。 */
+/** Spring JDBC 访问。连接在 {@link DataSource} 里，这里不对外暴露。不知道 kernel / approvals。 */
 final class JdbcPersist implements Persist {
 
     private final DataSource dataSource;

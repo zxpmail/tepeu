@@ -25,7 +25,7 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 冲突时：**ADR-016 > 底板 > 手册独有章 > v1 规格**。参照在 `docs/archive/`。禁止再开对账轮、再写第三份投影。
 
 吸收：`docs/legacy-absorption.md` · `docs/work-docs-absorption.md` · `docs/archive/reference/gnex3-reference.md` · `docs/archive/reference/agent-runtime-security-series.md`（九宫格对账；Gate=边界脚本；Observation 已开 jar；gate/response 空 jar 不预开）  
-勿吸内核：`tencent-harness-engineering.md`（AI Coding）；`ai-eval-observability-pipeline.md`（评测可观测运维）；`terax-ai.md`（⑤ ADE 产品，不同线）；`grok-bot-reference.md`（⑤ Computer-Use + 重建 host；WAL/完成通道/`directionEpoch` 可扫，勿按 35 槽改组件；Router/Local Docker 是重建新增）；`maka-reference.md`（log-first 同线工作台；机制可扫，勿开 Graph/Eval jar，勿降级 `llm.*` 断言）；`genericagent-reference.md`（个人 Computer-Use + 技能自结晶；不同线，循环自报完成，不吸）；`goose-reference.md`（Rust 本机 Agent + MCP；状态=对话投影已有同形，不吸 AlwaysAllow / 调度器）；`deer-flow-reference.md`（LangGraph 超级 Agent 工作台；`/goal`+评估器当完成门，不吸）；`lifeos-reference.md`（个人意图层，骑在 CC 一类 harness 上；名字带 OS，不是内核）；`aios-reference.md`（学术「LLM as OS」；C4/C5/C6 已落，不因 HEAD 再开调度）；`osone-ai-reference.md`（Gemini+Tuya 家居 Jarvis；不同线）；`osone-reference.md`（Common-joeAI 愿景仓；叙事空壳，勿与前者混）；`earthwalker-agent-os-reference.md`（本机编码 harness；绿构建当完成，不进内核）
+勿吸内核：`spacexp-structure.md`（结构标本，不吸 Spring starter）；`tencent-harness-engineering.md`（AI Coding）；`ai-eval-observability-pipeline.md`（评测可观测运维）；`terax-ai.md`（⑤ ADE 产品，不同线）；`grok-bot-reference.md`（⑤ Computer-Use + 重建 host；WAL/完成通道/`directionEpoch` 可扫，勿按 35 槽改组件；Router/Local Docker 是重建新增）；`maka-reference.md`（log-first 同线工作台；机制可扫，勿开 Graph/Eval jar，勿降级 `llm.*` 断言）；`genericagent-reference.md`（个人 Computer-Use + 技能自结晶；不同线，循环自报完成，不吸）；`goose-reference.md`（Rust 本机 Agent + MCP；状态=对话投影已有同形，不吸 AlwaysAllow / 调度器）；`deer-flow-reference.md`（LangGraph 超级 Agent 工作台；`/goal`+评估器当完成门，不吸）；`lifeos-reference.md`（个人意图层，骑在 CC 一类 harness 上；名字带 OS，不是内核）；`aios-reference.md`（学术「LLM as OS」；C4/C5/C6 已落，不因 HEAD 再开调度）；`osone-ai-reference.md`（Gemini+Tuya 家居 Jarvis；不同线）；`osone-reference.md`（Common-joeAI 愿景仓；叙事空壳，勿与前者混）；`earthwalker-agent-os-reference.md`（本机编码 harness；绿构建当完成，不进内核）；`openclaw-reference.md`（Gateway+频道助手；可信面/策略在代码已有同形，默认沙箱关不抄）
 
 ## Gotchas（develop 仍有效）
 
@@ -33,8 +33,8 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件
 - 不要把新能力倒进「大包」；领域默认跟组件走。JDBC/方言只在 `persist`。组件 ≠ 插件（无 Ctx / 无热插）
 - Loop 不依赖 orchestration：`LoopConfig.system` 只转发；assemble 是调用方纪律
-- `identity`/`syscall` 是词汇；`session` 是组件：边界写在 `package-info` / 端口 Javadoc；词汇与 session **不**加 slf4j（真相=entries/ledger/AuditSink；运维 log 在 host）。`LocalProjectionBus` 用 JDK `System.Logger` 记 drop/消费者失败，不进 entries。`persist.sqlite` 同样：开库/关库/JDBC 回滚走 `System.Logger`（`component=persist class=...`），SQL 行不进运维日志
-- persist：访问口是 `Persist`（jdbc/tx/script）；引擎口是 `PersistEngine`（ServiceLoader）。session/policy 不建连接、不关库。host `DataSourceBuilder` 后 `Persist.jdbc`。`SqliteDataSources.access` 是测试夹具。换方言仍改适配器 SQL。`os/` 依赖 spring-jdbc 7.0.8，不起 Boot 容器，不上 ORM。会话内存夹具在 `src/test/.../memory`，经 test-jar 给下游测试。`InMemory*` 仅测试夹具。`ProjectionBus` 是接口（本机路径也只认接口）；`LocalProjectionBus` 是本骨架默认实现，不是第二份契约。其他组件可实现可不实现、可不订阅。MQ/Redis/NATS 升版再换，本骨架不引入 broker。模型可见管道在 `observation`（入口 `Observation.view`）；llm 只投影+传输。端口验收套件在各组件 `src/test`，不进发行 jar。任务收口须记 `task-history`
+- `identity`/`syscall` 是词汇；`session` 是组件：边界写在 `package-info` / 端口 Javadoc；词汇与 session **不**加 slf4j（真相=entries/ledger/AuditSink）。运维日志分层、禁止挂到 Persist 口：loop=`kind/steps/reason`；bus=拦截；host=`component=host persist=kernel|approvals` 与 `surface=`。`Persist` 不知道哪套库。不抽日志工具袋。不打 SQL / args / digest / 密钥 / 正文
+- persist：访问口是 `Persist`（jdbc/tx/script）；引擎口是 `PersistEngine`（ServiceLoader）。session/policy 不建连接、不关库。host `DataSourceBuilder` 后 `Persist.jdbc`。`SqliteDataSources.access` 是测试夹具。换方言仍改适配器 SQL。`os/` 依赖 spring-jdbc 7.0.8，不起 Boot 容器，不上 ORM。会话内存夹具在 `src/test/.../memory`，经 test-jar 给下游测试。`InMemory*` 仅测试夹具。本机默认实现在各组件 `*.local`（如 `LocalCapabilityBus`、`LocalProjectionBus`）；根包只留端口/聚合口/值对象。`ProjectionBus` 是接口（本机路径也只认接口）；`LocalProjectionBus` 不是第二份契约。其他组件可实现可不实现、可不订阅。MQ/Redis/NATS 升版再换，本骨架不引入 broker。模型可见管道在 `observation`（入口 `Observation.view`）；llm 只投影+传输。端口验收套件在各组件 `src/test`，不进发行 jar。任务收口须记 `task-history`
 - **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离仍是 **partial**。compose 不读密钥。`InMemoryAssembly` 不得当生产默认
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名
@@ -42,3 +42,5 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 - 「OS」= 分层纪律，不是完整 OS。内核有 Inbox/claim，**没有调度器**。不为了更像 OS 开调度切片。不要改成「按 CC 模式做」；CC 只吸 ③ 机制
 - 不要在 `legacy/` 加功能
 - `Product-Spec` 七层 / 四智能体 / 记忆 P0 / WASM+V8 **不是** `os/` 现状
+- **切先于填**（`.claude/skills/_shared/cut-before-fill.md`）：写码前切口清单或 `none`；新组件/端口/schema/完成权先问；第三份同构必须抽；人审只审切口。实现纪律「不写未来抽象」不得盖过这条。纹理对着 `.forge/project-taste.md` 的近邻，不另起组织法
+- **结构标本 spaceXP**（[zxpmail/spaceXP](https://github.com/zxpmail/spaceXP)，`docs/archive/reference/spacexp-structure.md`）：学「一件事一个模块 + 模块内角色固定」。不吸 Spring starter / AOP / common-utils。不因对照重切已有根包。结构糊 = 泥球 = 日抛；土可以留，角色放错必须改

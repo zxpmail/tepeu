@@ -6,7 +6,7 @@ import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.identity.WorkspaceId;
-import com.tepeu.os.loop.CompactionWork;
+import com.tepeu.os.loop.local.CompactionWork;
 import com.tepeu.os.loop.LoopConfig;
 import com.tepeu.os.loop.MaintenanceConfig;
 import com.tepeu.os.loop.TurnOutcome;

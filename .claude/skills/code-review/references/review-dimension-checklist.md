@@ -31,6 +31,16 @@
         - Extra pages/routes, API endpoints, database tables or fields, out-of-scope UI components
         - Mark as "Spec Drift" — could be a good extension or scope creep
 
+    [Cut List Audit] (mandatory for design / diff review)
+        协议 → `../../_shared/cut-before-fill.md`。design 维只挑战切口，不把方法级优雅写成 Must-fix。
+        - Diff 是否发明了清单外的新组件 / 新端口 / 新 public 类型 / schema / 完成权出口？
+        - 本组件是否出现第三份同构却未抽？行为是否已有端口、调用方又写了一份？
+        - 该成组件或端口的东西是否被塞进现有大文件？
+        - 方法级命名/helper「不够优雅」、第二次重复 → Insight 或 `action: no-op`，不是 Must-fix
+        - 格式 / lint / 能写成 ArchUnit 或模块测试的 import 方向 → Insight，写「应下沉机器门」
+
+        切口争议（新 jar、新端口、schema、完成权）→ `action: ask-user`，禁止当 nit 自修。
+
     [Surgical Changes Audit] (mandatory for diff review)
         Check every changed line against the original request scope:
         - Does each changed line trace directly to the user's request or a Spec item?
@@ -38,6 +48,7 @@
         - Are there "drive-by refactors" that clean up adjacent code? (violation)
         - Was pre-existing dead code removed? (violation — mention only, don't delete)
         - Only YOUR changes' orphans (unused imports/vars) are legitimately removed
+        - **例外**：`cut_list` 上的提取、第三次强制抽，不是 drive-by
 
         Track every violating line with file:line — flag as "Surgical Violation" in review report.
 
@@ -47,6 +58,7 @@
         - Error handling for impossible scenarios (defensive checks for conditions that can't happen)
         - "Flexibility" / "configurability" that wasn't requested
         - Code that's 200+ lines when 50 would do
+        - **例外**：第三次同构必须抽，不算 speculative abstraction
 
         Flag each instance with file:line + why it's over-engineering.
 

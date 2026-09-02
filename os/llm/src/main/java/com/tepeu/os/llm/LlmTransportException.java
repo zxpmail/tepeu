@@ -1,7 +1,7 @@
 package com.tepeu.os.llm;
 
 /**
- * 传输失败可见 — 不抛穿成 handler 崩溃；由 {@link LlmGenerateHandler} 收成 ok=false。
+ * 传输失败可见 — 不抛穿成 handler 崩溃；由 {@link com.tepeu.os.llm.local.LlmGenerateHandler} 收成 ok=false。
  */
 public final class LlmTransportException extends RuntimeException {
 

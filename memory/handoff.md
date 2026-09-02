@@ -3,7 +3,7 @@
 > 到达后阅读序：本文件 → `CONTEXT.md` → `docs/os-baseplate.md` → `docs/os-handbook.md` + `docs/agent-os-gap.md` → `memory/project-memory.md` + `memory/decisions-log.md`（ADR-016）。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 规范。
 
-**Last updated**: 2026-08-31（Maka 对账入档；未改内核）
+**Last updated**: 2026-09-02（日志防泥球：Persist 口不挂 name，身份在 host）
 
 ## 当前阶段
 
@@ -71,6 +71,18 @@
 - 同日 [OSONE-AI](https://github.com/zerobob623-bit/OSONE-AI)：家居 Jarvis。无吸收项。见 `osone-ai-reference.md`。
 - 同日 [OSONE](https://github.com/Common-joeAI/OSONE)：愿景空壳。无吸收项。见 `osone-reference.md`。勿与 OSONE-AI 混。
 - 同日 [earthwalker/agent-os](https://github.com/earthwalker17/agent-os)：编码 harness。无新吸收项。见 `earthwalker-agent-os-reference.md`。勿与本仓 `agent-os-gap.md` 混。
+- 同日 [OpenClaw](https://github.com/openclaw/openclaw)：⑤ Gateway 助手。无新吸收项。见 `openclaw-reference.md`。
+
+## 过程纪律（2026-09-02）
+
+- 写业务代码前先给 **Cut List**（或 `none`）。协议：`.claude/skills/_shared/cut-before-fill.md`
+- 新组件 / 新端口 / schema / 完成权 → 黄/红灯，先问
+- 本组件第三份同构必须抽；人审只审切口
+- 纹理：`.forge/project-taste.md`（端口 / `*.local` / persist / 测试夹具）
+- spaceXP 只当结构标本：`docs/archive/reference/spacexp-structure.md`。不进底板
+- 2026-09-02：`os/` 本机实现迁入 `*.local`。`InMemoryCapabilityBus` 更名为 `LocalCapabilityBus`。未新开 jar、未改完成权/schema
+- 2026-09-02：补必要运维日志（JDK `System.Logger`，`component=X class=Y`）。Loop 一轮结局；总线拦截不打 ALLOW；Compaction 真 `replaceRange`；persist 开库/关库/回滚；host CLI 会话/slash/loop。不打 SQL / args / 正文 / 密钥。无新组件
+- 2026-09-02：日志分层后防泥球。`Persist` 口只有 `jdbc(ds)`，不挂 name。host 内 `HostPersist` 标 kernel/approvals；SqliteEngine 只记 prepare 失败；host 行统一 `component=host`。generate 失败不打正文。
 
 ## 待办
 

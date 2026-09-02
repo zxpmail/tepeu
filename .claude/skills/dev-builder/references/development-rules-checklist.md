@@ -16,6 +16,7 @@
         - No unrelated refactoring — only touch what needs changing, don't "fix up" other things
         - Follow the existing codebase style — don't force your own preferences
         - YAGNI: Don't write code for hypothetical future requirements
+        - Third isomorphic copy in the same component must be extracted (`../../_shared/cut-before-fill.md`); that is not future-proofing
 
     [CSS Sanity Check]
         AI-generated CSS has blind spots — it looks right in code but renders wrong. Run this check before any UI Phase verification (tests, build, QA, or commit). Scan for these common bugs:

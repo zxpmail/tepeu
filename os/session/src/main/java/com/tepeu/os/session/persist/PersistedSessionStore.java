@@ -14,7 +14,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionCallback;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,7 +59,7 @@ final class PersistedSessionStore implements SessionStore {
                     owner.displayName().orElse(null),
                     namespace.workspaceId().value(),
                     namespace.tenantId().orElse(null),
-                    parent.map(SessionId::value).orElse(null));
+                    parent.isPresent() ? parent.get().value() : null);
             return null;
         });
         return new PersistedSession(this, id);

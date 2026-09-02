@@ -1,5 +1,8 @@
 package com.tepeu.os.observation;
 
+import com.tepeu.os.observation.local.ContextShapers;
+import com.tepeu.os.observation.local.LogDeriver;
+import com.tepeu.os.observation.local.SharedNormalizer;
 import com.tepeu.os.session.Session;
 import com.tepeu.os.session.SessionEvent;
 

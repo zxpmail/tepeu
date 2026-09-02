@@ -16,10 +16,12 @@ import com.tepeu.os.session.SessionInbox;
 import com.tepeu.os.session.SessionLedger;
 import com.tepeu.os.session.SessionLog;
 import com.tepeu.os.session.SessionRegisters;
-import com.tepeu.os.session.SurfaceEpoch;
+import com.tepeu.os.session.local.SurfaceEpoch;
 import com.tepeu.os.syscall.Usage;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -32,8 +34,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-/** 一会话行上的聚合。对外只经 {@link SessionPersistence}。 */
+/**
+ * 一会话行上的聚合。对外只经 {@link SessionPersistence}。
+ * <p>
+ * SQL 在适配器里跑，真相仍进 events / ledger / registers。
+ * 不写 slf4j，不打每一行 SQL、不打每次 append / enqueue。
+ * 只在 recover 补了洞、或 replaceRange 改了 surface 时记一条 JDK 诊断。
+ */
 final class PersistedSession implements Session {
+
+    private static final Logger LOG = System.getLogger(PersistedSession.class.getName());
+    private static final String COMPONENT = "session";
+    private static final String CLASS_NAME = PersistedSession.class.getSimpleName();
 
     private final PersistedSessionStore store;
     private final SessionId id;
@@ -118,6 +130,7 @@ final class PersistedSession implements Session {
         return blobs;
     }
 
+    /** 补未配对的 TOOL_RESULT，并把 loop.state 拉回 IDLE。没补洞就不打日志。 */
     @Override
     public int recover() {
         return store.tx(status -> {
@@ -139,8 +152,15 @@ final class PersistedSession implements Session {
             List<String> state = jdbc.query(
                     "SELECT v FROM registers WHERE session_id=? AND k='loop.state'",
                     (rs, n) -> rs.getString(1), id.value());
+            boolean resetIdle = false;
             if (!state.isEmpty() && !"IDLE".equals(state.get(0))) {
                 PersistedSessionStore.putRegister(jdbc, id.value(), "loop.state", "IDLE");
+                resetIdle = true;
+            }
+            if (unpaired > 0 || resetIdle) {
+                LOG.log(Level.DEBUG,
+                        "component={0} class={1} session={2} recover unpaired={3} loopStateIdle={4}",
+                        COMPONENT, CLASS_NAME, id.value(), unpaired, resetIdle);
             }
             return unpaired;
         });
@@ -196,6 +216,7 @@ final class PersistedSession implements Session {
     }
 
     private final class Surface implements LogReplacePort {
+        /** 压缩窗：entries 不删，改 surface。记一条诊断，不打 checkpoint 正文。 */
         @Override
         public long replaceRange(long fromSeq, long toSeq, String checkpointBody) {
             if (fromSeq <= 0 || fromSeq > toSeq) {
@@ -235,6 +256,9 @@ final class PersistedSession implements Session {
                 jdbc.update("UPDATE sessions SET surface_explicit=1 WHERE id=?", id.value());
                 PersistedSessionStore.putRegister(jdbc, id.value(), SurfaceEpoch.KEY,
                         SurfaceEpoch.next(PersistedSessionStore.getRegister(jdbc, id.value(), SurfaceEpoch.KEY)));
+                LOG.log(Level.DEBUG,
+                        "component={0} class={1} session={2} replaceRange from={3} to={4} checkpointSeq={5}",
+                        COMPONENT, CLASS_NAME, id.value(), fromSeq, toSeq, seq);
                 return seq;
             });
         }

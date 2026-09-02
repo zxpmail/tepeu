@@ -65,7 +65,8 @@
 **⚠️ 当前 Task 行动摘要（放在最后是因为注意力集中于此）**:
 1. 读 Difficulty（🔴 放慢/🟢 快速）+ 读 Phase Nature（Backend/Data → dispatch implementer；UI/Integration → 直接写）+ 读 Spec + UI-Spec.md（如有）+ DESIGN.md（如有，样式数值优先）
 2. **YAGNI 检查**（按 `FORGE_SIMPLIFY` 级别执行：ultra=必做，full=🔴高难度必做/🟢低难度可选，lite/off=跳过）：读当前 Task 描述，自问"这段代码真的需要存在吗？项目已有依赖或自研库能解决吗？"如需跳过简化，在代码旁加 `// NOTE: <跳过理由>`。
-3. 感知天理——扫一眼已有代码风格
+3. 感知天理——扫一眼已有代码风格（同一组件近邻当纹理）
+3b. **Cut List**（`../../_shared/cut-before-fill.md`）— 先切再填；`none` 合法；第三次同构必须抽；新组件/端口/schema/完成权先问
 4. RED（先写测试）→ GREEN（最小实现）→ REFACTOR（Backend/Data Nature 时走 implementer；UI/Integration Nature 时主 session 直接写）
 5. 生成后自审 + Micro-cycle verify（≤10 min）
 6. **Phase 完成 → 读 gc-audit-routing.md 决策表 → 按影响范围执行审计**

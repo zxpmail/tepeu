@@ -1,9 +1,9 @@
 package com.tepeu.os.compose;
 
-import com.tepeu.os.llm.FakeLlmTransport;
+import com.tepeu.os.llm.local.FakeLlmTransport;
 import com.tepeu.os.llm.LlmTransport;
 import com.tepeu.os.policy.memory.InMemoryApprovalStore;
-import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.session.local.LedgerMetering;
 import com.tepeu.os.session.Metering;
 import com.tepeu.os.session.memory.InMemoryAuditSink;
 import com.tepeu.os.session.memory.InMemorySessionStore;

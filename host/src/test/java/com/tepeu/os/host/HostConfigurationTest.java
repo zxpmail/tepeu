@@ -1,8 +1,8 @@
 package com.tepeu.os.host;
 
-import com.tepeu.os.llm.FakeLlmTransport;
+import com.tepeu.os.llm.local.FakeLlmTransport;
 import com.tepeu.os.llm.ProtocolFamily;
-import com.tepeu.os.orchestration.PromptAssembly;
+import com.tepeu.os.orchestration.local.PromptAssembly;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

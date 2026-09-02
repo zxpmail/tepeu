@@ -1,10 +1,10 @@
 package com.tepeu.os.compose;
 
-import com.tepeu.os.llm.FakeLlmTransport;
+import com.tepeu.os.llm.local.FakeLlmTransport;
 import com.tepeu.os.llm.LlmTransport;
 import com.tepeu.os.persist.Persist;
-import com.tepeu.os.policy.PolicyRulesFile;
-import com.tepeu.os.session.LedgerMetering;
+import com.tepeu.os.policy.local.PolicyRulesFile;
+import com.tepeu.os.session.local.LedgerMetering;
 import com.tepeu.os.session.Metering;
 import java.io.IOException;
 import java.io.UncheckedIOException;

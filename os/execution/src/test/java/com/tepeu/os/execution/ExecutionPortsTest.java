@@ -1,5 +1,10 @@
 package com.tepeu.os.execution;
 
+import com.tepeu.os.execution.local.FsReadHandler;
+import com.tepeu.os.execution.local.FsWriteHandler;
+import com.tepeu.os.execution.local.ProcSpawnHandler;
+import com.tepeu.os.execution.local.SandboxProbeHandler;
+import com.tepeu.os.execution.local.WorkspaceJail;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
