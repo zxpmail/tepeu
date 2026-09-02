@@ -1,8 +1,7 @@
-package com.tepeu.os.bus.memory;
+package com.tepeu.os.bus;
 
-import com.tepeu.os.bus.CapabilityBus;
-import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.bus.conformance.BusConformance;
+import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.conformance.ConformanceCase;
 import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.memory.InMemoryApprovalStore;

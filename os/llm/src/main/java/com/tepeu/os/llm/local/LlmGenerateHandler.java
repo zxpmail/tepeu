@@ -52,14 +52,14 @@ public final class LlmGenerateHandler implements SyscallHandler {
         try {
             family = ProtocolFamily.parse(syscall.args().get("family"));
         } catch (IllegalArgumentException e) {
-            return SyscallResult.failure("CONFIG", e.getMessage());
+            return SyscallResult.failure("CONFIG", String.valueOf(e.getMessage()));
         }
         String system = syscall.args().getOrDefault("system", "");
         int maxTokens;
         try {
             maxTokens = parseMaxTokens(syscall.args().get("max_tokens"));
         } catch (IllegalArgumentException e) {
-            return SyscallResult.failure("CONFIG", e.getMessage());
+            return SyscallResult.failure("CONFIG", String.valueOf(e.getMessage()));
         }
         Session session = sessions.get(ctx.sessionId()).orElse(null);
         if (session == null) {
@@ -70,7 +70,7 @@ public final class LlmGenerateHandler implements SyscallHandler {
         if (replay != null) {
             return replay;
         }
-        PreparedRequest prepared = LlmTransport.prepare(surface, family, model, system, maxTokens);
+        PreparedRequest prepared = LlmTransports.prepare(surface, family, model, system, maxTokens);
         LlmTransport.Reply reply;
         long started = System.nanoTime();
         try {
@@ -97,7 +97,12 @@ public final class LlmGenerateHandler implements SyscallHandler {
         if (!recordedEpoch.equals(currentEpoch)) {
             return null;
         }
-        long throughSeq = Long.parseLong(attrs.getOrDefault("throughSeq", "0"));
+        long throughSeq;
+        try {
+            throughSeq = Long.parseLong(attrs.getOrDefault("throughSeq", "0"));
+        } catch (NumberFormatException e) {
+            return SyscallResult.failure("ASSERTION", "previous llm throughSeq");
+        }
         List<SessionEvent> prefix = new ArrayList<>();
         for (SessionEvent event : surface) {
             if (event.seq() <= throughSeq) {
@@ -111,7 +116,7 @@ public final class LlmGenerateHandler implements SyscallHandler {
         } catch (IllegalArgumentException e) {
             return SyscallResult.failure("ASSERTION", "previous llm maxTokens: " + e.getMessage());
         }
-        PreparedRequest replay = LlmTransport.prepare(
+        PreparedRequest replay = LlmTransports.prepare(
                 prefix,
                 family,
                 attrs.getOrDefault("model", ""),

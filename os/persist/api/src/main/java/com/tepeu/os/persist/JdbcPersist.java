@@ -49,7 +49,6 @@ final class JdbcPersist implements Persist {
         if (closed) {
             return;
         }
-        closed = true;
         if (dataSource instanceof AutoCloseable c) {
             try {
                 c.close();
@@ -57,5 +56,6 @@ final class JdbcPersist implements Persist {
                 throw new IllegalStateException("close persist", e);
             }
         }
+        closed = true;
     }
 }

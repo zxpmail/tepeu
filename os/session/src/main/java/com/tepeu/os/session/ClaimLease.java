@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public record ClaimLease(String claimId, String messageId, Instant expiresAt) {
 
-    /** 本机默认租约时长；memory / sqlite 实现与 conformance 共用此值。 */
+    /** 本机默认租约时长；persist 适配与测试夹具、conformance 共用此值。 */
     public static final Duration DEFAULT_TTL = Duration.ofSeconds(300);
 
     public ClaimLease {

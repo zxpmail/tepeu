@@ -1,7 +1,5 @@
 package com.tepeu.os.loop;
 
-import com.tepeu.os.loop.local.CompactionWork;
-
 import java.util.Objects;
 
 /**
@@ -18,6 +16,7 @@ public record LoopConfig(
 
     public static final int DEFAULT_MAX_STEPS = 8;
     public static final int DEFAULT_COMPACT_OVERFLOW = 40;
+    public static final int DEFAULT_COMPACT_KEEP_LAST = 4;
 
     public LoopConfig {
         Objects.requireNonNull(model, "model");
@@ -41,7 +40,7 @@ public record LoopConfig(
     }
 
     public LoopConfig(String model, String family, String system, int maxSteps) {
-        this(model, family, system, maxSteps, DEFAULT_COMPACT_OVERFLOW, CompactionWork.DEFAULT_KEEP_LAST);
+        this(model, family, system, maxSteps, DEFAULT_COMPACT_OVERFLOW, DEFAULT_COMPACT_KEEP_LAST);
     }
 
     public static LoopConfig of(String model) {

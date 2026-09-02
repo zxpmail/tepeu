@@ -5,6 +5,7 @@ import com.tepeu.os.bus.local.LocalCapabilityBus;
 import com.tepeu.os.execution.ExecutionNames;
 import com.tepeu.os.execution.local.FsReadHandler;
 import com.tepeu.os.execution.local.FsWriteHandler;
+import com.tepeu.os.execution.local.OsJails;
 import com.tepeu.os.execution.local.ProcSpawnHandler;
 import com.tepeu.os.execution.SandboxPolicy;
 import com.tepeu.os.execution.local.SandboxProbeHandler;
@@ -57,33 +58,16 @@ public final class MemoryAssembly {
             /** 投影端口。业务只认接口；本机默认插头另接。 */
             ProjectionBus projection,
             KnowledgeSource knowledge,
-            /** 发行路径由调用方注入 Persist；内存夹具为 null，close 时关内存 store。 */
+            /** 发行路径由调用方注入 Persist；本记录不关库。内存夹具为 null，close 时关内存 store。 */
             Persist kernelDb,
             Persist approvalsDb) implements AutoCloseable {
         @Override
         public void close() {
-            Exception first = null;
             if (kernelDb != null || approvalsDb != null) {
-                first = closeQuiet(kernelDb, null);
-                first = closeQuiet(approvalsDb, first);
-            } else {
-                if (sessions instanceof AutoCloseable c) {
-                    try {
-                        c.close();
-                    } catch (Exception e) {
-                        first = e;
-                    }
-                }
-                if (approvals instanceof AutoCloseable c) {
-                    try {
-                        c.close();
-                    } catch (Exception e) {
-                        if (first == null) {
-                            first = e;
-                        }
-                    }
-                }
+                return;
             }
+            Exception first = closeMemory(sessions, null);
+            first = closeMemory(approvals, first);
             if (first instanceof RuntimeException re) {
                 throw re;
             }
@@ -92,8 +76,8 @@ public final class MemoryAssembly {
             }
         }
 
-        private static Exception closeQuiet(AutoCloseable c, Exception first) {
-            if (c == null) {
+        private static Exception closeMemory(Object store, Exception first) {
+            if (!(store instanceof AutoCloseable c)) {
                 return first;
             }
             try {
@@ -192,7 +176,7 @@ public final class MemoryAssembly {
     }
 
     private static void registerExecution(LocalCapabilityBus bus, Path workspace) {
-        SandboxPolicy sandbox = new SandboxPolicy(workspace);
+        SandboxPolicy sandbox = new SandboxPolicy(workspace, OsJails.detect());
         bus.register(ExecutionNames.FS_READ, new FsReadHandler(sandbox));
         bus.register(ExecutionNames.FS_WRITE, new FsWriteHandler(sandbox));
         bus.register(ExecutionNames.PROC_SPAWN, new ProcSpawnHandler(sandbox));

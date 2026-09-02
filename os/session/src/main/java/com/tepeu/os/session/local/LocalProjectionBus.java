@@ -121,7 +121,7 @@ public final class LocalProjectionBus implements ProjectionBus {
         if (error == null) {
             log.log(Level.WARNING, located);
         } else {
-            log.log(Level.WARNING, located, error);
+            log.log(Level.WARNING, located + " type=" + error.getClass().getSimpleName());
         }
     }
 

@@ -7,7 +7,8 @@ import java.nio.file.Path;
 
 /**
  * 宿主配置（{@code tepeu.*}）— model / family / base-url 可写 properties；
- * API key 优先环境变量，勿把真实密钥提交进仓库。
+ * API key：环境变量（含 {@code ANTHROPIC_AUTH_TOKEN}）→ {@code tepeu.api-key} → 本机 CC Switch。
+ * 勿把真实密钥提交进仓库。
  */
 @ConfigurationProperties(prefix = "tepeu")
 public class TepeuHostProperties {

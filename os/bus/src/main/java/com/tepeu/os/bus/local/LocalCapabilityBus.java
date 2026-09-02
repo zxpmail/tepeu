@@ -133,10 +133,25 @@ public final class LocalCapabilityBus implements CapabilityBus {
                         "approval required but no approval channel installed (fail-closed): syscall="
                                 + syscall.name());
             }
-            Optional<Boolean> decision = store.consumeDecision(ctx, syscall);
+            Optional<Boolean> decision;
+            try {
+                decision = store.consumeDecision(ctx, syscall);
+            } catch (RuntimeException e) {
+                warn(ctx, syscall, "approval-consume-failed");
+                throw new PolicyDeniedException(PolicyVerdict.NEED_APPROVAL,
+                        "approval channel failed (fail-closed): syscall=" + syscall.name());
+            }
             if (decision.isEmpty()) {
                 warn(ctx, syscall, "need-approval");
-                throw new ApprovalRequiredException(store.ask(ctx, syscall), syscall.name());
+                String approvalId;
+                try {
+                    approvalId = store.ask(ctx, syscall);
+                } catch (RuntimeException e) {
+                    warn(ctx, syscall, "approval-ask-failed");
+                    throw new PolicyDeniedException(PolicyVerdict.NEED_APPROVAL,
+                            "approval channel failed (fail-closed): syscall=" + syscall.name());
+                }
+                throw new ApprovalRequiredException(approvalId, syscall.name());
             }
             if (!decision.get()) {
                 warn(ctx, syscall, "approval-deny");

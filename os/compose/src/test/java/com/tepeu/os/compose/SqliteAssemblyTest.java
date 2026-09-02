@@ -10,6 +10,7 @@ import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.identity.WorkspaceId;
 import com.tepeu.os.loop.LoopConfig;
 import com.tepeu.os.loop.TurnOutcome;
+import com.tepeu.os.persist.Persist;
 import com.tepeu.os.persist.sqlite.SqliteDataSources;
 import com.tepeu.os.policy.ApprovalStore;
 import com.tepeu.os.policy.PolicyVerdict;
@@ -57,16 +58,26 @@ class SqliteAssemblyTest {
         OPEN.clear();
     }
 
-    private static MemoryAssembly.Wired issue(Path dir) {
-        var kernel = SqliteDataSources.access(dir.resolve("kernel.sqlite"));
-        var approvals = SqliteDataSources.access(dir.resolve("approvals.sqlite"));
-        return SqliteAssembly.file(dir, kernel, approvals);
+    private static Issued issue(Path dir) {
+        Persist kernel = SqliteDataSources.access(dir.resolve("kernel.sqlite"));
+        Persist approvals = SqliteDataSources.access(dir.resolve("approvals.sqlite"));
+        return new Issued(SqliteAssembly.file(dir, kernel, approvals), kernel, approvals);
+    }
+
+    private record Issued(MemoryAssembly.Wired wired, Persist kernel, Persist approvals)
+            implements AutoCloseable {
+        @Override
+        public void close() {
+            kernel.close();
+            approvals.close();
+        }
     }
 
     @Test
     void issuanceDoesNotDefaultToInMemoryApproval() throws Exception {
         Path dir = Files.createTempDirectory("tepeu-issue-");
-        try (MemoryAssembly.Wired wired = issue(dir)) {
+        try (Issued issued = issue(dir)) {
+            MemoryAssembly.Wired wired = issued.wired();
             assertFalse(wired.approvals() instanceof InMemoryApprovalStore);
             assertTrue(Files.isRegularFile(dir.resolve("kernel.sqlite")));
             assertTrue(Files.isRegularFile(dir.resolve("approvals.sqlite")));
@@ -77,7 +88,8 @@ class SqliteAssemblyTest {
     void policyRulesFileOverridesWriteToAllow() throws Exception {
         Path dir = Files.createTempDirectory("tepeu-issue-rules-");
         Files.writeString(dir.resolve("policy.rules"), "execution.fs.write ALLOW\n");
-        try (MemoryAssembly.Wired wired = issue(dir)) {
+        try (Issued issued = issue(dir)) {
+            MemoryAssembly.Wired wired = issued.wired();
             Principal owner = Principal.personal(new PrincipalId("rules-user"));
             Namespace ns = Namespace.ofWorkspace(new WorkspaceId("rules-ws"));
             Session session = wired.sessions().create(owner, ns, Optional.empty());
@@ -95,7 +107,8 @@ class SqliteAssemblyTest {
         Principal owner = Principal.personal(new PrincipalId("issue-user"));
         Namespace ns = Namespace.ofWorkspace(new WorkspaceId("issue-ws"));
         String sessionId;
-        try (MemoryAssembly.Wired wired = issue(dir)) {
+        try (Issued issued = issue(dir)) {
+            MemoryAssembly.Wired wired = issued.wired();
             Session session = wired.sessions().create(owner, ns, Optional.empty());
             sessionId = session.id().value();
             wired.bus().setPolicyHook((ctx, call) -> PolicyVerdict.ALLOW);
@@ -105,7 +118,8 @@ class SqliteAssemblyTest {
             assertTrue(o.completed(), o.detail());
             session.log().append(SessionEventType.TOOL_CALL, "open", java.util.Map.of());
         }
-        try (MemoryAssembly.Wired wired = issue(dir)) {
+        try (Issued issued = issue(dir)) {
+            MemoryAssembly.Wired wired = issued.wired();
             Session session = wired.sessions().get(new com.tepeu.os.identity.SessionId(sessionId)).orElseThrow();
             assertEquals(3, session.log().readAll().size());
             assertEquals(1, session.recover());

@@ -2,6 +2,8 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-09-02 | host 读 CC Switch | 无 env 时用当前 Claude 供应商 | `ANTHROPIC_AUTH_TOKEN`；认 settings.json id；不进 os/；不打 key |
+| 2026-09-02 | 审查收口 | 根口倒依赖 / 关库所有权 / 日志短码 | `prepare`→`LlmTransports`；`detect`→`OsJails`；Wired 不关库；finish 不打 SQL；`SqliteDataSources`/`MemoryAssembly` 名未动 |
 | 2026-09-02 | 日志防泥球 | 身份归 host，Persist 口不挂 name | 曾短暂加过 `jdbc(ds,name)`，已删；`HostPersist`；引擎成功行不重复 |
 | 2026-09-02 | 运维日志 | 哑路径补必要日志 | 不新开组件；`System.Logger`；Loop 结局 / 总线拦截 / persist 生命周期 / CLI；不打正文与密钥 |
 | 2026-09-02 | 切先于填 | 实现/审核纪律拆成切 vs 填 | 共享协议 `cut-before-fill.md`；第三次同构必须抽；人审只审切口；未改 `os/` |

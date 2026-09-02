@@ -6,16 +6,13 @@ import java.util.Objects;
 /**
  * 随 execution.* 携带的隔离策略。路径囚笼 + 可选 OS jail；完备性仍是
  * {@link SandboxIsolation#PARTIAL}（无 landlock / 无受限令牌，禁止报 FULL）。
+ * jail 由调用方传入（本机默认 {@code OsJails.detect()}）。
  */
 public record SandboxPolicy(Path workspaceRoot, OsJailKind jail) {
 
     public SandboxPolicy {
         Objects.requireNonNull(workspaceRoot, "workspaceRoot");
-        jail = jail == null ? OsJailKind.detect() : jail;
-    }
-
-    public SandboxPolicy(Path workspaceRoot) {
-        this(workspaceRoot, OsJailKind.detect());
+        Objects.requireNonNull(jail, "jail");
     }
 
     public SandboxIsolation isolation() {

@@ -80,8 +80,7 @@ public final class SessionLoop {
             try {
                 within = metering.withinBudget(session);
             } catch (RuntimeException e) {
-                return finish(ctx, TurnOutcome.failed(0,
-                        "metering failed (fail-closed): " + String.valueOf(e.getMessage())));
+                return finish(ctx, TurnOutcome.failed(0, e.getClass().getSimpleName()));
             }
             if (!within) {
                 return finish(ctx, TurnOutcome.stopped(0, "BUDGET"));
@@ -105,7 +104,7 @@ public final class SessionLoop {
                     session.inbox().ack(lease.claimId());
                 } catch (RuntimeException e) {
                     session.inbox().nack(lease.claimId());
-                    return finish(ctx, TurnOutcome.failed(0, String.valueOf(e.getMessage())));
+                    return finish(ctx, TurnOutcome.failed(0, e.getClass().getSimpleName()));
                 }
                 boolean wantsContinue = true;
                 while (wantsContinue && steps < config.maxSteps()) {
@@ -113,8 +112,7 @@ public final class SessionLoop {
                     try {
                         maybeCompactOverflow(session, ctx, config);
                     } catch (RuntimeException e) {
-                        return finish(ctx, TurnOutcome.failed(steps,
-                                "overflow compact: " + String.valueOf(e.getMessage())));
+                        return finish(ctx, TurnOutcome.failed(steps, e.getClass().getSimpleName()));
                     }
                     SyscallResult result;
                     try {
@@ -156,6 +154,8 @@ public final class SessionLoop {
                     }
                 }
                 return finish(ctx, TurnOutcome.completed(steps));
+            } catch (RuntimeException e) {
+                return finish(ctx, TurnOutcome.failed(steps, e.getClass().getSimpleName()));
             } finally {
                 session.registers().put(REGISTER_STATE, LoopState.IDLE.name());
             }
@@ -186,8 +186,7 @@ public final class SessionLoop {
             try {
                 within = config.windowMetering().withinBudget(session);
             } catch (RuntimeException e) {
-                return finish(ctx, TurnOutcome.failed(0,
-                        "metering failed (fail-closed): " + String.valueOf(e.getMessage())));
+                return finish(ctx, TurnOutcome.failed(0, e.getClass().getSimpleName()));
             }
             if (!within) {
                 return finish(ctx, TurnOutcome.stopped(0, "BUDGET"));
@@ -209,7 +208,7 @@ public final class SessionLoop {
                     try {
                         more = work.step(session, ctx);
                     } catch (RuntimeException e) {
-                        return finish(ctx, TurnOutcome.failed(steps, String.valueOf(e.getMessage())));
+                        return finish(ctx, TurnOutcome.failed(steps, e.getClass().getSimpleName()));
                     }
                     steps++;
                     if (!more) {
@@ -268,8 +267,17 @@ public final class SessionLoop {
         };
         LOG.log(level, "component={0} class={1} session={2} kind={3} steps={4} reason={5}",
                 COMPONENT, CLASS_NAME, ctx.sessionId().value(),
-                outcome.kind(), String.valueOf(outcome.steps()), outcome.detail());
+                outcome.kind(), String.valueOf(outcome.steps()), logReason(outcome));
         return outcome;
+    }
+
+    /** 短码才进运维日志。句子 / SQL / 异常文案留在 TurnOutcome，不打。 */
+    private static String logReason(TurnOutcome outcome) {
+        String detail = outcome.detail();
+        if (detail.length() <= 32 && detail.indexOf(' ') < 0 && detail.indexOf('(') < 0) {
+            return detail;
+        }
+        return "-";
     }
 
     static final String FS_WRITE = "execution.fs.write";

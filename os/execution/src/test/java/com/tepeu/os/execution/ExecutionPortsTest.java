@@ -1,5 +1,6 @@
 package com.tepeu.os.execution;
 
+import com.tepeu.os.execution.local.OsJails;
 import com.tepeu.os.execution.local.FsReadHandler;
 import com.tepeu.os.execution.local.FsWriteHandler;
 import com.tepeu.os.execution.local.ProcSpawnHandler;
@@ -34,7 +35,7 @@ class ExecutionPortsTest {
 
     @Test
     void jailRejectsEscapeAndAllowsRelativeReadWrite() throws Exception {
-        SandboxPolicy sandbox = new SandboxPolicy(workspace);
+        SandboxPolicy sandbox = new SandboxPolicy(workspace, OsJails.detect());
         TurnContext ctx = turn();
         SyscallResult escape = new FsReadHandler(sandbox).handle(ctx,
                 new Syscall(ExecutionNames.FS_READ, Map.of("path", "../outside.txt")));
@@ -62,7 +63,7 @@ class ExecutionPortsTest {
 
     @Test
     void spawnIsJailedOrFailsVisibleAndProbeStaysPartial() throws Exception {
-        SandboxPolicy sandbox = new SandboxPolicy(workspace);
+        SandboxPolicy sandbox = new SandboxPolicy(workspace, OsJails.detect());
         TurnContext ctx = turn();
         ProcSpawnHandler spawn = new ProcSpawnHandler(sandbox);
         if (sandbox.jail().canSpawn()) {

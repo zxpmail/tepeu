@@ -4,6 +4,7 @@ import com.tepeu.os.llm.local.LlmGenerateHandler;
 import com.tepeu.os.llm.local.AnthropicHttpTransport;
 import com.tepeu.os.llm.local.AnthropicProjector;
 import com.tepeu.os.llm.local.CanonicalJson;
+import com.tepeu.os.llm.local.LlmTransports;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
@@ -32,7 +33,7 @@ class AnthropicHttpTransportTest {
     void postsPreparedWireAndParsesTextUsage() {
         Session session = newSession();
         session.log().append(SessionEventType.USER_MESSAGE, "hi", Map.of());
-        PreparedRequest prepared = LlmTransport.prepare(
+        PreparedRequest prepared = LlmTransports.prepare(
                 session.logReplace().surface(), ProtocolFamily.ANTHROPIC, "claude-test", "");
         assertTrue(prepared.wireJson().contains("\"max_tokens\":1024"), prepared.wireJson());
         assertEquals(AnthropicProjector.VERSION, prepared.projectVersion());
@@ -85,7 +86,7 @@ class AnthropicHttpTransportTest {
     @Test
     void rejectsOpenaiFamily() {
         Session session = newSession();
-        PreparedRequest prepared = LlmTransport.prepare(
+        PreparedRequest prepared = LlmTransports.prepare(
                 session.logReplace().surface(), ProtocolFamily.OPENAI, "gpt", "");
         AnthropicHttpTransport transport = new AnthropicHttpTransport(
                 "https://api.anthropic.com", "k", (url, h, json) -> {
@@ -99,7 +100,7 @@ class AnthropicHttpTransportTest {
     void canonicalJsonRoundTripAnthropicWire() {
         Session session = newSession();
         session.log().append(SessionEventType.USER_MESSAGE, "hi", Map.of());
-        PreparedRequest prepared = LlmTransport.prepare(
+        PreparedRequest prepared = LlmTransports.prepare(
                 session.logReplace().surface(), ProtocolFamily.ANTHROPIC, "m", "sys", 32);
         Object parsed = CanonicalJson.read(prepared.wireJson());
         assertEquals(prepared.wireJson(), CanonicalJson.write(parsed));

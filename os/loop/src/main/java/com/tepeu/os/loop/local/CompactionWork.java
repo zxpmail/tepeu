@@ -24,7 +24,7 @@ import java.util.Objects;
  */
 public final class CompactionWork implements MaintenanceWork {
 
-    public static final int DEFAULT_KEEP_LAST = 4;
+    public static final int DEFAULT_KEEP_LAST = LoopConfig.DEFAULT_COMPACT_KEEP_LAST;
     private static final Logger LOG = System.getLogger(CompactionWork.class.getName());
     private static final String COMPONENT = "loop";
     private static final String CLASS_NAME = CompactionWork.class.getSimpleName();

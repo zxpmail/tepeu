@@ -4,6 +4,7 @@ import com.tepeu.os.llm.local.LlmGenerateHandler;
 import com.tepeu.os.llm.local.OpenAiHttpTransport;
 import com.tepeu.os.llm.local.OpenAiProjector;
 import com.tepeu.os.llm.local.CanonicalJson;
+import com.tepeu.os.llm.local.LlmTransports;
 import com.tepeu.os.identity.Namespace;
 import com.tepeu.os.identity.Principal;
 import com.tepeu.os.identity.PrincipalId;
@@ -32,7 +33,7 @@ class OpenAiHttpTransportTest {
     void postsPreparedWireAndParsesTextUsage() {
         Session session = newSession();
         session.log().append(SessionEventType.USER_MESSAGE, "hi", Map.of());
-        PreparedRequest prepared = LlmTransport.prepare(
+        PreparedRequest prepared = LlmTransports.prepare(
                 session.logReplace().surface(), ProtocolFamily.OPENAI, "gpt-test", "sys");
         assertEquals(OpenAiProjector.VERSION, prepared.projectVersion());
         assertFalse(prepared.wireJson().contains("cache_control"), prepared.wireJson());
@@ -72,7 +73,7 @@ class OpenAiHttpTransportTest {
                                 {"type":"text","text":"a"},{"type":"text","text":"b"}]}}]}
                                 """));
         Session session = newSession();
-        PreparedRequest prepared = LlmTransport.prepare(
+        PreparedRequest prepared = LlmTransports.prepare(
                 session.logReplace().surface(), ProtocolFamily.OPENAI, "m", "");
         assertEquals("ab", transport.complete(prepared).output());
     }
@@ -100,7 +101,7 @@ class OpenAiHttpTransportTest {
     @Test
     void rejectsAnthropicFamily() {
         Session session = newSession();
-        PreparedRequest prepared = LlmTransport.prepare(
+        PreparedRequest prepared = LlmTransports.prepare(
                 session.logReplace().surface(), ProtocolFamily.ANTHROPIC, "claude", "");
         OpenAiHttpTransport transport = new OpenAiHttpTransport(
                 "https://api.openai.com", "k", (url, h, json) -> {
@@ -114,7 +115,7 @@ class OpenAiHttpTransportTest {
     void canonicalJsonRoundTripOpenaiWire() {
         Session session = newSession();
         session.log().append(SessionEventType.USER_MESSAGE, "hi", Map.of());
-        PreparedRequest prepared = LlmTransport.prepare(
+        PreparedRequest prepared = LlmTransports.prepare(
                 session.logReplace().surface(), ProtocolFamily.OPENAI, "m", "sys");
         Object parsed = CanonicalJson.read(prepared.wireJson());
         assertEquals(prepared.wireJson(), CanonicalJson.write(parsed));

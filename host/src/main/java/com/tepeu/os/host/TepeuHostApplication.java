@@ -8,7 +8,7 @@ import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 /**
  * ⑤ CLI 宿主入口 — Spring Boot 无 Web；内核在 {@code os/}，本模块只接线与交互。
  * 退出码经 {@link org.springframework.boot.ExitCodeGenerator} + {@link SpringApplication#exit}，
- * 保证 {@code Wired.close()} 能关掉 SQLite。
+ * 退出时 Spring 关 Persist bean（不经 Wired）。
  */
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ConfigurationPropertiesScan

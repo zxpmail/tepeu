@@ -4,6 +4,7 @@ import com.tepeu.os.conformance.ConformanceCase;
 import com.tepeu.os.identity.TurnContext;
 import com.tepeu.os.llm.local.FakeLlmTransport;
 import com.tepeu.os.llm.local.LlmGenerateHandler;
+import com.tepeu.os.llm.local.LlmTransports;
 import com.tepeu.os.llm.LlmTransport;
 import com.tepeu.os.llm.PreparedRequest;
 import com.tepeu.os.llm.ProtocolFamily;
@@ -50,9 +51,9 @@ public final class LlmConformance {
                 () -> {
                     Session s = factory.create().session();
                     s.log().append(SessionEventType.USER_MESSAGE, "hi", Map.of());
-                    PreparedRequest a = LlmTransport.prepare(
+                    PreparedRequest a = LlmTransports.prepare(
                             s.logReplace().surface(), ProtocolFamily.ANTHROPIC, "m", "");
-                    PreparedRequest b = LlmTransport.prepare(
+                    PreparedRequest b = LlmTransports.prepare(
                             s.logReplace().surface(), ProtocolFamily.ANTHROPIC, "m", "");
                     checkEquals(a.digest(), b.digest(), "digest 稳定");
                     checkEquals(LogDeriver.VERSION, a.deriveVersion(), "derive 版本");

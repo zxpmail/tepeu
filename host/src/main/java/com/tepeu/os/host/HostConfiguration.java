@@ -69,19 +69,30 @@ class HostConfiguration {
             builder.password(password);
         }
         DataSource ds = builder.build();
-        PersistEngine engine = PersistEngines.forUrl(url);
-        if (ds instanceof HikariDataSource hikari) {
-            if (engine.maxPoolSize() > 0) {
-                hikari.setMaximumPoolSize(engine.maxPoolSize());
-                hikari.setMinimumIdle(0);
+        try {
+            PersistEngine engine = PersistEngines.forUrl(url);
+            if (ds instanceof HikariDataSource hikari) {
+                if (engine.maxPoolSize() > 0) {
+                    hikari.setMaximumPoolSize(engine.maxPoolSize());
+                    hikari.setMinimumIdle(0);
+                }
+                if (!engine.connectionInitSql().isBlank()) {
+                    hikari.setConnectionInitSql(engine.connectionInitSql());
+                }
             }
-            if (!engine.connectionInitSql().isBlank()) {
-                hikari.setConnectionInitSql(engine.connectionInitSql());
+            engine.prepare(ds, url);
+            log.info("component=host persist={} prepared", name);
+            return ds;
+        } catch (RuntimeException e) {
+            if (ds instanceof AutoCloseable c) {
+                try {
+                    c.close();
+                } catch (Exception close) {
+                    e.addSuppressed(close);
+                }
             }
+            throw e;
         }
-        engine.prepare(ds, url);
-        log.info("component=host persist={} prepared", name);
-        return ds;
     }
 
     @Bean(destroyMethod = "close")
@@ -94,9 +105,11 @@ class HostConfiguration {
                 LedgerMetering.unlimited());
     }
 
+    private volatile Optional<CcSwitchClaude> ccSwitch = Optional.empty();
+
     /**
      * 解析传输：fake → 显式 family + key/url → 否则回退 Fake。
-     * key：env 优先于 {@code tepeu.api-key}；url：{@code tepeu.base-url} 优先于 env。
+     * key：env（含 {@code ANTHROPIC_AUTH_TOKEN}）→ {@code tepeu.api-key} → 本机 CC Switch 当前 Claude。
      */
     @Bean
     LlmTransport llmTransport(TepeuHostProperties props) {
@@ -105,14 +118,21 @@ class HostConfiguration {
             return new FakeLlmTransport();
         }
         Optional<ProtocolFamily> familyOpt = resolveTransportFamily(props);
-        if (familyOpt.isEmpty()) {
-            log.warn("component=host llm=fake reason=no-key");
-            return new FakeLlmTransport();
-        }
-        ProtocolFamily family = familyOpt.get();
-        String key = resolveApiKey(props, family);
+        ProtocolFamily family = familyOpt.orElse(null);
+        String key = family == null ? "" : resolveApiKey(props, family);
         if (key.isEmpty()) {
-            log.warn("component=host llm=fake family={} reason=no-key", family.name().toLowerCase());
+            ccSwitch = CcSwitchClaude.load();
+            if (ccSwitch.isPresent()) {
+                CcSwitchClaude cc = ccSwitch.get();
+                String base = notBlank(props.baseUrl()) ? props.baseUrl().strip() : cc.baseUrl();
+                if (base.isEmpty()) {
+                    base = AnthropicHttpTransport.DEFAULT_BASE_URL;
+                }
+                log.info("component=host llm=anthropic source=cc-switch provider={} baseUrl={}",
+                        cc.name(), base);
+                return AnthropicHttpTransport.jdk(base, cc.apiKey());
+            }
+            log.warn("component=host llm=fake reason=no-key");
             return new FakeLlmTransport();
         }
         String base = resolveBaseUrl(props, family);
@@ -128,6 +148,11 @@ class HostConfiguration {
     LoopConfig loopConfig(TepeuHostProperties props, LlmTransport transport, MemoryAssembly.Wired kernel) {
         ProtocolFamily family = resolveFamily(props, transport);
         String model = resolveModel(props, family);
+        if (ccSwitch.isPresent() && notBlank(ccSwitch.get().model())
+                && (props.model() == null || props.model().isBlank()
+                || DEFAULT_ANTHROPIC_MODEL.equals(props.model().strip()))) {
+            model = ccSwitch.get().model();
+        }
         AssembledPrompt assembled = assemblePrompt(kernel.prompts(), props.promptBudget());
         log.info("component=host loop model={} family={}", model, family.name().toLowerCase());
         return new LoopConfig(model, family.name().toLowerCase(), assembled.system(), LoopConfig.DEFAULT_MAX_STEPS);
@@ -138,7 +163,8 @@ class HostConfiguration {
         if (props.family() != null && !props.family().isBlank()) {
             return Optional.of(ProtocolFamily.parse(props.family()));
         }
-        if (notBlank(System.getenv("ANTHROPIC_API_KEY"))) {
+        if (notBlank(System.getenv("ANTHROPIC_API_KEY"))
+                || notBlank(System.getenv("ANTHROPIC_AUTH_TOKEN"))) {
             return Optional.of(ProtocolFamily.ANTHROPIC);
         }
         if (notBlank(System.getenv("OPENAI_API_KEY")) || notBlank(props.apiKey())) {
@@ -149,13 +175,21 @@ class HostConfiguration {
 
     /** API key：对应族的环境变量优先，其次 tepeu.api-key。 */
     static String resolveApiKey(TepeuHostProperties props, ProtocolFamily family) {
-        String envName = family == ProtocolFamily.OPENAI ? "OPENAI_API_KEY" : "ANTHROPIC_API_KEY";
-        String fromEnv = System.getenv(envName);
-        if (notBlank(fromEnv)) {
-            return fromEnv.strip();
+        if (family == ProtocolFamily.ANTHROPIC) {
+            if (notBlank(System.getenv("ANTHROPIC_API_KEY"))) {
+                return System.getenv("ANTHROPIC_API_KEY").strip();
+            }
+            if (notBlank(System.getenv("ANTHROPIC_AUTH_TOKEN"))) {
+                return System.getenv("ANTHROPIC_AUTH_TOKEN").strip();
+            }
+        } else {
+            String fromEnv = System.getenv("OPENAI_API_KEY");
+            if (notBlank(fromEnv)) {
+                return fromEnv.strip();
+            }
         }
         if (notBlank(props.apiKey())) {
-            log.warn("component=host secret=properties prefer={}", envName);
+            log.warn("component=host secret=properties prefer=env");
             return props.apiKey().strip();
         }
         return "";

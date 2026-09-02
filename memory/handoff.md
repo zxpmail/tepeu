@@ -83,6 +83,8 @@
 - 2026-09-02：`os/` 本机实现迁入 `*.local`。`InMemoryCapabilityBus` 更名为 `LocalCapabilityBus`。未新开 jar、未改完成权/schema
 - 2026-09-02：补必要运维日志（JDK `System.Logger`，`component=X class=Y`）。Loop 一轮结局；总线拦截不打 ALLOW；Compaction 真 `replaceRange`；persist 开库/关库/回滚；host CLI 会话/slash/loop。不打 SQL / args / 正文 / 密钥。无新组件
 - 2026-09-02：日志分层后防泥球。`Persist` 口只有 `jdbc(ds)`，不挂 name。host 内 `HostPersist` 标 kernel/approvals；SqliteEngine 只记 prepare 失败；host 行统一 `component=host`。generate 失败不打正文。
+- 2026-09-02：审查后收口。`LlmTransports.prepare` / `OsJails.detect`；根包端口/枚举不 import `*.local`。`Wired` 不关 Persist（host bean / 测试关）。`finish` 只打短码。未迁 `SqliteDataSources`、未改名 `MemoryAssembly`。
+- 2026-09-02：host 无 env key 时读本机 CC Switch 当前 Claude（`ANTHROPIC_AUTH_TOKEN`）。不进 os/。env 仍优先。
 
 ## 待办
 
