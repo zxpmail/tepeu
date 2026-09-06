@@ -4,21 +4,24 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-06（syscall 待人审；与 identity 不合并）
+**Last updated**: 2026-09-07（persist-sqlite 三处补完，待人审）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写：`identity`（已推）、`syscall`（待人审）。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀是 persist-api。
+- 已写：`identity`（已推）、`syscall`（已推）、`persist-api`、`persist-sqlite`（待人审）。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀是 session。
 
-## 本刀 syscall
+## 本刀 persist-sqlite
 
-- 包 `com.tepeu.syscall`。不依赖 identity。
-- 类型：`Syscall`、`SyscallResult`、`Usage`、`ArgDigest`。`Usage` 两参：input/output；`cost` 空 = 未知。
-- 与 identity 不合并。identity 是谁/工作区/对话；syscall 是信封。彼此不依赖。`InvokeContext` 打包三项与取消位，不是信封。
-- 未做：`SyscallHandler`、缓存 token、latency、logger
-- 验证：`mvn -f tepeu/pom.xml test`（identity 3 + syscall 5 绿）
+- 包 `com.tepeu.persist.sqlite`。依赖 persist-api。
+- 实现：MyBatis-Plus 3.5.17（`mybatis-plus-core` + `mybatis-plus-jsqlparser`）+ sqlite-jdbc 3.53.4.0。slf4j-api 2.0.18（MP 运行要）。
+- 不用 Spring Boot starter。host 以后才上 Spring。
+- 公开类型：`SqlitePersist.open(Path)`、`memory()`。`AutoCloseable`。关后操作抛 `IllegalStateException("persist closed")`。
+- 表 `persist_record`：id / space / rec_key / fields。通用行，不是 session 表。
+- 2026-09-07 补：`close()` 置 closed + WAL checkpoint；UNIQUE 只认 `SQLITE_CONSTRAINT_UNIQUE` / `PRIMARYKEY`；`SQLiteConfig` WAL + `busy_timeout=5000`；装配关 SQL 日志；`memory()` 建库失败删临时文件。
+- 未做：连接池、`putObject`、schema 迁移框架、原子 upsert
+- 验证：`mvn -f tepeu/pom.xml -pl persist/sqlite -am test`（persist-api 4 + persist-sqlite 5 绿）
 
 ## 已定（2026-09-06 人圈）
 

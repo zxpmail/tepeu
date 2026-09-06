@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity 已推；syscall 待人审。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall 已推；persist-api + persist-sqlite 待人审。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -79,7 +79,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 | 口 | 方法名（提案） |
 |----|----------------|
-| persist 结构化记录 | `append`、`get`、`put`（覆盖） |
+| persist 结构化记录 | `append`、`get`、`put`（覆盖）、`list` |
 | persist 字节对象（若有） | `putObject`、`getObject` |
 | execution 工作区 | `readFile`、`writeFile`、`spawn`（或 syscall 名 `fs.read` / `fs.write` / `proc.spawn`） |
 

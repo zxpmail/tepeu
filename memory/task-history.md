@@ -2,7 +2,8 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
-| 2026-09-06 | 第一刀 | identity/syscall 切口 | 不合并。identity=谁/工作区/对话；syscall=信封、不依赖 identity。补 Usage；InvokeContext 不再写成「一次调用」 |
+| 2026-09-07 | persist-sqlite | 关库 / UNIQUE / WAL | close 置位+checkpoint；UNIQUE 认错误码不扫文本；WAL+busy_timeout=5000 |
+| 2026-09-06 | 第一刀 | persist-sqlite | MyBatis-Plus 3.5.17 + sqlite-jdbc 3.53.4.0。无 Boot starter。表 persist_record |
 | 2026-09-06 | 迁标本 | os host → legacy/os-9 | 源码不含 target。根目录不再有 os/ host/ |
 | 2026-09-06 | 人圈 | 落地三句 | 一个默认对话；读/问模型放行、写/跑先问；第一刀 fake |
 | 2026-09-06 | llm | 网关统一调用 | gateway 是口；fake 挂在网关后。loop 只调网关 |
