@@ -4,20 +4,21 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-06（identity 待人审）
+**Last updated**: 2026-09-06（syscall 待人审；与 identity 不合并）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 第一刀只写完 **identity**。等人审过再写下一组件（syscall）。
-- 纪律：一个组件写完，人审查通过才能继续。
+- 已写：`identity`（已推）、`syscall`（待人审）。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀是 persist-api。
 
-## 本刀 identity
+## 本刀 syscall
 
-- 包 `com.tepeu.identity`
-- 类型：`PrincipalId`、`Principal`、`WorkspaceId`、`SessionId`、`InvokeContext`
-- 未做：`AgentKind`、`Namespace`、`TurnContext`
-- 验证：`mvn -f tepeu/pom.xml test`（3 测绿）
+- 包 `com.tepeu.syscall`。不依赖 identity。
+- 类型：`Syscall`、`SyscallResult`、`Usage`、`ArgDigest`。`Usage` 两参：input/output；`cost` 空 = 未知。
+- 与 identity 不合并。identity 是谁/工作区/对话；syscall 是信封。彼此不依赖。`InvokeContext` 打包三项与取消位，不是信封。
+- 未做：`SyscallHandler`、缓存 token、latency、logger
+- 验证：`mvn -f tepeu/pom.xml test`（identity 3 + syscall 5 绿）
 
 ## 已定（2026-09-06 人圈）
 

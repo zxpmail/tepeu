@@ -8,9 +8,9 @@
         <artifactId>tepeu-types</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>tepeu-identity</artifactId>
-    <name>Tepeu Identity</name>
-    <description>谁、哪个工作区、哪一次对话</description>
+    <artifactId>tepeu-syscall</artifactId>
+    <name>Tepeu Syscall</name>
+    <description>一次具名操作的名称、参数、结果、用量</description>
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

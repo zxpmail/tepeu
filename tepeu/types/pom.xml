@@ -11,8 +11,9 @@
     <artifactId>tepeu-types</artifactId>
     <packaging>pom</packaging>
     <name>Tepeu Types</name>
-    <description>层0 共用类型。本刀只挂 identity</description>
+    <description>层0 共用类型：identity / syscall</description>
     <modules>
         <module>identity</module>
+        <module>syscall</module>
     </modules>
 </project>

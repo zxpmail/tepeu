@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：`tepeu/types/identity` 待人审。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity 已推；syscall 待人审。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -142,7 +142,7 @@ loop / dispatch 只调网关。load 把实现注入网关。host 的 POM 依赖�
 | llm | 父 POM：`gateway` 统一调用；实现挂在网关后。第一刀 `fake` |
 | execution | 工作区文件与进程 |
 | loop | 控制循环、完成判定、压缩触发 |
-| identity | 共用类型：谁、哪个工作区、哪一次对话、调用上下文 |
+| identity | 共用类型：谁、哪个工作区、哪一次对话 |
 | syscall | 共用类型：一次具名操作的名称、参数、结果、用量 |
 | conformance | 测试套件：对各模块接口的契约测试 |
 | commands | 斜杠命令表。名称 → 处理函数。第一刀：`/help` `/approve` `/status` `/btw`。`/btw` 经 dispatch 调 llm 网关，不调工具、不写事件日志 |

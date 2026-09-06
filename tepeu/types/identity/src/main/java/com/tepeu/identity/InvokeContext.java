@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 一次调用的上下文。取消是标志位，不是线程中断。
+ * 谁、哪个工作区、哪一次对话。取消是标志位，不是线程中断。
  */
 public final class InvokeContext {
     private final Principal principal;

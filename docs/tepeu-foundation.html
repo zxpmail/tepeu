@@ -204,7 +204,7 @@ footer{padding:28px 0 48px;color:var(--tx3);font:13px/1.8 sans-serif}
     <div class="pcard">
       <span class="nm">identity</span><span class="tag word">共用类型</span>
       <div class="ol">谁、在哪个工作区、哪一次对话。</div>
-      <div class="map"><b>里面</b> Principal、Workspace、SessionId、调用上下文</div>
+      <div class="map"><b>里面</b> Principal、WorkspaceId、SessionId。InvokeContext 打包这三项与取消位</div>
     </div>
 
     <div class="pcard">
@@ -268,7 +268,8 @@ footer{padding:28px 0 48px;color:var(--tx3);font:13px/1.8 sans-serif}
   <h3>写代码时谁依赖谁</h3>
   <div class="tbl-wrap"><table class="tbl">
     <tr><th>文件夹</th><th>依赖</th></tr>
-    <tr><td><b>identity / syscall</b></td><td>彼此（syscall 用 identity 的名字）</td></tr>
+    <tr><td><b>identity</b></td><td>无</td></tr>
+    <tr><td><b>syscall</b></td><td>无</td></tr>
     <tr><td><b>persist/api</b></td><td>读写接口</td></tr>
     <tr><td><b>session</b></td><td>identity、syscall、persist/api</td></tr>
     <tr><td><b>policy</b></td><td>identity、syscall、persist/api</td></tr>
