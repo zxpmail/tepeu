@@ -27,7 +27,7 @@
 | ③ Loop 答复 + 工具循环 | **claim →（overflow 压缩）→ generate →（syscall 工具 / plan / DoomLoop）→ 完成门**；`maintain` 窗 + `CompactionWork` |
 | ③ PromptAssembly / Command | 静/动分离 + 超预算账单；Slash local/prompt + `/approve`。Team / 路由未落 |
 | DefaultRuleMatrix | llm.* ALLOW；写盘/进程 ASK；未知 DENY。**叠加** 参数级：`SensitivePathPolicy` + `SensitiveCommandPolicy` |
-| Observation 归属 | `os/observation` 入口 `Observation.view` + `RedactingContextShaper`（compose 默认）；PromptAssembly 仍独立 |
+| Observation 归属 | 已并 `os/llm`，入口 `Observation.view` + `RedactingContextShaper`（compose 默认）；PromptAssembly 仍独立 |
 | execution.* | 工作区路径囚笼 + Job Object / bwrap；probe 报 **partial**；无 jail 时 spawn 失败可见。≠ landlock / 完整沙箱 |
 
 **未有**：⑤ UI、记忆平面、多副本 fencing。`SqliteAssembly` 的 llm 默认仍 fake（传输由调用方注入）。

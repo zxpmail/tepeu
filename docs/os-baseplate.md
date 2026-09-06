@@ -3,7 +3,7 @@
 > **地位**：develop 实施投影。规范以 [`memory/decisions-log.md`](../memory/decisions-log.md) **ADR-016** 为准。  
 > **蒸馏**：内核 = 冻结概念 + 不变量；能力 = 总线上的插头。细则在 ADR，此处一行指针。  
 > **诚实度**：[`agent-os-gap.md`](./agent-os-gap.md)（当前=本机 Agent OS 骨架可演示；隔离仍是 partial）。v1 规格不是上级文档。  
-> **阅读序**：`CONTEXT.md` → 本文件 → [`os-handbook.md`](./os-handbook.md)（独有章）→ ADR-016。  
+> **阅读序**：`CONTEXT.md` → [`tepeu-foundation.html`](./tepeu-foundation.html)（结构说明，还没定稿）→ [`memory/texture.md`](../memory/texture.md) → 本文件 → [`os-handbook.md`](./os-handbook.md) → ADR-016。九盒照片：[`archive/os-9/`](./archive/os-9/)。  
 > **对账存档**：[`archive/reference/`](./archive/reference/)（已吸入 ADR，不是规范）。
 
 沿数据流垂直切片。DONE 由 §8.5 与 conformance 定义。内核不知道 turn。
@@ -81,7 +81,7 @@ Inbox/claim = 进场与租约，**不是**调度器。类比诚实度见 §8。
 `LoopRuntime`（三态 idle|maintenance|running；维护窗强制上限与 latch；抢占边界）· `SubagentAdaptor`（工具对父有效集只减不增；delegationDepth 单调下界；取消拓扑）· `TeamAdaptor`（preset 图）· `LongTaskAdaptor`（预约-复核；终态消息溯源）· `PromptAssembly`（静态 Section/动态 PromptContext 分离；技能两段懒加载；超预算丢弃出账单）· `ReasoningPresenter` · `CommandDispatcher`（local/prompt 两型）· **路由三决策**（ThreadRouter 贴当前 / FlowRouter 选 Loop-vs-preset / ModelRouter 透传选型）。
 细则：ADR-016 第一/三/四轮。对账存档见 [`archive/reference/`](./archive/reference/)。
 
-**Observation（组件）**：模型可见视图管道——读 `session.surface` + `derive`/`normalize` + **shape/redact**。入口 **`Observation.view`**（`os/observation`）= derive ∘ normalize ∘ shape（默认 shaper=`none`；compose 装配 `ContextShapers.defaults()`）。不持久化，不是第四 store。与 Policy（判动作）正交；Gate 改「看见什么」须经此管道，不得旁路拼消息。红线仍是 §6-6 与「模型可见 ⟺ 日志可还原（shape 只改观测面，entries 不动）」。PromptAssembly 静/动段仍独立。llm 只投影+传输。机制同构参照：[EnvHarness × Gate × Observation](./archive/reference/agent-runtime-security-series.md#6-envharness--gate--observation机制对账)。
+**Observation（现属 llm）**：模型可见视图管道——读 `session.surface` + `derive`/`normalize` + **shape/redact**。入口 **`Observation.view`**（`os/llm`）= derive ∘ normalize ∘ shape（默认 shaper=`none`；compose 装配 `ContextShapers.defaults()`）。不持久化，不是第四 store。与 Policy（判动作）正交；Gate 改「看见什么」须经此管道，不得旁路拼消息。红线仍是 §6-6 与「模型可见 ⟺ 日志可还原（shape 只改观测面，entries 不动）」。PromptAssembly 静/动段仍独立。机制同构参照：[EnvHarness × Gate × Observation](./archive/reference/agent-runtime-security-series.md#6-envharness--gate--observation机制对账)。
 
 ### 3.4 ⑤/② 支撑服务（非内核契约）
 
@@ -139,9 +139,8 @@ os/
   session/          组件：会话三 store + Metering 端口
   policy/           组件：Policy + 审批
   persist/          组件：库（api = Persist 接口；sqlite = JDBC 实现）
-  observation/      组件：模型可见管道（Observation.view）
   bus/              组件：能力总线 + 卫兵
-  llm/              组件：llm.* 派生式断言 + fake / HTTP 薄壳（compose 默认 fake）
+  llm/              组件：跟模型说话（Observation.view + 传输）
   loop/             组件：③ SessionLoop（claim / 有界 turn / 工具 / 完成门）
   orchestration/    组件：PromptAssembly + CommandDispatcher（Team 未落）
   execution/        组件：工作区囚笼 + Job Object / bwrap（隔离 partial）
@@ -201,7 +200,7 @@ host/               ⑤ CLI 宿主（仓库根；非 os 组件；依赖 compose�
 | TIMED_OUT 一等结果：超时产成对 TOOL_RESULT 标记（禁静默成功/禁悬挂/禁自动重试） | gnex3 | Tool 契约 | 挂账 |
 | 修剪证物保护 + spill 容量纪律（TTL/单条上限/证物类不可修剪） | gnex3 | Compaction | 挂账 |
 | 注册表/工具集版本化快照锁存：增量=新版本，in-flight turn 锁存旧快照 | gnex3 | ③/RegisterStore（同裁） | 挂账 |
-| Observation 组件：收口 surface + derive/normalize + shape；Gate 改观测经此管道 | EnvHarness 机制对账 + 安全系列 §6 | `os/observation` | ✅ `Observation.view` + shape v1；PromptAssembly 仍独立 |
+| Observation 管道：收口 surface + derive/normalize + shape；Gate 改观测经此管道 | EnvHarness 机制对账 + 安全系列 §6 | `os/llm` | ✅ 已并进 llm；PromptAssembly 仍独立 |
 | ProjectionBus（增量通知，非真相） | 底板 §3.4 + opencode/pi 参照 | ⑤ 支撑 / session | ◐ 接口 + 本机插头 `LocalProjectionBus` + `SessionProjections` v1；MQ/Redis/NATS 升版；ACL 仍挂账 |
 | KnowledgeSource（知识→Section） | ADR-016 第三轮 | orchestration | ◐ 端口 + `EmptyKnowledgeSource` + `memory_hits`（2026-08-24） |
 | 参数级 Policy（敏感路径/命令 DENY 叠名级矩阵） | 安全系列 §1–§3 | policy | ✅ `PolicyRulesFile` + path/command deny（2026-08-24） |

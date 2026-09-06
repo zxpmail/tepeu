@@ -1,8 +1,8 @@
 # Tepeu
 
-develop 按 [ADR-016](memory/decisions-log.md) 重建 Agent OS **内核**。当前口径：**本机 Agent OS 骨架可演示**，**不是**企业 OS / 完整 OS——见 [`docs/agent-os-gap.md`](docs/agent-os-gap.md)。
+**2026-09-06**：从零重写。规划见 [`docs/rewrite-0.md`](docs/rewrite-0.md)。新库根 `tepeu/`。标本在 [`legacy/os-9/`](./legacy/os-9/README.md)。
 
-可运行的 v1.0（工作台 / Harness）在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.md)。v1 规格里的「Agentic OS」是产品里程碑名，不是「OS 已成形」。
+v1.0 工作台在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.md)。
 
 ## 分支
 
@@ -14,12 +14,12 @@ develop 按 [ADR-016](memory/decisions-log.md) 重建 Agent OS **内核**。当�
 ## 仓库布局（develop）
 
 ```
-docs/os-baseplate.md   实施底板（必读）
-docs/os-handbook.md    独有章（时序 / 开机 / 威胁）
-docs/archive/          已吸入 ADR 的参照与 v1 草稿（不是规范）
-os/                    新骨架（10 组件：session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose）
-legacy/                v1 只读标本
-memory/                ADR（ADR-016 规范）
+docs/rewrite-0.md      从零重写规划（当前必读）
+tepeu/                 新库根
+legacy/os-9/           冻结标本
+legacy/                v1 工作台
+docs/archive/          参照与结构摘录
+memory/                交接与 ADR 史
 ```
 
 根目录 `Dockerfile` / `docker-compose.yml` 仍对应 **v1 布局**，请用 `main` 或 `legacy/` 运行旧版。
@@ -42,22 +42,19 @@ cd legacy/frontend && npm install && npm run dev
 
 ## 文档入口
 
-冲突时：**ADR-016 > 底板 > 手册 > v1 规格**。阅读序：`CONTEXT.md` → 底板 → [手册](./docs/os-handbook.md) → 差距 → ADR-016。
+规划：[`docs/rewrite-0.md`](docs/rewrite-0.md)。阅读序：`CONTEXT.md` → 规划 → [`docs/tepeu-foundation.html`](docs/tepeu-foundation.html)。
 
 | 文件 | 用途 |
 |------|------|
-| [CONTEXT.md](./CONTEXT.md) | 当前进度与下一刀 |
-| [docs/os-baseplate.md](./docs/os-baseplate.md) | develop OS 实施底板（必读） |
-| [docs/os-handbook.md](./docs/os-handbook.md) | 独有章：时序 / 开机 / 威胁 / 术语 |
-| [docs/agent-os-gap.md](./docs/agent-os-gap.md) | 诚实度：距 OS 还差什么 |
-| [memory/decisions-log.md](./memory/decisions-log.md) | 规范真相（**ADR-016**） |
-| [docs/archive/](./docs/archive/README.md) | 对账参照与 v1 草稿（不是规范） |
-| [Product-Spec.md](./Product-Spec.md) | **v1** 产品规格（非 develop OS 规范） |
-| [DEV-PLAN.md](./DEV-PLAN.md) | **v1** 交付切片档案（已冻结） |
-| [legacy/README.md](./legacy/README.md) | v1 代码只读说明 |
+| [CONTEXT.md](./CONTEXT.md) | 当前进度 |
+| [docs/rewrite-0.md](docs/rewrite-0.md) | 从零重写规划 |
+| [docs/tepeu-foundation.html](docs/tepeu-foundation.html) | 结构说明 |
+| [Product-Spec.md](./Product-Spec.md) | v1 产品规格档案 |
+| [DEV-PLAN.md](./DEV-PLAN.md) | v1 交付切片档案 |
+| [legacy/README.md](./legacy/README.md) | v1 代码说明 |
 | [RELEASE_NOTES-v1.0.0.md](./RELEASE_NOTES-v1.0.0.md) | v1.0.0 说明 |
 
 ## 已完成（v1 摘要）
 
-- ✅ v0.1 工作台 · v0.2 Harness · v1.0 产品里程碑（规格名称含 Agentic OS，**≠** 完整 OS 已交付）
-- ⏳ develop：按 ADR-016 重建内核（当前 = 本机 Agent OS 骨架可演示；隔离 partial）
+- v0.1 工作台 · v0.2 Harness · v1.0 产品里程碑
+- develop：从零重写；第一刀进行中（identity 待人审）

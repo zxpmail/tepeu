@@ -10,6 +10,7 @@
 | `frontend/` | 根目录 `frontend/`（Vite + React v1） |
 | `experiments/` | ATE 等实验 |
 | `scripts/` | 杂脚本 |
+| `os-9/` | develop 九模块标本（`os/` `host/` 源码，只读） |
 
 ## 规则
 

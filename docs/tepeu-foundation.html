@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tepeu 是怎么拆开的</title>
+<style>
+:root{
+  --bg:#0b0e14; --bg2:#0f131c; --panel:#131824; --panel2:#1a2130;
+  --line:#263044; --line2:#33415c;
+  --tx:#dde4f0; --tx2:#93a0b8; --tx3:#5d6b85;
+  --acc:#8b7cf8; --acc2:#a78bfa; --teal:#2dd4bf; --amber:#f5b544; --red:#f87171; --green:#4ade80;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--acc2);text-decoration:none}
+.wrap{max-width:1320px;margin:0 auto;padding:0 24px}
+header.hero{padding:48px 0 32px;background:
+  radial-gradient(1100px 420px at 72% -12%,rgba(139,124,248,.16),transparent 60%),
+  radial-gradient(800px 360px at 8% -18%,rgba(45,212,191,.12),transparent 55%),
+  linear-gradient(180deg,#10151f 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--line)}
+.kicker{color:var(--teal);font:600 12px/1 var(--mono);letter-spacing:.16em}
+.hero h1{font-size:30px;line-height:1.25;margin:12px 0 10px;font-weight:800}
+.hero h1 .hl{background:linear-gradient(90deg,var(--acc2),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{color:var(--tx2);max-width:920px;font-size:15px}
+.stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 18px;min-width:108px}
+.stat b{display:block;font:800 22px var(--mono);color:var(--acc2)}
+.stat span{font-size:11.5px;color:var(--tx2)}
+.src-note{margin-top:14px;font:13px/1.7 sans-serif;color:var(--tx3)}
+nav{position:sticky;top:0;z-index:50;background:rgba(11,14,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .inner{display:flex;gap:2px;overflow-x:auto;padding:0 24px;max-width:1320px;margin:0 auto}
+nav a{display:block;padding:13px 14px;color:var(--tx2);font-size:13px;white-space:nowrap;border-bottom:2px solid transparent}
+nav a:hover{color:var(--tx)}
+nav a.on{color:var(--acc2);border-bottom-color:var(--acc)}
+section{padding:44px 0 10px;border-bottom:1px solid var(--line)}
+section h2{font-size:22px;font-weight:800;margin-bottom:6px}
+section h2 .no{color:var(--acc);font-family:var(--mono);margin-right:8px}
+section .lead{color:var(--tx2);max-width:1040px;margin-bottom:16px}
+h3{font-size:16px;font-weight:700;margin:20px 0 10px}
+.arch-frame{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto}
+.arch-pre{font:13px/1.8 var(--mono);color:var(--tx2);white-space:pre;min-width:820px}
+.arch-pre b{color:var(--teal);font-weight:600}
+.arch-pre i{color:var(--amber);font-style:normal;font-weight:600}
+.arch-pre u{color:var(--acc2);text-decoration:none}
+.layers{display:grid;gap:10px;margin-top:14px}
+.layer{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.layer .t{font-weight:700;color:var(--teal);font-size:14px}
+.layer .d{font-size:13.5px;color:var(--tx2);margin-top:4px}
+.layer.core{border-color:rgba(45,212,191,.45)}
+.layer.drive{border-color:rgba(167,139,250,.4)}
+.layer.plug{border-color:rgba(245,181,68,.35)}
+.layer.app{border-color:var(--line2)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:11px;margin-top:12px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.pcard .nm{font:700 13px var(--mono);color:var(--acc2)}
+.tag{font:12px sans-serif;padding:1px 8px;border-radius:20px;margin-left:6px;border:1px solid var(--line2);color:var(--tx2)}
+.tag.core{color:var(--teal);border-color:rgba(45,212,191,.45)}
+.tag.steel{color:var(--acc2);border-color:rgba(167,139,250,.4)}
+.tag.word{color:var(--tx2)}
+.tag.app{color:var(--amber);border-color:rgba(245,181,68,.4)}
+.pcard .ol{font-size:14px;color:var(--tx);margin:6px 0 6px;font-weight:600}
+.pcard .map{font:13.5px/1.7 sans-serif;color:var(--tx3)}
+.pcard .map b{color:var(--teal);font-weight:600}
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+table.tbl th{background:var(--panel2);color:var(--tx2);text-align:left;font-weight:600;padding:9px 12px;border:1px solid var(--line)}
+table.tbl td{padding:8px 12px;border:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+table.tbl td b{color:var(--tx);font-family:var(--mono);font-size:13px}
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:10px}
+.pipe{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:10px;padding:13px 16px;margin-top:12px}
+.pipe .t{font-weight:700;font-size:14px;color:var(--acc2)}
+.pipe .d{font:13.5px/1.75 sans-serif;color:var(--tx2);margin-top:6px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.bar span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font:13px sans-serif;color:var(--tx2)}
+.bar span.ok{color:var(--green);border-color:rgba(74,222,128,.35)}
+.bar span.wait{color:var(--amber);border-color:rgba(245,181,68,.35)}
+footer{padding:28px 0 48px;color:var(--tx3);font:13px/1.8 sans-serif}
+@media(max-width:760px){.pgrid{grid-template-columns:1fr}.arch-pre{min-width:640px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">结构说明 · 规划正文 docs/rewrite-0.md · 2026-09-06</div>
+    <h1>七个<span class="hl">能力模块</span></h1>
+    <p class="sub">Tepeu 装在你自己电脑上，只给你一个人用。打开终端打几行字，就已经在用了。要守住的两件事：<strong>说过什么，打开记录能核对</strong>；<strong>要调用一项能力，先问准不准</strong>。</p>
+    <div class="stats">
+      <div class="stat"><b>7</b><span>能力模块</span></div>
+      <div class="stat"><b>2</b><span>要守住的两件事</span></div>
+      <div class="stat"><b>2</b><span>共用类型</span></div>
+      <div class="stat"><b>1</b><span>你看见的程序</span></div>
+      <div class="stat"><b>1</b><span>一台电脑一个程序</span></div>
+    </div>
+    <div class="src-note">规划正文：docs/rewrite-0.md。</div>
+  </div>
+</header>
+
+<nav id="nav"><div class="inner">
+  <a href="#overview" class="on">01 一页看懂</a>
+  <a href="#arch">02 从上到下</a>
+  <a href="#catalog">03 各管什么</a>
+  <a href="#relations">04 谁找谁</a>
+  <a href="#pipelines">05 实际怎么走</a>
+  <a href="#rebar">06 已定与未决</a>
+</div></nav>
+
+<div class="wrap">
+
+<section id="overview">
+  <h2><span class="no">01</span>一页看懂</h2>
+  <p class="lead">要守住的是记录，以及调用前的授权。库根 tepeu/：四层 + load。依赖只朝下。</p>
+  <div class="arch-frame"><div class="arch-pre">
+┌────────────────────────────────────────────────────────────────┐
+│ <u>host/</u>   Spring Boot（无 Web）。终端。`/` 行交给 commands              │
+│ <u>tepeu/load/</u>  装配：注入实现、拼系统提示、登记斜杠                         │
+│ <u>tepeu/commands/</u>  斜杠表：/help /approve /status /btw                    │
+├────────────────────────────────────────────────────────────────┤
+│ <u>tepeu/run/</u>                                                        │
+│   loop/        跑完一轮：看本子 → 问大模型 → 用工具 → 再记下   │
+│   llm/         网关统一调用；第一刀后面挂 fake                  │
+│   execution/   读文件、写文件、跑命令，只动工作区               │
+├────────────────────────────────────────────────────────────────┤
+│ <b>tepeu/kernel/</b>  账 + 门                                            │
+│   session/     一次对话存下来的状态。窗口关了，它还在           │
+│   policy/      准、不准、还是先问你。你打 /approve 回答         │
+│   dispatch/    按名字调用处理函数                               │
+├────────────────────────────────────────────────────────────────┤
+│ <u>tepeu/persist/</u>  父 POM：api + sqlite（第一刀）                       │
+├────────────────────────────────────────────────────────────────┤
+│ <u>tepeu/types/</u>    identity  谁、工作区、哪一次对话                     │
+│                  syscall   一次调用的信封                       │
+│ conformance/     测试套件                                       │
+└────────────────────────────────────────────────────────────────┘
+外面的世界：大模型网站 · 你电脑上的文件和命令 · 持久化实现所选的后端
+  </div></div>
+</section>
+
+<section id="arch">
+  <h2><span class="no">02</span>从上到下</h2>
+  <p class="lead">依赖只朝下：被调用方不知道调用方。persist 不知道 session；session 调用 persist。session 记下你打进来的字，也记下现在闲着还是在跑。host 能看见各家，因为它负责开机把线插上。</p>
+  <div class="layers">
+    <div class="layer app"><div class="t">host · load · commands</div><div class="d">host：Spring Boot（无 Web），按 POM 加载实现，`/` 行交给 commands。load：注入、拼系统提示、登记斜杠。commands：斜杠命令表。</div></div>
+    <div class="layer drive"><div class="t">tepeu/run · loop / llm / execution</div><div class="d">loop 读本子、出门做事、再写回本子。llm 网关统一调用，第一刀后面挂 fake。execution 动工作区。工具经 dispatch 调用。</div></div>
+    <div class="layer core"><div class="t">tepeu/kernel · session / policy / dispatch</div><div class="d">账 + 门。session 是一次对话的记录。policy 做授权。dispatch 按名字调用处理函数。</div></div>
+    <div class="layer plug"><div class="t">tepeu/persist · api + sqlite</div><div class="d">Tepeu 自己的状态读写。第一刀 sqlite。host 的 POM 依赖哪个，就加载哪个，交给 load。</div></div>
+    <div class="layer plug"><div class="t">tepeu/types · identity / syscall</div><div class="d">共用类型：谁、工作区、哪一次对话；一次调用的信封。</div></div>
+  </div>
+</section>
+
+<section id="catalog">
+  <h2><span class="no">03</span>各管什么</h2>
+  <p class="lead">每个文件夹一句话：干什么。</p>
+  <div class="pgrid">
+
+    <div class="pcard">
+      <span class="nm">session</span><span class="tag core">一次对话的记录</span>
+      <div class="ol">这次对话存下来的状态，打开库能对上。</div>
+      <div class="map"><b>里面有</b> 说过什么、花了多少、现在闲着还是在跑（关掉程序还在）<br>
+      <b>还有</b> 刚打进来还没领走的字；你批准/拒绝另记一本；给屏幕的通知</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">policy</span><span class="tag core">授权</span>
+      <div class="ol">这件事这次能不能做：可以、不行、先问你。</div>
+      <div class="map"><b>管</b> 三种答复，以及「问过你、你批了、用过一次就作废」</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">dispatch</span><span class="tag core">调用分发</span>
+      <div class="ol">按名字调用处理函数：模型生成、读文件、写文件、创建进程。</div>
+      <div class="map"><b>管</b> 登记能做哪些事、替别人叫出去。未装配授权则拒绝</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">persist</span><span class="tag steel">父 POM</span>
+      <div class="ol">上面是接口，第一刀一份实现。host 的 POM 依赖哪个，就用哪个。</div>
+      <div class="map"><b>api</b> 会话、审批这些 Tepeu 自己的状态读写<br>
+      <b>第一刀</b> sqlite</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">llm</span><span class="tag steel">父 POM</span>
+      <div class="ol">网关统一调用。实现挂在网关后。</div>
+      <div class="map"><b>gateway</b> 从记录裁出模型该看的，再交给后面的实现<br>
+      <b>第一刀</b> fake 挂在网关后。系统提示由 load 拼好再交给 gateway / loop</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">execution</span><span class="tag steel">工作区</span>
+      <div class="ol">读文件、写文件、跑命令，只动工作区。</div>
+      <div class="map"><b>管</b> 文件和进程，关在指定目录里。隔离程度如实报告</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">loop</span><span class="tag steel">跑一轮</span>
+      <div class="ol">读本子 → 问大模型 → 用工具 → 再写下。</div>
+      <div class="map"><b>管</b> 领走你打的字、跑有限的几步、判断做完了没有、闲着时压缩旧记录。工具经 dispatch</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">identity</span><span class="tag word">共用类型</span>
+      <div class="ol">谁、在哪个工作区、哪一次对话。</div>
+      <div class="map"><b>里面</b> Principal、Workspace、SessionId、调用上下文</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">syscall</span><span class="tag word">共用类型</span>
+      <div class="ol">一次具名操作的信封：叫什么、参数、结果、用量。</div>
+      <div class="map"><b>里面</b> 名称、参数、返回值、用量、参数摘要</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">conformance</span><span class="tag word">测试套件</span>
+      <div class="ol">给各模块写的契约测试，换实现也能跑同一套断言。</div>
+      <div class="map"><b>管</b> 测试代码，验证接口有没有被守住</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">commands</span><span class="tag app">斜杠表</span>
+      <div class="ol">名称 → 处理函数。不经模型、不经 dispatch。</div>
+      <div class="map"><b>第一刀</b> /help /approve /status /btw。/btw 看本子问一句，不写对话、不调工具</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">load</span><span class="tag app">装配</span>
+      <div class="ol">注入实现、拼系统提示、登记斜杠命令。</div>
+      <div class="map"><b>管</b> 看见四层与 commands。把 host 加载的实现注入网关与 persist 口</div>
+    </div>
+
+    <div class="pcard">
+      <span class="nm">host</span><span class="tag app">你看见的程序</span>
+      <div class="ol">Spring Boot（无 Web）。终端。</div>
+      <div class="map"><b>管</b> POM 依赖哪个实现，就加载哪个，交给 load。`/` 行交给 commands</div>
+    </div>
+
+  </div>
+</section>
+
+<section id="relations">
+  <h2><span class="no">04</span>谁找谁</h2>
+  <p class="lead">依赖只朝下。被调用方不知道调用方。persist 不知道 session；session 是调用方，要知道 persist。</p>
+  <h3>跑起来</h3>
+  <div class="arch-frame"><div class="arch-pre">
+<u>host</u>（你看见的程序）
+  按 POM 加载实现 ──► <b>load</b> 装配、拼系统提示
+  打开持久化 ──► <b>persist</b>
+  你打字，或打斜杠
+     │
+     ├─ 普通对话 ──► <b>loop</b> ──读──► <b>session</b>（这次对话的记录）
+     │                  │
+     │                  └─具名操作──► <b>dispatch.invoke</b> ──授权──► <b>policy</b>
+     │                                 │
+     │                                 ├─► <b>llm/gateway</b>  统一调用（后面挂 fake）
+     │                                 └─► <b>execution</b>   动文件/命令
+     │
+     └─ 斜杠 ──► <b>commands</b>
+           /help     列出命令
+           /approve  写入审批记录
+           /status   读本子
+           /btw      旁问：看本子，不写对话、不调工具
+  打开持久化 ──► persist（host 加载，load 注入）
+  </div></div>
+
+  <h3>写代码时谁依赖谁</h3>
+  <div class="tbl-wrap"><table class="tbl">
+    <tr><th>文件夹</th><th>依赖</th></tr>
+    <tr><td><b>identity / syscall</b></td><td>彼此（syscall 用 identity 的名字）</td></tr>
+    <tr><td><b>persist/api</b></td><td>读写接口</td></tr>
+    <tr><td><b>session</b></td><td>identity、syscall、persist/api</td></tr>
+    <tr><td><b>policy</b></td><td>identity、syscall、persist/api</td></tr>
+    <tr><td><b>dispatch</b></td><td>identity、syscall、policy；处理函数接口</td></tr>
+    <tr><td><b>llm/gateway</b></td><td>identity、syscall、session</td></tr>
+    <tr><td><b>execution</b></td><td>identity、syscall</td></tr>
+    <tr><td><b>loop</b></td><td>identity、syscall、session、policy、dispatch</td></tr>
+    <tr><td><b>commands</b></td><td>identity、syscall、session、policy、dispatch</td></tr>
+    <tr><td><b>load</b></td><td>四层、commands；host 交来的实现</td></tr>
+    <tr><td><b>host</b></td><td>load；POM 选定的 persist / llm 实现</td></tr>
+  </table></div>
+
+  <h3>已定走法</h3>
+  <div class="tbl-wrap"><table class="tbl">
+    <tr><th>走法</th><th>是什么</th></tr>
+    <tr><td>依赖只朝下</td><td>Maven、import、运行时调用都朝下。persist 不知道 session；session 调用 persist-api</td></tr>
+    <tr><td>具名操作经 <b>dispatch.invoke</b></td><td>模型生成与工作区 I/O 走这里。打开持久化、/approve 是宿主与审批写入</td></tr>
+    <tr><td>session、policy 使用已打开的访问口</td><td>host 打开并负责生命周期</td></tr>
+    <tr><td>给大模型看的那一截，从 <b>llm</b> 裁</td><td>依据是事件日志</td></tr>
+    <tr><td>人手动做过的，记在操作审计</td><td>批准、拒绝等</td></tr>
+    <tr><td>「做完了」一处宣判，依据是事件日志</td><td>单一判定点</td></tr>
+  </table></div>
+</section>
+
+<section id="pipelines">
+  <h2><span class="no">05</span>实际怎么走</h2>
+  <p class="lead">打字和斜杠命令已经能用。其余见规划未决。</p>
+
+  <div class="pipe">
+    <div class="t">开机</div>
+    <div class="d">host（Spring Boot）按 POM 加载 persist / llm 实现 → load 装配、拼系统提示、登记斜杠与「问大模型」「动文件/命令」→ 等你打字</div>
+  </div>
+  <div class="pipe">
+    <div class="t">你打字</div>
+    <div class="d">字先放下 → loop 领走 → 看看本子 → 裁出模型该看的 → 出门问大模型 → 模型要动文件就再出一次门 → 写下结果 → 看本子判断做完了没有<br>对话进对话记录，花费进花费那本。系统提示由 load 拼好</div>
+  </div>
+  <div class="pipe">
+    <div class="t">你打斜杠</div>
+    <div class="d">/help 列出命令 · /approve 你点头或拒绝 · /status 看本子上有哪些记录 · /btw 旁问一句（不写对话、不调工具）<br>你动手的结果记在操作审计。用量进花费那本</div>
+  </div>
+  <div class="pipe">
+    <div class="t">闲着时整理旧记录</div>
+    <div class="d">没人打字的空隙，loop 压缩旧对话。经 dispatch，写事件日志。你用 /status 能对上</div>
+  </div>
+</section>
+
+<section id="rebar">
+  <h2><span class="no">06</span>已定与未决</h2>
+  <p class="lead">已定写在规划里。未决圈定后再实现。</p>
+  <div class="bar">
+    <span class="ok">产品：本机一个人，记下 + 先问</span>
+    <span class="ok">库根 tepeu/ · load · commands</span>
+    <span class="ok">host：Spring Boot（无 Web）</span>
+    <span class="wait">无对话直接 invoke · 未定</span>
+    <span class="wait">定时入队 · 未定</span>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <tr><th>已定</th><th>是什么</th></tr>
+    <tr><td><b>七个名字</b></td><td>session policy persist dispatch llm loop execution</td></tr>
+    <tr><td><b>两件纪律</b></td><td>本子能对上；点名做事先问。session 有闲着/在跑，以及放字的口子</td></tr>
+    <tr><td><b>具名操作先授权</b></td><td>模型生成与工作区 I/O 经 dispatch。打开持久化、/approve 是宿主与审批写入</td></tr>
+    <tr><td><b>三本 + 操作审计</b></td><td>对话、花费、可覆盖状态（关掉还在）；人手动过的记操作审计。通知给屏幕</td></tr>
+    <tr><td><b>依赖方向</b></td><td>上一张「谁依赖谁」</td></tr>
+    <tr><td><b>一次一个模块</b></td><td>写完、测完、装上，再动下一个</td></tr>
+    <tr><td><b>人出现在哪</b></td><td>新文件夹放哪、外来的东西放哪，你点。工具要批准时，你打 /approve</td></tr>
+  </table></div>
+</section>
+
+<footer>
+  结构说明。规划正文：docs/rewrite-0.md。
+</footer>
+</div>
+
+<script>
+const secs=[...document.querySelectorAll('section')];
+window.addEventListener('scroll',()=>{
+  let cur=secs[0].id;
+  secs.forEach(s=>{if(window.scrollY>=s.offsetTop-70)cur=s.id});
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur));
+},{passive:true});
+</script>
+</body>
+</html>

@@ -28,11 +28,11 @@
 | 本机默认实现 | `*.local` | `LocalProjectionBus`、`LocalCapabilityBus` |
 | 测试夹具 | `src/test` | `InMemory*` |
 
-不要发明 `autoconfigure` / `utils` / `support` / `common` 工具箱。`local` 是本机插头档，不是工具袋。根包只放端口和聚合口；实现进 `local` 或 `persist`。`InMemory*` 只许 `src/test`。
+不要发明 `autoconfigure` / `utils` / `support` / `common` 工具箱。`local` 是本机插头档，不是工具袋。根包只放端口和聚合口；实现进 `local` 或 `persist`。`InMemory*` 只许 `src/test`。根包 `interface` / `enum` 不得 import `*.local`（机器门：`os/compose` `PackageRoleTest`）。聚合口类（`Observation`、`SessionLoop`、compose 接线）可以下探本机插头；下一刀不要再往根包加引擎。
 
 - 新持久化适配器跟 `session` / `policy` 现有 persist 适配器走；组件不建连、不关库；JDBC/方言只在 `persist.sqlite`
 - 新投影只认 `ProjectionBus` 接口；本机默认 `LocalProjectionBus`，不写第二份契约
-- 模型可见管道进 `observation`（`Observation.view`），不进 `llm`
+- 模型可见管道在 `llm`（`Observation.view`），不另立盒子
 - `identity` / `syscall` 是词汇不是组件；边界写在 `package-info`，不新开运行时 logger
 - `InMemory*` 只测试夹具，不当发行默认
 - 完成态只经 entries + `CompletionGate`；host / 工具 / loop 不自报 `completed`

@@ -92,28 +92,29 @@ description: Comprehensive CLAUDE.md template — 通用行为规则 + 项目填
 
 ```
 Runtime: Java 21
-Mainline: os/（Maven；组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为实现；词汇 identity/syscall）
-Host: host/（⑤ CLI；Spring Boot 4.0.7 无 Web；依赖 compose；非 os 组件）
-Database: 访问口是 persist/api `Persist`（组件只访问，不关库）；引擎口是 `PersistEngine`；host `DataSourceBuilder` 建连接后包成 Persist；适配器 Spring JDBC 7.0.8（无 ORM）；内存内核 `InMemoryAssembly` 仅测试
-llm.*: 禁止 Spring AI ChatModel（ADR-016 第十轮）
+规划: docs/rewrite-0.md（从零重写；新库根 tepeu/）
+模块: session / policy / persist（父 POM：api + sqlite 第一刀）/ dispatch / llm（网关统一调用，第一刀 fake 挂在网关后）/ execution / loop；共用类型 identity/syscall；测试套件 conformance
+Host: host/（进程入口、选 persist / llm 实现、装配、CLI、斜杠）
+llm.*: 自研协议与传输
 ```
 
-v1 工作台（`legacy/` / `main`，禁止当 `os/` 现状）：Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18 + Vite 6 + Tailwind CSS 4。
+标本在 `legacy/os-9/`。v1 工作台（`legacy/` / `main`）：Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18 + Vite 6 + Tailwind CSS 4。
 
 ## ✏️ 项目结构（develop 重写阶段）
 
 ```
-os/               重写主线：组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为实现；词汇 identity/syscall
-host/             ⑤ CLI 宿主（Spring Boot；不进 os/；依赖 tepeu-os-compose）
-legacy/           v1 只读标本（backend / frontend / experiments / scripts）——禁止加功能
-docs/             底板（os-baseplate.md）· 手册独有章 · 诚实度 · archive/
+docs/rewrite-0.md 从零重写规划（当前必读）
+tepeu/            新库根（第一刀进行中）
+legacy/os-9/      冻结标本（os + host）
+legacy/           v1 只读标本
+docs/             规划、结构说明、archive/
 memory/           项目记忆与交接
-Product-Spec.md   v1 产品规格档案（Forge 门要求根目录；不是 develop 规范）
+Product-Spec.md   v1 产品规格档案（Forge 门要求根目录）
 DEV-PLAN.md       v1 交付切片档案
 CONTEXT.md        进度快照
 ```
 
-规范以 ADR-016（`memory/decisions-log.md`）为准；实施底板 `docs/os-baseplate.md`。
+规范以 [`docs/rewrite-0.md`](docs/rewrite-0.md) 为准。
 `Dockerfile` / `docker-compose.yml` / `RELEASE_NOTES-*.md` 属 v1 遗留，随 legacy 视图看待。
 
 规则：agent 生成的代码必须遵循上述结构。不得在列出的目录之外放置文件，除非先询问。
@@ -138,7 +139,7 @@ CONTEXT.md        进度快照
 
 **离开前** — 更新 `memory/handoff.md`：当前阶段、已完成/待办项、blocker、变更文件、关键 ADR。
 
-**到达后** — 按序读取（不依赖聊天历史）：`handoff.md` → `CONTEXT.md` → `docs/os-baseplate.md` + `docs/agent-os-gap.md` → `project-memory.md`（**develop**）+ `decisions-log.md`（**ADR-016**）→ 此文件。`Product-Spec.md` / `DEV-PLAN.md` 是 **v1 档案**，不是 develop 排期。v1 工作台记忆在 `docs/archive/v1/project-memory-v1.md`。`.forge/active-scope.json` 若存在则再读。
+**到达后** — 按序读取：`handoff.md` → `CONTEXT.md` → `docs/rewrite-0.md`。标本 `legacy/os-9/`。`Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。`.forge/active-scope.json` 若存在则再读。
 
 ## 记忆系统
 
@@ -153,7 +154,7 @@ CONTEXT.md        进度快照
 - 不经询问不删除/恢复代码 · 不 force push · 不硬编码密钥
 - 始终使用指定包管理器 · 提交前确认当前分支
 - **切先于填**：写业务代码前先给切口清单（或 `none`）。新组件 / 新端口 / schema / 完成权先问。本组件第三份同构必须抽。人审只审切口，不审方法级优雅。全文 → `.claude/skills/_shared/cut-before-fill.md`
-- **结构优先于文笔**：角色清晰、找文件不用猜，比单文件优雅更能让项目活下去。根包摊实现、词汇层堆 `*Utils`、为变漂亮打乱角色 = 泥球前兆，日抛。土可以留；角色放错必须改。**人在纹理**：人守切法与切口，不审单文件文笔。
+- **结构优先于文笔**：角色清晰、找文件不用猜，比单文件优雅更能让项目活下去。根包摊实现、词汇层堆 `*Utils`、为变漂亮打乱角色 = 泥球前兆，日抛。土可以留；角色放错必须改。**人在纹理**：人守切法与切口，不审单文件文笔。约束冻在目录 / Maven / 机器门，不冻在提示词。
 
 ---
 

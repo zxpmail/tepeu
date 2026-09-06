@@ -1,28 +1,27 @@
 # Project Memory — Tepeu（develop）
 
-当前：**本机 Agent OS 骨架可演示**（五层落码）。仍不是企业 Agent OS / 完整 OS。规范 [ADR-016](./decisions-log.md)。下一刀按痛点：⑤ UI、记忆平面、多副本 fencing。
+当前：**从零重写**（2026-09-06）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity 待人审。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
-v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。**不要**按那份写 `os/`。
+v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
 ## Tech stack（develop）
 
 - Runtime: Java 21
-- 主线：`os/`（Maven；组件 session/policy/persist/observation/bus/llm/loop/orchestration/execution/compose；persist/sqlite 为实现；词汇 identity/syscall；harness conformance）
-- ⑤ 应用：`host/`（Spring Boot 4.0.7 CLI；依赖 compose；**非 os 组件**）
-- 验证：`mvn -f os/pom.xml test`；宿主 `mvn -f os/pom.xml install -DskipTests && mvn -f host/pom.xml test`
-- 持久化：SQLite WAL schema v1（发行 `SqliteAssembly` → `kernel.sqlite` + `approvals.sqlite`）；内存内核 `InMemoryAssembly` 仅测试
-- `llm.*`：**禁止** Spring AI `ChatModel`（ADR-016 第十轮；自研双协议族）
-- v1 工作台：`legacy/` / `main`（Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18）。禁止在 `legacy/` 加功能
+- 规划模块：session / policy / persist（父 POM：api + sqlite 第一刀）/ dispatch / llm（网关统一调用，第一刀 fake 挂在网关后）/ execution / loop；共用类型 identity/syscall；测试套件 conformance
+- host：进程入口、选 persist / llm 实现、装配、CLI、斜杠。新 host 尚未建
+- 验证：`mvn -f tepeu/pom.xml test`。标本对照：`mvn -f legacy/os-9/os/pom.xml test`
+- 持久化：`persist` 父 POM（api + sqlite 第一刀）。session/policy 只依赖 api。host 第一刀依赖 persist-sqlite、llm-fake
+- `llm.*`：自研协议与传输
+- v1 工作台：`legacy/` / `main`（Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18）
 
 ## Architecture（develop）
 
-- 洋葱：① 内核概念 → ② 插头 → ③ 编排（④ 已并入）→ ⑤ 应用。物理单元 = 组件（一件事一模块）；洋葱是依赖方向不是两个大 jar
-- 内核新代码进 `os/`；⑤ 宿主进根目录 `host/`。根目录 `backend/` `frontend/` 已迁 `legacy/`
-- `Product-Spec.md` 是 v1 档案（Forge 门要求留在根目录），不是 `os/` 规范
+- 规划见 [`docs/rewrite-0.md`](../docs/rewrite-0.md)。标本 `legacy/os-9/`。
+- `Product-Spec.md` 是 v1 档案（Forge 门要求留在根目录）
 
 ## 口径
 
-冲突时：**ADR-016 > 底板 > 手册独有章 > v1 规格**。参照在 `docs/archive/`。禁止再开对账轮、再写第三份投影。
+规划以 [`docs/rewrite-0.md`](../docs/rewrite-0.md) 为准。`Product-Spec.md` 是 v1 档案。
 
 吸收：`docs/legacy-absorption.md` · `docs/work-docs-absorption.md` · `docs/archive/reference/gnex3-reference.md` · `docs/archive/reference/agent-runtime-security-series.md`（九宫格对账；Gate=边界脚本；Observation 已开 jar；gate/response 空 jar 不预开）  
 勿吸内核：`spacexp-structure.md`（结构标本，不吸 Spring starter）；`tencent-harness-engineering.md`（AI Coding）；`ai-eval-observability-pipeline.md`（评测可观测运维）；`terax-ai.md`（⑤ ADE 产品，不同线）；`grok-bot-reference.md`（⑤ Computer-Use + 重建 host；WAL/完成通道/`directionEpoch` 可扫，勿按 35 槽改组件；Router/Local Docker 是重建新增）；`maka-reference.md`（log-first 同线工作台；机制可扫，勿开 Graph/Eval jar，勿降级 `llm.*` 断言）；`genericagent-reference.md`（个人 Computer-Use + 技能自结晶；不同线，循环自报完成，不吸）；`goose-reference.md`（Rust 本机 Agent + MCP；状态=对话投影已有同形，不吸 AlwaysAllow / 调度器）；`deer-flow-reference.md`（LangGraph 超级 Agent 工作台；`/goal`+评估器当完成门，不吸）；`lifeos-reference.md`（个人意图层，骑在 CC 一类 harness 上；名字带 OS，不是内核）；`aios-reference.md`（学术「LLM as OS」；C4/C5/C6 已落，不因 HEAD 再开调度）；`osone-ai-reference.md`（Gemini+Tuya 家居 Jarvis；不同线）；`osone-reference.md`（Common-joeAI 愿景仓；叙事空壳，勿与前者混）；`earthwalker-agent-os-reference.md`（本机编码 harness；绿构建当完成，不进内核）；`openclaw-reference.md`（Gateway+频道助手；可信面/策略在代码已有同形，默认沙箱关不抄）
@@ -32,15 +31,16 @@ v1 工作台记忆（Chat 链路 / `ChatModelFactory` / 面板坑点）在 [`doc
 - 包管理器是 **Maven**，不是 Gradle。本机仓库常在 `D:\maven\repo`（非默认 `~/.m2`）
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件
 - 不要把新能力倒进「大包」；领域默认跟组件走。JDBC/方言只在 `persist`。组件 ≠ 插件（无 Ctx / 无热插）
-- Loop 不依赖 orchestration：`LoopConfig.system` 只转发；assemble 是调用方纪律
-- `identity`/`syscall` 是词汇；`session` 是组件：边界写在 `package-info` / 端口 Javadoc；词汇与 session **不**加 slf4j（真相=entries/ledger/AuditSink）。运维日志分层、禁止挂到 Persist 口：loop=`kind/steps` + 短码 reason（句子/SQL 不打）；bus=拦截；host=`component=host persist=kernel|approvals` 与 `surface=`。`Persist` 不知道哪套库。不抽日志工具袋。不打 SQL / args / digest / 密钥 / 正文
-- persist：访问口是 `Persist`（jdbc/tx/script）；引擎口是 `PersistEngine`（ServiceLoader）。session/policy/compose Wired **不关库**。host Persist bean / 测试夹具关。host `DataSourceBuilder` 后 `Persist.jdbc`；prepare 失败须关池。`SqliteDataSources.access` 是测试夹具（仍在发行 jar，未迁 test）。换方言仍改适配器 SQL。`os/` 依赖 spring-jdbc 7.0.8，不起 Boot 容器，不上 ORM。会话内存夹具在 `src/test/.../memory`，经 test-jar 给下游测试。`InMemory*` 仅测试夹具。本机默认实现在各组件 `*.local`（如 `LocalCapabilityBus`、`LocalProjectionBus`）；根包只留端口/聚合口/值对象，**不得 import `*.local`**（`LlmTransports.prepare` / `OsJails.detect`）。`ProjectionBus` 是接口（本机路径也只认接口）；`LocalProjectionBus` 不是第二份契约。其他组件可实现可不实现、可不订阅。MQ/Redis/NATS 升版再换，本骨架不引入 broker。模型可见管道在 `observation`（入口 `Observation.view`）；llm 只投影+传输。端口验收套件在各组件 `src/test`，不进发行 jar。任务收口须记 `task-history`
-- **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离仍是 **partial**。compose 不读密钥。`InMemoryAssembly` 不得当生产默认
+- 系统提示装配归属未定（llm 或 loop）。控制循环不引用工具实现类。
+- `identity`/`syscall` 是共用类型；`session` 是模块。真相=事件日志/用量流水/操作审计。不抽日志工具袋。不打 SQL / args / digest / 密钥 / 正文
+- persist：session/policy 只依赖 api，不关库。host 选实现并负责生命周期。接口不含 JDBC / SQL / 对象存储 SDK。与 execution 工作区 I/O 不是同一套口。
+- **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离程度如实报告。host 读密钥，os 库不读。
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名
-- 控制循环可多（Loop / maintain / 工具 / 将来 Team）；**禁止第二处宣布 completed**。证据在 entries，宣判在 ③ `CompletionGate`——不要说「完成权在内核」。不要在 host / orchestration / execution / 工具自报成功终态。重试资格尚未统一入账本，禁止另开成功/再试旁路
+- **禁止第二处宣布 completed**。证据在事件日志，宣判只一处。工具回报、模型文本、进程退出码都不是终态。
 - 「OS」= 分层纪律，不是完整 OS。内核有 Inbox/claim，**没有调度器**。不为了更像 OS 开调度切片。不要改成「按 CC 模式做」；CC 只吸 ③ 机制
 - 不要在 `legacy/` 加功能
 - `Product-Spec` 七层 / 四智能体 / 记忆 P0 / WASM+V8 **不是** `os/` 现状
 - **切先于填**（`.claude/skills/_shared/cut-before-fill.md`）：写码前切口清单或 `none`；新组件/端口/schema/完成权先问；第三份同构必须抽；人审只审切口。实现纪律「不写未来抽象」不得盖过这条。纹理对着 `.forge/project-taste.md` 的近邻，不另起组织法
-- **结构标本 spaceXP**（[zxpmail/spaceXP](https://github.com/zxpmail/spaceXP)，`docs/archive/reference/spacexp-structure.md`）：学「一件事一个模块 + 模块内角色固定」。不吸 Spring starter / AOP / common-utils。不因对照重切已有根包。结构糊 = 泥球 = 日抛；土可以留，角色放错必须改
+- **结构标本 spaceXP**（[zxpmail/spaceXP](https://github.com/zxpmail/spaceXP)，`docs/archive/reference/spacexp-structure.md`）：学「一件事一个模块 + 模块内角色固定」。不吸 Spring starter / AOP / common-utils。不因对照重切已有根包。结构糊 = 泥球 = 日抛；土可以留，角色放错必须改。约束冻在 Maven / 角色档 / `PackageRoleTest`，不冻在提示词。不上微服务换墙。根包 `interface`/`enum` 不得 import `*.local`；`InMemory*` 不得进 `src/main`
+

@@ -7,3 +7,4 @@
 | `reference/` | CC / Pi / OpenCode / AIOS / TriniOS / Netty / gnex3 / Agent 运行时安全系列；`tencent-harness-engineering.md` / `ai-eval-observability-pipeline.md` / `terax-ai.md` = **勿当 os 内核参照**（⑤ 产品或运维姿态） |
 | `essays/` | v1 Spring AI 实验文 |
 | `v1/` | IDE shell 草稿、Phase 2 计划、v1 project-memory 标本 |
+| `os-9/` | 2026-09-06 九组件结构照片（observation 已并）。不是规范。源码在 `legacy/os-9/` |
