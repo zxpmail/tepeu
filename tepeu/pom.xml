@@ -16,6 +16,7 @@
         <module>persist</module>
         <module>kernel</module>
         <module>run</module>
+        <module>commands</module>
     </modules>
 
     <properties>
@@ -83,6 +84,11 @@
             <dependency>
                 <groupId>com.tepeu</groupId>
                 <artifactId>tepeu-loop</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-commands</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

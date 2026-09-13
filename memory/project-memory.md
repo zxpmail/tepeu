@@ -1,6 +1,6 @@
 # Project Memory — Tepeu（develop）
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm 已过审；execution + loop 合刀已推待人审；下一刀未圈（commands 或 load/host）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop 已过审；commands 已推待人审；下一刀未圈（load / host 或 conformance）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
 v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 

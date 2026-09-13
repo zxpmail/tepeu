@@ -4,16 +4,25 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-14（llm 过审；execution + loop 合刀已落待人审）
+**Last updated**: 2026-09-14（execution+loop 过审 `6c73df9`；commands 刀已落待人审）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`（人审过 2026-09-14）、`execution` + `loop`（合刀，已落待人审）。
-- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`（TOOL_RESULT 进可见序列）。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（commands 或 load/host）。
+- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`（人审过 2026-09-14）、`commands`（已落待人审）。
+- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（load / host，或 conformance）。
 
-## 本刀 execution + loop（合刀）
+## 本刀 commands
+
+- 路径 `tepeu/commands`（根包 `com.tepeu.commands`）。依赖 identity、syscall、session、policy、dispatch；不依赖 run 层实现模块。
+- `Commands(approvals, dispatch)` + `execute(Session, line)` → 印给操作者的文本；输入错误回用法，不抛。
+- 四条：`/help` 表；`/approve <id>` 只收本会话 approvalId（异会话拒、已决拒、决策后写 audit）；`/status` 只读账（类型计数、loop.state、用量、本会话未决审批，不打正文）；`/btw <问>` 经 dispatch 按名调 `llm.generate`（仅 idle，用量进流水，不写事件日志）。未知命令回表。
+- 问句参数第一刀被 gateway 忽略（fake 固定文本）；真模型刀再定传问句形制。
+- 测试：6 绿（sqlite 真栈：审批三分支、账本摘要不打正文、btw 空闲门 + 失败透传）。
+- 验证：`mvn -f tepeu/pom.xml test`（全树 71 绿，18 模块）。
+
+## 上一刀 execution + loop（合刀）
 
 - **execution**：包 `com.tepeu.execution`，`Workspace`（root 由 load 注入）。四名对齐矩阵：`execution.fs.read` / `fs.write` / `proc.spawn` / `sandbox.probe`；方法签名对齐 dispatch.Handler，装配直接方法引用。
 - 路径圈禁 = resolve+normalize 限 root 内；不追符号链接、无 OS 级沙箱，probe 如实报告。spawn 30s 超时 destroyForcibly + waitFor；**只杀直接子进程**（孙进程占目录，见下欠账）。

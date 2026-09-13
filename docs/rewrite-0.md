@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）已推已过审；execution / loop 已落待人审（2026-09-14）。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）/ execution / loop 已推已过审；commands 已落待人审（2026-09-14）。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 

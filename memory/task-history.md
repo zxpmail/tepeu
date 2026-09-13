@@ -2,6 +2,7 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-09-14 | commands | 斜杠命令表刀 | /approve 只收本会话 approvalId、已决拒、决策写 audit；/status 只读账不打正文；/btw 仅 idle、经 dispatch 按名调 llm.generate、用量进流水不写日志；问句参数 gateway 第一刀忽略；不依赖 run 层实现模块 |
 | 2026-09-14 | execution+loop 合刀 | run 层收口，产品主形状立起 | @tool 首行协议（解析归 loop，不合式按答复）；工具轮上限 8；spawn 30s 超时；handler 码与门五码分家；Role.TOOL 进可见序列；destroyForcibly 后 waitFor；只杀直接子进程记欠账（OS 级隔离随标本 WindowsJob 类做） |
 | 2026-09-13 | 可观测裁定 | 生产日志口径 | 详尽日志=三本账+host 诊断层，内核不撒行式日志；被拒调用复用 TOOL_RESULT + attrs.error（不扩词汇）；host 挂 slf4j；persist kill -9 故障注入列入收口期。写入 rewrite-0 §3.2 |
 | 2026-09-13 | llm | run/llm gateway+fake 刀 | gateway 只读不写：visible 纯函数第一刀只放 USER/ASSISTANT_MESSAGE，assistant 事件归 loop 追加；结果与用量透传后端；fake 固定文本 Usage(1,1)；新增 run 聚合层（tepeu-run → tepeu-llm） |
