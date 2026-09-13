@@ -11,14 +11,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 一次调用的唯一门。invoke 序：取消检查 → 授权 → 查表 → 调用。
  * 一切失败合成 {@link SyscallResult}，不抛异常：
  * {@link #CANCELLED} / {@link #DENIED} / {@link #APPROVAL_REQUIRED} / {@link #NOT_FOUND} / {@link #HANDLER_ERROR}。
- * 未装配授权按 DENIED（fail-closed）；策略返回词汇表外值也按 DENIED。
+ * 未装配授权按 DENIED（fail-closed）；名字空白、策略返回词汇表外值、策略或审批通道抛错，也按 DENIED。
  * NEED_APPROVAL 先取既有决策（取走即消费），没有则登记新审批并回 APPROVAL_REQUIRED（output = approvalId）；
  * 决策后重试即放行或 DENIED，消费后再调须重新审批。
+ * 处理函数返回 null 合成 {@link #HANDLER_ERROR}（output = "null result"）。
  */
 public final class Dispatch {
 
@@ -58,20 +60,39 @@ public final class Dispatch {
         if (ctx.isCancelled()) {
             return SyscallResult.failure(CANCELLED, name);
         }
+        if (name.isBlank()) {
+            return SyscallResult.failure(DENIED, name);
+        }
         if (policy == null) {
             return SyscallResult.failure(DENIED, "policy not installed");
         }
         Syscall syscall = new Syscall(name, args);
-        PolicyVerdict verdict = policy.evaluate(ctx, syscall);
+        PolicyVerdict verdict;
+        try {
+            verdict = policy.evaluate(ctx, syscall);
+        } catch (RuntimeException e) {
+            return SyscallResult.failure(DENIED, "policy failed");
+        }
         if (verdict == PolicyVerdict.NEED_APPROVAL) {
             if (approvals == null) {
                 return SyscallResult.failure(DENIED, "approval channel not installed");
             }
-            Boolean allow = approvals.consumeDecision(ctx, syscall).orElse(null);
-            if (allow == null) {
-                return SyscallResult.failure(APPROVAL_REQUIRED, approvals.ask(ctx, syscall));
+            Optional<Boolean> decision;
+            try {
+                decision = approvals.consumeDecision(ctx, syscall);
+            } catch (RuntimeException e) {
+                return SyscallResult.failure(DENIED, "approval channel failed");
             }
-            if (!allow) {
+            if (decision.isEmpty()) {
+                String approvalId;
+                try {
+                    approvalId = approvals.ask(ctx, syscall);
+                } catch (RuntimeException e) {
+                    return SyscallResult.failure(DENIED, "approval channel failed");
+                }
+                return SyscallResult.failure(APPROVAL_REQUIRED, approvalId);
+            }
+            if (!decision.get()) {
                 return SyscallResult.failure(DENIED, name);
             }
         } else if (verdict != PolicyVerdict.ALLOW) {
@@ -82,7 +103,11 @@ public final class Dispatch {
             return SyscallResult.failure(NOT_FOUND, name);
         }
         try {
-            return handler.handle(ctx, syscall);
+            SyscallResult result = handler.handle(ctx, syscall);
+            if (result == null) {
+                return SyscallResult.failure(HANDLER_ERROR, "null result");
+            }
+            return result;
         } catch (RuntimeException e) {
             return SyscallResult.failure(HANDLER_ERROR, e.getClass().getSimpleName());
         }

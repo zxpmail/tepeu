@@ -2,6 +2,7 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-09-13 | dispatch 契约审计 | 全合成裁决收口 | 名字空白/policy 抛/审批通道抛一律合成 DENIED（fail-closed）；handler 回 null 合成 HANDLER_ERROR；ArgDigest 加长度前缀去歧义；失败类型/seq 语义/put-list 序归 conformance 刀 |
 | 2026-09-13 | dispatch | kernel/dispatch 刀 | 全合成结果不抛异常（人裁，弃 os-9 拦截走异常）；错误码 CANCELLED/DENIED/APPROVAL_REQUIRED/NOT_FOUND/HANDLER_ERROR；NEED_APPROVAL 先 consume 后 ask（反序会孤立 decide）；未装配按 DENIED；测试自带 FakeApprovalStore 不复制 persist 夹具 |
 | 2026-09-13 | policy | kernel/policy 刀 + session 收口 | 三值裁决 + 审批单次许可；approvalId 走序号簿（哈希在冻结时钟下撞键）；persist 无删除，决策/消费覆盖置章；SessionId 禁 `/`（identity 层）；open 不一致 fail fast；types 收紧 Usage 禁负、failure 必带码 |
 | 2026-09-13 | session 人审 | 审计 + 收口 | Log/Ledger/Audit 抽 `appendDated`/`readBook`（第三同构必须抽）；删死 null 检查；open 语义与 `/` 校验留 policy 前；单写者前提记档 |

@@ -11,6 +11,8 @@ import com.tepeu.identity.Principal;
 import com.tepeu.identity.PrincipalId;
 import com.tepeu.identity.SessionId;
 import com.tepeu.identity.WorkspaceId;
+import com.tepeu.policy.ApprovalRecord;
+import com.tepeu.policy.ApprovalStore;
 import com.tepeu.policy.PolicyVerdict;
 import com.tepeu.policy.local.DefaultRuleMatrix;
 import com.tepeu.syscall.Syscall;
@@ -18,6 +20,7 @@ import com.tepeu.syscall.SyscallResult;
 import com.tepeu.syscall.Usage;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -132,6 +135,101 @@ class DispatchTest {
         assertFalse(r.ok());
         assertEquals(Dispatch.HANDLER_ERROR, r.errorCode().orElseThrow());
         assertEquals("IllegalStateException", r.output());
+    }
+
+    @Test
+    void blankNameIsDenied() {
+        Dispatch d = new Dispatch(new DefaultRuleMatrix(), null);
+        SyscallResult r = d.invoke(ctx, "  ", Map.of());
+        assertFalse(r.ok());
+        assertEquals(Dispatch.DENIED, r.errorCode().orElseThrow());
+    }
+
+    @Test
+    void policyThrowIsDenied() {
+        AtomicBoolean reached = new AtomicBoolean(false);
+        Dispatch d = new Dispatch((c, s) -> {
+            throw new IllegalStateException("bad policy");
+        }, null);
+        d.register("llm.generate", (c, s) -> {
+            reached.set(true);
+            return SyscallResult.success("ok");
+        });
+        SyscallResult r = d.invoke(ctx, "llm.generate", Map.of());
+        assertFalse(r.ok());
+        assertEquals(Dispatch.DENIED, r.errorCode().orElseThrow());
+        assertFalse(reached.get());
+    }
+
+    @Test
+    void approvalChannelThrowIsDenied() {
+        ApprovalStore brokenConsume = new ApprovalStore() {
+            @Override
+            public String ask(InvokeContext c, Syscall s) {
+                return "ap-x";
+            }
+
+            @Override
+            public void decide(String approvalId, boolean allow, String decidedBy) {
+            }
+
+            @Override
+            public Optional<Boolean> consumeDecision(InvokeContext c, Syscall s) {
+                throw new IllegalStateException("persist down");
+            }
+
+            @Override
+            public Optional<ApprovalRecord> get(String approvalId) {
+                return Optional.empty();
+            }
+
+            @Override
+            public List<ApprovalRecord> records() {
+                return List.of();
+            }
+        };
+        Dispatch consumeFails = new Dispatch((c, s) -> PolicyVerdict.NEED_APPROVAL, brokenConsume);
+        assertEquals(Dispatch.DENIED, consumeFails.invoke(ctx, "execution.fs.write", Map.of())
+                .errorCode().orElseThrow());
+
+        ApprovalStore brokenAsk = new ApprovalStore() {
+            @Override
+            public String ask(InvokeContext c, Syscall s) {
+                throw new IllegalStateException("persist down");
+            }
+
+            @Override
+            public void decide(String approvalId, boolean allow, String decidedBy) {
+            }
+
+            @Override
+            public Optional<Boolean> consumeDecision(InvokeContext c, Syscall s) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<ApprovalRecord> get(String approvalId) {
+                return Optional.empty();
+            }
+
+            @Override
+            public List<ApprovalRecord> records() {
+                return List.of();
+            }
+        };
+        Dispatch askFails = new Dispatch((c, s) -> PolicyVerdict.NEED_APPROVAL, brokenAsk);
+        SyscallResult r = askFails.invoke(ctx, "execution.fs.write", Map.of());
+        assertFalse(r.ok());
+        assertEquals(Dispatch.DENIED, r.errorCode().orElseThrow());
+    }
+
+    @Test
+    void handlerNullResultBecomesHandlerError() {
+        Dispatch d = new Dispatch(new DefaultRuleMatrix(), null);
+        d.register("llm.generate", (c, s) -> null);
+        SyscallResult r = d.invoke(ctx, "llm.generate", Map.of());
+        assertFalse(r.ok());
+        assertEquals(Dispatch.HANDLER_ERROR, r.errorCode().orElseThrow());
     }
 
     @Test

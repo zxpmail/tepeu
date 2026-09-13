@@ -2,6 +2,7 @@ package com.tepeu.syscall;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,5 +57,15 @@ class SyscallTest {
         String b = ArgDigest.of(Map.of("a", "1", "b", "2"));
         assertEquals(a, b);
         assertEquals(ArgDigest.of(Map.of()), ArgDigest.of(null));
+    }
+
+    @Test
+    void argDigestSeparatesSeparatorBearingValues() {
+        String single = ArgDigest.of(Map.of("a", "b\nc=d"));
+        String pair = ArgDigest.of(Map.of("a", "b", "c", "d"));
+        assertNotEquals(single, pair);
+        String withEquals = ArgDigest.of(Map.of("a", "x=y"));
+        String twoKeys = ArgDigest.of(Map.of("a", "x", "y", ""));
+        assertNotEquals(withEquals, twoKeys);
     }
 }

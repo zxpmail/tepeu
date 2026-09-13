@@ -19,8 +19,9 @@
 - 公开：`Dispatch`（register / names 字典序 / invoke）+ `Handler`（函数接口）。
 - **全部合成结果（2026-09-13 裁）**：不抛异常。invoke 序：取消 → 授权 → 查表 → 调用。错误码 `CANCELLED` / `DENIED` / `APPROVAL_REQUIRED` / `NOT_FOUND` / `HANDLER_ERROR`。
 - 未装配 Policy 或审批通道按 DENIED（fail-closed）；策略返回 null 也 DENIED。NEED_APPROVAL **先 consume 后 ask**——顺序反了会把 decide 孤立掉。APPROVAL_REQUIRED 的 output 是 approvalId。handler 抛 RuntimeException 合成 HANDLER_ERROR（output 只带异常类名，不带 message 防泄漏）。
-- 测试：dispatch 8 绿，自带 FakeApprovalStore（未复制第三份 InMemoryPersist）。
-- 验证：`mvn -f tepeu/pom.xml -pl kernel/dispatch -am test`（全树 44 绿）
+- **契约审计收口（2026-09-13）**：名字空白、策略抛错、审批通道抛错也合成 DENIED（原先会穿门抛异常）；handler 返回 null 合成 HANDLER_ERROR；`ArgDigest` 键值带长度前缀，`{"a":"b\nc=d"}` 不再与两键混淆。契约其余缺口（失败类型点名、seq 语义、put-后-list 序、单写者前提进 javadoc、保留码归属）归 conformance 刀。
+- 测试：dispatch 12 绿（8+4），syscall 6 绿（5+1）。自带 FakeApprovalStore（未复制第三份 InMemoryPersist）。
+- 验证：`mvn -f tepeu/pom.xml test`（全树 49 绿）
 
 ## dispatch 刀遗留（人审可裁）
 

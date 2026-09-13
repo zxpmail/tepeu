@@ -89,7 +89,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 **具名操作**：用字符串名称调用的能力，例如模型生成、读文件、写文件、创建进程。
 
-**调用分发**（模块名 `dispatch`）：名称 → 处理函数 的注册表。方法名 `invoke(context, name, args)`：取消检查 → 授权 → 查表 → 调用处理函数。**一切失败合成 `SyscallResult`，不抛异常**（2026-09-13 裁）：错误码 `CANCELLED` / `DENIED` / `APPROVAL_REQUIRED` / `NOT_FOUND` / `HANDLER_ERROR`。未注册 `NOT_FOUND`（在授权之后查表，词汇表外的名先被矩阵 DENY）。未装配授权按 `DENIED`（fail-closed）。需批准：先取既有决策（取走即消费），无则登记新审批并回 `APPROVAL_REQUIRED`（output = approvalId）；决策后重试即放行或 `DENIED`，消费后再调须重新审批。
+**调用分发**（模块名 `dispatch`）：名称 → 处理函数 的注册表。方法名 `invoke(context, name, args)`：取消检查 → 授权 → 查表 → 调用处理函数。**一切失败合成 `SyscallResult`，不抛异常**（2026-09-13 裁）：错误码 `CANCELLED` / `DENIED` / `APPROVAL_REQUIRED` / `NOT_FOUND` / `HANDLER_ERROR`。未注册 `NOT_FOUND`（在授权之后查表，词汇表外的名先被矩阵 DENY）。未装配授权按 `DENIED`（fail-closed）；名字空白、策略抛错、审批通道抛错，同样合成 `DENIED`（2026-09-13 契约审计收口）。需批准：先取既有决策（取走即消费），无则登记新审批并回 `APPROVAL_REQUIRED`（output = approvalId）；决策后重试即放行或 `DENIED`，消费后再调须重新审批。处理函数返回 `null` 合成 `HANDLER_ERROR`；`args` 指纹（`ArgDigest`）带长度前缀，含换行/`=` 的参数不与多键混淆。
 
 一次调用对应一个处理函数。目录名是 `dispatch`，方法名是 `invoke`。调用信封的类型在 `syscall`。
 

@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code args} 指纹。键排序后 SHA-256。空 Map 摘要稳定。不解析业务语义。
+ * {@code args} 指纹。键排序后，键与值各带长度前缀做规范化，再 SHA-256；
+ * 含换行、{@code =} 的键值不与多键混淆。空 Map 摘要稳定。不解析业务语义。
  */
 public final class ArgDigest {
 
@@ -28,7 +29,9 @@ public final class ArgDigest {
             }
             String key = keys.get(i);
             String value = map.get(key);
-            canonical.append(key).append('=').append(value == null ? "" : value);
+            String safeValue = value == null ? "" : value;
+            canonical.append(key.length()).append(':').append(key).append('=')
+                    .append(safeValue.length()).append(':').append(safeValue);
         }
         try {
             byte[] hash = MessageDigest.getInstance("SHA-256")
