@@ -11,8 +11,10 @@
     <artifactId>tepeu-run</artifactId>
     <packaging>pom</packaging>
     <name>Tepeu Run</name>
-    <description>层3 干活与循环。第一刀子模块 llm</description>
+    <description>层3 干活与循环。子模块 llm、execution、loop</description>
     <modules>
         <module>llm</module>
+        <module>execution</module>
+        <module>loop</module>
     </modules>
 </project>

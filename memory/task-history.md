@@ -2,6 +2,7 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-09-14 | execution+loop 合刀 | run 层收口，产品主形状立起 | @tool 首行协议（解析归 loop，不合式按答复）；工具轮上限 8；spawn 30s 超时；handler 码与门五码分家；Role.TOOL 进可见序列；destroyForcibly 后 waitFor；只杀直接子进程记欠账（OS 级隔离随标本 WindowsJob 类做） |
 | 2026-09-13 | 可观测裁定 | 生产日志口径 | 详尽日志=三本账+host 诊断层，内核不撒行式日志；被拒调用复用 TOOL_RESULT + attrs.error（不扩词汇）；host 挂 slf4j；persist kill -9 故障注入列入收口期。写入 rewrite-0 §3.2 |
 | 2026-09-13 | llm | run/llm gateway+fake 刀 | gateway 只读不写：visible 纯函数第一刀只放 USER/ASSISTANT_MESSAGE，assistant 事件归 loop 追加；结果与用量透传后端；fake 固定文本 Usage(1,1)；新增 run 聚合层（tepeu-run → tepeu-llm） |
 | 2026-09-13 | dispatch 契约审计 | 全合成裁决收口 | 名字空白/policy 抛/审批通道抛一律合成 DENIED（fail-closed）；handler 回 null 合成 HANDLER_ERROR；ArgDigest 加长度前缀去歧义；失败类型/seq 语义/put-list 序归 conformance 刀 |

@@ -1,6 +1,6 @@
 # Project Memory — Tepeu（develop）
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch 已过审；llm（gateway+fake）已推待人审；下一刀未圈（execution 或 loop）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm 已过审；execution + loop 合刀已推待人审；下一刀未圈（commands 或 load/host）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
 v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
@@ -36,7 +36,8 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 - persist：session/policy 只依赖 api，不关库。host 选实现并负责生命周期。接口不含 JDBC / SQL / 对象存储 SDK。与 execution 工作区 I/O 不是同一套口。
 - session 五本账 seq、收件箱领取、policy approvalId 都是非原子读改写（`list().size()+1`），单进程单写者前提；loop 线程化前收口。`SessionId` 禁 `/`（identity 层构造器，2026-09-13 收紧）。
 - policy 审批：ask 幂等靠 `approval-pending` 索引；persist 无删除，decide/consume 是覆盖写置章（decidedAt/consumedAt）；许可绑 argsDigest，严格单次。
-- llm/gateway 只读事件日志派生模型可见序列（第一刀仅 USER/ASSISTANT_MESSAGE），不写事件、不记用量；assistant 事件由 loop 追加；接线归 load（`llm.generate` 参数留空、会话从 ctx 取）。
+- llm/gateway 只读事件日志派生模型可见序列（USER/ASSISTANT/TOOL_RESULT），不写事件、不记用量；assistant 事件由 loop 追加；接线归 load（`llm.generate` 参数留空、会话从 ctx 取）。
+- 工具请求协议：模型输出首行 `@tool 名 k=v;k=v`（2026-09-14 裁），解析在 loop/ToolRequest；工具轮 ≤8。handler 错误码与 dispatch 门五码分家（PATH_OUTSIDE_WORKSPACE / IO_ERROR / PROC_*）。spawn 只杀直接子进程，进程树杀灭随 OS 级隔离（§10 欠账）。
 - **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离程度如实报告。host 读密钥，os 库不读。
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名

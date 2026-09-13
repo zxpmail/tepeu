@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）已推（llm 待人审）。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）已推已过审；execution / loop 已落待人审（2026-09-14）。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -81,6 +81,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 - 事件日志 / 用量流水 / 操作审计是权威日志：结构化、按会话可查、可回放。内核组件（session / policy / dispatch / llm-gateway）不打行式日志，它们的「日志」就是账本。
 - 被拒的调用尝试（dispatch 错误码 `DENIED` 等）由 loop 记 `TOOL_RESULT` 事件，`attrs.error` 带错误码短码；body 只带名称，不带 args。
+- handler 级错误码与门五码分家（2026-09-14 裁）：门码 `CANCELLED` / `DENIED` / `APPROVAL_REQUIRED` / `NOT_FOUND` / `HANDLER_ERROR` 归 dispatch；handler 自报描述码（`PATH_OUTSIDE_WORKSPACE` / `IO_ERROR` / `PROC_TIMEOUT` / `PROC_EXIT_<n>` 等）。
 - host 挂 slf4j 诊断日志：装配 / 启动 / 致命异常栈。不打正文 / args / 密钥。
 - persist 故障注入：kill -9 后重开验账（WAL 恢复），归 conformance 或 loop 线程化收口期。
 
@@ -114,6 +115,8 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 从收件箱领取 → 读事件日志 → 构造模型请求 → `invoke` 模型生成 → 若返回工具请求则再 `invoke` → 追加事件（含被拒调用：`TOOL_RESULT` + `attrs.error`，见 §3.2）→ 完成判定。
 
+最小工具请求协议（2026-09-14 裁）：模型输出首行 `@tool 名称 k=v;k=v` 即工具请求，其余为最终答复；首行是工具请求时后续行忽略；不合式按最终答复处理。解析归 loop（`ToolRequest`），词汇表外的名照走门（先被矩阵 DENY）。工具轮至多 8，超限记 `REASONING` 收轮。寄存器 `loop.state` = running/idle。完成判定单一判定点 `Loop.complete`：最后一条事件是 `ASSISTANT_MESSAGE`。
+
 空闲时可做日志压缩（仍经调用分发，仍写事件日志）。
 
 轮次是循环自己的控制流。寄存器保存循环状态（空闲/运行），供查询。
@@ -122,7 +125,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 ## 6. 模型适配与工作区
 
-**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。第一刀可见词汇：`USER_MESSAGE` / `ASSISTANT_MESSAGE` 按日志序；工具、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。
+**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。第一刀可见词汇：`USER_MESSAGE` / `ASSISTANT_MESSAGE` / `TOOL_RESULT`（Role.TOOL）按日志序；工具请求、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。
 
 ```
 llm/                     packaging=pom
@@ -255,7 +258,7 @@ loop 经 dispatch 调用处理函数。斜杠经 commands。host 的 POM 依赖�
 
 ## 10. 未决
 
-第一刀无未决。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、llm / persist 的下一份实现。
+第一刀无未决。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、llm / persist 的下一份实现、OS 级执行隔离（spawn 现只杀直接子进程，进程树杀灭随 OS 级沙箱做）。
 
 session 遗留已定（2026-09-13）：`SessionStore.open` 不辨新建/读回；owner/workspace 与库里不一致 fail fast。`SessionId` 禁 `/`，收在 identity 层。剩余：session 五本账的 seq 分配与收件箱领取是非原子读改写（policy 的 approvalId 序号同此），单进程单写者前提，loop 线程化前收口。
 

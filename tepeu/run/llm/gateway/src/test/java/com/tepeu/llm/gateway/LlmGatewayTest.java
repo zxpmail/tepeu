@@ -18,10 +18,10 @@ import org.junit.jupiter.api.Test;
 class LlmGatewayTest {
 
     @Test
-    void visibleKeepsDialogueInLogOrder() {
+    void visibleKeepsDialogueAndToolResultsInLogOrder() {
         List<SessionEvent> events = List.of(
                 event(1, SessionEventType.USER_MESSAGE, "hi"),
-                event(2, SessionEventType.TOOL_CALL, "fs.read"),
+                event(2, SessionEventType.TOOL_CALL, "@tool execution.fs.read path=a.txt"),
                 event(3, SessionEventType.REASONING, "thinking"),
                 event(4, SessionEventType.ASSISTANT_MESSAGE, "hello"),
                 event(5, SessionEventType.PLAN_STEP, "step"),
@@ -30,6 +30,7 @@ class LlmGatewayTest {
         assertEquals(List.of(
                 new LlmMessage(Role.USER, "hi"),
                 new LlmMessage(Role.ASSISTANT, "hello"),
+                new LlmMessage(Role.TOOL, "bytes"),
                 new LlmMessage(Role.USER, "again")),
                 LlmGateway.visible(events));
     }

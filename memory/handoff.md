@@ -4,21 +4,33 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-13（dispatch 过审 + 契约审计收口 cb68c03；llm 刀已落待人审）
+**Last updated**: 2026-09-14（llm 过审；execution + loop 合刀已落待人审）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`（2026-09-13 人审过）、`llm`（gateway+fake，已落待人审）。
-- 2026-09-13 契约审计收口（`cb68c03`）：名字空白/policy 抛/审批通道抛合成 DENIED；handler 回 null 合成 HANDLER_ERROR；ArgDigest 长度前缀。契约其余欠账归 conformance 刀。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（run/ 层：execution 或 loop）。
+- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`（人审过 2026-09-14）、`execution` + `loop`（合刀，已落待人审）。
+- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`（TOOL_RESULT 进可见序列）。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（commands 或 load/host）。
 
-## 本刀 llm（gateway+fake）
+## 本刀 execution + loop（合刀）
+
+- **execution**：包 `com.tepeu.execution`，`Workspace`（root 由 load 注入）。四名对齐矩阵：`execution.fs.read` / `fs.write` / `proc.spawn` / `sandbox.probe`；方法签名对齐 dispatch.Handler，装配直接方法引用。
+- 路径圈禁 = resolve+normalize 限 root 内；不追符号链接、无 OS 级沙箱，probe 如实报告。spawn 30s 超时 destroyForcibly + waitFor；**只杀直接子进程**（孙进程占目录，见下欠账）。
+- **handler 码分家（2026-09-14 裁）**：门五码归 dispatch；handler 自报 `PATH_OUTSIDE_WORKSPACE` / `IO_ERROR` / `COMMAND_MISSING` / `PROC_TIMEOUT` / `PROC_EXIT_<n>`。
+- **loop**：包 `com.tepeu.loop`。`Loop.runOnce(Session)`：领取 → USER_MESSAGE → llm.generate → `@tool` 工具轮（≤8，超限记 REASONING）→ 终答 ASSISTANT_MESSAGE。失败调用（含 llm.generate 自身）记 `TOOL_RESULT` + `attrs.error`。`loop.state` 寄存器 running/idle；用量进流水；`Loop.complete(SessionLog)` 单一判定点。
+- **最小工具请求协议（2026-09-14 裁）**：输出首行 `@tool 名 k=v;k=v` 即工具请求，其余为最终答复；不合式按答复处理；解析归 `ToolRequest`。
+- gateway 扩量：`Role.TOOL`，TOOL_RESULT 进可见序列（回炉后模型看得见工具结果）。
+- 测试：execution 5 绿（含超时杀进程）、loop 7 绿（sqlite 真栈端到端：工具轮、DENIED 记账、轮次上限、空队列）。
+- 验证：`mvn -f tepeu/pom.xml test`（全树 65 绿，17 模块）。
+- **欠账**：进程树杀灭（标本 WindowsJob/bwrap 的活）随 OS 级隔离做，rewrite-0 §10 记档。
+
+## 上一刀 llm（gateway+fake）
 
 - 路径 `tepeu/run/llm/`（gateway + fake），父 POM 链 run → llm。gateway 依赖 session、syscall；不知道 dispatch / host。fake 只依赖 gateway、syscall。
 - gateway 公开：`LlmGateway`（generate(SessionLog)）+ `visible` 纯函数（事件日志 → 模型可见序列）+ `LlmBackend`（实现口）+ `LlmMessage`/`Role`。
 - **gateway 只读不写**：不追加事件、不记用量；assistant 事件由 loop 追加（§5 步骤归 loop）。结果与用量透传后端返回值。
-- 可见词汇第一刀：`USER_MESSAGE`/`ASSISTANT_MESSAGE` 按日志序；TOOL_CALL/TOOL_RESULT/REASONING/PLAN_STEP 不可见（工具落地时再裁 TOOL_RESULT）。
+- 可见词汇（2026-09-14 随 execution/loop 刀扩）：`USER_MESSAGE`/`ASSISTANT_MESSAGE`/`TOOL_RESULT` 按日志序；TOOL_CALL/REASONING/PLAN_STEP 不可见。
 - fake：离线固定文本 `FakeBackend.REPLY`，固定 Usage(1,1)。
 - 接线（load 落地时）：`dispatch.register("llm.generate", (ctx, s) -> gateway.generate(session.log()))`，参数留空、会话从 ctx 取。
 - 测试：gateway 3 绿 + fake 1 绿。

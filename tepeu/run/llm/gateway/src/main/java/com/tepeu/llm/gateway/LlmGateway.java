@@ -27,15 +27,23 @@ public final class LlmGateway {
         return backend.generate(visible(log.readAll()));
     }
 
-    /** 模型可见序列：对话两方按日志序；工具、推理、计划第一刀不可见。 */
+    /** 模型可见序列：对话两方与工具结果按日志序；工具请求、推理、计划不可见。 */
     public static List<LlmMessage> visible(List<SessionEvent> events) {
         Objects.requireNonNull(events, "events");
         return events.stream()
                 .filter(e -> e.type() == SessionEventType.USER_MESSAGE
-                        || e.type() == SessionEventType.ASSISTANT_MESSAGE)
-                .map(e -> new LlmMessage(
-                        e.type() == SessionEventType.USER_MESSAGE ? Role.USER : Role.ASSISTANT,
-                        e.body()))
+                        || e.type() == SessionEventType.ASSISTANT_MESSAGE
+                        || e.type() == SessionEventType.TOOL_RESULT)
+                .map(e -> new LlmMessage(roleOf(e.type()), e.body()))
                 .toList();
+    }
+
+    private static Role roleOf(SessionEventType type) {
+        return switch (type) {
+            case USER_MESSAGE -> Role.USER;
+            case ASSISTANT_MESSAGE -> Role.ASSISTANT;
+            case TOOL_RESULT -> Role.TOOL;
+            default -> throw new IllegalStateException("not visible: " + type);
+        };
     }
 }

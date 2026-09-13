@@ -76,6 +76,16 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-loop</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-core</artifactId>
                 <version>${mybatis-plus.version}</version>
