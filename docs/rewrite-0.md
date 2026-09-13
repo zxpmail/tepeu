@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch 已推（dispatch 待人审）。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）已推（llm 待人审）。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -75,6 +75,15 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 `persist` 的接口服务 Tepeu 自己的状态（会话记录、审批记录等）。工作区读文件、写文件、创建进程是 `execution` 的接口，经 `dispatch.invoke` 调用。两套接口、两套类型。
 
+### 3.2 可观测（2026-09-13 裁）
+
+详尽日志 = 三本账写全 + host 一层诊断日志，不往内核撒行式日志。
+
+- 事件日志 / 用量流水 / 操作审计是权威日志：结构化、按会话可查、可回放。内核组件（session / policy / dispatch / llm-gateway）不打行式日志，它们的「日志」就是账本。
+- 被拒的调用尝试（dispatch 错误码 `DENIED` 等）由 loop 记 `TOOL_RESULT` 事件，`attrs.error` 带错误码短码；body 只带名称，不带 args。
+- host 挂 slf4j 诊断日志：装配 / 启动 / 致命异常栈。不打正文 / args / 密钥。
+- persist 故障注入：kill -9 后重开验账（WAL 恢复），归 conformance 或 loop 线程化收口期。
+
 方法按语义命名：
 
 | 口 | 方法名（提案） |
@@ -103,7 +112,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 ## 5. 控制循环
 
-从收件箱领取 → 读事件日志 → 构造模型请求 → `invoke` 模型生成 → 若返回工具请求则再 `invoke` → 追加事件 → 完成判定。
+从收件箱领取 → 读事件日志 → 构造模型请求 → `invoke` 模型生成 → 若返回工具请求则再 `invoke` → 追加事件（含被拒调用：`TOOL_RESULT` + `attrs.error`，见 §3.2）→ 完成判定。
 
 空闲时可做日志压缩（仍经调用分发，仍写事件日志）。
 
@@ -113,7 +122,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 ## 6. 模型适配与工作区
 
-**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。
+**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。第一刀可见词汇：`USER_MESSAGE` / `ASSISTANT_MESSAGE` 按日志序；工具、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。
 
 ```
 llm/                     packaging=pom

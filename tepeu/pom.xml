@@ -15,6 +15,7 @@
         <module>types</module>
         <module>persist</module>
         <module>kernel</module>
+        <module>run</module>
     </modules>
 
     <properties>
@@ -62,6 +63,16 @@
             <dependency>
                 <groupId>com.tepeu</groupId>
                 <artifactId>tepeu-dispatch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-llm-gateway</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-llm-fake</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
