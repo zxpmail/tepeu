@@ -6,6 +6,7 @@ import java.util.Optional;
 /**
  * 结构化记录读写。{@code space} 由调用方命名。
  * {@code append} 只追加，键已在则失败。{@code put} 覆盖。{@code list} 按写入序。
+ * @author zxpma
  */
 public interface Persist {
 

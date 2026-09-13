@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 谁、哪个工作区、哪一次对话。取消是标志位，不是线程中断。
+ * @author zxpma
  */
 public final class InvokeContext {
     private final Principal principal;

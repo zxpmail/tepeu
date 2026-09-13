@@ -5,7 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-/** 表行。MyBatis-Plus 实体，不是 {@link com.tepeu.persist.PersistRecord}。 */
+/** 表行。MyBatis-Plus 实体，不是 {@link com.tepeu.persist.PersistRecord}。
+ * @author zxpma*/
 @TableName("persist_record")
 public class PersistRow {
 

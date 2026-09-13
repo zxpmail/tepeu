@@ -2,8 +2,10 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-09-13 | session 人审 | 审计 + 收口 | Log/Ledger/Audit 抽 `appendDated`/`readBook`（第三同构必须抽）；删死 null 检查；open 语义与 `/` 校验留 policy 前；单写者前提记档 |
+| 2026-09-07 | session | 事件 attrs | SessionLog.append 可带 Map，空合法。落库前缀 a.。其余审查项先留 |
+| 2026-09-07 | 第一刀 | session | kernel/session。五本账走 persist-api。无 fork / 压缩 / 列表。DEFAULT 一个对话 |
 | 2026-09-07 | persist-sqlite | 关库 / UNIQUE / WAL | close 置位+checkpoint；UNIQUE 认错误码不扫文本；WAL+busy_timeout=5000 |
-| 2026-09-06 | 第一刀 | persist-sqlite | MyBatis-Plus 3.5.17 + sqlite-jdbc 3.53.4.0。无 Boot starter。表 persist_record |
 | 2026-09-06 | 迁标本 | os host → legacy/os-9 | 源码不含 target。根目录不再有 os/ host/ |
 | 2026-09-06 | 人圈 | 落地三句 | 一个默认对话；读/问模型放行、写/跑先问；第一刀 fake |
 | 2026-09-06 | llm | 网关统一调用 | gateway 是口；fake 挂在网关后。loop 只调网关 |
@@ -26,9 +28,3 @@
 | 2026-09-05 | 钢筋机器门 | 约束冻在测试，不冻在提示词 | `PackageRoleTest`：根包契约禁 local import；InMemory* 禁 main；不新开 ArchUnit / 微服务 |
 | 2026-09-02 | host 读 CC Switch | 无 env 时用当前 Claude 供应商 | `ANTHROPIC_AUTH_TOKEN`；认 settings.json id；不进 os/；不打 key |
 | 2026-09-02 | 审查收口 | 根口倒依赖 / 关库所有权 / 日志短码 | `prepare`→`LlmTransports`；`detect`→`OsJails`；Wired 不关库；finish 不打 SQL；`SqliteDataSources`/`MemoryAssembly` 名未动 |
-| 2026-09-02 | 日志防泥球 | 身份归 host，Persist 口不挂 name | 曾短暂加过 `jdbc(ds,name)`，已删；`HostPersist`；引擎成功行不重复 |
-| 2026-09-02 | 运维日志 | 哑路径补必要日志 | 不新开组件；`System.Logger`；Loop 结局 / 总线拦截 / persist 生命周期 / CLI；不打正文与密钥 |
-| 2026-09-02 | 切先于填 | 实现/审核纪律拆成切 vs 填 | 共享协议 `cut-before-fill.md`；第三次同构必须抽；人审只审切口；未改 `os/` |
-| 2026-09-02 | spaceXP 结构 | 对照 zxpmail/spaceXP 收结构口味 | 学角色分包不学 starter；标本入 archive；未改 `os/` |
-| 2026-09-02 | os 角色重切 | 本机实现进 `*.local`；根包只留端口/聚合/值 | 无新 jar；`InMemoryCapabilityBus`→`LocalCapabilityBus`；os+host 测试过 |
-| 2026-08-29 | grok-bot 对账 | `C:\grok-bot-0.18-reconstructed-main` → `docs/archive/reference/grok-bot-reference.md` | ⑤ 不同线；机制可扫不立项；不新开 ADR；Router/Docker 是重建新增 |

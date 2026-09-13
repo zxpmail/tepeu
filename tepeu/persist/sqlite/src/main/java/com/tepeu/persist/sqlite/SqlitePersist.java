@@ -37,6 +37,7 @@ import java.util.function.Function;
 /**
  * persist 的 SQLite 实现。{@link #open(Path)} 打开文件库，调用方关。
  * 日志不打 SQL、JDBC URL、路径、字段正文。
+ * @author zxpma
  */
 public final class SqlitePersist implements Persist, AutoCloseable {
 

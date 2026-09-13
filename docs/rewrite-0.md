@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall 已推；persist-api + persist-sqlite 待人审。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session 已推；下一刀 policy。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -247,6 +247,8 @@ loop 经 dispatch 调用处理函数。斜杠经 commands。host 的 POM 依赖�
 ## 10. 未决
 
 第一刀无未决。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、llm / persist 的下一份实现。
+
+session 遗留、policy 刀前定：`SessionStore.open` 辨不辨新建/读回（不一致 fail fast 与否）；`SessionId` 含 `/` 的校验收在 store 层还是 identity 层。session 五本账的 seq 分配与收件箱领取是非原子读改写，单进程单写者前提，loop 线程化前收口。
 
 ---
 

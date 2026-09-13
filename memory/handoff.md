@@ -4,24 +4,28 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-07（persist-sqlite 三处补完，待人审）
+**Last updated**: 2026-09-13（session 人审过，下一刀 policy）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写：`identity`（已推）、`syscall`（已推）、`persist-api`、`persist-sqlite`（待人审）。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀是 session。
+- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`（2026-09-13 人审过）。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀是 policy。
 
-## 本刀 persist-sqlite
+## 本刀 session
 
-- 包 `com.tepeu.persist.sqlite`。依赖 persist-api。
-- 实现：MyBatis-Plus 3.5.17（`mybatis-plus-core` + `mybatis-plus-jsqlparser`）+ sqlite-jdbc 3.53.4.0。slf4j-api 2.0.18（MP 运行要）。
-- 不用 Spring Boot starter。host 以后才上 Spring。
-- 公开类型：`SqlitePersist.open(Path)`、`memory()`。`AutoCloseable`。关后操作抛 `IllegalStateException("persist closed")`。
-- 表 `persist_record`：id / space / rec_key / fields。通用行，不是 session 表。
-- 2026-09-07 补：`close()` 置 closed + WAL checkpoint；UNIQUE 只认 `SQLITE_CONSTRAINT_UNIQUE` / `PRIMARYKEY`；`SQLiteConfig` WAL + `busy_timeout=5000`；装配关 SQL 日志；`memory()` 建库失败删临时文件。
-- 未做：连接池、`putObject`、schema 迁移框架、原子 upsert
-- 验证：`mvn -f tepeu/pom.xml -pl persist/sqlite -am test`（persist-api 4 + persist-sqlite 5 绿）
+- 包 `com.tepeu.session`。路径 `tepeu/kernel/session`。依赖 identity、syscall、persist-api。不关库。
+- 公开：`SessionStore.open`（已有则读回，没有则建）。默认 id `SessionStore.DEFAULT`。
+- 五本账：事件日志（`append` 可带 attrs，空合法）/ 寄存器 / 用量流水 / 收件箱（NOW>NEXT>LATER，租约 300s，ack/nack）/ 操作审计。
+- 适配：`com.tepeu.session.persist.PersistedSessionStore`。space 名 `session/{id}/…`。序号簿骨架 `appendDated`/`readBook` 一份（人审要求抽第三同构）。
+- 未做：fork、recover、压缩面、blobs、投影通知、会话列表。
+- 验证：`mvn -f tepeu/pom.xml -pl kernel/session -am test`（session 7 绿）
+
+## policy 刀前要定的（session 遗留）
+
+- `SessionStore.open` 辨不辨新建/读回；owner/workspace 与库里不一致是否 fail fast。
+- `SessionId` 允许 `/`，space 拼接用它。第一刀撞不出（固定名表无 `/`）；做会话列表或动态名前，在 store 层或 identity 层收紧。
+- session 五本账 seq 分配与收件箱领取是非原子读改写，单进程单写者前提。loop 线程化前收口。
 
 ## 已定（2026-09-06 人圈）
 

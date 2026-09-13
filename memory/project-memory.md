@@ -1,6 +1,6 @@
 # Project Memory — Tepeu（develop）
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall 已推；persist-api + persist-sqlite 三处已补、待人审。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session 已推；下一刀 policy。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
 v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
@@ -34,6 +34,7 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 - 系统提示装配归属未定（llm 或 loop）。控制循环不引用工具实现类。
 - `identity`/`syscall` 是共用类型；`session` 是模块。真相=事件日志/用量流水/操作审计。不抽日志工具袋。不打 SQL / args / digest / 密钥 / 正文
 - persist：session/policy 只依赖 api，不关库。host 选实现并负责生命周期。接口不含 JDBC / SQL / 对象存储 SDK。与 execution 工作区 I/O 不是同一套口。
+- session 五本账的 seq 分配与收件箱领取是非原子读改写（list→算→写），单进程单写者前提；loop 线程化前收口。`SessionId` 允许 `/`，space 拼接用它——会话列表前收紧。
 - **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离程度如实报告。host 读密钥，os 库不读。
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名
