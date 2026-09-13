@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * 一次调用的结果。失败不抛：{@code ok=false} + {@code errorCode}。
+ * 一次调用的结果。失败不抛：{@code ok=false} + 非空 {@code errorCode}。
  * {@link Usage} 空 = 未知。
  */
 public record SyscallResult(
@@ -17,6 +17,9 @@ public record SyscallResult(
         Objects.requireNonNull(output, "output");
         errorCode = errorCode == null ? Optional.empty() : errorCode;
         usage = usage == null ? Optional.empty() : usage;
+        if (!ok && (errorCode.isEmpty() || errorCode.get().isBlank())) {
+            throw new IllegalArgumentException("failure requires errorCode");
+        }
     }
 
     public static SyscallResult success(String output) {

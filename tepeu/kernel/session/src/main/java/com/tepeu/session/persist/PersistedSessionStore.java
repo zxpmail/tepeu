@@ -51,6 +51,12 @@ public final class PersistedSessionStore implements SessionStore {
                 || workspaceValue == null || workspaceValue.isBlank()) {
             throw new IllegalStateException("session meta corrupt: " + id);
         }
+        if (!ownerValue.equals(owner.id().value())
+                || !workspaceValue.equals(workspace.value())) {
+            throw new IllegalStateException(
+                    "session " + id + " belongs to " + ownerValue + "/" + workspaceValue
+                            + ", not " + owner.id().value() + "/" + workspace.value());
+        }
         return new PersistedSession(
                 persist,
                 id,

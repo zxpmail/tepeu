@@ -3,13 +3,16 @@ package com.tepeu.syscall;
 import java.util.Optional;
 
 /**
- * 一次调用的用量。{@code cost} 空 = 未知，不填 0。
+ * 一次调用的用量。非负；{@code cost} 空 = 未知，不填 0。
  * 第一刀无缓存槽。
  */
 public record Usage(long inputTokens, long outputTokens, Optional<String> cost) {
 
     public Usage {
         cost = cost == null ? Optional.empty() : cost;
+        if (inputTokens < 0 || outputTokens < 0) {
+            throw new IllegalArgumentException("usage negative");
+        }
     }
 
     public Usage(long inputTokens, long outputTokens) {

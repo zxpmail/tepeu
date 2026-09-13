@@ -55,6 +55,16 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-policy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tepeu</groupId>
+                <artifactId>tepeu-dispatch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-core</artifactId>
                 <version>${mybatis-plus.version}</version>

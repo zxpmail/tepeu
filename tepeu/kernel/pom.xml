@@ -11,8 +11,10 @@
     <artifactId>tepeu-kernel</artifactId>
     <packaging>pom</packaging>
     <name>Tepeu Kernel</name>
-    <description>层2 账 + 门。第一刀子模块 session</description>
+    <description>层2 账 + 门。第一刀子模块 session、policy、dispatch</description>
     <modules>
         <module>session</module>
+        <module>policy</module>
+        <module>dispatch</module>
     </modules>
 </project>

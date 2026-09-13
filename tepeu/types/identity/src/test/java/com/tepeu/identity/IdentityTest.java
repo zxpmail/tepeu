@@ -15,6 +15,7 @@ class IdentityTest {
         assertThrows(IllegalArgumentException.class, () -> new PrincipalId(" "));
         assertThrows(IllegalArgumentException.class, () -> new WorkspaceId(""));
         assertThrows(IllegalArgumentException.class, () -> new SessionId("\t"));
+        assertThrows(IllegalArgumentException.class, () -> new SessionId("a/b"));
     }
 
     @Test

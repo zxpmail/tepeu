@@ -11,6 +11,6 @@ public interface SessionStore {
 
     SessionId DEFAULT = new SessionId("default");
 
-    /** 已有则返回库里的主人与工作区；没有则按参数建。 */
+    /** 没有则按参数建；已有则要求主人与工作区一致（不一致失败），并返回库里那条。 */
     Session open(SessionId id, Principal owner, WorkspaceId workspace);
 }

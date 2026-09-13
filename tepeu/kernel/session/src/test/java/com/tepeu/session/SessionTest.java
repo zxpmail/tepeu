@@ -96,6 +96,17 @@ class SessionTest {
     }
 
     @Test
+    void openRejectsMismatchedOwnerOrWorkspace() {
+        open(SessionStore.DEFAULT);
+        assertThrows(IllegalStateException.class,
+                () -> store.open(SessionStore.DEFAULT,
+                        new Principal(new PrincipalId("someone-else")), new WorkspaceId("ws")));
+        assertThrows(IllegalStateException.class,
+                () -> store.open(SessionStore.DEFAULT,
+                        new Principal(new PrincipalId("u")), new WorkspaceId("elsewhere")));
+    }
+
+    @Test
     void nackAndExpiredLeaseCanBeClaimedAgain() {
         Session session = open(SessionStore.DEFAULT);
         session.inbox().enqueue("one");

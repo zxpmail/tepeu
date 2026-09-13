@@ -37,6 +37,8 @@ class SyscallTest {
         assertFalse(fail.ok());
         assertEquals(Optional.of("DENIED"), fail.errorCode());
         assertEquals("no", fail.output());
+        assertThrows(IllegalArgumentException.class, () -> SyscallResult.failure(null, "no"));
+        assertThrows(IllegalArgumentException.class, () -> SyscallResult.failure(" ", "no"));
     }
 
     @Test
@@ -44,6 +46,8 @@ class SyscallTest {
         Usage usage = new Usage(3, 5);
         assertEquals(8, usage.totalTokens());
         assertTrue(usage.cost().isEmpty());
+        assertThrows(IllegalArgumentException.class, () -> new Usage(-1, 0));
+        assertThrows(IllegalArgumentException.class, () -> new Usage(0, -1));
     }
 
     @Test

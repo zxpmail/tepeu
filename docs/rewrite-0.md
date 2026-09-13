@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session 已推；下一刀 policy。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch 已推（dispatch 待人审）。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -89,11 +89,11 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 **具名操作**：用字符串名称调用的能力，例如模型生成、读文件、写文件、创建进程。
 
-**调用分发**（模块名 `dispatch`）：名称 → 处理函数 的注册表。方法名 `invoke(context, name, args)`：取消检查 → 授权 → 调用处理函数。未注册则失败。未装配授权则拒绝。
+**调用分发**（模块名 `dispatch`）：名称 → 处理函数 的注册表。方法名 `invoke(context, name, args)`：取消检查 → 授权 → 查表 → 调用处理函数。**一切失败合成 `SyscallResult`，不抛异常**（2026-09-13 裁）：错误码 `CANCELLED` / `DENIED` / `APPROVAL_REQUIRED` / `NOT_FOUND` / `HANDLER_ERROR`。未注册 `NOT_FOUND`（在授权之后查表，词汇表外的名先被矩阵 DENY）。未装配授权按 `DENIED`（fail-closed）。需批准：先取既有决策（取走即消费），无则登记新审批并回 `APPROVAL_REQUIRED`（output = approvalId）；决策后重试即放行或 `DENIED`，消费后再调须重新审批。
 
 一次调用对应一个处理函数。目录名是 `dispatch`，方法名是 `invoke`。调用信封的类型在 `syscall`。
 
-**授权**：三值：`allow` | `deny` | `require_approval`。需批准时登记审批（会话、名称、参数摘要），操作者决定后单次消费。多条规则聚合：`deny` 优先于 `require_approval`，优先于 `allow`。
+**授权**：三值：`allow` | `deny` | `require_approval`（实现枚举 `ALLOW` / `DENY` / `NEED_APPROVAL`）。需批准时登记审批（会话、名称、参数摘要），操作者决定后单次消费。多条规则聚合：`deny` 优先于 `require_approval`，优先于 `allow`。
 
 第一刀默认矩阵：`llm.generate`、工作区读文件 → `allow`；工作区写文件、创建进程 → `require_approval`。其余未登记 → `deny`。
 
@@ -248,7 +248,7 @@ loop 经 dispatch 调用处理函数。斜杠经 commands。host 的 POM 依赖�
 
 第一刀无未决。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、llm / persist 的下一份实现。
 
-session 遗留、policy 刀前定：`SessionStore.open` 辨不辨新建/读回（不一致 fail fast 与否）；`SessionId` 含 `/` 的校验收在 store 层还是 identity 层。session 五本账的 seq 分配与收件箱领取是非原子读改写，单进程单写者前提，loop 线程化前收口。
+session 遗留已定（2026-09-13）：`SessionStore.open` 不辨新建/读回；owner/workspace 与库里不一致 fail fast。`SessionId` 禁 `/`，收在 identity 层。剩余：session 五本账的 seq 分配与收件箱领取是非原子读改写（policy 的 approvalId 序号同此），单进程单写者前提，loop 线程化前收口。
 
 ---
 
