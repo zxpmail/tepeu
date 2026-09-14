@@ -46,6 +46,35 @@ class LlmGatewayTest {
     }
 
     @Test
+    void compactReplaysSummaryAndEventsAfterCutOnly() {
+        List<SessionEvent> events = List.of(
+                event(1, SessionEventType.USER_MESSAGE, "old question"),
+                event(2, SessionEventType.ASSISTANT_MESSAGE, "old answer"),
+                event(3, SessionEventType.COMPACT, "earlier summary", Map.of("compact.upTo", "2")),
+                event(4, SessionEventType.USER_MESSAGE, "mid question"),
+                event(5, SessionEventType.ASSISTANT_MESSAGE, "mid answer"),
+                event(6, SessionEventType.COMPACT, "latest summary", Map.of("compact.upTo", "5")),
+                event(7, SessionEventType.USER_MESSAGE, "new question"));
+        assertEquals(List.of(
+                new LlmMessage(Role.SYSTEM, "sys"),
+                new LlmMessage(Role.SUMMARY, "latest summary"),
+                new LlmMessage(Role.USER, "new question")),
+                LlmGateway.visible("sys", events));
+    }
+
+    @Test
+    void compactWithoutUpToAttrKeepsEventsAfterTheCompactItself() {
+        List<SessionEvent> events = List.of(
+                event(1, SessionEventType.USER_MESSAGE, "old"),
+                event(2, SessionEventType.COMPACT, "summary"),
+                event(3, SessionEventType.USER_MESSAGE, "new"));
+        assertEquals(List.of(
+                new LlmMessage(Role.SUMMARY, "summary"),
+                new LlmMessage(Role.USER, "new")),
+                LlmGateway.visible(null, events));
+    }
+
+    @Test
     void gatewayPassesDerivedMessagesAndReturnsVerbatim() {
         SessionLog log = logOf(
                 event(1, SessionEventType.USER_MESSAGE, "hi"),
@@ -105,6 +134,10 @@ class LlmGatewayTest {
 
     private static SessionEvent event(long seq, SessionEventType type, String body) {
         return new SessionEvent(seq, type, Instant.EPOCH, body, Map.of());
+    }
+
+    private static SessionEvent event(long seq, SessionEventType type, String body, Map<String, String> attrs) {
+        return new SessionEvent(seq, type, Instant.EPOCH, body, attrs);
     }
 
     private static SessionLog logOf(SessionEvent... events) {

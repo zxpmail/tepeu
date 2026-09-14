@@ -21,6 +21,7 @@ import com.tepeu.syscall.Syscall;
 import com.tepeu.syscall.SyscallResult;
 import com.tepeu.syscall.Usage;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -124,6 +125,40 @@ class CommandsTest {
     void btwSurfacesDispatchFailure() {
         try (Rig r = rig()) {
             assertTrue(r.commands().execute(r.session(), "/btw hi").contains("NOT_FOUND"));
+        }
+    }
+
+    @Test
+    void compactWritesCompactedEventAndHonorsIdleGate() {
+        try (Rig r = rig()) {
+            r.dispatch().register("llm.generate", (c, s) ->
+                    SyscallResult.success("摘要文本", new Usage(4, 5)));
+            r.session().registers().put("loop.state", "running");
+            assertTrue(r.commands().execute(r.session(), "/compact").contains("稍后再试"));
+            assertTrue(r.session().log().readAll().isEmpty());
+
+            r.session().registers().put("loop.state", "idle");
+            r.session().log().append(SessionEventType.USER_MESSAGE, "旧问题");
+            r.session().log().append(SessionEventType.ASSISTANT_MESSAGE, "旧答复");
+            String out = r.commands().execute(r.session(), "/compact");
+            assertTrue(out.contains("已压缩"));
+            assertTrue(out.contains("压缩点 2"));
+
+            List<com.tepeu.session.SessionEvent> events = r.session().log().readAll();
+            assertEquals(3, events.size());
+            com.tepeu.session.SessionEvent compact = events.getLast();
+            assertEquals(SessionEventType.COMPACT, compact.type());
+            assertEquals("摘要文本", compact.body());
+            assertEquals("2", compact.attrs().get("compact.upTo"));
+            assertEquals(1, r.session().ledger().readAll().size());
+        }
+    }
+
+    @Test
+    void compactSurfacesFailureWithoutWritingLog() {
+        try (Rig r = rig()) {
+            assertTrue(r.commands().execute(r.session(), "/compact").contains("压缩失败：NOT_FOUND"));
+            assertTrue(r.session().log().readAll().isEmpty());
         }
     }
 }

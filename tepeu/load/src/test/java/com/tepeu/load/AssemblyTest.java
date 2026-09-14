@@ -90,4 +90,35 @@ class AssemblyTest {
             assertTrue(com.tepeu.loop.Loop.complete(wired.session().log()));
         }
     }
+
+    @Test
+    void afterCompactLoopSeesOnlySummaryAndNewEvents() throws Exception {
+        try (SqlitePersist persist = SqlitePersist.open(dir.resolve("s.db"))) {
+            AtomicReference<List<LlmMessage>> seen = new AtomicReference<>();
+            Wired wired = Assembly.wire(persist, visible -> {
+                seen.set(visible);
+                return SyscallResult.success("摘要内容", new Usage(1, 1));
+            }, Assembly.SYSTEM_PROMPT, dir);
+
+            wired.session().log().append(SessionEventType.USER_MESSAGE, "旧问题");
+            wired.session().log().append(SessionEventType.ASSISTANT_MESSAGE, "旧答复");
+            String out = wired.commands().execute(wired.session(), "/compact");
+            assertTrue(out.contains("已压缩"));
+            assertTrue(out.contains("压缩点 2"));
+
+            wired.session().inbox().enqueue("新问题");
+            assertTrue(wired.loop().runOnce(wired.session()));
+            assertEquals(List.of(
+                    new LlmMessage(Role.SYSTEM, Assembly.SYSTEM_PROMPT),
+                    new LlmMessage(Role.SUMMARY, "摘要内容"),
+                    new LlmMessage(Role.USER, "新问题")),
+                    seen.get());
+
+            List<SessionEvent> log = wired.session().log().readAll();
+            assertEquals(SessionEventType.COMPACT, log.get(2).type());
+            assertEquals("2", log.get(2).attr("compact.upTo").orElseThrow());
+            assertTrue(log.stream().anyMatch(e -> "旧问题".equals(e.body())),
+                    "账只追加：旧事件仍在，只是不再回放");
+        }
+    }
 }

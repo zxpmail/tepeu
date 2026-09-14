@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake+anthropic）/ execution / loop / commands / load + host / conformance 已落；真模型刀待人审（2026-09-14）。产品已可真跑：默认 `java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`（fake），真模型 `-P real` 打包 + `ANTHROPIC_AUTH_TOKEN`。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake+anthropic）/ execution / loop / commands / load + host / conformance 已过审；真模型已推（`dd3d4ab`）；/compact 刀待人审（2026-09-14）。产品已可真跑：默认 `java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`（fake），真模型 `-P real` 打包 + `ANTHROPIC_AUTH_TOKEN`。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -13,7 +13,7 @@
 单用户、单机、单进程 CLI。
 
 1. 对话：控制循环调用模型与工具，结果写入会话状态。
-2. 斜杠命令：走 `commands` 命令表。host 把 `/` 开头的行交给表。第一刀：`/help` `/approve` `/status` `/btw`。`/compact` 以后加。闲着时 loop 自己压缩（已有）。
+2. 斜杠命令：走 `commands` 命令表。host 把 `/` 开头的行交给表。第一刀：`/help` `/approve` `/status` `/btw` `/compact`。自动压缩以后做。
 3. 授权询问：判定为需批准时，由操作者确认后单次生效。
 4. 旁问 `/btw`：看当前对话，问一句，印出答复。不写事件日志，不调工具。用量进用量流水。第一刀只在 loop 空闲时可用。主任务还在跑时也能问，以后做。
 5. 第一刀一个默认对话。一个 `SessionId`，进程退出后记录仍在。会话列表与切换以后做。
@@ -44,7 +44,7 @@ host 的 POM 依赖哪个实现，就加载哪个、用哪个。斜杠 `/approve
 
 | 存储 | 写入语义 | 内容 |
 |------|----------|------|
-| 事件日志 | 只追加 | 用户输入、助手输出、工具请求与结果、推理/计划等须可复核的事实 |
+| 事件日志 | 只追加 | 用户输入、助手输出、工具请求与结果、推理/计划、压缩摘要（COMPACT）等须可复核的事实 |
 | 寄存器 | 覆盖写 | 控制状态（例如循环是否空闲）。进程重启后按键读取 |
 | 用量流水 | 只追加 | token / 费用 |
 
@@ -117,7 +117,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 最小工具请求协议（2026-09-14 裁）：模型输出首行 `@tool 名称 k=v;k=v` 即工具请求，其余为最终答复；首行是工具请求时后续行忽略；不合式按最终答复处理。解析归 loop（`ToolRequest`），词汇表外的名照走门（先被矩阵 DENY）。工具轮至多 8，超限记 `REASONING` 收轮。寄存器 `loop.state` = running/idle。完成判定单一判定点 `Loop.complete`：最后一条事件是 `ASSISTANT_MESSAGE`。
 
-空闲时可做日志压缩（仍经调用分发，仍写事件日志）。
+空闲时可做日志压缩（仍经调用分发，仍写事件日志）。压缩已落（2026-09-14）：`/compact` 经 `llm.generate` 问句面要摘要，记 `COMPACT` 事件（body=摘要、`attrs.compact.upTo`=压缩点 seq）；账只追加，旧对话不删；gateway `visible` 只回放最新摘要（Role.SUMMARY）与压缩点之后的事件。仅 loop 空闲时可压。注意：离线 fake 的摘要无信息，fake 下压缩即旧对话从可见面消失——压缩的实义只在真模型。
 
 轮次是循环自己的控制流。寄存器保存循环状态（空闲/运行），供查询。
 
@@ -125,7 +125,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 ## 6. 模型适配与工作区
 
-**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。系统提示由 load 给出（2026-09-14 裁：网关构造器收 systemPrompt，`Role.SYSTEM` 排在可见序列头部）。第一刀可见词汇：`SYSTEM`（提示）+ `USER_MESSAGE` / `ASSISTANT_MESSAGE` / `TOOL_RESULT`（Role.TOOL）按日志序；工具请求、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。问句面（2026-09-14 裁）：`generate(log, question)`，问句非空白时作 USER 消息尾插可见序列，不写事件日志（`/btw` 用）。
+**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。系统提示由 load 给出（2026-09-14 裁：网关构造器收 systemPrompt，`Role.SYSTEM` 排在可见序列头部）。第一刀可见词汇：`SYSTEM`（提示）+ `USER_MESSAGE` / `ASSISTANT_MESSAGE` / `TOOL_RESULT`（Role.TOOL）按日志序；工具请求、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。问句面（2026-09-14 裁）：`generate(log, question)`，问句非空白时作 USER 消息尾插可见序列，不写事件日志（`/btw` 用）。压缩派生（2026-09-14）：可见词汇加 `Role.SUMMARY`——遇 `COMPACT` 事件回放最新摘要与压缩点后事件；anthropic 侧 SUMMARY 归 user 消息。
 
 ```
 llm/                     packaging=pom
@@ -158,7 +158,7 @@ loop / dispatch 只调网关。load 把实现注入网关。host 的 POM 依赖�
 | identity | 共用类型：谁、哪个工作区、哪一次对话 |
 | syscall | 共用类型：一次具名操作的名称、参数、结果、用量 |
 | conformance | 测试套件：对各模块接口的契约测试 |
-| commands | 斜杠命令表。名称 → 处理函数。第一刀：`/help` `/approve` `/status` `/btw`。`/btw` 经 dispatch 调 llm 网关，不调工具、不写事件日志 |
+| commands | 斜杠命令表。名称 → 处理函数。第一刀：`/help` `/approve` `/status` `/btw` `/compact`。`/btw` 经 dispatch 调 llm 网关，不调工具、不写事件日志；`/compact` 问模型要摘要、记 COMPACT 事件（账只追加） |
 | load | 装配：注入实现、拼系统提示、登记斜杠命令。`Assembly.wire(persist, backend, systemPrompt, workspaceRoot) → Wired`（session / dispatch / commands / loop）。看见四层与 commands |
 | host | Spring Boot（无 Web）。进程入口、CLI。`/` 行交给 commands。落 `tepeu/host/`（2026-09-14 裁：进 reactor，库/产品分界靠依赖方向不靠目录墙）。第一刀 POM 依赖 persist-sqlite、llm-fake、load。db=`tepeu.db` 落当前目录；工作区取首个参数缺省当前目录；stdin REPL、EOF 退出、终答读账；第一刀不读密钥 |
 
@@ -192,7 +192,7 @@ tepeu/
     loop/                        控制循环  → session, policy, dispatch
 
   commands/                 斜杠命令表  → session, policy, dispatch
-                            第一刀：/help /approve /status /btw
+                            第一刀：/help /approve /status /btw /compact
 
   load/                     装配：注入实现、拼系统提示、登记斜杠命令
 
@@ -260,7 +260,7 @@ loop 经 dispatch 调用处理函数。斜杠经 commands。host 的 POM 依赖�
 
 ## 10. 未决
 
-第一刀无未决。真模型已落（2026-09-14）：llm/anthropic + host profile 切换 + `/btw` 问句面 + 管道 UTF-8 收口；重试/退避、流式输出、费用（cost）未做。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、persist 的下一份实现、OS 级执行隔离（spawn 现只杀直接子进程，进程树杀灭随 OS 级沙箱做）。
+第一刀无未决。真模型已落（2026-09-14）：llm/anthropic + host profile 切换 + `/btw` 问句面 + 管道 UTF-8 收口；重试/退避、流式输出、费用（cost）未做。`/compact` 已落（2026-09-14）：账不动 + COMPACT 事件；摘要复用 `llm.generate` 问句面；只做手动触发，空闲时自动压缩未做。以后：invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、persist 的下一份实现、OS 级执行隔离（spawn 现只杀直接子进程，进程树杀灭随 OS 级沙箱做）。
 
 conformance 已收（2026-09-14）：persist 契约（put 就地覆盖不挪位、list 写入序、重开见全部已提交写）；session 契约（**seq 每本账独立编号各从 1 起**、跨重连续号、open fail fast、收件箱优先级/租约/nack）；approval 契约（ask 未决幂等、decide 一次、consume 取走即消费、绑 argsDigest）；dispatch 真栈五码；kill -9 故障注入（子 JVM 强杀后 WAL 恢复）；单写者前提进 session/policy javadoc。
 

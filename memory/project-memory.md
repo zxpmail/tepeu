@@ -1,6 +1,6 @@
 # Project Memory — Tepeu（develop）
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands / load+host / conformance 已过审；真模型刀已落待人审（2026-09-14），**产品双模式可真跑（默认 fake / -P real 真模型）**；下一刀未圈（/compact 或压缩外新面）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands / load+host / conformance / 真模型已过审；/compact 刀已落待人审（2026-09-14），**产品双模式可真跑（默认 fake / -P real 真模型）**；下一刀未圈。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
 v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
@@ -12,6 +12,7 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 - 验证：`mvn -f tepeu/pom.xml test`。标本对照：`mvn -f legacy/os-9/os/pom.xml test`
 - 持久化：`persist` 父 POM（api + sqlite 第一刀）。session/policy 只依赖 api。host 第一刀依赖 persist-sqlite、llm-fake
 - `llm.*`：自研协议与传输。gateway `generate(log, question)`——问句非空白尾插 USER 不写账（/btw 面）；llm/anthropic 用 **Jackson 3**（`tools.jackson.*`，Spring Boot 4 BOM 钉 3.1.4；包名空间换了、异常 unchecked、`asString()`/`asLong(long)`），Jackson 2 BOM（2.21.4）别混。SYSTEM→`system` 字段，TOOL→user，同角色相邻合并。错误码 `LLM_HTTP_<n>` / `LLM_IO_ERROR`
+- 压缩（2026-09-14 裁）：**账不动**——COMPACT 事件记摘要（body）+ 压缩点（`attrs["compact.upTo"]`=seq），persist 无删除语义不破；gateway `visible` 只回放最新 COMPACT 摘要（Role.SUMMARY）+ 压缩点后事件；摘要复用 `llm.generate` 问句面，anthropic 零改动（SUMMARY 自动归 user）。/compact 仅 idle。**fake 下压缩即旧对话从可见面消失**（摘要无信息），压缩实义只在真模型；自动触发未做
 - v1 工作台：`legacy/` / `main`（Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18）
 
 ## Architecture（develop）

@@ -7,6 +7,7 @@ import com.tepeu.policy.ApprovalStore;
 import com.tepeu.session.LedgerEntry;
 import com.tepeu.session.Session;
 import com.tepeu.session.SessionEvent;
+import com.tepeu.session.SessionEventType;
 import com.tepeu.syscall.SyscallResult;
 
 import java.util.List;
@@ -19,18 +20,23 @@ import java.util.stream.Collectors;
 /**
  * 斜杠命令表。host 把 {@code /} 行交给 {@link #execute}，返回印给操作者的文本。
  * {@code /approve} 只收本会话的 approvalId；{@code /status} 只读账、不打正文；
- * {@code /btw} 旁问——看当前对话、不写事件日志、不调工具、用量进流水，仅 loop 空闲时可用。
+ * {@code /btw} 旁问——看当前对话、不写事件日志、不调工具、用量进流水；
+ * {@code /compact} 压缩——问模型要摘要、记 COMPACT 事件，账只追加不删，均仅 loop 空闲时可用。
  */
 public final class Commands {
 
     private static final String STATE_KEY = "loop.state";
     private static final String LLM_GENERATE = "llm.generate";
+    private static final String UP_TO_ATTR = "compact.upTo";
+    private static final String COMPACT_QUESTION =
+            "请把以上对话总结成一段简短摘要，保留关键事实与未决事项，供后续对话作为历史背景。";
 
     private static final String HELP = String.join("\n",
             "/help                       本表",
             "/approve <approvalId>      批准一条审批；重发原请求即生效",
             "/status                    账本摘要（不打正文）",
-            "/btw <问题>                旁问：看当前对话；不写日志、不调工具；仅空闲时可用");
+            "/btw <问题>                旁问：看当前对话；不写日志、不调工具；仅空闲时可用",
+            "/compact                   压缩：把此前对话压成摘要记入账；仅空闲时可用");
 
     private final ApprovalStore approvals;
     private final Dispatch dispatch;
@@ -56,6 +62,7 @@ public final class Commands {
             case "approve" -> approve(session, rest);
             case "status" -> status(session);
             case "btw" -> btw(session, rest);
+            case "compact" -> compact(session);
             default -> "未知命令 " + name + "。\n" + HELP;
         };
     }
@@ -123,5 +130,23 @@ public final class Commands {
             return "btw 失败：" + result.errorCode().orElse("UNKNOWN");
         }
         return result.output();
+    }
+
+    /** 压缩：问模型要摘要，记 COMPACT 事件（摘要入 body，压缩点入 attrs）。账只追加，旧对话不删。 */
+    private String compact(Session session) {
+        String state = session.registers().get(STATE_KEY).orElse("idle");
+        if (!"idle".equals(state)) {
+            return "主任务运行中，/compact 稍后再试。";
+        }
+        List<SessionEvent> events = session.log().readAll();
+        long upTo = events.isEmpty() ? 0L : events.getLast().seq();
+        InvokeContext ctx = new InvokeContext(session.owner(), session.workspace(), session.id());
+        SyscallResult result = dispatch.invoke(ctx, LLM_GENERATE, Map.of("question", COMPACT_QUESTION));
+        result.usage().ifPresent(u -> session.ledger().record(LLM_GENERATE, u));
+        if (!result.ok()) {
+            return "压缩失败：" + result.errorCode().orElse("UNKNOWN");
+        }
+        session.log().append(SessionEventType.COMPACT, result.output(), Map.of(UP_TO_ATTR, Long.toString(upTo)));
+        return "已压缩：压缩点 " + upTo + "，摘要 " + result.output().length() + " 字。";
     }
 }

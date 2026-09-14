@@ -2,6 +2,7 @@
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
+| 2026-09-14 | /compact | 压缩刀 | 三裁：账不动+COMPACT 事件（persist 无删除语义不破）/ 摘要复用 llm.generate 问句面（零新词汇）/ 只做手动。SessionEventType+COMPACT（body=摘要、attrs compact.upTo=压缩点）；Role+SUMMARY；visible 回放最新摘要+压缩点后事件；anthropic 零改动（SUMMARY 自动归 user）。真跑：压缩后模型只凭摘要答对小明+7。全树 120 绿 21 模块双 profile |
 | 2026-09-14 | 真模型 | llm/anthropic + host profile 切换刀 | Anthropic Messages API（JDK HttpClient 60s 不重试、max_tokens 4096 自裁）；jackson 3（tools.jackson，照 Boot 4.0.7 BOM 钉 3.1.4，asString/asLong unchecked 异常）；/btw 问句 generate(log, question) 尾插不写账；host 两 profile（默认 fake / -P real anthropic）+ Backends 反射缝 + application.properties @ 过滤；env ANTHROPIC_AUTH_TOKEN 必需缺则 exit 2；UTF-8 管道收口。ReplTest 弃 import FakeBackend（real 下 NCDFE）。全树 116 绿 21 模块双 profile；真跑真模型 + /btw 上下文全通 |
 | 2026-09-14 | conformance | 契约套件刀，欠账清完 | 钉死：seq 每本账独立从 1 起（非全局）；put 就地覆盖不挪位；consume 二次 empty 非抛；ask 未决幂等；审批绑 argsDigest。kill -9 故障注入（子 JVM 强杀 WAL 恢复）。单写者前提进 session/policy javadoc。夹具三份留（人裁）。契约测试 0 实现 bug；107 绿 20 模块 |
 | 2026-09-14 | load+host 合刀 | 装配 + 进程入口，产品第一次可真跑 | host 落 tepeu/host/ 进 reactor；系统提示走网关（构造器收 systemPrompt、Role.SYSTEM 头插）；Assembly.wire→Wired 一个记录；db=当前目录 tepeu.db、工作区=参数缺省当前目录、不读密钥；@tool 分隔符是 `;` 不是空格（测试抓出）；全树 78 绿 19 模块，真跑+重启持久化已验 |

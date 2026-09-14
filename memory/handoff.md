@@ -4,16 +4,28 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-14（conformance 过审 `a89c435`；真模型刀已落待人审）
+**Last updated**: 2026-09-14（真模型已推 `dd3d4ab`；/compact 刀已落待人审）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`、`load` + `host`、`conformance`（均人审过）。
-- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关；host 进 reactor；`Assembly.wire → Wired`；conformance 全域 + 故障注入；夹具三份留；**真模型刀**：Anthropic Messages API + jackson3 + `/btw` 问句面 + Maven profile 切换。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（`/compact`，或压缩外新面）。
+- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`、`load` + `host`、`conformance`、真模型（均人审过）。
+- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关；host 进 reactor；`Assembly.wire → Wired`；conformance 全域 + 故障注入；夹具三份留；真模型刀四裁；**/compact 刀三裁**：账不动 + COMPACT 事件 / 摘要复用 `llm.generate` 问句面 / 只做手动触发。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈。
 
-## 本刀 真模型（llm/anthropic + host profile）
+## 本刀 /compact（待人审）
+
+- **切口裁定（2026-09-14，全推荐）**：压缩与权威账的关系=**账不动**（事件日志只追加不破，压缩产物记 `COMPACT` 事件）；摘要来源=**复用 `llm.generate` + 问句面**（零新词汇、矩阵零改动）；命令面=**只做手动 `/compact`**（自动阈值触发以后做）。
+- **session**：`SessionEventType` + `COMPACT`。body=摘要全文，`attrs["compact.upTo"]`=压缩点 seq（压缩前最后一条事件的 seq）。
+- **gateway**：`Role` + `SUMMARY`。`visible` 派生：倒序找最新 COMPACT——回放 SYSTEM + 摘要（SUMMARY）+ `seq > upTo` 的 USER/ASSISTANT/TOOL_RESULT；压缩点前对话与更早 COMPACT 不回放（账里仍完整）。`compact.upTo` 缺失时退化为 COMPACT 自身 seq。
+- **anthropic**：零改动——SUMMARY 落入 buildRequest 的 else 分支自动映射 user（仅 ASSISTANT→assistant），与后续 USER 相邻自然合并。
+- **commands**：`/compact` 仅 idle（同 /btw 门）；invoke `llm.generate` 问句="请把以上对话总结成一段简短摘要…"；成功 `log().append(COMPACT, 摘要, {compact.upTo})` 回"已压缩：压缩点 N，摘要 M 字"；失败透传错误码不写账；用量进流水。
+- **真跑已验（real jar 真模型）**：记住"小明 + 7" → /compact（压缩点 4、摘要 177 字）→ 压缩后再问名字与数字，模型**只凭摘要**答对；`/status` 显示 `COMPACT=1`。压缩语义闭环。
+- 测试：gateway 8（+2：多次压缩只认最新、缺 attrs 退化）、commands 8（+2：idle 门+落账 attrs、失败透传不写账）、load 4（+1：**压缩后 loop 只见摘要真栈端到端**——评价点名的回归欠账已补，账只追加旧事件仍在）；**全树 121 绿 21 模块，default 与 real 双 profile 同绿**。
+- 中肯检查结论（2026-09-14）：跨重开 attrs 往返（`a.` 前缀写读对称 + conformance 钉重开）、COMPACT 无穷尽 switch 泄漏、压缩点竞态（REPL 单线程+idle 门）均核过无问题；已知边界：fake 下压缩即旧对话从可见面消失（rewrite-0 §5 已点名）、空账压缩落无意义摘要（不挡）、脏 upTo 抛 NFE 归 HANDLER_ERROR（fail-closed）。/compact 不写 audit（audit 管授权动作，事实在事件日志+流水）。
+- 测试预期错一次（自己错非实现错）：running 被拒那次不走 dispatch，用量流水应 1 笔非 2。
+
+## 上一刀 真模型（llm/anthropic + host profile，已推 dd3d4ab）
 
 - **gateway 问句面**：`generate(SessionLog, String question)` 单方法（旧单参签名删除）。问句非空白作 `LlmMessage(Role.USER, …)` 尾插可见序列，不写事件日志；Loop 传 `Map.of()` → null，无感。Assembly handler 改 `syscall.args().get("question")`（commands 本就传 `Map.of("question", q)`，零改动）。gateway 4→6 测试。
 - **llm/anthropic**：包 `com.tepeu.llm.anthropic`，`AnthropicBackend implements LlmBackend`。SYSTEM→`system` 字段；USER/TOOL→`user`、ASSISTANT→`assistant`，同角色相邻合并 `\n\n`；`/v1/messages`，头 `x-api-key` + `Authorization: Bearer` + `anthropic-version: 2023-06-01`；JDK HttpClient 60s 不重试；`max_tokens=4096`（自裁，待审）。非 2xx 合成 `LLM_HTTP_<n>`、网络异常 `LLM_IO_ERROR`，不回显响应体。纯函数 `buildRequest`/`parseResponse`（text 块相连、其余块忽略、usage 透传），HTTP 路径不测（裁定）。5 测试。

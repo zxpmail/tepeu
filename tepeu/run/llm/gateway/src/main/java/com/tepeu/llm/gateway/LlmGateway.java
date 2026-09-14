@@ -36,14 +36,34 @@ public final class LlmGateway {
         return backend.generate(List.copyOf(messages));
     }
 
-    /** 模型可见序列：系统提示在头，对话两方与工具结果按日志序；工具请求、推理、计划不可见。 */
+    /**
+     * 模型可见序列：系统提示在头，对话两方与工具结果按日志序；工具请求、推理、计划不可见。
+     * 有 COMPACT 事件时：回放最新一条的摘要（Role.SUMMARY）与其压缩点之后的事件，
+     * 压缩点之前的对话不回放（更早的 COMPACT 同样被跳过，账里仍完整）。
+     */
     public static List<LlmMessage> visible(String systemPrompt, List<SessionEvent> events) {
         Objects.requireNonNull(events, "events");
         List<LlmMessage> messages = new ArrayList<>();
         if (systemPrompt != null && !systemPrompt.isBlank()) {
             messages.add(new LlmMessage(Role.SYSTEM, systemPrompt));
         }
+        long upTo = -1;
+        String summary = null;
+        for (int i = events.size() - 1; i >= 0; i--) {
+            SessionEvent e = events.get(i);
+            if (e.type() == SessionEventType.COMPACT) {
+                summary = e.body();
+                String attr = e.attrs().get("compact.upTo");
+                upTo = attr == null ? e.seq() : Long.parseLong(attr);
+                break;
+            }
+        }
+        if (summary != null) {
+            messages.add(new LlmMessage(Role.SUMMARY, summary));
+        }
+        final long cut = upTo;
         events.stream()
+                .filter(e -> e.seq() > cut)
                 .filter(e -> e.type() == SessionEventType.USER_MESSAGE
                         || e.type() == SessionEventType.ASSISTANT_MESSAGE
                         || e.type() == SessionEventType.TOOL_RESULT)
