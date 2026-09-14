@@ -19,6 +19,7 @@
         <module>commands</module>
         <module>load</module>
         <module>host</module>
+        <module>conformance</module>
     </modules>
 
     <properties>

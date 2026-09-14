@@ -1,6 +1,6 @@
 # Project Memory — Tepeu（develop）
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands 已过审；load + host 已落待人审（2026-09-14），**产品已可真跑**；下一刀未圈（conformance 或真模型）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands / load+host 已过审；conformance 已落待人审（2026-09-14），**产品已可真跑、契约已钉面**；下一刀未圈（真模型或 /compact）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
 v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
@@ -33,7 +33,8 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 - 不要把新能力倒进「大包」；领域默认跟组件走。JDBC/方言只在 `persist`。组件 ≠ 插件（无 Ctx / 无热插）
 - 系统提示装配归属未定（llm 或 loop）。控制循环不引用工具实现类。
 - `identity`/`syscall` 是共用类型；`session` 是模块。真相=事件日志/用量流水/操作审计。不抽日志工具袋。不打 SQL / args / digest / 密钥 / 正文。被拒调用由 loop 记 `TOOL_RESULT` + `attrs.error` 短码（2026-09-13 裁，rewrite-0 §3.2）；行式诊断日志只归 host
-- persist：session/policy 只依赖 api，不关库。host 选实现并负责生命周期。接口不含 JDBC / SQL / 对象存储 SDK。与 execution 工作区 I/O 不是同一套口。
+- persist：session/policy 只依赖 api，不关库。host 选实现并负责生命周期。接口不含 JDBC / SQL / 对象存储 SDK。与 execution 工作区 I/O 不是同一套口。契约已钉（conformance）：append 撞键抛、put 就地覆盖不挪位、list 恒写入序、重开见全部已提交写。
+- session 账本 seq 是**每本账独立编号、各从 1 起无空洞**（conformance 钉死，非全局 seq）；审批 consume 二次是 empty 不是抛；ask 未决幂等同单。
 - session 五本账 seq、收件箱领取、policy approvalId 都是非原子读改写（`list().size()+1`），单进程单写者前提；loop 线程化前收口。`SessionId` 禁 `/`（identity 层构造器，2026-09-13 收紧）。
 - policy 审批：ask 幂等靠 `approval-pending` 索引；persist 无删除，decide/consume 是覆盖写置章（decidedAt/consumedAt）；许可绑 argsDigest，严格单次。
 - llm/gateway 只读事件日志派生模型可见序列（USER/ASSISTANT/TOOL_RESULT），不写事件、不记用量；assistant 事件由 loop 追加；接线归 load（`llm.generate` 参数留空、会话从 ctx 取）。

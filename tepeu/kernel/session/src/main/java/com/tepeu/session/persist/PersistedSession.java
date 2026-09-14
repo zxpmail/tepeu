@@ -33,6 +33,8 @@ import java.util.function.Function;
 
 /**
  * 一会话行。五本账的 space 由这里命名。
+ * <p>单写者前提：五本账 seq 用 {@code list().size()+1} 分配，收件箱领取用全表扫描置章，
+ * 都是非原子读改写。只许单进程单写者使用；loop 线程化之前必须收口。
  */
 final class PersistedSession implements Session {
 

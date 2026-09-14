@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）/ execution / loop / commands 已推已过审；load + host 已落待人审（2026-09-14）。产品已可真跑：`java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）/ execution / loop / commands / load + host 已推已过审；conformance 已落待人审（2026-09-14）。产品已可真跑：`java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -260,7 +260,9 @@ loop 经 dispatch 调用处理函数。斜杠经 commands。host 的 POM 依赖�
 
 第一刀无未决。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、llm / persist 的下一份实现、OS 级执行隔离（spawn 现只杀直接子进程，进程树杀灭随 OS 级沙箱做）。
 
-session 遗留已定（2026-09-13）：`SessionStore.open` 不辨新建/读回；owner/workspace 与库里不一致 fail fast。`SessionId` 禁 `/`，收在 identity 层。剩余：session 五本账的 seq 分配与收件箱领取是非原子读改写（policy 的 approvalId 序号同此），单进程单写者前提，loop 线程化前收口。
+conformance 已收（2026-09-14）：persist 契约（put 就地覆盖不挪位、list 写入序、重开见全部已提交写）；session 契约（**seq 每本账独立编号各从 1 起**、跨重连续号、open fail fast、收件箱优先级/租约/nack）；approval 契约（ask 未决幂等、decide 一次、consume 取走即消费、绑 argsDigest）；dispatch 真栈五码；kill -9 故障注入（子 JVM 强杀后 WAL 恢复）；单写者前提进 session/policy javadoc。
+
+session 遗留已定（2026-09-13）：`SessionStore.open` 不辨新建/读回；owner/workspace 与库里不一致 fail fast。`SessionId` 禁 `/`，收在 identity 层。剩余：session 五本账的 seq 分配与收件箱领取是非原子读改写（policy 的 approvalId 序号同此），单进程单写者前提（已写进 javadoc），loop 线程化前收口。
 
 ---
 

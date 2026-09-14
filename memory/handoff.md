@@ -4,16 +4,28 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-14（commands 过审 `feb2415`；load+host 刀已落待人审，产品第一次可真跑）
+**Last updated**: 2026-09-14（load+host 过审 `2d88364`；conformance 刀已落待人审，欠账清完）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`（人审过 2026-09-14）、`load` + `host`（已落待人审）。
-- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关（构造器收 systemPrompt，Role.SYSTEM 头插）；host 落 `tepeu/host/` 进 reactor；装配形态 `Assembly.wire → Wired`。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（conformance，或真模型）。
+- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`、`load` + `host`（人审过 2026-09-14）、`conformance`（已落待人审）。
+- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关；host 进 reactor；`Assembly.wire → Wired`；conformance 全域 + 故障注入；夹具三份留。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（真模型，或 `/compact`）。
 
-## 本刀 load + host（合刀）
+## 本刀 conformance
+
+- 路径 `tepeu/conformance`（纯 test 模块，无 main 源码）。对**接口**钉语义，任何实现都得满足。
+- **persist 契约（8）**：append 撞键 IllegalStateException；put 新键尾插、旧键**就地覆盖不挪位**；list 恒按写入序；space 互不相通；空白 space 拒；关库后一切操作拒；重开见全部已提交写。
+- **session 契约（8）**：**seq 每本账独立编号、各从 1 起、无空洞**（刀中钉死的语义，非全局 seq）；跨重连续号；open 主人/工作区不一致 fail fast；收件箱 NOW→NEXT→LATER、租约（TTL 300s）过期可重领、ack 后不领、nack 归队；寄存器覆盖写。
+- **approval 契约（6）**：ask 未决幂等同单；decide 一次（二次抛）；consume 取走即消费（二次 empty）；消费后再调重新审批（新 id）；拒绝决策同样单次；许可绑 argsDigest——同名字不同参数无决策。
+- **dispatch 契约（5，真栈）**：放行到 handler；审批全流程（APPROVAL_REQUIRED → decide → 放行一次 → 再调重新审批）；未登记名矩阵 DENY 不进查表；策略放行但未注册 NOT_FOUND；CANCELLED 先于一切。
+- **故障注入（1）**：子 JVM 提交 10 条后 READY 挂住，父进程 destroyForcibly（TerminateProcess / kill -9 语义）→ 重开库 WAL 恢复，已提交写全活。
+- **javadoc 收口**：`PersistedSession` / `PersistedApprovalStore` 写入单写者前提（非原子读改写，线程化前收口）。
+- 契约测试抓出 0 个实现 bug；两处失败都是测试预期错（全局 seq 想当然）——修正后语义记档。
+- 验证：全树 **107 绿，20 模块**。
+
+## 上一刀 load + host（合刀）
 
 - **gateway 扩面**：`LlmGateway(backend, systemPrompt)`，`visible(systemPrompt, events)` 头插 `Role.SYSTEM`（null/blank 无提示行）。
 - **load**：`tepeu/load`（根包 `com.tepeu.load`）。依赖四层 + commands + persist-api + llm-gateway；**不依赖实现模块**（persist/backend 由 host 构造交入）。`Assembly.wire(persist, backend, systemPrompt, workspaceRoot) → Wired(session, dispatch, commands, loop)`：open 默认会话（主人 u / 工作区 ws）、PersistedApprovalStore、DefaultRuleMatrix、登记 `llm.generate` + execution 四 handler、`SYSTEM_PROMPT`（身份 + 工作区边界 + `@tool` 协议说明）。

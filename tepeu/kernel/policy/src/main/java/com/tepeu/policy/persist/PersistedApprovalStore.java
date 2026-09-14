@@ -20,6 +20,8 @@ import java.util.Optional;
  * 审批走 persist-api。记录 space {@code approval}（键 approvalId），
  * 幂等索引 space {@code approval-pending}（键为会话+名称+指纹的摘要，指向最新审批）。
  * persist 无删除：决策与消费都是覆盖写（decidedAt / consumedAt 置章）。
+ * <p>单写者前提：approvalId 用 {@code list().size()+1} 分配，非原子读改写。
+ * 只许单进程单写者使用；并发审批前必须收口。
  */
 public final class PersistedApprovalStore implements ApprovalStore {
 
