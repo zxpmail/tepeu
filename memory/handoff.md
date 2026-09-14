@@ -4,16 +4,28 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-14（execution+loop 过审 `6c73df9`；commands 刀已落待人审）
+**Last updated**: 2026-09-14（commands 过审 `feb2415`；load+host 刀已落待人审，产品第一次可真跑）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`（人审过 2026-09-14）、`commands`（已落待人审）。
-- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（load / host，或 conformance）。
+- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`（人审过 2026-09-14）、`load` + `host`（已落待人审）。
+- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关（构造器收 systemPrompt，Role.SYSTEM 头插）；host 落 `tepeu/host/` 进 reactor；装配形态 `Assembly.wire → Wired`。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（conformance，或真模型）。
 
-## 本刀 commands
+## 本刀 load + host（合刀）
+
+- **gateway 扩面**：`LlmGateway(backend, systemPrompt)`，`visible(systemPrompt, events)` 头插 `Role.SYSTEM`（null/blank 无提示行）。
+- **load**：`tepeu/load`（根包 `com.tepeu.load`）。依赖四层 + commands + persist-api + llm-gateway；**不依赖实现模块**（persist/backend 由 host 构造交入）。`Assembly.wire(persist, backend, systemPrompt, workspaceRoot) → Wired(session, dispatch, commands, loop)`：open 默认会话（主人 u / 工作区 ws）、PersistedApprovalStore、DefaultRuleMatrix、登记 `llm.generate` + execution 四 handler、`SYSTEM_PROMPT`（身份 + 工作区边界 + `@tool` 协议说明）。
+- **host**：`tepeu/host`，Spring Boot 4.0.7 无 Web（banner off、root=WARN）。stdin REPL：`/` 行交 commands、普通行入收件箱 + `loop.runOnce`、终答**读账**印最后一笔 ASSISTANT_MESSAGE、EOF 退出。db=`tepeu.db` 落当前目录；工作区=首个参数缺省当前目录；第一刀不读密钥。spring-boot-maven-plugin repackage 出可执行 jar。
+- **切口裁定（2026-09-14）**：host 进 reactor（`mvn -f tepeu/pom.xml test` 不变）；系统提示走网关非 loop；装配收 `Wired` 一个记录；路径默认当前目录。
+- **真跑已验**：管道喂 `你好` / `/help` / `/status` 全对；二次启动读到首跑的 2 条事件 + 用量（进程退出记录仍在）。管道里中文是 mojibake（Java 按本地编码出，GBK 控制台正常）——编码收口归真模型刀。
+- **教训**：`@tool` 参数分隔符是 `;` 不是空格——`path=x.txt content=v` 会被解析成单键 `path="x.txt content=v"`（AssemblyTest 抓出，LoopTest 同步改正）。
+- **自审修正（2026-09-14，人审前）**：Repl 曾整账找最后一条 ASSISTANT_MESSAGE——本轮超限/失败没新终答时会把**上一轮旧答复**当本轮答案；改为本轮下标快照、只认本轮终答（回归测试：旧答复只许印一次）。banner 曾印身份 `ws`，Wired 现带 `workspaceRoot` 印真实路径。`visible` 空白提示归一不插 SYSTEM 行。
+- 测试：load 3 绿（全名注册、端到端带提示、写文件审批回路 sqlite 真栈）、host 4 绿（含旧答复回归）、gateway 4 绿。
+- 验证：`mvn -f tepeu/pom.xml test`（全树 **79 绿，19 模块**）；重打包真跑 banner 印真实工作区路径。
+
+## 上一刀 commands
 
 - 路径 `tepeu/commands`（根包 `com.tepeu.commands`）。依赖 identity、syscall、session、policy、dispatch；不依赖 run 层实现模块。
 - `Commands(approvals, dispatch)` + `execute(Session, line)` → 印给操作者的文本；输入错误回用法，不抛。

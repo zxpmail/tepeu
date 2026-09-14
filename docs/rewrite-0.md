@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）/ execution / loop 已推已过审；commands 已落待人审（2026-09-14）。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）/ execution / loop / commands 已推已过审；load + host 已落待人审（2026-09-14）。产品已可真跑：`java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -27,7 +27,7 @@
 | 项 | 规定 |
 |----|------|
 | 进程 | 一个 JVM |
-| 入口 | Spring Boot（无 Web）。解析命令行、按 POM 加载 persist / llm 实现、交给 load 装配、读取密钥 |
+| 入口 | Spring Boot（无 Web）。解析命令行、按 POM 加载 persist / llm 实现、交给 load 装配、读取密钥。第一刀不读密钥（fake 无需）；db `tepeu.db` 落当前目录，工作区取首个参数缺省当前目录 |
 | 持久化 | 见 §3.1。实现由 host POM 选定 |
 | 模型适配 | 见 §6。实现由 host POM 选定 |
 | 工作区 | 宿主指定的目录。文件与子进程限制在该目录内。隔离程度如实报告 |
@@ -125,7 +125,7 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 ## 6. 模型适配与工作区
 
-**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。第一刀可见词汇：`USER_MESSAGE` / `ASSISTANT_MESSAGE` / `TOOL_RESULT`（Role.TOOL）按日志序；工具请求、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。
+**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。系统提示由 load 给出（2026-09-14 裁：网关构造器收 systemPrompt，`Role.SYSTEM` 排在可见序列头部）。第一刀可见词汇：`SYSTEM`（提示）+ `USER_MESSAGE` / `ASSISTANT_MESSAGE` / `TOOL_RESULT`（Role.TOOL）按日志序；工具请求、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。
 
 ```
 llm/                     packaging=pom
@@ -158,8 +158,8 @@ loop / dispatch 只调网关。load 把实现注入网关。host 的 POM 依赖�
 | syscall | 共用类型：一次具名操作的名称、参数、结果、用量 |
 | conformance | 测试套件：对各模块接口的契约测试 |
 | commands | 斜杠命令表。名称 → 处理函数。第一刀：`/help` `/approve` `/status` `/btw`。`/btw` 经 dispatch 调 llm 网关，不调工具、不写事件日志 |
-| load | 装配：注入实现、拼系统提示、登记斜杠命令。看见四层与 commands |
-| host | Spring Boot（无 Web）。进程入口、CLI。`/` 行交给 commands。第一刀 POM 依赖 persist-sqlite、llm-fake、load |
+| load | 装配：注入实现、拼系统提示、登记斜杠命令。`Assembly.wire(persist, backend, systemPrompt, workspaceRoot) → Wired`（session / dispatch / commands / loop）。看见四层与 commands |
+| host | Spring Boot（无 Web）。进程入口、CLI。`/` 行交给 commands。落 `tepeu/host/`（2026-09-14 裁：进 reactor，库/产品分界靠依赖方向不靠目录墙）。第一刀 POM 依赖 persist-sqlite、llm-fake、load。db=`tepeu.db` 落当前目录；工作区取首个参数缺省当前目录；stdin REPL、EOF 退出、终答读账；第一刀不读密钥 |
 
 ### 7.1 分层目录（提案）
 
@@ -194,10 +194,10 @@ tepeu/
 
   load/                     装配：注入实现、拼系统提示、登记斜杠命令
 
-  conformance/              测试套件
-
-host/                       Spring Boot（无 Web）。CLI。`/` 行交给 commands
+  host/                     Spring Boot（无 Web）。进程入口、CLI。`/` 行交给 commands
                             第一刀 POM 依赖 persist-sqlite、llm-fake、load
+
+  conformance/              测试套件
 ```
 
 `execution` 现规划是单模块。以后有第二份实现，再按 persist 切，第一刀仍只落一份。

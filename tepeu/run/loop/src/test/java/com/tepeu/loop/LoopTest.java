@@ -40,7 +40,7 @@ class LoopTest {
             session.inbox().enqueue("hi");
             ArrayDeque<String> replies = new ArrayDeque<>(
                     List.of("@tool execution.fs.read path=a.txt", "done"));
-            LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll(), new Usage(1, 1)));
+            LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll(), new Usage(1, 1)), null);
             Workspace workspace = new Workspace(work);
             Dispatch dispatch = new Dispatch(new DefaultRuleMatrix(), null);
             dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log()));
@@ -72,8 +72,8 @@ class LoopTest {
             Session session = openSession(persist);
             session.inbox().enqueue("write something");
             ArrayDeque<String> replies = new ArrayDeque<>(
-                    List.of("@tool execution.fs.write path=x.txt content=v", "gave up"));
-            LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll()));
+                    List.of("@tool execution.fs.write path=x.txt;content=v", "gave up"));
+            LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll()), null);
             Dispatch dispatch = new Dispatch(new DefaultRuleMatrix(), null);
             dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log()));
             Loop loop = new Loop(dispatch);
@@ -99,7 +99,7 @@ class LoopTest {
             for (int i = 0; i < Loop.MAX_TOOL_ROUNDS + 1; i++) {
                 replies.add("@tool execution.sandbox.probe");
             }
-            LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll()));
+            LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll()), null);
             Workspace workspace = new Workspace(dir);
             Dispatch dispatch = new Dispatch(new DefaultRuleMatrix(), null);
             dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log()));

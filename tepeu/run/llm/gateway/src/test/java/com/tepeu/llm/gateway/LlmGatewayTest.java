@@ -32,7 +32,17 @@ class LlmGatewayTest {
                 new LlmMessage(Role.ASSISTANT, "hello"),
                 new LlmMessage(Role.TOOL, "bytes"),
                 new LlmMessage(Role.USER, "again")),
-                LlmGateway.visible(events));
+                LlmGateway.visible(null, events));
+    }
+
+    @Test
+    void systemPromptLeadsTheVisibleSequence() {
+        List<SessionEvent> events = List.of(
+                event(1, SessionEventType.USER_MESSAGE, "hi"));
+        assertEquals(List.of(
+                new LlmMessage(Role.SYSTEM, "you are tepeu"),
+                new LlmMessage(Role.USER, "hi")),
+                LlmGateway.visible("you are tepeu", events));
     }
 
     @Test
@@ -45,7 +55,7 @@ class LlmGatewayTest {
         LlmGateway gateway = new LlmGateway(visible -> {
             seen.set(visible);
             return back;
-        });
+        }, null);
         SyscallResult r = gateway.generate(log);
         assertEquals(back, r);
         assertEquals(List.of(
@@ -59,7 +69,7 @@ class LlmGatewayTest {
         LlmGateway gateway = new LlmGateway(visible -> {
             assertEquals(List.of(), visible);
             return SyscallResult.success("ok");
-        });
+        }, null);
         assertTrue(gateway.generate(logOf()).ok());
     }
 

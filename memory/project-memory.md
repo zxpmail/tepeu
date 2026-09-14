@@ -1,6 +1,6 @@
 # Project Memory — Tepeu（develop）
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop 已过审；commands 已推待人审；下一刀未圈（load / host 或 conformance）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands 已过审；load + host 已落待人审（2026-09-14），**产品已可真跑**；下一刀未圈（conformance 或真模型）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
 v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
@@ -8,7 +8,7 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 
 - Runtime: Java 21
 - 规划模块：session / policy / persist（父 POM：api + sqlite 第一刀）/ dispatch / llm（网关统一调用，第一刀 fake 挂在网关后）/ execution / loop；共用类型 identity/syscall；测试套件 conformance
-- host：进程入口、选 persist / llm 实现、装配、CLI、斜杠。新 host 尚未建
+- host：`tepeu/host/`（2026-09-14 裁进 reactor）。Spring Boot 4.0.7 无 Web，POM 钉 4.0.7。POM 依赖 persist-sqlite、llm-fake、load；装配收 `Assembly.wire → Wired`。stdin REPL：`/` 行交 commands、普通行入收件箱跑一轮、终答读账印最后 ASSISTANT_MESSAGE、EOF 退出。db `tepeu.db` 落当前目录，工作区参数缺省当前目录，第一刀不读密钥
 - 验证：`mvn -f tepeu/pom.xml test`。标本对照：`mvn -f legacy/os-9/os/pom.xml test`
 - 持久化：`persist` 父 POM（api + sqlite 第一刀）。session/policy 只依赖 api。host 第一刀依赖 persist-sqlite、llm-fake
 - `llm.*`：自研协议与传输
@@ -37,7 +37,8 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 - session 五本账 seq、收件箱领取、policy approvalId 都是非原子读改写（`list().size()+1`），单进程单写者前提；loop 线程化前收口。`SessionId` 禁 `/`（identity 层构造器，2026-09-13 收紧）。
 - policy 审批：ask 幂等靠 `approval-pending` 索引；persist 无删除，decide/consume 是覆盖写置章（decidedAt/consumedAt）；许可绑 argsDigest，严格单次。
 - llm/gateway 只读事件日志派生模型可见序列（USER/ASSISTANT/TOOL_RESULT），不写事件、不记用量；assistant 事件由 loop 追加；接线归 load（`llm.generate` 参数留空、会话从 ctx 取）。
-- 工具请求协议：模型输出首行 `@tool 名 k=v;k=v`（2026-09-14 裁），解析在 loop/ToolRequest；工具轮 ≤8。handler 错误码与 dispatch 门五码分家（PATH_OUTSIDE_WORKSPACE / IO_ERROR / PROC_*）。spawn 只杀直接子进程，进程树杀灭随 OS 级隔离（§10 欠账）。
+- 工具请求协议：模型输出首行 `@tool 名 k=v;k=v`（2026-09-14 裁），**参数分隔符是 `;` 不是空格**——`path=x.txt content=v` 会解析成单键（AssemblyTest 抓出过），解析在 loop/ToolRequest；工具轮 ≤8。handler 错误码与 dispatch 门五码分家（PATH_OUTSIDE_WORKSPACE / IO_ERROR / PROC_*）。spawn 只杀直接子进程，进程树杀灭随 OS 级隔离（§10 欠账）。
+- host CLI 输出走本地编码：重定向管道里中文是 mojibake，GBK 控制台正常。编码收口归真模型刀。
 - **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离程度如实报告。host 读密钥，os 库不读。
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名
