@@ -5,8 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.tepeu.load.Assembly;
 import com.tepeu.load.Assembly.Wired;
-import com.tepeu.llm.fake.FakeBackend;
 import com.tepeu.persist.sqlite.SqlitePersist;
+import com.tepeu.syscall.SyscallResult;
+import com.tepeu.syscall.Usage;
 import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
 import java.io.PrintStream;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class ReplTest {
+
+    /** profile 中立：不 import 具体实现，行为对齐 fake（固定文本，非零用量）。 */
+    private static final String FIXED_REPLY = "fake: 收到，固定回复。";
 
     @TempDir
     Path dir;
@@ -31,7 +35,7 @@ class ReplTest {
     @Test
     void plainLineRunsATurnAndPrintsFinalAnswer() throws Exception {
         String out = run("hi\n");
-        assertTrue(out.contains(FakeBackend.REPLY));
+        assertTrue(out.contains(FIXED_REPLY));
     }
 
     @Test
@@ -62,7 +66,9 @@ class ReplTest {
     private String run(String input) throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (SqlitePersist persist = SqlitePersist.open(dir.resolve("s.db"))) {
-            Wired wired = Assembly.wire(persist, new FakeBackend(), Assembly.SYSTEM_PROMPT, dir);
+            Wired wired = Assembly.wire(persist,
+                    visible -> SyscallResult.success(FIXED_REPLY, new Usage(1, 1)),
+                    Assembly.SYSTEM_PROMPT, dir);
             new Repl(new BufferedReader(new StringReader(input)),
                     new PrintStream(bytes, true, StandardCharsets.UTF_8), wired).run();
         }

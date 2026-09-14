@@ -11,9 +11,10 @@
     <artifactId>tepeu-llm</artifactId>
     <packaging>pom</packaging>
     <name>Tepeu Llm</name>
-    <description>父 POM：gateway 统一调用口，实现挂在网关后。第一刀 fake</description>
+    <description>父 POM：gateway 统一调用口，实现挂在网关后。实现挂在网关后。第一刀 fake，真实现 anthropic</description>
     <modules>
         <module>gateway</module>
         <module>fake</module>
+        <module>anthropic</module>
     </modules>
 </project>

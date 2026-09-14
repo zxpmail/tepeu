@@ -1,6 +1,6 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake）/ execution / loop / commands / load + host 已推已过审；conformance 已落待人审（2026-09-14）。产品已可真跑：`java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`。  
+**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake+anthropic）/ execution / loop / commands / load + host / conformance 已落；真模型刀待人审（2026-09-14）。产品已可真跑：默认 `java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`（fake），真模型 `-P real` 打包 + `ANTHROPIC_AUTH_TOKEN`。  
 **标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
@@ -18,7 +18,7 @@
 4. 旁问 `/btw`：看当前对话，问一句，印出答复。不写事件日志，不调工具。用量进用量流水。第一刀只在 loop 空闲时可用。主任务还在跑时也能问，以后做。
 5. 第一刀一个默认对话。一个 `SessionId`，进程退出后记录仍在。会话列表与切换以后做。
 6. 默认授权：问模型、读文件 → `allow`。写文件、创建进程 → `require_approval`。
-7. 第一刀 llm 挂 `fake`，回固定文本。结构可跑通。真模型：host POM 另依赖一份实现，不改层。
+7. 第一刀 llm 挂 `fake`，回固定文本。真模型（2026-09-14 落）：`llm/anthropic` 实现，host 打包 profile 切换——默认 fake，`-P real` 换 anthropic，单 jar 只背一份实现。真模型刀裁定：Anthropic Messages API（JDK HttpClient 自研传输，60s 超时不重试，max_tokens 4096）；jackson 3（`tools.jackson`，版本照 Spring Boot 4.0.7 BOM 钉 3.1.4）；`/btw` 问句经 gateway `generate(log, question)` 尾插 USER 消息、不写账；env `ANTHROPIC_AUTH_TOKEN` 必需（缺则一行报错 exit 2）、`ANTHROPIC_BASE_URL` 缺省官方、`ANTHROPIC_MODEL` 缺省 `claude-sonnet-4-6`；host 反射缝 `Backends` 按名造后端（不 import 具体实现，两个 profile 都能编译）。
 
 ---
 
@@ -125,12 +125,13 @@ JDBC、连接池、MyBatis、SQL 方言、对象存储 SDK 写在对应实现模
 
 ## 6. 模型适配与工作区
 
-**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。系统提示由 load 给出（2026-09-14 裁：网关构造器收 systemPrompt，`Role.SYSTEM` 排在可见序列头部）。第一刀可见词汇：`SYSTEM`（提示）+ `USER_MESSAGE` / `ASSISTANT_MESSAGE` / `TOOL_RESULT`（Role.TOOL）按日志序；工具请求、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。
+**模型适配**（`llm`：父 POM）：网关统一调用。从事件日志派生模型可见序列（纯函数、可测试相等），再交给后面的实现做协议与传输。系统提示由 load 给出（2026-09-14 裁：网关构造器收 systemPrompt，`Role.SYSTEM` 排在可见序列头部）。第一刀可见词汇：`SYSTEM`（提示）+ `USER_MESSAGE` / `ASSISTANT_MESSAGE` / `TOOL_RESULT`（Role.TOOL）按日志序；工具请求、推理、计划不可见。gateway 只读不写——assistant 事件由 loop 追加，结果与用量透传后端返回值。问句面（2026-09-14 裁）：`generate(log, question)`，问句非空白时作 USER 消息尾插可见序列，不写事件日志（`/btw` 用）。
 
 ```
 llm/                     packaging=pom
   gateway/               统一调用口。调用方只进这里
-  fake/                  第一刀：挂在网关后。离线，不发 HTTP，返回固定文本
+  fake/                  挂在网关后。离线，不发 HTTP，返回固定文本。默认 profile
+  anthropic/             挂在网关后。Anthropic Messages API。`-P real` profile
 ```
 
 loop / dispatch 只调网关。load 把实现注入网关。host 的 POM 依赖哪个实现，就加载哪个，交给 load。
@@ -151,7 +152,7 @@ loop / dispatch 只调网关。load 把实现注入网关。host 的 POM 依赖�
 | session | 一次对话的持久状态：事件日志、寄存器、用量流水、收件箱、操作审计 |
 | policy | 授权判定、审批存储 |
 | dispatch | 名称注册表与 `invoke` |
-| llm | 父 POM：`gateway` 统一调用；实现挂在网关后。第一刀 `fake` |
+| llm | 父 POM：`gateway` 统一调用；实现挂在网关后。`fake`（默认）/ `anthropic`（`-P real`） |
 | execution | 工作区文件与进程 |
 | loop | 控制循环、完成判定、压缩触发 |
 | identity | 共用类型：谁、哪个工作区、哪一次对话 |
@@ -185,7 +186,8 @@ tepeu/
   run/                      层3  干活与循环
     llm/                         父 POM
       gateway/                   统一调用口  → session
-      fake/                      挂在网关后。第一刀：离线，不发 HTTP，返回固定文本
+      fake/                      挂在网关后。离线固定文本。默认 profile
+      anthropic/                 挂在网关后。Messages API + jackson3。`-P real`
     execution/                   工作区文件与进程
     loop/                        控制循环  → session, policy, dispatch
 
@@ -258,7 +260,7 @@ loop 经 dispatch 调用处理函数。斜杠经 commands。host 的 POM 依赖�
 
 ## 10. 未决
 
-第一刀无未决。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、llm / persist 的下一份实现、OS 级执行隔离（spawn 现只杀直接子进程，进程树杀灭随 OS 级沙箱做）。
+第一刀无未决。真模型已落（2026-09-14）：llm/anthropic + host profile 切换 + `/btw` 问句面 + 管道 UTF-8 收口；重试/退避、流式输出、费用（cost）未做。以后：`/compact`、invoke、定时（寄存器）、`/btw` 与主任务并发、会话列表、`kernel/memory/`、persist 的下一份实现、OS 级执行隔离（spawn 现只杀直接子进程，进程树杀灭随 OS 级沙箱做）。
 
 conformance 已收（2026-09-14）：persist 契约（put 就地覆盖不挪位、list 写入序、重开见全部已提交写）；session 契约（**seq 每本账独立编号各从 1 起**、跨重连续号、open fail fast、收件箱优先级/租约/nack）；approval 契约（ask 未决幂等、decide 一次、consume 取走即消费、绑 argsDigest）；dispatch 真栈五码；kill -9 故障注入（子 JVM 强杀后 WAL 恢复）；单写者前提进 session/policy javadoc。
 

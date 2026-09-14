@@ -4,16 +4,28 @@
 > 标本：`legacy/os-9/`。新库根 `tepeu/`。  
 > `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-14（load+host 过审 `2d88364`；conformance 刀已落待人审，欠账清完）
+**Last updated**: 2026-09-14（conformance 过审 `a89c435`；真模型刀已落待人审）
 
 ## 当前阶段
 
 - 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`、`load` + `host`（人审过 2026-09-14）、`conformance`（已落待人审）。
-- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关；host 进 reactor；`Assembly.wire → Wired`；conformance 全域 + 故障注入；夹具三份留。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（真模型，或 `/compact`）。
+- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`、`load` + `host`、`conformance`（均人审过）。
+- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关；host 进 reactor；`Assembly.wire → Wired`；conformance 全域 + 故障注入；夹具三份留；**真模型刀**：Anthropic Messages API + jackson3 + `/btw` 问句面 + Maven profile 切换。
+- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈（`/compact`，或压缩外新面）。
 
-## 本刀 conformance
+## 本刀 真模型（llm/anthropic + host profile）
+
+- **gateway 问句面**：`generate(SessionLog, String question)` 单方法（旧单参签名删除）。问句非空白作 `LlmMessage(Role.USER, …)` 尾插可见序列，不写事件日志；Loop 传 `Map.of()` → null，无感。Assembly handler 改 `syscall.args().get("question")`（commands 本就传 `Map.of("question", q)`，零改动）。gateway 4→6 测试。
+- **llm/anthropic**：包 `com.tepeu.llm.anthropic`，`AnthropicBackend implements LlmBackend`。SYSTEM→`system` 字段；USER/TOOL→`user`、ASSISTANT→`assistant`，同角色相邻合并 `\n\n`；`/v1/messages`，头 `x-api-key` + `Authorization: Bearer` + `anthropic-version: 2023-06-01`；JDK HttpClient 60s 不重试；`max_tokens=4096`（自裁，待审）。非 2xx 合成 `LLM_HTTP_<n>`、网络异常 `LLM_IO_ERROR`，不回显响应体。纯函数 `buildRequest`/`parseResponse`（text 块相连、其余块忽略、usage 透传），HTTP 路径不测（裁定）。5 测试。
+- **jackson 3**（裁定照 Spring Boot 4.0.7 BOM）：Spring Boot 4 管的是 **Jackson 3 BOM 3.1.4**（`tools.jackson.core:jackson-databind`，包命名空间换了；Jackson 2 兼容 BOM 钉 2.21.4 别用）。API 实测：`asString()`/`asLong(long)`/`path()`/`JsonMapper.builder()`，异常 unchecked。版本钉根 POM `jackson.version`。
+- **host profile 切换**：host POM 两 profile——默认（activeByDefault）依赖 `tepeu-llm-fake`、`llm.kind=fake`；`real` 依赖 `tepeu-llm-anthropic`、`llm.kind=anthropic`。application.properties 写 `tepeu.llm=@llm.kind@`，maven-resources `@` 分隔符过滤（`<configuration>` 归 resources-plugin 不归 `<resource>`，错位会 Malformed POM）。单 jar 只背一份实现（real jar 实测：含 anthropic 不含 fake）。
+- **Backends 反射缝**：`create(kind, token, baseUrl, model)` 按名反射造后端，host 不 import 具体实现，两 profile 都能编译。env：`ANTHROPIC_AUTH_TOKEN` 必需（缺 → 一行 stderr + exit 2，无栈）；`ANTHROPIC_BASE_URL` 缺省官方；`ANTHROPIC_MODEL` 缺省 `claude-sonnet-4-6`。
+- **UTF-8 收口**：`main` 里 `System.setOut/setErr` 钉 UTF-8——管道中文 mojibake 已消（真跑验证）。
+- **真跑已验（real jar）**：主轮对话、`/btw` 问句（答出账里暗号"苹果"，问句确实进可见序列）、缺 token 报错 exit 2。本机 env 恰有 `ANTHROPIC_AUTH_TOKEN`，全链路真模型通。
+- **教训**：host 测试必须 profile 中立——ReplTest 曾 `new FakeBackend()`，`-P real` 下 NoClassDefFoundError（全树 real 跑抓出）；改匿名 lambda backend。`-pl host -am -P real test` 在依赖解析处失败是 reactor 子集解析问题，全 reactor 跑即可。
+- 测试：anthropic 5、gateway 6、BackendsTest 2；**全树 116 绿 21 模块（default 与 real 双 profile 同绿）**。
+
+## 上一刀 conformance
 
 - 路径 `tepeu/conformance`（纯 test 模块，无 main 源码）。对**接口**钉语义，任何实现都得满足。
 - **persist 契约（8）**：append 撞键 IllegalStateException；put 新键尾插、旧键**就地覆盖不挪位**；list 恒按写入序；space 互不相通；空白 space 拒；关库后一切操作拒；重开见全部已提交写。

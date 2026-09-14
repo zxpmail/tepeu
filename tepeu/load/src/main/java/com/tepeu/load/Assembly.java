@@ -55,7 +55,8 @@ public final class Assembly {
         ApprovalStore approvals = new PersistedApprovalStore(persist);
         Dispatch dispatch = new Dispatch(new DefaultRuleMatrix(), approvals);
         LlmGateway gateway = new LlmGateway(backend, systemPrompt);
-        dispatch.register(Loop.LLM_GENERATE, (ctx, syscall) -> gateway.generate(session.log()));
+        dispatch.register(Loop.LLM_GENERATE,
+                (ctx, syscall) -> gateway.generate(session.log(), syscall.args().get("question")));
         Workspace workspace = new Workspace(workspaceRoot);
         dispatch.register(Workspace.FS_READ, workspace::read);
         dispatch.register(Workspace.FS_WRITE, workspace::write);

@@ -13,6 +13,7 @@ import java.util.Objects;
  * 统一调用口。loop / commands 只进这里，不碰后端实现。
  * 系统提示由 load 装配时给出（可空），排在可见序列头部。
  * {@link #visible} 是纯函数：系统提示 + 事件日志 → 模型可见序列，可测试相等。
+ * 问句（{@code /btw}）只进可见序列尾部，不写事件日志。
  * 结果与用量原样透传后端返回值，不追加事件、不记用量。
  */
 public final class LlmGateway {
@@ -25,10 +26,14 @@ public final class LlmGateway {
         this.systemPrompt = systemPrompt == null || systemPrompt.isBlank() ? null : systemPrompt;
     }
 
-    /** 派生可见序列，交后端生成。 */
-    public SyscallResult generate(SessionLog log) {
+    /** 派生可见序列，交后端生成。问句非空白时作 USER 消息尾插，不写账。 */
+    public SyscallResult generate(SessionLog log, String question) {
         Objects.requireNonNull(log, "log");
-        return backend.generate(visible(systemPrompt, log.readAll()));
+        List<LlmMessage> messages = new ArrayList<>(visible(systemPrompt, log.readAll()));
+        if (question != null && !question.isBlank()) {
+            messages.add(new LlmMessage(Role.USER, question));
+        }
+        return backend.generate(List.copyOf(messages));
     }
 
     /** 模型可见序列：系统提示在头，对话两方与工具结果按日志序；工具请求、推理、计划不可见。 */

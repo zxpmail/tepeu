@@ -21,10 +21,6 @@
             <artifactId>tepeu-persist-sqlite</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.tepeu</groupId>
-            <artifactId>tepeu-llm-fake</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -34,8 +30,54 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <llm.kind>fake</llm.kind>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.tepeu</groupId>
+                    <artifactId>tepeu-llm-fake</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>real</id>
+            <properties>
+                <llm.kind>anthropic</llm.kind>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.tepeu</groupId>
+                    <artifactId>tepeu-llm-anthropic</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

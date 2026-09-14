@@ -1,6 +1,6 @@
 # Project Memory — Tepeu（develop）
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands / load+host 已过审；conformance 已落待人审（2026-09-14），**产品已可真跑、契约已钉面**；下一刀未圈（真模型或 /compact）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands / load+host / conformance 已过审；真模型刀已落待人审（2026-09-14），**产品双模式可真跑（默认 fake / -P real 真模型）**；下一刀未圈（/compact 或压缩外新面）。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
 
 v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
@@ -8,10 +8,10 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 
 - Runtime: Java 21
 - 规划模块：session / policy / persist（父 POM：api + sqlite 第一刀）/ dispatch / llm（网关统一调用，第一刀 fake 挂在网关后）/ execution / loop；共用类型 identity/syscall；测试套件 conformance
-- host：`tepeu/host/`（2026-09-14 裁进 reactor）。Spring Boot 4.0.7 无 Web，POM 钉 4.0.7。POM 依赖 persist-sqlite、llm-fake、load；装配收 `Assembly.wire → Wired`。stdin REPL：`/` 行交 commands、普通行入收件箱跑一轮、终答读账印最后 ASSISTANT_MESSAGE、EOF 退出。db `tepeu.db` 落当前目录，工作区参数缺省当前目录，第一刀不读密钥
+- host：`tepeu/host/`（2026-09-14 裁进 reactor）。Spring Boot 4.0.7 无 Web，POM 钉 4.0.7。POM 依赖 persist-sqlite、load；llm 实现走 profile——默认依赖 llm-fake（`llm.kind=fake`），`-P real` 依赖 llm-anthropic（`llm.kind=anthropic`），application.properties `tepeu.llm=@llm.kind@` 经 maven-resources `@` 分隔符过滤，单 jar 只背一份实现。装配收 `Assembly.wire → Wired`；后端经 `Backends.create(kind, …)` 反射缝（host 不 import 具体实现）。stdin REPL：`/` 行交 commands、普通行入收件箱跑一轮、终答读账印最后 ASSISTANT_MESSAGE、EOF 退出；stdout/stderr 钉 UTF-8。db `tepeu.db` 落当前目录，工作区参数缺省当前目录。env：`ANTHROPIC_AUTH_TOKEN` 必需（真模型，缺则一行报错 exit 2）、`ANTHROPIC_BASE_URL` 缺省官方、`ANTHROPIC_MODEL` 缺省 `claude-sonnet-4-6`
 - 验证：`mvn -f tepeu/pom.xml test`。标本对照：`mvn -f legacy/os-9/os/pom.xml test`
 - 持久化：`persist` 父 POM（api + sqlite 第一刀）。session/policy 只依赖 api。host 第一刀依赖 persist-sqlite、llm-fake
-- `llm.*`：自研协议与传输
+- `llm.*`：自研协议与传输。gateway `generate(log, question)`——问句非空白尾插 USER 不写账（/btw 面）；llm/anthropic 用 **Jackson 3**（`tools.jackson.*`，Spring Boot 4 BOM 钉 3.1.4；包名空间换了、异常 unchecked、`asString()`/`asLong(long)`），Jackson 2 BOM（2.21.4）别混。SYSTEM→`system` 字段，TOOL→user，同角色相邻合并。错误码 `LLM_HTTP_<n>` / `LLM_IO_ERROR`
 - v1 工作台：`legacy/` / `main`（Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18）
 
 ## Architecture（develop）
@@ -39,7 +39,8 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 - policy 审批：ask 幂等靠 `approval-pending` 索引；persist 无删除，decide/consume 是覆盖写置章（decidedAt/consumedAt）；许可绑 argsDigest，严格单次。
 - llm/gateway 只读事件日志派生模型可见序列（USER/ASSISTANT/TOOL_RESULT），不写事件、不记用量；assistant 事件由 loop 追加；接线归 load（`llm.generate` 参数留空、会话从 ctx 取）。
 - 工具请求协议：模型输出首行 `@tool 名 k=v;k=v`（2026-09-14 裁），**参数分隔符是 `;` 不是空格**——`path=x.txt content=v` 会解析成单键（AssemblyTest 抓出过），解析在 loop/ToolRequest；工具轮 ≤8。handler 错误码与 dispatch 门五码分家（PATH_OUTSIDE_WORKSPACE / IO_ERROR / PROC_*）。spawn 只杀直接子进程，进程树杀灭随 OS 级隔离（§10 欠账）。
-- host CLI 输出走本地编码：重定向管道里中文是 mojibake，GBK 控制台正常。编码收口归真模型刀。
+- host CLI 输出已钉 UTF-8（2026-09-14 真模型刀收口，`System.setOut/setErr`），管道中文不再 mojibake；legacy GBK 控制台需 `chcp 65001`。
+- host 测试必须 **profile 中立**：不 import `com.tepeu.llm.fake.*` / `anthropic.*` 具体类（`-P real` 下 fake 类不在 classpath 会 NoClassDefFoundError）；要固定行为用匿名 `LlmBackend` lambda。`-pl host -am -P real` 依赖解析可能失败，全 reactor 跑即可。
 - **本机 Agent OS 骨架可演示** ≠ 企业 OS / 完整 OS。execution 隔离程度如实报告。host 读密钥，os 库不读。
 - 压缩改写 surface 后必须 bump `log.surfaceEpoch`，否则下一笔 `llm.generate` 会 ASSERTION
 - `/approve` 只许本会话的 approvalId；审批许可绑 argsDigest，不单绑 syscall 名

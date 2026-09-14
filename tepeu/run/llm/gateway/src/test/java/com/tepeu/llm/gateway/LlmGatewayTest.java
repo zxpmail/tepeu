@@ -56,7 +56,7 @@ class LlmGatewayTest {
             seen.set(visible);
             return back;
         }, null);
-        SyscallResult r = gateway.generate(log);
+        SyscallResult r = gateway.generate(log, null);
         assertEquals(back, r);
         assertEquals(List.of(
                 new LlmMessage(Role.USER, "hi"),
@@ -65,12 +65,42 @@ class LlmGatewayTest {
     }
 
     @Test
+    void questionAppendsTrailingUserMessageWithoutWritingLog() {
+        SessionLog log = logOf(
+                event(1, SessionEventType.USER_MESSAGE, "hi"));
+        AtomicReference<List<LlmMessage>> seen = new AtomicReference<>();
+        LlmGateway gateway = new LlmGateway(visible -> {
+            seen.set(visible);
+            return SyscallResult.success("ok");
+        }, null);
+        gateway.generate(log, "刚才说了什么？");
+        assertEquals(List.of(
+                new LlmMessage(Role.USER, "hi"),
+                new LlmMessage(Role.USER, "刚才说了什么？")),
+                seen.get());
+        assertEquals(1, log.readAll().size());
+    }
+
+    @Test
+    void blankQuestionIsIgnored() {
+        SessionLog log = logOf(
+                event(1, SessionEventType.USER_MESSAGE, "hi"));
+        AtomicReference<List<LlmMessage>> seen = new AtomicReference<>();
+        LlmGateway gateway = new LlmGateway(visible -> {
+            seen.set(visible);
+            return SyscallResult.success("ok");
+        }, null);
+        gateway.generate(log, "   ");
+        assertEquals(List.of(new LlmMessage(Role.USER, "hi")), seen.get());
+    }
+
+    @Test
     void emptyLogStillAsksBackend() {
         LlmGateway gateway = new LlmGateway(visible -> {
             assertEquals(List.of(), visible);
             return SyscallResult.success("ok");
         }, null);
-        assertTrue(gateway.generate(logOf()).ok());
+        assertTrue(gateway.generate(logOf(), null).ok());
     }
 
     private static SessionEvent event(long seq, SessionEventType type, String body) {

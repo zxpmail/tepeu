@@ -43,7 +43,7 @@ class LoopTest {
             LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll(), new Usage(1, 1)), null);
             Workspace workspace = new Workspace(work);
             Dispatch dispatch = new Dispatch(new DefaultRuleMatrix(), null);
-            dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log()));
+            dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log(), null));
             dispatch.register(Workspace.FS_READ, workspace::read);
             Loop loop = new Loop(dispatch);
 
@@ -75,7 +75,7 @@ class LoopTest {
                     List.of("@tool execution.fs.write path=x.txt;content=v", "gave up"));
             LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll()), null);
             Dispatch dispatch = new Dispatch(new DefaultRuleMatrix(), null);
-            dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log()));
+            dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log(), null));
             Loop loop = new Loop(dispatch);
 
             assertTrue(loop.runOnce(session));
@@ -102,7 +102,7 @@ class LoopTest {
             LlmGateway gateway = new LlmGateway(v -> SyscallResult.success(replies.poll()), null);
             Workspace workspace = new Workspace(dir);
             Dispatch dispatch = new Dispatch(new DefaultRuleMatrix(), null);
-            dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log()));
+            dispatch.register(Loop.LLM_GENERATE, (ctx, s) -> gateway.generate(session.log(), null));
             dispatch.register(Workspace.SANDBOX_PROBE, workspace::probe);
             Loop loop = new Loop(dispatch);
 
