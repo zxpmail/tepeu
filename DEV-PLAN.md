@@ -1,6 +1,6 @@
 # Development Plan — Tepeu Agentic OS
 
-> **develop（2026-08-18）**：本文件是 **v1.0 交付切片档案，已冻结**。当前进度与下一刀见 [`CONTEXT.md`](CONTEXT.md)；OS 规范见 ADR-016 + [`docs/os-baseplate.md`](docs/os-baseplate.md)。不要按本文件旧「下一刀」继续排期。
+> **这不是现在要遵守的计划。** 现在的进度看 [`CONTEXT.md`](CONTEXT.md)，规则看 [`docs/rewrite-1.md`](docs/rewrite-1.md)。本文件是上一版的交付记录，已冻结。不要按这里的「下一步」继续做。
 
 > **命名注意（避免与 Product-Spec 混淆）**  
 > - **本文件 Phase 1–4** = v0.1.0 **交付切片**（骨架 → 对话 → 记忆/终端 → 发布）。**已完成。**  

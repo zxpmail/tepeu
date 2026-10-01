@@ -1,17 +1,15 @@
 # Tepeu — Agentic Operating System（v1.0 产品规格档案）
 
-<!-- ARCHIVE: v1 product spec. NOT develop OS. Develop spec = ADR-016 + docs/os-baseplate.md. Seven-layer / four-agent / Spring AI ChatModel / WASM+V8 / memory-P0 are NOT os/ current. Do not move this file (Forge spec-before-code-gate). -->
+<!-- ARCHIVE: v1 产品规格。不是现在的规则。现在看 docs/rewrite-1.md。不要挪走这个文件。 -->
 
 版本: v1.0.0
-状态: v1.0 冻结（工作台 / Harness）；**不是** develop 的 OS 规范
+状态: v1.0 冻结（旧工作台）。不是现在这一轮的规则
 日期: 2026-07-05
 作者: Tepeu Team
 协议: Apache 2.0
 
-> **文档地位（2026-08-18）**：本文件是 **v1.0 产品规格**（七层 Harness、工作台、路线图）。  
-> **develop 重写**的 OS 规范以 [`memory/decisions-log.md`](memory/decisions-log.md) **ADR-016** + [`docs/os-baseplate.md`](docs/os-baseplate.md) 为准。  
-> 现状与禁止口径：[`docs/agent-os-gap.md`](docs/agent-os-gap.md)（当前 = 本机 Agent OS 骨架可演示；本文件仍是 v1 档案，不是 develop 规范）。  
-> **冲突时 ADR-016 为准。** 不得单独引用本节 §1.1 宣称「OS 已成形 / 已交付完整操作系统」。v1 行为标本见 `legacy/`。
+> **这不是现在要遵守的规则。** 现在看 [`docs/rewrite-1.md`](docs/rewrite-1.md)。  
+> 本文件是 2026-07-05 的上一版产品规格，留着对照。里面的七层、四个智能体、网页工作台，都不是现在 `tepeu/round` 在做的事。
 
 ---
 
@@ -25,7 +23,7 @@
 
 **v1.0（本规格正文所交付）**：个人工作台 + Harness（对话、工具、记忆、自主调度、市场、技能脚本）。规格里程碑名称含「Agentic OS」，**不等于**完整 OS 已交付。
 
-**develop**：按 ADR-016 重建内核；分层、主体、模型通道、记忆话术以重写文档为准，不以本章七层 / 四智能体 / Spring AI 路径为准。
+**现在这一轮**：规则在 [`docs/rewrite-1.md`](docs/rewrite-1.md)，代码在 `tepeu/round`。不要用本章的七层、四个智能体、Spring AI 来描述它。
 
 ### 1.2 命名由来
 
@@ -37,11 +35,11 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 
 让每个人和企业都能拥有一个专属的智能体操作系统，将想法转化为行动，将对话转化为交付。
 
-这是**愿景**，不是对 v1.0 或 develop 现状的描述。现状见 [`docs/agent-os-gap.md`](docs/agent-os-gap.md)。
+这是**愿景**，不是对上一版或现在这一轮的描述。现在的规则见 [`docs/rewrite-1.md`](docs/rewrite-1.md)。
 
 ---
 
-> **档案边界**：以下 §2–§11 是 **v1.0 产品规格正文**（工作台 / Harness）。除各节已加的 develop 注记外，不要把模块表、七层图、四智能体、智能路由、记忆 P0 读成 `os/` 已具备。develop 以 ADR-016 为准。
+> **档案边界**：下面是上一版产品规格的正文。不要把里面的模块表、七层图、四个智能体读成现在已经有的东西。现在以 [`docs/rewrite-1.md`](docs/rewrite-1.md) 为准。
 
 ---
 
@@ -79,11 +77,11 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 
 **核心规则**：企业只能在任务执行过程中，通过任务智能体临时调用个人的特定能力（如代码审查），但无权访问或留存个人知识。
 
-> **Phase 排期**：四智能体架构属 v1 规格的 Phase 2 企业能力；v1 仅实现个人智能体。**develop** 主体模型是 Principal × Namespace + 兜底 Agent（ADR-016），不要用本表描述 `os/`。
+> **排期**：四个智能体是上一版规格里的企业能力，上一版只做了个人智能体。不要用这张表描述现在的 `tepeu/round`。现在的规则见 [`docs/rewrite-1.md`](docs/rewrite-1.md)。
 
 ### 3.3 原则三：白盒记忆
 
-> develop：记忆平面未立则产品话术闭嘴（[`docs/agent-os-gap.md`](docs/agent-os-gap.md) §3 / P0-b）。下列条款仍属 **v1 规格承诺**，不是 os/ 已具备的宣称。
+> 下面这些是上一版对记忆的承诺，不是现在 `tepeu/round` 已经有的功能。现在的规则见 [`docs/rewrite-1.md`](docs/rewrite-1.md)：记忆可以不装；装了也只能放进给模型看的内容，不能当作做完的证据。
 
 记忆的生成、存储、检索和修改全程可视化、可追溯：
 
@@ -106,7 +104,7 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 
 - 每项任务的 Token 消耗精确计量
 - 按项目/按用户/按时间段汇总统计
-- 智能路由：简单任务用轻量模型，复杂任务用旗舰模型（**v1 意向。** develop：`ModelRouter` 默认透传 `providerId`，不做简单/复杂自动选模——ADR-016）
+- 智能路由：简单任务用轻量模型，复杂任务用旗舰模型（这是上一版的打算，不是现在这一轮已经有的功能）
 - 提供预算告警机制
 - **Phase 1 最小视图**：每个 workspace 提供累计 Token/成本显示（完整成本仪表盘见 M2.4）
   - **实现状态（2026-08-02）**：会话级用量 + workspace 累计（`GET /api/workspace/:id/stats`）+ **成本仪表盘/预算告警/硬门禁**（`GET /api/workspace/:id/cost`、`PUT .../budget`，顶栏告警徽章）已落地（M2.4 / Phase 8）
@@ -117,7 +115,7 @@ Tepeu 源自玛雅基切族神话中的创世之神。他与古库马茨共同"�
 
 ### 4.1 七层 Harness 架构（v1 档案，非 os/）
 
-> **v1 概念架构。** develop 分层是洋葱四环（①内核 → ②插头 → ③编排 → ⑤应用），见 [`docs/os-baseplate.md`](docs/os-baseplate.md)。不要把七层与四环混称，也不要用 L1–L7 描述 `os/`。
+> **上一版的概念图。** 不要用这七层描述现在的程序。现在的规则见 [`docs/rewrite-1.md`](docs/rewrite-1.md)。
 
 Tepeu v1 基于七层 Agent Harness 架构设计：
 
@@ -180,9 +178,9 @@ Tepeu v1 基于七层 Agent Harness 架构设计：
 | UI 框架 | Web UI（SPA，参考 pi-web 设计） | — | 浏览器访问，无需安装客户端 |
 | 运行时 | Java | 21 | 虚线程（Virtual Threads）支持 |
 | 后端框架 | Spring Boot | 4.0+ | 支持 Spring AI 2.0，企业级 Java 生态 |
-| AI 集成 | Spring AI | 2.0.0 (GA) | **v1 路径。** develop：`llm.*` 不走 Spring AI ChatModel（ADR-016 第十轮，自研双协议族） |
+| AI 集成 | Spring AI | 2.0.0 (GA) | 上一版的路径。现在这一轮不走这条 |
 | Agent 工具 | 自研 `@Tool`（FileTools / ShellTools） | — | Spring AI 2.0 ToolCallback 装饰器路径；未接入 agent-utils |
-| Agent 运行时 | WebAssembly + V8（v1 规划） | — | develop 技能脚本见 ADR-015（GraalJS；原生 WASM 延后） |
+| Agent 运行时 | WebAssembly + V8（上一版的打算） | — | 不是现在这一轮的做法 |
 | 数据库 | SQLite + 文件系统 | — | 开箱即用，无需额外部署 |
 | 协议 | MCP + SSE + REST | — | 标准化 + 实时通信 |
 | 部署 | Docker + 单 JAR | — | 跨平台，一键启动 |
