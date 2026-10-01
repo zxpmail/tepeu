@@ -55,22 +55,22 @@ public final class Gate {
         return true;
     }
 
-    /** 放行。旁问不写主账。传入了编号才抄到平台返回上。 */
-    public void release(String name, String goalId, Entry entry) {
+    /** 放行。旁问不写主账。传入了编号才抄到平台返回上。回执只给过程账。 */
+    public ReleaseMark release(String name, String goalId, Entry entry) {
         if (!installed.contains(name)) {
             writeRefusal(entry, LedgerEntry.NOT_INSTALLED);
-            return;
+            return new ReleaseMark(name, LedgerEntry.NOT_INSTALLED);
         }
         if (ASK_MODEL.equals(name) && !feeInstalled) {
             writeRefusal(entry, LedgerEntry.GATE_BLOCKED);
-            return;
+            return new ReleaseMark(name, LedgerEntry.GATE_BLOCKED);
         }
         CapabilityReply reply = replies.take(name);
         if (reply == null) {
             reply = CapabilityReply.success();
         }
         if (entry == Entry.side) {
-            return;
+            return new ReleaseMark(name, outcomeOf(reply));
         }
         ledger.append(row(
                 LedgerEntry.RETURN,
@@ -80,6 +80,15 @@ public final class Gate {
                 reply.kind(),
                 reply.resultCode(),
                 reply.body()));
+        return new ReleaseMark(name, outcomeOf(reply));
+    }
+
+    /** 过程账只记结果种类，不另抄正文。 */
+    private static String outcomeOf(CapabilityReply reply) {
+        if (reply.kind() == null) {
+            return ResultKind.成功.name();
+        }
+        return reply.kind().name();
     }
 
     /** 主轮才把拒绝码写入主账。 */

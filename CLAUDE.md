@@ -92,7 +92,7 @@ description: Comprehensive CLAUDE.md template — 通用行为规则 + 项目填
 
 ```
 Runtime: Java 21
-规划: docs/rewrite-1.md（管控内核；现行代码 tepeu/round）
+规划: docs/rewrite-1.md（这一轮怎么管；现行代码 tepeu/round）
 第一刀: legacy/first-knife/（只读归档，不再加功能）
 ```
 
@@ -101,8 +101,8 @@ Runtime: Java 21
 ## ✏️ 项目结构（develop 重写阶段）
 
 ```
-docs/rewrite-1.md      管控内核规范（当前必读）
-docs/specs/一轮闭环.md  现行这一轮
+docs/rewrite-1.md      这一轮怎么管（当前必读）
+docs/specs/一轮闭环.md  一轮里必须做到的事
 tepeu/round            现行代码
 legacy/first-knife/    第一刀整套程序（只读）
 legacy/os-9/           更早的冻结标本（os + host）

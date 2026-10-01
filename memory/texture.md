@@ -1,5 +1,7 @@
 # 纹理 — 盒子与缝
 
+> **这不是现在要遵守的模块表。** 现在看 [`docs/rewrite-1.md`](../docs/rewrite-1.md)。本文是旧程序的模块打算，留着对照，不要照着做。
+
 > **人给的口径（2026-09-05）**：像 spaceXP，好理解优先。一件事一个盒子，README 一句人话。要第二句才能解释「为什么单独存在」的，并掉。  
 > **地位**：目标模块表。规划以 [`docs/rewrite-0.md`](../docs/rewrite-0.md) 为准。`os/` `host/` 冻结。  
 > **结构说明**：[`docs/tepeu-foundation.html`](../docs/tepeu-foundation.html)

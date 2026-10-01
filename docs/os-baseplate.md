@@ -1,5 +1,7 @@
 # Tepeu OS 底板（实施用）
 
+> **这不是现在要遵守的规则。** 现在看 [`rewrite-1.md`](./rewrite-1.md)。本文是更早的设计笔记，留着对照，不要照着做。
+
 > **地位**：develop 实施投影。规范以 [`memory/decisions-log.md`](../memory/decisions-log.md) **ADR-016** 为准。  
 > **蒸馏**：内核 = 冻结概念 + 不变量；能力 = 总线上的插头。细则在 ADR，此处一行指针。  
 > **诚实度**：[`agent-os-gap.md`](./agent-os-gap.md)（当前=本机 Agent OS 骨架可演示；隔离仍是 partial）。v1 规格不是上级文档。  

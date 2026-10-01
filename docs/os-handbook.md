@@ -1,5 +1,7 @@
 # OS 读者手册（独有投影）
 
+> **这不是现在要遵守的规则。** 现在看 [`rewrite-1.md`](./rewrite-1.md)。本文是更早的设计笔记，留着对照，不要照着做。
+
 > 不开新裁决。红线与三路见 [`os-baseplate.md`](./os-baseplate.md)；规范 [ADR-016](../memory/decisions-log.md)。诚实度 [`agent-os-gap.md`](./agent-os-gap.md)。  
 > 本文件**只留底板没有的章**。冲突改底板 / ADR，改这里对齐。
 

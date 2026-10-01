@@ -1,10 +1,16 @@
-# Project Memory — Tepeu（develop）
+# 项目记忆 — Tepeu
 
-当前：**从零重写**（2026-09-07）。标本 `legacy/os-9/`。新库根 `tepeu/`。identity / syscall / persist / session / policy / dispatch / llm / execution / loop / commands / load+host / conformance / 真模型已过审；/compact 刀已落待人审（2026-09-14），**产品双模式可真跑（默认 fake / -P real 真模型）**；下一刀未圈。规划 [docs/rewrite-0.md](../docs/rewrite-0.md)。产品：单用户单机 CLI。
+**现在**（2026-10-01）：规则在 [`docs/rewrite-1.md`](../docs/rewrite-1.md)，用平常话写这一轮怎么管。一轮里必须做到的事在 [`docs/specs/一轮闭环.md`](../docs/specs/一轮闭环.md)。代码在 `tepeu/round`。旧程序在 `legacy/first-knife/`，只读。更早的标本在 `legacy/os-9/`。上一版工作台的记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
-v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
+已经定下的：启动前装好可选能力，启动后不能再加。做完没有只看对得上这次任务的返回结果，模型说做完了不算。没有费用就不能问模型。写和跑命令默认要等人同意。过程会记下来给人看，不拿来判断做完没有。
 
-## Tech stack（develop）
+还没定：停止词表、等人同意的默认时限，以及总规则第 8 节里以后另写的内容。
+
+## 旧程序记录（不要当成现行）
+
+下面写到 2026-09-14 为止。那些代码已经挪到 `legacy/first-knife/`。当时的规划是 [`docs/rewrite-0.md`](../docs/rewrite-0.md)，不再往下写。
+
+## 旧程序用过的技术
 
 - Runtime: Java 21
 - 规划模块：session / policy / persist（父 POM：api + sqlite 第一刀）/ dispatch / llm（网关统一调用，第一刀 fake 挂在网关后）/ execution / loop；共用类型 identity/syscall；测试套件 conformance
@@ -15,19 +21,21 @@ v1 工作台记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v
 - 压缩（2026-09-14 裁）：**账不动**——COMPACT 事件记摘要（body）+ 压缩点（`attrs["compact.upTo"]`=seq），persist 无删除语义不破；gateway `visible` 只回放最新 COMPACT 摘要（Role.SUMMARY）+ 压缩点后事件；摘要复用 `llm.generate` 问句面，anthropic 零改动（SUMMARY 自动归 user）。/compact 仅 idle。**fake 下压缩即旧对话从可见面消失**（摘要无信息），压缩实义只在真模型；自动触发未做
 - v1 工作台：`legacy/` / `main`（Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18）
 
-## Architecture（develop）
+## 旧程序当时的结构
 
-- 规划见 [`docs/rewrite-0.md`](../docs/rewrite-0.md)。标本 `legacy/os-9/`。
-- `Product-Spec.md` 是 v1 档案（Forge 门要求留在根目录）
+- 当时的规划是 [`docs/rewrite-0.md`](../docs/rewrite-0.md)。标本在 `legacy/os-9/`。这些都不再当作现行。
+- `Product-Spec.md` 是上一版档案，按工具要求留在根目录。
 
-## 口径
+## 以哪份为准
 
-规划以 [`docs/rewrite-0.md`](../docs/rewrite-0.md) 为准。`Product-Spec.md` 是 v1 档案。
+现行以 [`docs/rewrite-1.md`](../docs/rewrite-1.md) 为准。`Product-Spec.md` 是上一版档案。这一节以下是旧程序时期留下的对照，不要当成现在的规则。
 
 吸收：`docs/legacy-absorption.md` · `docs/work-docs-absorption.md` · `docs/archive/reference/gnex3-reference.md` · `docs/archive/reference/agent-runtime-security-series.md`（九宫格对账；Gate=边界脚本；Observation 已开 jar；gate/response 空 jar 不预开）  
 勿吸内核：`spacexp-structure.md`（结构标本，不吸 Spring starter）；`tencent-harness-engineering.md`（AI Coding）；`ai-eval-observability-pipeline.md`（评测可观测运维）；`terax-ai.md`（⑤ ADE 产品，不同线）；`grok-bot-reference.md`（⑤ Computer-Use + 重建 host；WAL/完成通道/`directionEpoch` 可扫，勿按 35 槽改组件；Router/Local Docker 是重建新增）；`maka-reference.md`（log-first 同线工作台；机制可扫，勿开 Graph/Eval jar，勿降级 `llm.*` 断言）；`genericagent-reference.md`（个人 Computer-Use + 技能自结晶；不同线，循环自报完成，不吸）；`goose-reference.md`（Rust 本机 Agent + MCP；状态=对话投影已有同形，不吸 AlwaysAllow / 调度器）；`deer-flow-reference.md`（LangGraph 超级 Agent 工作台；`/goal`+评估器当完成门，不吸）；`lifeos-reference.md`（个人意图层，骑在 CC 一类 harness 上；名字带 OS，不是内核）；`aios-reference.md`（学术「LLM as OS」；C4/C5/C6 已落，不因 HEAD 再开调度）；`osone-ai-reference.md`（Gemini+Tuya 家居 Jarvis；不同线）；`osone-reference.md`（Common-joeAI 愿景仓；叙事空壳，勿与前者混）；`earthwalker-agent-os-reference.md`（本机编码 harness；绿构建当完成，不进内核）；`openclaw-reference.md`（Gateway+频道助手；可信面/策略在代码已有同形，默认沙箱关不抄）
 
-## Gotchas（develop 仍有效）
+## 旧程序踩过的坑
+
+这些坑属于已经归档的旧程序。不要照着在 `tepeu/round` 里重做。现在仍要守的只有这几条：用 Maven，不用 Gradle；不要往 `legacy/` 里加功能；不要把模型说的「做完了」当成做完；密钥不写进代码和记录。
 
 - 包管理器是 **Maven**，不是 Gradle。本机仓库常在 `D:\maven\repo`（非默认 `~/.m2`）
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件

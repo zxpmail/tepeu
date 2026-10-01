@@ -248,11 +248,15 @@ class RoundAcceptanceTest {
 
     @Test
     void v21旁问费用未装不进主账() {
-        List<LedgerEntry> rows = run(Set.of(Gate.ASK_MODEL), false, CapabilityReply.success(), turn(
+        Round round = program(Set.of(Gate.ASK_MODEL), false, CapabilityReply.success());
+        round.run(turn(
                 Entry.side, false, false, true, Field.missing(), Field.missing(), Field.missing(), List.of(), ""));
+        List<LedgerEntry> rows = round.ledger();
         assertFalse(code(rows, LedgerEntry.GATE_BLOCKED));
         assertFalse(has(rows, LedgerEntry.RETURN));
         assertFalse(has(rows, LedgerEntry.PIECE));
+        assertTrue(round.processLog().contains(new ProcessNote(ProcessNote.SIDE, "问模型")));
+        assertTrue(round.processLog().contains(new ProcessNote(ProcessNote.RELEASE, Gate.ASK_MODEL + " " + LedgerEntry.GATE_BLOCKED)));
         checkWriters(rows);
     }
 
@@ -286,6 +290,32 @@ class RoundAcceptanceTest {
         assertFalse(has(rows, LedgerEntry.PIECE));
         assertFalse(has(rows, LedgerEntry.DONE));
         checkWriters(rows);
+    }
+
+    @Test
+    void 开跑过程能看回且不做判定() {
+        Round round = program(Set.of(READ), true, CapabilityReply.success());
+        round.run(opened(List.of(READ)));
+        String goalId = pieceId(round.ledger());
+        assertEquals(List.of(
+                new ProcessNote(ProcessNote.STOP_CHECK, "继续"),
+                new ProcessNote(ProcessNote.PIECE, goalId),
+                new ProcessNote(ProcessNote.LOAD, "总则·不是人说的、这一件·不是人说的"),
+                new ProcessNote(ProcessNote.RELEASE, READ + " 成功"),
+                new ProcessNote(ProcessNote.TO_JUDGE, goalId)
+        ), round.processLog());
+        assertFalse(has(round.ledger(), "装载"));
+        assertTrue(has(round.ledger(), LedgerEntry.DONE));
+    }
+
+    @Test
+    void 第九个记在过程账() {
+        List<String> names = names(9);
+        Round round = program(Set.of(), true, CapabilityReply.success());
+        round.run(opened(names));
+        assertTrue(round.processLog().contains(new ProcessNote(ProcessNote.SKIP, names.get(8))));
+        assertFalse(named(round.ledger(), names.get(8)));
+        assertEquals(8, round.processLog().stream().filter(note -> ProcessNote.RELEASE.equals(note.step())).count());
     }
 
     @Test

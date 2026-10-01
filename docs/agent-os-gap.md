@@ -1,5 +1,7 @@
 # tepeu 距 Agent OS 还差什么
 
+> **这不是现在要遵守的规则。** 现在看 [`rewrite-1.md`](./rewrite-1.md)。本文是 2026-08-24 的对照，留着看当时差什么，不要照着做。
+
 > **地位**：诚实度对照。规范 ADR-016 + [`os-baseplate.md`](./os-baseplate.md)；独有章 [`os-handbook.md`](./os-handbook.md)。v1 规格不是上级文档。  
 > **日期**：2026-08-24。
 

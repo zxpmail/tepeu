@@ -1,6 +1,6 @@
 # Tepeu
 
-**2026-10-01**：推倒重设计。现行 [`docs/rewrite-1.md`](docs/rewrite-1.md)（**管控内核规范**，非完整 Agent OS），代码在 `tepeu/round`。第一刀已归档到 [`legacy/first-knife/`](./legacy/first-knife/README.md)，只读。旧规划 [`docs/rewrite-0.md`](docs/rewrite-0.md) 保留。标本在 [`legacy/os-9/`](./legacy/os-9/README.md)。
+**2026-10-01**：现行规则在 [`docs/rewrite-1.md`](docs/rewrite-1.md)，用平常话说明这一轮怎么管。它还不是一整套能长期运行的系统。代码在 `tepeu/round`。旧程序在 [`legacy/first-knife/`](./legacy/first-knife/README.md)，只读。旧规划 [`docs/rewrite-0.md`](docs/rewrite-0.md) 留着不续。更早的标本在 [`legacy/os-9/`](./legacy/os-9/README.md)。
 
 v1.0 工作台在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.md)。
 
@@ -14,8 +14,8 @@ v1.0 工作台在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.
 ## 仓库布局（develop）
 
 ```
-docs/rewrite-1.md      管控内核规范（当前必读）
-docs/specs/一轮闭环.md  现行这一轮
+docs/rewrite-1.md      这一轮怎么管（当前必读）
+docs/specs/一轮闭环.md  一轮里必须做到的事
 tepeu/round            现行代码
 legacy/first-knife/    第一刀整套程序（只读）
 docs/rewrite-0.md      第一刀旧规划（保留）
