@@ -1,11 +1,11 @@
 # CONTEXT.md
 
-**阶段**：第一刀。标本已迁 `legacy/os-9/`。`session` / `policy` / `dispatch` / `llm` / `execution` / `loop` / `commands` / `load` + `host` / `conformance` / 真模型已过审；`/compact` 刀已落待人审（2026-09-14）。产品已可真跑（默认 fake；`-P real` 打包 + `ANTHROPIC_AUTH_TOKEN` 走真模型）。下一刀未圈。
+**阶段**：推倒重设计。第一刀已归档到 `legacy/first-knife/`（2026-10-01），只读。
 
-**规划**：[docs/rewrite-0.md](docs/rewrite-0.md)
+**现行**：[docs/rewrite-1.md](docs/rewrite-1.md)。一轮闭环见 [docs/specs/一轮闭环.md](docs/specs/一轮闭环.md)。代码只在 `tepeu/round`。这一件含限制。投影标明不是人说的，相同内容不重复追加。步骤账读写同一把锁。验收 26 条已通过。CC Switch 当前供应商（智谱 GLM）实连 2 条已通过：纯聊有返回且不判定；开跑只有问模型成功也不做成。没接本机 CC Switch 时这 2 条不跑。
 
-**标本**：[legacy/os-9/](legacy/os-9/) · 结构摘录 [docs/archive/os-9/](docs/archive/os-9/) · v1 [legacy/](legacy/)
+**要点**：内核口 vs 能力件；跑一轮只编排（停认 → 纯聊 → 待补全或脏单 → 记下这一件 → 装载 → 经门 → 判定自己读账）；费用为问模型硬前置（旁问同）；写/跑默认需点头；范围在门强制；失败返回默认不支撑做成；四拒绝码名；步骤账单写者；问模型与工具放行合计最多 8 次。其余四份 spec 未写。
 
-**新树**：`tepeu/`（identity / syscall / persist / session / policy / dispatch / run-llm（gateway+fake+anthropic）/ run-execution / run-loop / commands / load / host / conformance 已落）
+**未定**：Java 类型名、方法名；止意词表；点头时限默认值；§8 另文项。
 
-**产品**：单用户、单机、单进程 CLI。默认打包：`java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`（fake 回复）；真模型：`mvn -f tepeu/pom.xml -P real package` 后跑同 jar，env `ANTHROPIC_AUTH_TOKEN` 必需（`ANTHROPIC_BASE_URL` / `ANTHROPIC_MODEL` 可选）。一个默认对话。`/help` `/approve` `/status` `/btw` `/compact`。写文件/跑命令先问。db `tepeu.db` 落当前目录。
+**旧树**：`legacy/first-knife/` · `legacy/os-9/`。

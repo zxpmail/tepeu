@@ -92,29 +92,29 @@ description: Comprehensive CLAUDE.md template — 通用行为规则 + 项目填
 
 ```
 Runtime: Java 21
-规划: docs/rewrite-0.md（从零重写；新库根 tepeu/）
-模块: session / policy / persist（父 POM：api + sqlite 第一刀）/ dispatch / llm（网关统一调用，第一刀 fake 挂在网关后）/ execution / loop；共用类型 identity/syscall；测试套件 conformance
-Host: host/（进程入口、选 persist / llm 实现、装配、CLI、斜杠）
-llm.*: 自研协议与传输
+规划: docs/rewrite-1.md（管控内核；现行代码 tepeu/round）
+第一刀: legacy/first-knife/（只读归档，不再加功能）
 ```
 
-标本在 `legacy/os-9/`。v1 工作台（`legacy/` / `main`）：Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18 + Vite 6 + Tailwind CSS 4。
+标本在 `legacy/os-9/` 与 `legacy/first-knife/`。v1 工作台（`legacy/` / `main`）：Spring Boot 4.0.7 + Spring AI 2.0.0 + React 18 + Vite 6 + Tailwind CSS 4。
 
 ## ✏️ 项目结构（develop 重写阶段）
 
 ```
-docs/rewrite-0.md 从零重写规划（当前必读）
-tepeu/            新库根（第一刀进行中）
-legacy/os-9/      冻结标本（os + host）
-legacy/           v1 只读标本
-docs/             规划、结构说明、archive/
-memory/           项目记忆与交接
-Product-Spec.md   v1 产品规格档案（Forge 门要求根目录）
-DEV-PLAN.md       v1 交付切片档案
-CONTEXT.md        进度快照
+docs/rewrite-1.md      管控内核规范（当前必读）
+docs/specs/一轮闭环.md  现行这一轮
+tepeu/round            现行代码
+legacy/first-knife/    第一刀整套程序（只读）
+legacy/os-9/           更早的冻结标本（os + host）
+legacy/                v1 只读标本
+docs/                  规划、结构说明、archive/
+memory/                项目记忆与交接
+Product-Spec.md        v1 产品规格档案（Forge 门要求根目录）
+DEV-PLAN.md            v1 交付切片档案
+CONTEXT.md             进度快照
 ```
 
-规范以 [`docs/rewrite-0.md`](docs/rewrite-0.md) 为准。
+规范以 [`docs/rewrite-1.md`](docs/rewrite-1.md) 为准。旧规划 [`docs/rewrite-0.md`](docs/rewrite-0.md) 保留不续。
 `Dockerfile` / `docker-compose.yml` / `RELEASE_NOTES-*.md` 属 v1 遗留，随 legacy 视图看待。
 
 规则：agent 生成的代码必须遵循上述结构。不得在列出的目录之外放置文件，除非先询问。

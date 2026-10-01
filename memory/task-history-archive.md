@@ -16,3 +16,14 @@
 | 2026-09-02 | spaceXP 结构 | 对照 zxpmail/spaceXP 收结构口味 | 学角色分包不学 starter；标本入 archive；未改 `os/` |
 | 2026-09-02 | os 角色重切 | 本机实现进 `*.local`；根包只留端口/聚合/值 | 无新 jar；`InMemoryCapabilityBus`→`LocalCapabilityBus`；os+host 测试过 |
 | 2026-08-29 | grok-bot 对账 | `C:\grok-bot-0.18-reconstructed-main` → `docs/archive/reference/grok-bot-reference.md` | ⑤ 不同线；机制可扫不立项；不新开 ADR；Router/Docker 是重建新增 |
+| 2026-09-06 | 从零重写 | 停止旧树修补；规划阶段 | `docs/rewrite-0.md`；`os/` `host/` 冻结；S1 改为从零；源码待迁 `legacy/os-9/` |
+| 2026-09-06 | 结构说明收紧 | 方向≠现状；session不止记下；一门只管点名 | `docs/tepeu-foundation.html`；并法标成一种切法；不改代码 |
+| 2026-09-06 | 结构说明改人话 | 去掉钢筋/司机/进路等黑话 | `docs/tepeu-foundation.html`；还没定稿；不改代码 |
+| 2026-09-06 | 结构说明 | 按那份 html 章节画七个文件夹 | 核心=记下+先问；orchestration/compose 以后并；未定不改代码 |
+| 2026-09-06 | 收 os-9 | 九盒结构像 v1 一样进 archive | `docs/archive/os-9/`；代码不搬；活文档回 texture 表一 |
+| 2026-09-06 | R1 像 XP | observation 并进 llm | 不新 jar；`Observation.view` 现属 llm；删 tepeu-os-observation |
+| 2026-09-05 | S0 认 | 从头做 tepeu，不空仓 | 产品=本机账+门；CLI 已是产品；S2 invoke 未圈 |
+| 2026-09-05 | 进路 1 /status | Slash 只读账，不经模型 | `StatusCommand`：entries 类型 + loop.state + 未决审批；不打正文；`/tasks` 等进路 4 |
+| 2026-09-05 | 钢筋机器门 | 约束冻在测试，不冻在提示词 | `PackageRoleTest`：根包契约禁 local import；InMemory* 禁 main；不新开 ArchUnit / 微服务 |
+| 2026-09-02 | host 读 CC Switch | 无 env 时用当前 Claude 供应商 | `ANTHROPIC_AUTH_TOKEN`；认 settings.json id；不进 os/；不打 key |
+| 2026-09-02 | 审查收口 | 根口倒依赖 / 关库所有权 / 日志短码 | `prepare`→`LlmTransports`；`detect`→`OsJails`；Wired 不关库；finish 不打 SQL；`SqliteDataSources`/`MemoryAssembly` 名未动 |

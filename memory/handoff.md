@@ -1,17 +1,33 @@
-# Handoff — Tepeu（从零重写）
+# Handoff — Tepeu（推倒重设计）
 
-> 到达后：本文件 → `CONTEXT.md` → [`docs/rewrite-0.md`](../docs/rewrite-0.md)。  
-> 标本：`legacy/os-9/`。新库根 `tepeu/`。  
-> `Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
+> 到达后：本文件 → `CONTEXT.md` → [`docs/rewrite-1.md`](../docs/rewrite-1.md)。  
+> 旧规划 [`docs/rewrite-0.md`](../docs/rewrite-0.md) 保留不续。第一刀代码已归档到 `legacy/first-knife/`，只读。  
+> 标本：`legacy/os-9/`。`Product-Spec.md` / `DEV-PLAN.md` 是 v1 档案。
 
-**Last updated**: 2026-09-14（真模型已推 `dd3d4ab`；/compact 刀已落待人审）
+**Last updated**: 2026-09-30（推倒重设计条文已落；下一轮切件未圈）
 
 ## 当前阶段
 
-- 标本已迁：`legacy/os-9/os/`、`legacy/os-9/host/`。
-- 已写已推：`identity`、`syscall`、`persist-api`、`persist-sqlite`、`session`、`policy`、`dispatch`、`llm`、`execution`、`loop`、`commands`、`load` + `host`、`conformance`、真模型（均人审过）。
-- 2026-09-14 已裁：最小工具请求协议 `@tool`；工具轮上限 8；spawn 超时 30s；handler 级错误码与门五码分家；gateway `Role.TOOL`；系统提示走网关；host 进 reactor；`Assembly.wire → Wired`；conformance 全域 + 故障注入；夹具三份留；真模型刀四裁；**/compact 刀三裁**：账不动 + COMPACT 事件 / 摘要复用 `llm.generate` 问句面 / 只做手动触发。
-- 纪律：一个组件写完，人审查通过才能继续。下一刀未圈。
+- **停续第一刀**：屏幕与程序皆黑匣子（程序把「模型不再要工具」当完成）。账本 / 授权 / 循环一起推倒，不在旧条文上补。
+- **现行条文**：[`docs/rewrite-1.md`](../docs/rewrite-1.md)（管控内核规范；2026-09-30 审查修订全文）。ADR-017。
+- **已定要点**：内核口 vs 能力件；§2.5 跑一轮顺序；费用硬前置（旁问同）；写/跑默认点头；范围在门；判定树+脏单；旁路同门；平台证物；四拒绝码名；单写者；工具轮 8。
+- **未定**：模块/接口名；止意词表；点头时限默认值；§8 另文。
+- **不要**：改 `legacy/first-knife/`；把完成判回「最后一条 ASSISTANT_MESSAGE」。
+
+## 第一刀快照（标本，勿当现行）
+
+以下为 2026-09-14 停工时状态，仅作对照。
+
+- 标本已迁：`legacy/os-9/`。`identity`…`host`/`conformance`/真模型/`/compact` 已落。
+- 产品可真跑：默认 fake jar；`-P real` + `ANTHROPIC_AUTH_TOKEN`。
+- 完成判定旧口径：`Loop.complete` = 最后一条是 `ASSISTANT_MESSAGE`（正是黑匣子根因）。
+
+---
+
+<details>
+<summary>第一刀详细交接（归档）</summary>
+
+**原 Last updated**: 2026-09-14（真模型已推 `dd3d4ab`；/compact 刀已落待人审）
 
 ## 本刀 /compact（待人审）
 
@@ -141,3 +157,5 @@
 - 第一刀一个默认对话。默认授权：问模型/读文件放行；写文件/跑命令先问。
 - 第一刀 llm 是 fake。真模型换 host POM。
 - 第一刀不做：invoke、定时入队、`/compact`、`/btw` 并发、会话列表、`kernel/memory/`。
+
+</details>

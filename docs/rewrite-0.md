@@ -1,7 +1,9 @@
 # Tepeu 从零重写 — 规划
 
-**状态**：标本已迁 `legacy/os-9/`。第一刀进行中：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake+anthropic）/ execution / loop / commands / load + host / conformance 已过审；真模型已推（`dd3d4ab`）；/compact 刀待人审（2026-09-14）。产品已可真跑：默认 `java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`（fake），真模型 `-P real` 打包 + `ANTHROPIC_AUTH_TOKEN`。  
-**标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。新库根 `tepeu/`。  
+**归档**：2026-10-01 第一刀代码已挪到 `legacy/first-knife/`。本文不再是现行规划，现行见 [`rewrite-1.md`](./rewrite-1.md)。
+
+**状态**：标本已迁 `legacy/os-9/`。第一刀已归档：identity / syscall / persist / session / policy / dispatch / llm（gateway+fake+anthropic）/ execution / loop / commands / load + host / conformance 已过审；真模型已推（`dd3d4ab`）；/compact 刀待人审（2026-09-14）。产品已可真跑：默认 `java -jar tepeu/host/target/tepeu-host-0.0.1-SNAPSHOT.jar`（fake），真模型 `-P real` 打包 + `ANTHROPIC_AUTH_TOKEN`。  
+**标本**：`legacy/os-9/os/`、`legacy/os-9/host/`。第一刀代码在 `legacy/first-knife/`。  
 **本文用词**：模块、接口、注册表、分发、授权、持久化、事件日志、控制循环。
 
 2026-09-06：从零规划。产品行为可以参考现行实现。

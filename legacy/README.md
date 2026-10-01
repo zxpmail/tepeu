@@ -11,6 +11,7 @@
 | `experiments/` | ATE 等实验 |
 | `scripts/` | 杂脚本 |
 | `os-9/` | develop 九模块标本（`os/` `host/` 源码，只读） |
+| `first-knife/` | 第一刀整套程序（2026-10-01 从 `tepeu/` 归档，只读） |
 
 ## 规则
 

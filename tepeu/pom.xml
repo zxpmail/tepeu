@@ -9,17 +9,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Tepeu</name>
-    <description>从零重写。规划 docs/rewrite-0.md</description>
+    <description>管控内核。现行代码在 round。第一刀见 legacy/first-knife。</description>
 
     <modules>
-        <module>types</module>
-        <module>persist</module>
-        <module>kernel</module>
-        <module>run</module>
-        <module>commands</module>
-        <module>load</module>
-        <module>host</module>
-        <module>conformance</module>
+        <module>round</module>
     </modules>
 
     <properties>
@@ -27,125 +20,10 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.4</junit.version>
-        <mybatis-plus.version>3.5.17</mybatis-plus.version>
-        <sqlite-jdbc.version>3.53.4.0</sqlite-jdbc.version>
-        <slf4j.version>2.0.18</slf4j.version>
-        <spring-boot.version>4.0.7</spring-boot.version>
-        <jackson.version>3.1.4</jackson.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-identity</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-syscall</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-persist-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-persist-sqlite</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-session</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-policy</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-dispatch</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-llm-gateway</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-llm-fake</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-llm-anthropic</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>tools.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-execution</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-loop</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-commands</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-load</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tepeu</groupId>
-                <artifactId>tepeu-host</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter</artifactId>
-                <version>${spring-boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-core</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-jsqlparser</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.xerial</groupId>
-                <artifactId>sqlite-jdbc</artifactId>
-                <version>${sqlite-jdbc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-nop</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
