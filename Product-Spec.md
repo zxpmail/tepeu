@@ -23,7 +23,7 @@
 
 **v1.0（本规格正文所交付）**：个人工作台 + Harness（对话、工具、记忆、自主调度、市场、技能脚本）。规格里程碑名称含「Agentic OS」，**不等于**完整 OS 已交付。
 
-**现在这一轮**：规则在 [`docs/rewrite-1.md`](docs/rewrite-1.md)，代码在 `tepeu/round`。不要用本章的七层、四个智能体、Spring AI 来描述它。
+**现在这一轮**：规则在 [`docs/rewrite-1.md`](docs/rewrite-1.md)。程序在 `tepeu/runtime`。不要用本章的七层、四个智能体、Spring AI 来描述它。
 
 ### 1.2 命名由来
 

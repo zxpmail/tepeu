@@ -9,10 +9,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Tepeu</name>
-    <description>管控内核。现行代码在 round。第一刀见 legacy/first-knife。</description>
+    <description>这一轮的程序在 runtime。规格在 docs/specs。旧程序在 legacy/first-knife，只读。</description>
 
     <modules>
-        <module>round</module>
+        <module>runtime</module>
     </modules>
 
     <properties>

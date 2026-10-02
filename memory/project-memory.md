@@ -1,10 +1,10 @@
 # 项目记忆 — Tepeu
 
-**现在**（2026-10-01）：规则在 [`docs/rewrite-1.md`](../docs/rewrite-1.md)，用平常话写这一轮怎么管。一轮里必须做到的事在 [`docs/specs/一轮闭环.md`](../docs/specs/一轮闭环.md)。代码在 `tepeu/round`。旧程序在 `legacy/first-knife/`，只读。更早的标本在 `legacy/os-9/`。上一版工作台的记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
+**现在**（2026-10-02）：规则在 [`docs/rewrite-1.md`](../docs/rewrite-1.md)，用平常话写这一轮怎么管。程序在 `tepeu/runtime`。外面那一道门在 [`docs/specs/对外.md`](../docs/specs/对外.md)。里面七篇：一轮、账、回答、检查口、做事、给模型看、判断。旧程序在 `legacy/first-knife/`，只读。更早的标本在 `legacy/os-9/`。上一版工作台的记忆在 [`docs/archive/v1/project-memory-v1.md`](../docs/archive/v1/project-memory-v1.md)。
 
 已经定下的：启动前装好可选能力，启动后不能再加。做完没有只看对得上这次任务的返回结果，模型说做完了不算。没有费用就不能问模型。写和跑命令默认要等人同意。过程会记下来给人看，不拿来判断做完没有。
 
-还没定：停止词表、等人同意的默认时限，以及总规则第 8 节里以后另写的内容。
+还没定：连哪一家模型；怎样认出密钥；总规则第 8 节里以后另写的内容。停止默认「停」和 stop，同意等 60 秒，问一次算 1，跑命令最多等 5 秒，这些已经定死。
 
 ## 旧程序记录（不要当成现行）
 
@@ -35,7 +35,7 @@
 
 ## 旧程序踩过的坑
 
-这些坑属于已经归档的旧程序。不要照着在 `tepeu/round` 里重做。现在仍要守的只有这几条：用 Maven，不用 Gradle；不要往 `legacy/` 里加功能；不要把模型说的「做完了」当成做完；密钥不写进代码和记录。
+这些坑属于已经归档的旧程序。不要照着已删除的那一版重做。现在仍要守的只有这几条：用 Maven，不用 Gradle；不要往 `legacy/` 里加功能；不要把模型说的「做完了」当成做完；密钥不写进代码和记录。
 
 - 包管理器是 **Maven**，不是 Gradle。本机仓库常在 `D:\maven\repo`（非默认 `~/.m2`）
 - 不要把 v1 `ChatModelFactory` / `@Tool` 装饰器路径抄进 `os/llm` 或任何内核组件

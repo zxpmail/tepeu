@@ -1,6 +1,6 @@
 # Tepeu
 
-**2026-10-01**：现行规则在 [`docs/rewrite-1.md`](docs/rewrite-1.md)，用平常话说明这一轮怎么管。它还不是一整套能长期运行的系统。代码在 `tepeu/round`。旧程序在 [`legacy/first-knife/`](./legacy/first-knife/README.md)，只读。旧规划 [`docs/rewrite-0.md`](docs/rewrite-0.md) 留着不续。更早的标本在 [`legacy/os-9/`](./legacy/os-9/README.md)。
+**2026-10-02**：现行规则在 [`docs/rewrite-1.md`](docs/rewrite-1.md)，用平常话说明这一轮怎么管。程序在 [`tepeu/runtime`](./tepeu/runtime)。旧程序在 [`legacy/first-knife/`](./legacy/first-knife/README.md)，只读。旧规划 [`docs/rewrite-0.md`](docs/rewrite-0.md) 留着不续。更早的标本在 [`legacy/os-9/`](./legacy/os-9/README.md)。
 
 v1.0 工作台在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.md)。
 
@@ -15,8 +15,8 @@ v1.0 工作台在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.
 
 ```
 docs/rewrite-1.md      这一轮怎么管（当前必读）
-docs/specs/一轮闭环.md  一轮里必须做到的事
-tepeu/round            现行代码
+docs/specs/          对外一道门，加上七篇：一轮、账、回答、检查口、做事、给模型看、判断
+tepeu/runtime         这一轮的程序。一个模块，七个包，外面一道门
 legacy/first-knife/    第一刀整套程序（只读）
 docs/rewrite-0.md      第一刀旧规划（保留）
 legacy/os-9/           冻结标本
@@ -43,14 +43,22 @@ cd legacy/backend && mvn spring-boot:run
 cd legacy/frontend && npm install && npm run dev
 ```
 
+## 这一轮怎么测
+
+```bash
+cd tepeu
+mvn -pl runtime test
+```
+
 ## 文档入口
 
-规划：[`docs/rewrite-0.md`](docs/rewrite-0.md)。阅读序：`CONTEXT.md` → 规划 → [`docs/tepeu-foundation.html`](docs/tepeu-foundation.html)。
+规划：[`docs/rewrite-1.md`](docs/rewrite-1.md)。阅读序：`CONTEXT.md` → `memory/handoff.md` → 规划。
 
 | 文件 | 用途 |
 |------|------|
 | [CONTEXT.md](./CONTEXT.md) | 当前进度 |
-| [docs/rewrite-0.md](docs/rewrite-0.md) | 从零重写规划 |
+| [docs/rewrite-1.md](docs/rewrite-1.md) | 这一轮怎么管 |
+| [docs/rewrite-0.md](docs/rewrite-0.md) | 旧规划，留着不续 |
 | [docs/tepeu-foundation.html](docs/tepeu-foundation.html) | 结构说明 |
 | [Product-Spec.md](./Product-Spec.md) | v1 产品规格档案 |
 | [DEV-PLAN.md](./DEV-PLAN.md) | v1 交付切片档案 |
@@ -60,4 +68,4 @@ cd legacy/frontend && npm install && npm run dev
 ## 已完成（v1 摘要）
 
 - v0.1 工作台 · v0.2 Harness · v1.0 产品里程碑
-- develop：从零重写；第一刀进行中（identity 待人审）
+- develop：这一轮的程序在 `tepeu/runtime`。第一刀已归档，只读
