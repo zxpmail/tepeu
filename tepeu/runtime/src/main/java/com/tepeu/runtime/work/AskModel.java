@@ -8,11 +8,16 @@ import java.util.List;
 
 /**
  * 问模型。把已经准备好的几行原样发出去，把回答交回来。
- * 连哪一家没定。没有字也原样交回，由检查口改记失败。
+ * 真连的时候读本机 cc-switch，当前这一家是 Xiaomi MiMo。没有字也原样交回，由检查口改记失败。
  */
 public final class AskModel implements Job {
 
     private final Asker asker;
+
+    /** 接上本机 cc-switch 里的 Xiaomi MiMo。没有这一家就装不上。 */
+    public static AskModel mimo() {
+        return new AskModel(new MimoAsker(CcSwitch.requireMimo()));
+    }
 
     /** 问法在交进来时定死。 */
     public AskModel(Asker asker) {
