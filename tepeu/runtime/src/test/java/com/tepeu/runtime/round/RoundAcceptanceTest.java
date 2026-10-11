@@ -12,6 +12,7 @@ import com.tepeu.runtime.word.Kind;
 import com.tepeu.runtime.word.Refusal;
 import com.tepeu.runtime.word.Reply;
 import com.tepeu.runtime.word.ResultKind;
+import com.tepeu.runtime.word.ToolAsk;
 import com.tepeu.runtime.word.Writer;
 import com.tepeu.runtime.work.AskModel;
 import com.tepeu.runtime.work.Job;
@@ -59,20 +60,17 @@ class RoundAcceptanceTest {
     /** 第八个拦住，第九个跳过。问模型成功不能算做完。 */
     @Test
     void 次数和问模型() {
-        List<Call> eight = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            eight.add(Call.of("没有"));
-        }
-        Door full = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), eight, 1, List.of());
-        assertEquals(8, countCode(full, Refusal.NOT_INSTALLED));
+        Door full = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), 1,
+                List.of(script(lines("读东西 这里", 8))));
+        assertEquals(7, countCode(full, Refusal.NOT_INSTALLED));
+        assertEquals(1, full.processLog().stream().filter(note -> ProcessNote.SKIP.equals(note.step())).count());
         assertTrue(has(full, Kind.NOT_DONE));
 
-        List<Call> nine = new ArrayList<>(eight);
-        nine.add(Call.of("第九个"));
-        Door over = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), nine, 1, List.of());
-        assertEquals(8, countCode(over, Refusal.NOT_INSTALLED));
+        Door over = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), 1,
+                List.of(script(lines("读东西 这里", 9))));
+        assertEquals(7, countCode(over, Refusal.NOT_INSTALLED));
         assertEquals(8, over.processLog().stream().filter(note -> ProcessNote.RELEASE.equals(note.step())).count());
-        assertTrue(over.processLog().stream().anyMatch(note -> ProcessNote.SKIP.equals(note.step()) && "第九个".equals(note.detail())));
+        assertEquals(2, over.processLog().stream().filter(note -> ProcessNote.SKIP.equals(note.step())).count());
 
         int[] asked = {0};
         Door success = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.ASK)), 1,
@@ -148,9 +146,11 @@ class RoundAcceptanceTest {
         assertTrue(code(notInstalled, Refusal.NOT_INSTALLED));
         assertFalse(code(notInstalled, Refusal.GATE_BLOCKED));
 
-        Door ignored = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), 1,
-                List.of(new AskModel(lines -> Reply.success("不该问"))));
-        assertFalse(has(ignored, Kind.RETURN));
+        Door ignored = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.READ, "不该读")), 1,
+                List.of(new AskModel(lines -> Reply.success("不该问")), new ReadFile()));
+        assertTrue(ignored.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind()) && Ability.ASK.equals(step.capability())));
+        assertFalse(ignored.ledger().stream().anyMatch(step -> Ability.READ.equals(step.capability())));
+        assertTrue(has(ignored, Kind.NOT_DONE));
     }
 
     /** 人的原话才能停。模型说停、换掉的词表、全角英文，都按词表认。 */
@@ -185,27 +185,37 @@ class RoundAcceptanceTest {
             asked[0] = asked[0] + 1;
             return asked[0] == 1 ? Consent.Answer.同意 : Consent.Answer.拒绝;
         };
-        Door door = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1), new Consent(decider),
-                List.of(new WriteFile()), null);
-        door.run(main(Field.of(goal), Field.of(file.toString()), Field.of("看见"), List.of(Call.of(Ability.WRITE, file.toString()))));
+        Door door = Door.open(new Stop(null), new Fields(), new Range(), new Fee(4), new Consent(decider),
+                List.of(script(
+                        "写东西 " + file + "\n" + goal,
+                        "好",
+                        "写东西 " + file + "\n" + goal,
+                        "好"), new WriteFile()), null);
+        door.run(main(Field.of(goal), Field.of(file.toString()), Field.of("看见"), List.of()));
         assertEquals(goal, Files.readString(file));
         assertTrue(writer(door, Kind.DONE, Writer.judge));
-        door.run(main(Field.of(goal), Field.of(file.toString()), Field.of("看见"), List.of(Call.of(Ability.WRITE, file.toString()))));
+        door.run(main(Field.of(goal), Field.of(file.toString()), Field.of("看见"), List.of()));
         assertTrue(code(door, Refusal.USER_DENIED));
-        assertEquals(1, door.ledger().stream().filter(step -> Kind.RETURN.equals(step.kind())).count());
+        assertEquals(1, door.ledger().stream().filter(step -> Kind.RETURN.equals(step.kind())
+                && Ability.WRITE.equals(step.capability())
+                && ResultKind.成功 == step.resultKind()).count());
         assertTrue(door.processLog().stream().anyMatch(note -> note.detail().contains("写东西 " + Refusal.USER_DENIED)));
         assertFalse(door.processLog().stream().anyMatch(note -> ProcessNote.STOP_CHECK.equals(note.step()) && "主轮停".equals(note.detail())));
 
-        Door noConsent = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1), null, List.of(new WriteFile(), new RunProgram()), null);
-        noConsent.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.WRITE, "这里"))));
+        Door noConsent = Door.open(new Stop(null), new Fields(), new Range(), new Fee(2), null,
+                List.of(script("写东西 这里\n一句", "好"), new WriteFile(), new RunProgram()), null);
+        noConsent.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of()));
         assertTrue(code(noConsent, Refusal.GATE_BLOCKED));
-        assertFalse(has(noConsent, Kind.RETURN));
+        assertFalse(noConsent.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind())
+                && Ability.WRITE.equals(step.capability())));
 
-        Door readOnly = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1), null, List.of(new ReadFile()), null);
+        Door readOnly = Door.open(new Stop(null), new Fields(), new Range(), new Fee(2), null,
+                List.of(script("读东西 " + file, "好"), new ReadFile()), null);
         Files.writeString(file, "文件里的字");
-        readOnly.run(main(Field.of("做事"), Field.of(file.toString()), Field.of("看见"), List.of(Call.of(Ability.READ, file.toString()))));
+        readOnly.run(main(Field.of("做事"), Field.of(file.toString()), Field.of("看见"), List.of()));
         assertTrue(readOnly.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind()) && "文件里的字".equals(step.body())));
-        assertTrue(has(readOnly, Kind.DONE));
+        assertTrue(has(readOnly, Kind.NOT_DONE));
+        assertFalse(has(readOnly, Kind.DONE));
     }
 
     /** 读在目录里可以，逃出去不行。跑本机程序成功才算做完。 */
@@ -213,27 +223,29 @@ class RoundAcceptanceTest {
     void 读和跑(@TempDir Path dir) throws Exception {
         Path file = dir.resolve("note.txt");
         Files.writeString(file, "目录里的字");
-        Door read = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1),
-                new Consent((name, content) -> Consent.Answer.同意), List.of(new ReadFile()), null);
-        read.run(main(Field.of("做事"), Field.of(dir.toString()), Field.of("看见"), List.of(Call.of(Ability.READ, file.toString()))));
+        Door read = Door.open(new Stop(null), new Fields(), new Range(), new Fee(2),
+                new Consent((name, content) -> Consent.Answer.同意),
+                List.of(script("读东西 " + file, "好"), new ReadFile()), null);
+        read.run(main(Field.of("做事"), Field.of(dir.toString()), Field.of("看见"), List.of()));
         assertTrue(read.ledger().stream().anyMatch(step -> "目录里的字".equals(step.body()) && "g1".equals(step.goalId())));
-        assertTrue(has(read, Kind.DONE));
+        assertTrue(has(read, Kind.NOT_DONE));
 
         int[] consent = {0};
-        Door escape = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1),
+        String outside = dir.resolve("..").resolve("escape.txt").toString();
+        Door escape = Door.open(new Stop(null), new Fields(), new Range(), new Fee(2),
                 new Consent((name, content) -> {
                     consent[0] = consent[0] + 1;
                     return Consent.Answer.同意;
-                }), List.of(new WriteFile()), null);
-        escape.run(main(Field.of("做事"), Field.of(dir.toString()), Field.of("看见"),
-                List.of(Call.of(Ability.WRITE, dir.resolve("..").resolve("escape.txt").toString()))));
+                }), List.of(script("写东西 " + outside + "\n一句", "好"), new WriteFile()), null);
+        escape.run(main(Field.of("做事"), Field.of(dir.toString()), Field.of("看见"), List.of()));
         assertEquals(0, consent[0]);
         assertTrue(code(escape, Refusal.GATE_BLOCKED));
 
         String hostname = System.getenv("SystemRoot") + "\\System32\\hostname.exe";
-        Door ran = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1),
-                new Consent((name, content) -> Consent.Answer.同意), List.of(new RunProgram()), null);
-        ran.run(main(Field.of("做事"), Field.of(hostname), Field.of("看见"), List.of(Call.of(Ability.RUN, hostname))));
+        Door ran = Door.open(new Stop(null), new Fields(), new Range(), new Fee(2),
+                new Consent((name, content) -> Consent.Answer.同意),
+                List.of(script("跑命令 " + hostname, "好"), new RunProgram()), null);
+        ran.run(main(Field.of("做事"), Field.of(hostname), Field.of("看见"), List.of()));
         assertTrue(ran.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind())
                 && step.resultKind() == ResultKind.成功
                 && step.body() != null
@@ -244,8 +256,8 @@ class RoundAcceptanceTest {
     /** 合格的一次读，过程记录按固定次序走，并且标明不是人说的。 */
     @Test
     void 过程记录的次序() {
-        Door door = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.READ, "这里")), 1,
-                List.of(reader("文件里的字")));
+        Door door = run(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), 2,
+                List.of(script("读东西 这里", "好"), reader("文件里的字")));
         List<ProcessNote> notes = door.processLog();
         assertEquals(ProcessNote.STOP_CHECK, notes.get(0).step());
         assertEquals("继续", notes.get(0).detail());
@@ -253,11 +265,48 @@ class RoundAcceptanceTest {
         assertEquals(ProcessNote.LOAD, notes.get(2).step());
         assertTrue(notes.get(2).detail().contains("总则·不是人说的"));
         assertTrue(notes.get(2).detail().contains("这一件·不是人说的"));
-        assertEquals(ProcessNote.RELEASE, notes.get(3).step());
-        assertEquals("读东西 成功", notes.get(3).detail());
-        assertEquals(ProcessNote.TO_JUDGE, notes.get(4).step());
+        assertEquals("问模型 成功", notes.get(3).detail());
+        assertEquals("读东西 成功", notes.get(4).detail());
+        assertTrue(notes.get(5).detail().contains("不是人说的 文件里的字"));
+        assertEquals("问模型 成功", notes.get(6).detail());
+        assertEquals(ProcessNote.TO_JUDGE, notes.get(7).step());
         assertFalse(door.ledger().stream().anyMatch(step -> "装载".equals(step.kind())));
-        assertTrue(has(door, Kind.DONE));
+        assertTrue(has(door, Kind.NOT_DONE));
+        assertFalse(has(door, Kind.DONE));
+    }
+
+    /** 人拒绝就停掉这一篇剩下的读。连续的读先做，写在后面。费用只够问一次时，写成功仍算做完。 */
+    @Test
+    void 点名分批和拒绝(@TempDir Path dir) throws Exception {
+        Path one = dir.resolve("甲.txt");
+        Path two = dir.resolve("乙.txt");
+        Files.writeString(one, "甲");
+        Files.writeString(two, "乙");
+        Door denied = run(Field.of("做事"), Field.of(dir.toString()), Field.of("看见"), List.of(), 2,
+                List.of(script("写东西 " + one + "\n一句\n读东西 " + two, "好"), new WriteFile(), new ReadFile()),
+                (name, content) -> Consent.Answer.拒绝);
+        assertTrue(code(denied, Refusal.USER_DENIED));
+        assertFalse(denied.ledger().stream().anyMatch(step -> Ability.READ.equals(step.capability())));
+        assertTrue(denied.processLog().stream().anyMatch(note -> ProcessNote.SKIP.equals(note.step())
+                && (Ability.READ + " " + two).equals(note.detail())));
+        assertTrue(has(denied, Kind.NOT_DONE));
+
+        Door ordered = run(Field.of("做事"), Field.of(dir.toString()), Field.of("看见"), List.of(), 2,
+                List.of(script("读东西 " + one + "\n读东西 " + two + "\n写东西 " + one + "\n一句", "好"),
+                        new ReadFile(), new WriteFile()));
+        List<String> releases = ordered.processLog().stream()
+                .filter(note -> ProcessNote.RELEASE.equals(note.step()))
+                .map(ProcessNote::detail)
+                .toList();
+        assertEquals(List.of("问模型 成功", "读东西 成功", "读东西 成功", "写东西 成功", "问模型 成功"), releases);
+        assertTrue(has(ordered, Kind.DONE));
+        assertEquals("一句", Files.readString(one));
+
+        Door tight = run(Field.of("做事"), Field.of(one.toString()), Field.of("看见"), List.of(), 1,
+                List.of(script("写东西 " + one + "\n一句"), new WriteFile()));
+        assertTrue(code(tight, Refusal.GATE_BLOCKED));
+        assertTrue(has(tight, Kind.DONE));
+        assertEquals("一句", Files.readString(one));
     }
 
     /** 开始之后没有再交能力的入口。下一轮的过程记录不带着上一轮。 */
@@ -315,25 +364,30 @@ class RoundAcceptanceTest {
                 List.of(new AskModel(lines -> {
                     times[0] = times[0] + 1;
                     assertTrue(lines.contains("总则"));
-                    return Reply.success("读东西");
+                    return Reply.success("请读东西 这里");
                 }), new ReadFile()), null);
-        twice.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.ASK))));
-        twice.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.ASK))));
+        twice.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of()));
+        twice.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of()));
         assertEquals(1, times[0]);
         assertEquals(0, once.left());
         assertEquals(1, twice.ledger().stream().filter(step -> Kind.RETURN.equals(step.kind()) && step.resultKind() == ResultKind.成功).count());
+        assertFalse(twice.ledger().stream().anyMatch(step -> Ability.READ.equals(step.capability())));
         assertTrue(code(twice, Refusal.GATE_BLOCKED));
 
         Path first = dir.resolve("a.txt");
         Path second = dir.resolve("b.txt");
         int[] consent = {0};
-        Door changed = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1),
+        Door changed = Door.open(new Stop(null), new Fields(), new Range(), new Fee(4),
                 new Consent((name, content) -> {
                     consent[0] = consent[0] + 1;
                     return content.contains("第二件") ? Consent.Answer.同意 : Consent.Answer.拒绝;
-                }), List.of(new WriteFile()), null);
-        changed.run(main(Field.of("第一件"), Field.of(first.toString()), Field.of("看见"), List.of(Call.of(Ability.WRITE, first.toString()))));
-        changed.run(main(Field.of("第二件"), Field.of(second.toString()), Field.of("看见"), List.of(Call.of(Ability.WRITE, second.toString()))));
+                }), List.of(script(
+                        "写东西 " + first + "\n第一句",
+                        "好",
+                        "写东西 " + second + "\n第二件",
+                        "好"), new WriteFile()), null);
+        changed.run(main(Field.of("第一件"), Field.of(first.toString()), Field.of("看见"), List.of()));
+        changed.run(main(Field.of("第二件"), Field.of(second.toString()), Field.of("看见"), List.of()));
         assertEquals(2, consent[0]);
         assertEquals("第二件", Files.readString(second));
         assertFalse(Files.exists(first));
@@ -341,12 +395,12 @@ class RoundAcceptanceTest {
         assertTrue(changed.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind()) && "第二件".equals(step.body())));
 
         int[] nodded = {0};
-        Door blankTarget = Door.open(new Stop(null), new Fields(), new Range(), new Fee(1),
+        Door blankTarget = Door.open(new Stop(null), new Fields(), new Range(), new Fee(2),
                 new Consent((name, content) -> {
                     nodded[0] = nodded[0] + 1;
                     return Consent.Answer.同意;
-                }), List.of(new WriteFile()), null);
-        blankTarget.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.WRITE))));
+                }), List.of(script("写东西\n一句", "好"), new WriteFile()), null);
+        blankTarget.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of()));
         assertEquals(0, nodded[0]);
         assertTrue(code(blankTarget, Refusal.GATE_BLOCKED));
 
@@ -363,8 +417,13 @@ class RoundAcceptanceTest {
     }
 
     private static Door run(Field goal, Field limit, Field doneWhen, List<Call> calls, int times, List<Job> jobs) {
+        return run(goal, limit, doneWhen, calls, times, jobs, (name, content) -> Consent.Answer.同意);
+    }
+
+    /** 点头可以换成拒绝，用来看这一篇剩下的点名会不会停。 */
+    private static Door run(Field goal, Field limit, Field doneWhen, List<Call> calls, int times, List<Job> jobs, Consent.Decider decider) {
         Door door = Door.open(new Stop(null), new Fields(), new Range(), new Fee(times),
-                new Consent((name, content) -> Consent.Answer.同意), jobs, null);
+                new Consent(decider), jobs, null);
         door.run(main(goal, limit, doneWhen, calls));
         return door;
     }
@@ -382,6 +441,32 @@ class RoundAcceptanceTest {
 
     private static Turn chat(boolean askModel) {
         return new Turn(Entry.main, true, false, "", askModel, Field.missing(), Field.missing(), Field.missing(), List.of(), "");
+    }
+
+    private static Job script(String... bodies) {
+        List<String> left = new ArrayList<>(List.of(bodies));
+        return new AskModel(lines -> left.isEmpty() ? Reply.success("好") : beside(left.remove(0)));
+    }
+
+    /** 测试仍用整行写法。有点名就换成旁边的工具，正文不再被执行。 */
+    private static Reply beside(String body) {
+        List<ToolAsk> asks = new ArrayList<>();
+        for (PointNames.Item item : PointNames.parse(body)) {
+            asks.add(new ToolAsk(item.name(), item.target(), item.payload()));
+        }
+        if (asks.isEmpty()) {
+            return Reply.success(body);
+        }
+        return Reply.success("", asks);
+    }
+
+    /** 把同一行重复几次，中间换行。 */
+    private static String lines(String line, int count) {
+        StringBuilder body = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            body.append(line).append('\n');
+        }
+        return body.toString();
     }
 
     private static Job reader(String body) {

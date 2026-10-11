@@ -3,6 +3,7 @@ package com.tepeu.runtime.work;
 import com.tepeu.runtime.word.Ability;
 import com.tepeu.runtime.word.Reply;
 import com.tepeu.runtime.word.ResultKind;
+import com.tepeu.runtime.word.ToolAsk;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -47,6 +48,36 @@ class WorkTest {
         Reply write = new WriteFile().run(new Attempt(target.toString(), "要做什么", List.of()));
         assertEquals(ResultKind.成功, write.kind());
         assertEquals("要做什么", Files.readString(target));
+        Files.writeString(dir.resolve("甲.txt"), "甲");
+        Reply listed = new ReadFile().run(new Attempt(dir.toString(), "", List.of()));
+        assertEquals(ResultKind.成功, listed.kind());
+        assertTrue(listed.body().contains("甲.txt"));
+        Reply shell = new RunProgram().run(new Attempt("cmd", "/c dir", List.of()));
+        assertEquals(ResultKind.失败, shell.kind());
+        assertEquals("不经过命令外壳", shell.body());
+    }
+
+    /** 查找、按名字找、改唯一的一段。旧字出现两次就不改。 */
+    @Test
+    void 查找和改一段(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("A.java");
+        Files.writeString(file, "class A {\n  int n;\n}\n");
+        Reply grep = new GrepFiles().run(new Attempt(dir.toString(), "int n", List.of()));
+        assertEquals(ResultKind.成功, grep.kind());
+        assertTrue(grep.body().contains("int n"));
+        Reply glob = new GlobFiles().run(new Attempt(dir.toString(), "*.java", List.of()));
+        assertEquals(ResultKind.成功, glob.kind());
+        assertTrue(glob.body().contains("A.java"));
+        Reply edit = new EditFile().run(new Attempt(file.toString(),
+                new ToolAsk(Ability.EDIT, file.toString(), "int n;", "int m;").handed(), List.of()));
+        assertEquals("已改", edit.body());
+        assertTrue(Files.readString(file).contains("int m;"));
+        Files.writeString(file, "aa aa");
+        Reply twice = new EditFile().run(new Attempt(file.toString(),
+                new ToolAsk(Ability.EDIT, file.toString(), "aa", "bb").handed(), List.of()));
+        assertEquals(ResultKind.失败, twice.kind());
+        assertEquals("不止一处", twice.body());
+        assertEquals("aa aa", Files.readString(file));
     }
 
     /** 退出码是 0 才算成功。一直不结束就记超时。 */

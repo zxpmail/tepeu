@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * 写东西。把「要做什么」写进目标文件。
+ * 写东西。把点名下面交来的字写进目标文件。
  * 范围和点头都由检查口先问过。这里只写。
  */
 public final class WriteFile implements Job {

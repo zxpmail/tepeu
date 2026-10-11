@@ -1,7 +1,9 @@
 package com.tepeu.runtime.work;
 
+import com.tepeu.runtime.word.Ability;
 import com.tepeu.runtime.word.Reply;
 import com.tepeu.runtime.word.ResultKind;
+import com.tepeu.runtime.word.ToolAsk;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,7 +17,7 @@ import java.util.List;
 
 /**
  * 把已经准备好的几行发给 Xiaomi MiMo，把回答正文交回来。
- * 地址、模型和密钥来自 cc-switch。几行不改写，也不从回答里再找能力。
+ * 读、写、跑在请求里交给模型，从回答旁边的工具块收回。正文里的字不拿去执行。
  */
 final class MimoAsker implements AskModel.Asker {
 
@@ -26,6 +28,22 @@ final class MimoAsker implements AskModel.Asker {
     static final Duration WAIT = Duration.ofSeconds(60);
 
     private static final String API_VERSION = "2023-06-01";
+
+    /** 模型认得的名字。Read、Write 到检查口再对上读东西、写东西。 */
+    private static final String TOOLS = "["
+            + "{\"name\":\"Read\",\"description\":\"读取限制里的文件或目录。目录返回里面的名字。要看代码就用它，不要叫人把代码贴过来。\","
+            + "\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}},"
+            + "{\"name\":\"Grep\",\"description\":\"在限制里的文件中查找。pattern 是正则。path 可空，空则从限制目录找。不经过外壳。\","
+            + "\"input_schema\":{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\"},\"path\":{\"type\":\"string\"}},\"required\":[\"pattern\"]}},"
+            + "{\"name\":\"Glob\",\"description\":\"按名字在限制里找文件。pattern 如 *.java。path 可空。不经过外壳。\","
+            + "\"input_schema\":{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\"},\"path\":{\"type\":\"string\"}},\"required\":[\"pattern\"]}},"
+            + "{\"name\":\"Edit\",\"description\":\"把限制里某个文件中唯一的一段旧字换成新字。要人点头。\","
+            + "\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"old_string\":{\"type\":\"string\"},\"new_string\":{\"type\":\"string\"}},\"required\":[\"path\",\"old_string\",\"new_string\"]}},"
+            + "{\"name\":\"Write\",\"description\":\"把字整篇写进限制里的一个文件。要人点头。\","
+            + "\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"contents\":{\"type\":\"string\"}},\"required\":[\"path\",\"contents\"]}},"
+            + "{\"name\":\"跑命令\",\"description\":\"启动一个程序。参数每行一个，不经过外壳\","
+            + "\"input_schema\":{\"type\":\"object\",\"properties\":{\"target\":{\"type\":\"string\"},\"args\":{\"type\":\"string\"}},\"required\":[\"target\"]}}"
+            + "]";
 
     private final String baseUrl;
     private final String model;
@@ -66,7 +84,7 @@ final class MimoAsker implements AskModel.Asker {
             if (status < 200 || status >= 300) {
                 return new Reply(ResultKind.失败, "HTTP_" + status, "");
             }
-            return Reply.success(textOf(response.body()));
+            return Reply.success(textOf(response.body()), asksOf(response.body()));
         } catch (HttpTimeoutException ex) {
             return new Reply(ResultKind.超时, null, "");
         } catch (IOException ex) {
@@ -77,11 +95,116 @@ final class MimoAsker implements AskModel.Asker {
         }
     }
 
-    /** 请求体只带模型和这几行，不另加说明。 */
+    /** 请求体带模型、这几行，以及旁边的三样工具。 */
     static String requestJson(String model, String content) {
         return "{\"model\":" + quote(model)
                 + ",\"max_tokens\":" + MAX_TOKENS
+                + ",\"tools\":" + TOOLS
                 + ",\"messages\":[{\"role\":\"user\",\"content\":" + quote(content) + "}]}";
+    }
+
+    /** 把回答旁边的工具块收成名单。正文里的字不在这里。 */
+    static List<ToolAsk> asksOf(String json) {
+        if (json == null || json.isBlank()) {
+            return List.of();
+        }
+        List<ToolAsk> asks = new ArrayList<>();
+        int cursor = 0;
+        while (cursor < json.length()) {
+            int mark = indexOfType(json, cursor, "tool_use");
+            if (mark < 0) {
+                break;
+            }
+            int start = json.lastIndexOf('{', mark);
+            int end = start < 0 ? -1 : endOfObject(json, start);
+            if (end < 0) {
+                break;
+            }
+            asks.add(toolAsk(json.substring(start, end)));
+            cursor = end;
+        }
+        return List.copyOf(asks);
+    }
+
+    /** 从一块工具里取出名字、目标和附带的字。 */
+    private static ToolAsk toolAsk(String object) {
+        String name = field(object, "name");
+        String path = first(object, "path", "file_path", "target");
+        if (Ability.GREP.equals(name) || Ability.GLOB.equals(name)) {
+            return new ToolAsk(name, path, first(object, "pattern", "glob", "query"));
+        }
+        if ("Write".equals(name)) {
+            return new ToolAsk(name, path, first(object, "contents", "content", "text"));
+        }
+        if (Ability.EDIT.equals(name)) {
+            return new ToolAsk(name, path, first(object, "old_string"), first(object, "new_string"));
+        }
+        if (Ability.RUN.equals(name)) {
+            return new ToolAsk(name, path, field(object, "args"));
+        }
+        return new ToolAsk(name, path, "");
+    }
+
+    /** 这几个键里，用先写到的那个。 */
+    private static String first(String json, String... keys) {
+        for (String key : keys) {
+            String value = field(json, key);
+            if (!value.isEmpty()) {
+                return value;
+            }
+        }
+        return "";
+    }
+
+    /** 读这个键后面的字符串。没有就是空。 */
+    private static String field(String json, String key) {
+        int keyAt = json.indexOf("\"" + key + "\"");
+        if (keyAt < 0) {
+            return "";
+        }
+        StringCursor value = readString(json, keyAt + key.length() + 2);
+        return value == null ? "" : value.text();
+    }
+
+    /** 从这里的左花括号配到右花括号。配不上就是 -1。 */
+    private static int endOfObject(String json, int start) {
+        int depth = 0;
+        boolean inString = false;
+        for (int i = start; i < json.length(); i++) {
+            char ch = json.charAt(i);
+            if (inString) {
+                if (ch == '\\') {
+                    i = i + 1;
+                } else if (ch == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+            if (ch == '"') {
+                inString = true;
+            } else if (ch == '{') {
+                depth = depth + 1;
+            } else if (ch == '}') {
+                depth = depth - 1;
+                if (depth == 0) {
+                    return i + 1;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /** 找到下一个 type 标记的结尾。没有就是 -1。 */
+    private static int indexOfType(String json, int from, String type) {
+        int tight = json.indexOf("\"type\":\"" + type + "\"", from);
+        int spaced = json.indexOf("\"type\": \"" + type + "\"", from);
+        if (tight < 0 && spaced < 0) {
+            return -1;
+        }
+        if (tight < 0 || (spaced >= 0 && spaced < tight)) {
+            return spaced + ("\"type\": \"" + type + "\"").length();
+        }
+        return tight + ("\"type\":\"" + type + "\"").length();
     }
 
     /** 把回答里的文字块接起来。没有文字就是空。 */

@@ -20,14 +20,31 @@ public final class ReadFile implements Job {
         return Ability.READ;
     }
 
-    /** 读目标文件。字会交给检查口，由它决定进不进步骤记录。 */
+    /** 读目标。目录只交回里面的名字。字会交给检查口，由它决定进不进步骤记录。 */
     @Override
     public Reply run(Attempt attempt) {
         try {
-            String text = Files.readString(Path.of(attempt.target()));
-            return Reply.success(text);
+            Path path = Path.of(attempt.target());
+            if (Files.isDirectory(path)) {
+                return Reply.success(namesIn(path));
+            }
+            return Reply.success(Files.readString(path));
         } catch (IOException | RuntimeException ex) {
-            return new Reply(ResultKind.失败, null, "");
+            return new Reply(ResultKind.失败, null, "读不到");
         }
+    }
+
+    /** 目录里每一项的名字，一行一个。 */
+    private static String namesIn(Path path) throws IOException {
+        StringBuilder names = new StringBuilder();
+        try (var children = Files.list(path)) {
+            for (Path child : children.sorted().toList()) {
+                if (names.length() > 0) {
+                    names.append('\n');
+                }
+                names.append(child.getFileName());
+            }
+        }
+        return names.toString();
     }
 }

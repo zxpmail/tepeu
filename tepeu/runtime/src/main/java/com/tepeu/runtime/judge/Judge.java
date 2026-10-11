@@ -9,7 +9,7 @@ import com.tepeu.runtime.word.Writer;
 
 /**
  * 判断做完没有。只看步骤记录里对得上的能力交回。
- * 问模型的成功不能单独算做完。失败要对上完成标准那一句原文。
+ * 问模型、读和查找的成功不能算做完。写、改或跑的成功才算。失败要对上完成标准那一句原文。
  */
 public final class Judge {
 
@@ -41,7 +41,7 @@ public final class Judge {
                 Writer.judge,
                 null,
                 null,
-                null,
+                goalId,
                 null,
                 null,
                 null,
@@ -60,15 +60,29 @@ public final class Judge {
         boolean failure = step.resultKind() == ResultKind.失败
                 || step.resultKind() == ResultKind.拒绝
                 || step.resultKind() == ResultKind.超时;
-        if (Ability.ASK.equals(step.capability())) {
+        if (looks(step.capability())) {
             if (!failure) {
                 return false;
             }
             return step.resultCode() != null && step.resultCode().equals(doneWhen);
         }
+        if (!changes(step.capability())) {
+            return false;
+        }
         if (!failure) {
             return true;
         }
         return step.resultCode() != null && step.resultCode().equals(doneWhen);
+    }
+
+    /** 问模型、读、在文件里找、按名字找，成功都不算做完。 */
+    private static boolean looks(String name) {
+        return Ability.ASK.equals(name) || Ability.READ.equals(name)
+                || Ability.GREP.equals(name) || Ability.GLOB.equals(name);
+    }
+
+    /** 写整篇、改一段、跑命令，成功才算做完。 */
+    private static boolean changes(String name) {
+        return Ability.WRITE.equals(name) || Ability.EDIT.equals(name) || Ability.RUN.equals(name);
     }
 }

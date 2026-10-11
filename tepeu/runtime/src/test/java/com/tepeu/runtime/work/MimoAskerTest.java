@@ -34,9 +34,25 @@ class MimoAskerTest {
         String json = MimoAsker.requestJson("mimo-v2.6-flash", "总则\n做完了不算");
         assertTrue(json.contains("\"content\":\"总则\\n做完了不算\""));
         assertFalse(json.contains("system"));
+        assertTrue(json.contains("\"tools\""));
+        assertTrue(json.contains("\"name\":\"Read\""));
+        assertTrue(json.contains("\"name\":\"Grep\""));
+        assertTrue(json.contains("\"name\":\"Edit\""));
         assertEquals("好\n下一行", MimoAsker.textOf("""
                 {"type":"message","content":[{"type":"text","text":"好"},{"type":"text","text":"下一行"}]}
                 """));
+        String sided = """
+                {"content":[{"type":"text","text":"我先看"},{"type":"tool_use","id":"t1","name":"Read","input":{"path":"C:/work/a.txt"}}]}
+                """;
+        assertEquals("我先看", MimoAsker.textOf(sided));
+        assertEquals("Read", MimoAsker.asksOf(sided).get(0).name());
+        assertEquals("C:/work/a.txt", MimoAsker.asksOf(sided).get(0).target());
+        assertEquals("", MimoAsker.asksOf(sided).get(0).payload());
+        String edit = """
+                {"content":[{"type":"tool_use","id":"t2","name":"Edit","input":{"path":"C:/work/a.txt","old_string":"旧","new_string":"新"}}]}
+                """;
+        assertEquals("旧", MimoAsker.asksOf(edit).get(0).payload());
+        assertEquals("新", MimoAsker.asksOf(edit).get(0).replacement());
 
         AtomicReference<String> seen = new AtomicReference<>();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);

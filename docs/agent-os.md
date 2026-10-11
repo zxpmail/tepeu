@@ -1,7 +1,7 @@
 # Agent OS：一块运行
 
 **状态**：2026-10-02。这份文件管结构。做什么、怎样算做完、四种拒绝、停止、点头、费用、范围、记忆，仍以 [`rewrite-1.md`](./rewrite-1.md) 第 2 节到第 7 节和 [`specs/`](./specs/) 里的验收为准。  
-**程序在 `tepeu/runtime`**。目录按这一页的七个包。  
+**程序在 `tepeu/runtime`**。目录按这一页的七个包。命令行在 `tepeu/cli`，用 Spring Boot，没有网页。不带参数就停在那里，人说一句，它答一句。带上要做什么、限制、怎样算做完，就只跑一轮正题，把两本记录打出来。  
 **作废**：按「能不能拿掉」切成十一个模块；把一轮怎么走放进单独的编排模块。  
 **不迁回来**：[`os-baseplate.md`](./os-baseplate.md) 的洋葱、[`archive/os-9/tepeu-structure.md`](./archive/os-9/tepeu-structure.md) 的九个盒子。上一版对的是：跑一轮的不靠「给模型看什么」单独成盒，账和门不知道一轮怎么排。盒子太多，这一轮不照搬。
 
@@ -95,7 +95,7 @@ ledger、answer、work 不反过来问 round。gate 不反过来问 round。judg
 
 四种拒绝仍是这四个字，没有第五种：`USER_DENIED`、`NOT_INSTALLED`、`APPROVAL_TIMEOUT`、`GATE_BLOCKED`。
 
-三条进路不变，见 [`rewrite-1.md`](./rewrite-1.md) 和 [`specs/一轮.md`](./specs/一轮.md)。正题要做事，落步骤记录。人标明只聊天，不判断，不放行写和跑。旁边问只落过程记录。
+三条进路不变，见 [`rewrite-1.md`](./rewrite-1.md) 和 [`specs/一轮.md`](./specs/一轮.md)。正题要做事，落步骤记录。人标明只聊天，不判断，不放行读、写和跑。旁边问只落过程记录。
 
 ---
 

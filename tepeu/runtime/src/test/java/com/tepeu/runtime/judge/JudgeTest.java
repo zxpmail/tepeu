@@ -43,6 +43,33 @@ class JudgeTest {
         failed.append(returned(Ability.READ, "g1", ResultKind.失败, "FAILED", ""));
         new Judge(failed).judge();
         assertTrue(has(failed, Kind.NOT_DONE));
+
+        Ledger read = new Ledger();
+        read.openPiece("做事", "这里", "看见");
+        read.append(returned(Ability.READ, "g1", ResultKind.成功, null, "文件里的字"));
+        new Judge(read).judge();
+        assertTrue(has(read, Kind.NOT_DONE));
+        assertFalse(has(read, Kind.DONE));
+
+        Ledger wrote = new Ledger();
+        wrote.openPiece("做事", "这里", "看见");
+        wrote.append(returned(Ability.WRITE, "g1", ResultKind.成功, null, "一句"));
+        new Judge(wrote).judge();
+        assertTrue(has(wrote, Kind.DONE));
+        assertTrue(wrote.read().stream().anyMatch(step -> Kind.DONE.equals(step.kind()) && "g1".equals(step.goalId())));
+
+        Ledger edited = new Ledger();
+        edited.openPiece("做事", "这里", "看见");
+        edited.append(returned(Ability.EDIT, "g1", ResultKind.成功, null, "已改"));
+        new Judge(edited).judge();
+        assertTrue(has(edited, Kind.DONE));
+
+        Ledger looked = new Ledger();
+        looked.openPiece("做事", "这里", "看见");
+        looked.append(returned(Ability.GREP, "g1", ResultKind.成功, null, "某一行"));
+        new Judge(looked).judge();
+        assertTrue(has(looked, Kind.NOT_DONE));
+        assertFalse(has(looked, Kind.DONE));
     }
 
     private static Step returned(String name, String goalId, ResultKind kind, String code, String body) {

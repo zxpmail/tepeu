@@ -13,6 +13,7 @@ import com.tepeu.runtime.word.Kind;
 import com.tepeu.runtime.word.Refusal;
 import com.tepeu.runtime.word.Reply;
 import com.tepeu.runtime.word.ResultKind;
+import com.tepeu.runtime.word.ToolAsk;
 import com.tepeu.runtime.word.Writer;
 import com.tepeu.runtime.work.Attempt;
 import com.tepeu.runtime.work.Job;
@@ -34,10 +35,10 @@ class RoundTest {
     /** 装好就能看见谁。跑完这一次调用本身不交回做完。 */
     @Test
     void 门外只读两本记录() {
-        Door door = open(1, List.of(readOk()), Consent.Answer.同意);
+        Door door = open(2, List.of(script("读东西 这里", "好"), readOk()), Consent.Answer.同意);
         assertTrue(door.ledger().stream().anyMatch(step -> Kind.WHO.equals(step.kind()) && step.writer() == Writer.base));
-        door.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.READ, "这里")), false, ""));
-        assertTrue(door.ledger().stream().anyMatch(step -> Kind.DONE.equals(step.kind())));
+        door.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), false, ""));
+        assertTrue(door.ledger().stream().anyMatch(step -> Kind.NOT_DONE.equals(step.kind())));
         assertTrue(door.processLog().stream().anyMatch(note -> ProcessNote.TO_JUDGE.equals(note.step())));
     }
 
@@ -84,16 +85,18 @@ class RoundTest {
         assertFalse(has(door, Kind.DONE));
     }
 
-    /** 不是问模型的成功，编号对上，做完。装载不进步骤记录。 */
+    /** 读成功只把字交回来，不算做完。装载不进步骤记录。 */
     @Test
-    void 读成功算做完() {
-        Door door = open(1, List.of(readOk()), Consent.Answer.同意);
-        door.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.READ, "这里")), false, ""));
+    void 读成功不算做完() {
+        Door door = open(2, List.of(script("读东西 这里", "好"), readOk()), Consent.Answer.同意);
+        door.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), false, ""));
         String goalId = piece(door);
         assertTrue(door.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind())
+                && Ability.READ.equals(step.capability())
                 && goalId.equals(step.goalId())
                 && step.writer() == Writer.gate));
-        assertTrue(has(door, Kind.DONE));
+        assertTrue(has(door, Kind.NOT_DONE));
+        assertFalse(has(door, Kind.DONE));
         assertFalse(door.ledger().stream().anyMatch(step -> "装载".equals(step.kind())));
         assertTrue(door.processLog().stream().anyMatch(note -> ProcessNote.LOAD.equals(note.step()) && note.detail().contains("不是人说的")));
     }
@@ -101,11 +104,11 @@ class RoundTest {
     /** 失败代码不是完成标准，没做完。对上了就做完。 */
     @Test
     void 失败要整句对上() {
-        Door missed = open(1, List.of(readFailed("FAILED")), Consent.Answer.同意);
-        missed.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.READ, "这里")), false, ""));
+        Door missed = open(2, List.of(script("读东西 这里", "好"), readFailed("FAILED")), Consent.Answer.同意);
+        missed.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), false, ""));
         assertTrue(has(missed, Kind.NOT_DONE));
-        Door hit = open(1, List.of(readFailed("FAILED")), Consent.Answer.同意);
-        hit.run(main(Field.of("做事"), Field.of("这里"), Field.of("FAILED"), List.of(Call.of(Ability.READ, "这里")), false, ""));
+        Door hit = open(2, List.of(script("读东西 这里", "好"), readFailed("FAILED")), Consent.Answer.同意);
+        hit.run(main(Field.of("做事"), Field.of("这里"), Field.of("FAILED"), List.of(), false, ""));
         assertTrue(has(hit, Kind.DONE));
         assertFalse(has(hit, Kind.NOT_DONE));
     }
@@ -123,19 +126,19 @@ class RoundTest {
     /** 第九个不放行。问模型成功不能算做完。 */
     @Test
     void 次数和问模型() {
-        List<Call> nine = new ArrayList<>();
+        StringBuilder nine = new StringBuilder();
         for (int i = 0; i < 9; i++) {
-            nine.add(Call.of("没有的能力"));
+            nine.append("读东西 这里\n");
         }
-        Door door = open(1, List.of(), Consent.Answer.同意);
-        door.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), nine, false, ""));
-        assertEquals(8, door.ledger().stream().filter(step -> Refusal.NOT_INSTALLED.equals(step.refusalCode())).count());
+        Door door = open(1, List.of(script(nine.toString())), Consent.Answer.同意);
+        door.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), false, ""));
+        assertEquals(7, door.ledger().stream().filter(step -> Refusal.NOT_INSTALLED.equals(step.refusalCode())).count());
         assertEquals(8, door.processLog().stream().filter(note -> ProcessNote.RELEASE.equals(note.step())).count());
-        assertTrue(door.processLog().stream().anyMatch(note -> ProcessNote.SKIP.equals(note.step())));
+        assertEquals(2, door.processLog().stream().filter(note -> ProcessNote.SKIP.equals(note.step())).count());
         assertTrue(has(door, Kind.NOT_DONE));
 
-        Door asked = open(1, List.of(asking(Reply.success("有字"))), Consent.Answer.同意);
-        asked.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(Call.of(Ability.ASK)), false, ""));
+        Door asked = open(1, List.of(script("有字")), Consent.Answer.同意);
+        asked.run(main(Field.of("做事"), Field.of("这里"), Field.of("看见"), List.of(), false, ""));
         assertTrue(asked.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind()) && step.resultKind() == ResultKind.成功));
         assertTrue(has(asked, Kind.NOT_DONE));
         assertFalse(has(asked, Kind.DONE));
@@ -144,7 +147,7 @@ class RoundTest {
     /** 只聊天问到了模型，不抄任务编号，也不判断。 */
     @Test
     void 只聊天问模型() {
-        Door door = open(1, List.of(asking(Reply.success("有字"))), Consent.Answer.同意);
+        Door door = open(1, List.of(script("有字")), Consent.Answer.同意);
         door.run(new Turn(Entry.main, true, false, "", true, Field.missing(), Field.missing(), Field.missing(), List.of(), ""));
         assertTrue(door.ledger().stream().anyMatch(step -> Kind.RETURN.equals(step.kind()) && step.goalId() == null));
         assertFalse(has(door, Kind.DONE));
@@ -184,16 +187,32 @@ class RoundTest {
         };
     }
 
-    private static Job asking(Reply reply) {
+    private static Job script(String... bodies) {
+        List<String> left = new ArrayList<>(List.of(bodies));
         return new Job() {
             public String name() {
                 return Ability.ASK;
             }
 
             public Reply run(Attempt attempt) {
-                return reply;
+                if (left.isEmpty()) {
+                    return Reply.success("好");
+                }
+                return beside(left.remove(0));
             }
         };
+    }
+
+    /** 测试仍用整行写法。有点名就换成旁边的工具，正文不再被执行。 */
+    private static Reply beside(String body) {
+        List<ToolAsk> asks = new ArrayList<>();
+        for (PointNames.Item item : PointNames.parse(body)) {
+            asks.add(new ToolAsk(item.name(), item.target(), item.payload()));
+        }
+        if (asks.isEmpty()) {
+            return Reply.success(body);
+        }
+        return Reply.success("", asks);
     }
 
     private static boolean has(Door door, String kind) {

@@ -104,6 +104,7 @@ Runtime: Java 21
 docs/rewrite-1.md      这一轮怎么管（当前必读）
 docs/specs/          对外一道门，加上七篇：一轮、账、回答、检查口、做事、给模型看、判断
 tepeu/runtime         这一轮的程序。一个模块，七个包，外面一道门
+tepeu/cli             命令行。Spring Boot，没有网页
 legacy/first-knife/    第一刀整套程序（只读）
 legacy/os-9/           更早的冻结标本（os + host）
 legacy/                v1 只读标本

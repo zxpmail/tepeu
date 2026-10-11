@@ -17,6 +17,7 @@ v1.0 工作台在 `main` / tag `v1.0.0`，标本在 [`legacy/`](./legacy/README.
 docs/rewrite-1.md      这一轮怎么管（当前必读）
 docs/specs/          对外一道门，加上七篇：一轮、账、回答、检查口、做事、给模型看、判断
 tepeu/runtime         这一轮的程序。一个模块，七个包，外面一道门
+tepeu/cli             命令行。Spring Boot，没有网页。跑一轮，打出两本记录
 legacy/first-knife/    第一刀整套程序（只读）
 docs/rewrite-0.md      第一刀旧规划（保留）
 legacy/os-9/           冻结标本
@@ -43,11 +44,25 @@ cd legacy/backend && mvn spring-boot:run
 cd legacy/frontend && npm install && npm run dev
 ```
 
+## 这一轮的命令行
+
+没有网页。不带参数就停在那里，你说一句，它答一句。说「停」或 stop 结束。这一次最多问 32 次。供应商是本机 cc-switch 里的 Xiaomi MiMo。
+
+带上三个字就只跑一轮：要做什么、限制、怎样算做完。
+
+在含有 `runtime` 和 `cli` 的目录里执行，也就是仓库里的 `tepeu/tepeu`。不要先进入 `cli`。
+
+```bash
+cd tepeu/tepeu
+mvn -pl cli -am package
+java -jar cli/target/tepeu-cli.jar
+```
+
 ## 这一轮怎么测
 
 ```bash
-cd tepeu
-mvn -pl runtime test
+cd tepeu/tepeu
+mvn -pl cli -am test
 ```
 
 ## 文档入口
