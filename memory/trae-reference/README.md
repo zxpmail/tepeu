@@ -64,7 +64,9 @@ Trae 的 skill 分发机制：客户端内嵌注册表 → 按 channel（`solo_w
 memory/trae-reference/
   README.md                    本文件
   context-and-memory-notes.md  上下文工程与记忆系统分析（chronicle/ckg/ContextFS）
+  local-data-notes.md          本地数据层分析（加密对话库 / 32 模型路由表 / builtin_skills）
   builtin-mcp/dist/            SOLO 内置 MCP server 源码（chronicle 记忆系统等，709KB）
+  builtin_skills/              本机物化的 5 个内置 skill（含完整中文 system-prompt 实物）
   packages/<skill>/            官方包解压件（保留包内原始目录层级）
 ```
 
