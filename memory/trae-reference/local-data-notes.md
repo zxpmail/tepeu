@@ -37,6 +37,21 @@
 
 `gpt_54` skill 渠道在此表中无对应项（表中全为国产模型 + 无 GPT/OpenAI 条目）——该渠道可能面向海外版或历史版本，**修正前一轮推断**。
 
+## 模型路由表与提示词的关联（字段级证据）
+
+`model_list_map` 每个模型条目（约 50 字段）携带**按模型差异化的提示词/行为开关**——表本身无提示词文本，但它是服务端拼提示词的参数面：
+
+- `native_function_call: true`：全部 32 模型均开——工具以原生 function-call schema 进请求，而非文本序列化（提示词结构级差异）
+- `enable_invalid_json_hint: true`：全部开启——模型输出坏 JSON 时注入修复提示
+- `is_new_pe: true`：全部开启（推断：new prompt engineering 版本旗标）
+- `open_optimize: true`：**仅字节自家 Seed 系**（Seed-2.1-Turbo/Pro、Seed-Evolving、Seed-Code、Seed-2.0-Code）——自家模型才开的优化路径
+- `parallel_tool_calling: false`：**仅 Seed-2.1-Pro 显式关闭**——唯一并行工具调用差异点
+- `prompt_max_tokens`（如 224000/256000）：系统提示词+工具定义+历史的总预算
+- `enable_todo_thought_extract` + `todo_thought_extract_threshold`：从模型思考流提取 todo 的解析开关
+- `reasoning_effort_config/options`、`thinking_enable`、`temperature/top_p/top_k`：推理与采样参数
+
+结论：提示词文本在服务端按 (agent 形态 × 模型 × skill 渠道) 拼装；本地路由表提供拼装参数（开关+预算+采样），`open_optimize`/`parallel_tool_calling` 两处按模型差异是"每模型一套运行时策略"的直接实证。
+
 ## 用户已装社区 skill（顺带记录）
 
 `~/.trae-cn/skills/`：design-md、enhance-prompt、excalidraw-diagram、react-components、remotion、shadcn-ui、stitch-design、stitch-loop、taste-design、ui-ux-pro-max —— 与 tepeu 用户的 Claude skill 集高度重叠（社区流通的同一批）。
