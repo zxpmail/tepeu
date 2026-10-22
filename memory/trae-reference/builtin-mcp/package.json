@@ -1,0 +1,164 @@
+{
+  "name": "builtin-mcp",
+  "displayName": "Solo Builtin MCP",
+  "publisher": "byted-solo",
+  "description": "Built-in MCP tools for iCube",
+  "version": "0.0.1",
+  "l10n": "./l10n",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*",
+    "onCommand:icube.common.commands.computerUse.checkTcc",
+    "onCommand:icube.common.commands.computerUse.openTccSettings",
+    "onCommand:icube.common.commands.computerUse.openTccSettingsIfNotGranted",
+    "onCommand:icube.common.commands.computerUse.captureWindow",
+    "onCommand:icube.common.commands.computerUse.ensureReady",
+    "onCommand:icube.common.commands.recordReplay.ensureReady",
+    "onCommand:icube.common.commands.recordReplay.start",
+    "onCommand:icube.common.commands.recordReplay.stop"
+  ],
+  "enabledApiProposals": [
+    "trae"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "icube.common.commands.computerUse.checkTcc",
+        "title": "Check Computer Use TCC Permissions"
+      },
+      {
+        "command": "icube.common.commands.computerUse.openTccSettings",
+        "title": "Open Computer Use TCC Settings"
+      },
+      {
+        "command": "icube.common.commands.computerUse.openTccSettingsIfNotGranted",
+        "title": "Open Computer Use TCC Settings If Needed"
+      },
+      {
+        "command": "icube.common.commands.computerUse.captureWindow",
+        "title": "Take Appshot With Computer Use"
+      },
+      {
+        "command": "icube.common.commands.computerUse.ensureReady",
+        "title": "Ensure Computer Use MCP Ready"
+      },
+      {
+        "command": "icubePlugins.pluginStateChanged",
+        "title": "Dispatch Plugin State Change",
+        "enablement": "false"
+      },
+      {
+        "command": "icube.computerUse.install",
+        "title": "Install Computer Use Plugin",
+        "enablement": "false"
+      },
+      {
+        "command": "icube.computerUse.setEnabled",
+        "title": "Set Computer Use Plugin State",
+        "enablement": "false"
+      },
+      {
+        "command": "icube.computerUse.getPluginState",
+        "title": "Get Computer Use Plugin State",
+        "enablement": "false"
+      },
+      {
+        "command": "icube.recordReplay.install",
+        "title": "Install Record & Replay Plugin",
+        "enablement": "false"
+      },
+      {
+        "command": "icube.recordReplay.setEnabled",
+        "title": "Set Record & Replay Plugin State",
+        "enablement": "false"
+      },
+      {
+        "command": "icube.recordReplay.getPluginState",
+        "title": "Get Record & Replay Plugin State",
+        "enablement": "false"
+      },
+      {
+        "command": "icube.common.commands.recordReplay.ensureReady",
+        "title": "Ensure Record & Replay MCP Ready"
+      },
+      {
+        "command": "icube.common.commands.recordReplay.start",
+        "title": "Start Record & Replay Recording"
+      },
+      {
+        "command": "icube.common.commands.recordReplay.stop",
+        "title": "Stop Record & Replay Recording"
+      },
+      {
+        "command": "icube.common.commands.computerUse.listApprovedApps",
+        "title": "List Always-allowed Apps"
+      },
+      {
+        "command": "icube.common.commands.computerUse.getAppMetadataByBundleId",
+        "title": "Get Computer Use App Metadata By Bundle ID"
+      },
+      {
+        "command": "icube.common.commands.computerUse.removeApprovedApp",
+        "title": "Remove an Always-allowed App"
+      }
+    ],
+    "configuration": {
+      "title": "Trae Builtin MCP",
+      "properties": {
+        "trae.macos-connector.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable macOS Connectors (Notes, Reminders, Calendar, Mail, Contacts)"
+        },
+        "trae.computer-use.windowsPresentation": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Show the native Windows presentation overlay while Computer Use performs mutating actions."
+        },
+        "trae.computer-use.mtc.target": {
+          "type": "string",
+          "enum": [
+            "host",
+            "vm"
+          ],
+          "default": "host",
+          "enumDescriptions": [
+            "Control the host machine (macOS/Windows/Linux)",
+            "Control the virtual machine"
+          ],
+          "description": "Choose whether Computer Use controls the host machine or the virtual machine in Work mode."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile && node scripts/clean-native.js",
+    "build": "npm run compile",
+    "compile": "tsc -p ./",
+    "test:computer-use-approval": "node --no-warnings --experimental-strip-types --test test/computer-use-approval-state.test.mjs",
+    "test:windows-presentation-config": "node --no-warnings --experimental-strip-types --test test/windows-presentation-config.test.mjs",
+    "test:locked-use-state": "node --no-warnings --experimental-strip-types --test test/locked-use-state.test.mjs test/computer-use-lifecycle.test.mjs test/locked-use-review-regressions.test.mjs",
+    "test:record-replay": "npm run compile && node --test test/record-replay-*.test.mjs",
+    "test:chronicle": "npm run compile && node --test test/chronicle-*.test.mjs",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.82.0",
+    "typescript": "6.0.2"
+  },
+  "dependencies": {
+    "@byted-solo/computer-use-mcp": "0.77.0",
+    "@cfworker/json-schema": "^4.1.1",
+    "@magda/tree-kill": "^1.2.3",
+    "zod": "4.4.3"
+  }
+}
