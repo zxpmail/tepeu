@@ -1,0 +1,25 @@
+{
+  "name": "welcomemode-design",
+  "version": "5.8.3-wb.41334564.gdb0e9b51.h4da087921e4a",
+  "description": "WorkBuddy design welcomeMode root agent and resources.",
+  "author": {
+    "name": "WorkBuddy"
+  },
+  "category": "welcomeMode",
+  "keywords": [
+    "workbuddy",
+    "welcomeMode",
+    "design"
+  ],
+  "agents": [
+    "agents/design.md"
+  ],
+  "workbuddy": {
+    "dependencies": [
+      {
+        "type": "mcp",
+        "name": "netdrive"
+      }
+    ]
+  }
+}

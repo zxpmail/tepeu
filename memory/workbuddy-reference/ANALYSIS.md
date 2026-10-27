@@ -1,6 +1,6 @@
 # WorkBuddy 连接件与 Skill 体系逆向分析
 
-> 2026-10-27 提取。身份：`@genie/workbuddy-desktop` v5.8.3（Electron 37.x），Tencent Technology (Shenzhen)，`workbuddy@tencent.com`，www.workbuddy.cn，内部代号 **genie**。agent 运行时 = **codebuddy-lite**（`cli/dist/codebuddy-lite-wb.mjs`，9.4MB bundle）；连接件目录标记 `.codebuddy-connector`，与 CodeBuddy 同源。提取方法与产物索引见 [README.md](README.md)。内容版权归腾讯，仅限内部研究。
+> 2026-10-27 提取。身份：`@genie/workbuddy-desktop` v5.8.3（Electron 37.x），Tencent Technology (Shenzhen)，`workbuddy@tencent.com`，www.workbuddy.cn，内部代号 **genie**。agent 运行时 = **codebuddy-lite**（`cli/dist/codebuddy-lite-wb.mjs`，9.4MB bundle）；连接件目录标记 `.codebuddy-connector`，与 CodeBuddy 同源。提取方法与产物索引见 [README.md](README.md)；子代理 / 记忆三层 / BaaS / 交互模式的专项深读见 [notes-subagent-baas-memory.md](notes-subagent-baas-memory.md)。内容版权归腾讯，仅限内部研究。
 
 ## 一、一句话结论
 
@@ -84,5 +84,5 @@ frontmatter 在 Anthropic 通用格式（name/description）上扩了运行时�
 ## 八、不可达 / 未做
 
 - 主系统提示词的运行时最终拼装结果（nunjucks 模板变量值）本地不可见，需抓包/运行时 dump（本机 WorkBuddy 在跑，未做干扰性调试）。
-- expert/playbook/automation（企微机器人）运行面只见到配置与迁移表，未深挖。
-- 市场目录 85MB 全量包未入库（可按 CDN URL + etag 重下）。
+- expert 包实物已入库（`builtin/builtin-plugins/workbuddy-docx/experts/` 9 个）；expert/playbook/automation（企微机器人）运行面只见到配置与迁移表，未深挖。
+- 市场目录全量包已入库 `catalog/connectors-config.zip`（34.7MB，sha256 见 README），85MB 解压树留在 `%TEMP%/wb-connector-config/`。

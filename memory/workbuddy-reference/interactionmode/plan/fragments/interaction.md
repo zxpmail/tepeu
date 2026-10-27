@@ -1,0 +1,47 @@
+---
+name: plan
+description: WorkBuddy plan work mode fixed fragments and tool policy.
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
+  - PowerShell
+  - TaskCreate
+  - TaskGet
+  - TaskUpdate
+  - TaskList
+  - TaskStop
+  - TaskOutput
+  - WebFetch
+  - WebSearch
+  - Skill
+  - AskUserQuestion
+  - Defer(LSP)
+  - Defer(ImageGen)
+  - Defer(VideoGen)
+  - Defer(AudioTranscribe)
+  - Agent
+  - Defer(TeamCreate)
+  - Defer(TeamDelete)
+  - SendMessage
+  - A2AGetAgentCard
+  - A2ASendMessage
+  - A2AGetTask
+  - A2ACancelTask
+  - ToolSearch
+  - DeferExecuteTool
+  - widget_guidelines
+  - show_widget
+  - present_files
+  - Defer(LibraryUpload)
+  - automation_update
+  - Defer(conversation_search)
+  - Defer(workbuddy_sites_deploy)
+  - ListMcpResources
+  - ReadMcpResource
+  - EnterPlanMode
+  - ExitPlanMode
+---
