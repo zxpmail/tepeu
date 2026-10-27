@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "miora": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${CODEBUDDY_PLUGIN_ROOT}/dist/cli.cjs"
+      ],
+      "cwd": "${CODEBUDDY_PLUGIN_ROOT}",
+      "env": {
+        "MIORA_MCP_TRANSPORT": "stdio",
+        "MIORA_DATA_DIR": "${CODEBUDDY_PLUGIN_DATA}",
+        "MIORA_ENDPOINT": "${MIORA_ENDPOINT:-}"
+      },
+      "defer_loading": false
+    }
+  }
+}
