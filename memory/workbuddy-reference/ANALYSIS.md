@@ -59,8 +59,9 @@ frontmatter 在 Anthropic 通用格式（name/description）上扩了运行时�
    - **fail-closed**：任何异常兜底为 ask（hook 抛错会被 fall-through 成放行 = 静默扣费，故宁可多弹）；如实记录边界（单插件清单运行期损坏会放行该插件，防线在构建期校验）；
    - 接口纪律：stdout 必须纯净单行 JSON；诊断走 stderr 且**不得打印 tool_input（PII）**；非目标工具只能 `{"continue":true}`，绝不返回 allow；exit code 恒 0；
    - 审批元数据经 `hookSpecificOutput['codebuddy.ai/approval']` 透传到 ACP `toolCall._meta`，宿主浮层按 kind 渲染高积分文案。
-5. **插件声明式配置**：`.mcp.json` 支持 `${CODEBUDDY_PLUGIN_ROOT}` / `${CODEBUDDY_PLUGIN_DATA}` 变量、`defer_loading: false` 显式声明（计费工具必须直连，否则被 DeferExecuteTool 短路绕过闸门）；`.codebuddy-plugin/plugin.json` 声明 `welcomeModes`（code/design/work）与 `runtimeOwner`。
-6. **桌面形态**：`~/.workbuddy/` 有 audit-log（按天 jsonl）、sqlite 迁移链（session_plugin_context、workspace_trust_decisions、automation_runs、cloud_conversations…）、自带 node/PortableGit/python 工具链、企业微信 A2A 通道（`@tencent/wwapi-electron` + wechat-copydata-decoder）。
+5. **进程沙箱（tsbx + sandbox-center）**：`cli\vendor\sandbox\5.8.6\`——`sandbox-center.exe` 是决策中枢，shell/文件/网络操作经 broker 裁决（会话内动态 `ADD_FILE_RULE`，host-auto-grant 按 `createdPathOrigin` 分类放行本次会话创建物）；`tsbx*.dll`/`tsbxldr`/`tsbxlow` 为腾讯沙箱运行库。静态规则明文在 `tsbx_rules.json`：默认 **deny 凭证目录**（`.ssh`/`.gnupg` 读写删全拒），allow 各语言工具链缓存（npm/pip/cargo/go/m2/gradle/docker…）及 `%APPDATA%\Code`、`%APPDATA%\Trae`（注释 "ide"），其余路径逐操作弹用户决定；决定记录（decision record）带 modifier 严格校验，path/op 不匹配即报错。shell 侧垫片在 `cli\vendor\shim\`（`node-brokered-fs-shim.cjs` fs 走 broker、`genie-safe-delete.cjs` 删除走 broker、`brokered-sandbox-bash-env.sh`）；进程树杀灭靠 `cli\bin\native\win32-x64\job-object.node`（Windows Job Object）。日志 `~/.workbuddy/logs/sandbox`。agent 循环**跑在本地**（桌面进程内），云只做会话同步（`cloud_conversations` 迁移表）——与 Trae SOLO 的云端 K8s 沙箱相对。
+6. **插件声明式配置**：`.mcp.json` 支持 `${CODEBUDDY_PLUGIN_ROOT}` / `${CODEBUDDY_PLUGIN_DATA}` 变量、`defer_loading: false` 显式声明（计费工具必须直连，否则被 DeferExecuteTool 短路绕过闸门）；`.codebuddy-plugin/plugin.json` 声明 `welcomeModes`（code/design/work）与 `runtimeOwner`。
+7. **桌面形态**：`~/.workbuddy/` 有 audit-log（按天 jsonl）、sqlite 迁移链（session_plugin_context、workspace_trust_decisions、automation_runs、cloud_conversations…）、自带 node/PortableGit/python 工具链、企业微信 A2A 通道（`@tencent/wwapi-electron` + wechat-copydata-decoder）。
 
 ## 六、提示词架构
 
