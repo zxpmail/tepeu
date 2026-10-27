@@ -6,12 +6,12 @@
 
 `builtin-mcp/dist/chronicle/`（5 个文件，750 行）。SOLO 的"最近工作观察"记忆：OCR 屏幕文本 → 10 分钟 / 6 小时两级摘要 → 本地存储。4 个 MCP 工具：
 
-| 工具 | 作用 |
-|------|------|
-| `chronicle_status` | 可用性/录制状态/协议版本/采集数 |
-| `chronicle_recent` | 近期时间戳 + 脱敏 OCR + 实质变化原因 |
-| `chronicle_search` | 搜索两级摘要 |
-| `chronicle_get_memory` | opaque ID → 单条摘要 |
+| 工具                     | 作用                      |
+| ---------------------- | ----------------------- |
+| `chronicle_status`     | 可用性/录制状态/协议版本/采集数       |
+| `chronicle_recent`     | 近期时间戳 + 脱敏 OCR + 实质变化原因 |
+| `chronicle_search`     | 搜索两级摘要                  |
+| `chronicle_get_memory` | opaque ID → 单条摘要        |
 
 **值得抄的三个设计**：
 
@@ -48,12 +48,3 @@
 
 **推断**（非实锤）：`gpt_54` 指向某 GPT-5.4 级模型专用 skill 渠道——同一 skill 按模型/平台发不同版本，说明 skill 包被视为"随模型迭代的活文件"，不是静态资产。
 
-## 对 tepeu 的映射建议
-
-| Trae 设计 | tepeu 对应物 |
-|-----------|-------------|
-| chronicle 信任标注 + 硬上限 | tepeu/runtime 的工具返回边界（检查口可加 trust 字段与响应上限） |
-| opaque ID 不透路径 | 给模型的资源引用方式（判断篇/给模型看篇可参照） |
-| ckg 本地图谱 + sqlite_vec | 本地检索层选型参考（不依赖云 embedding） |
-| ContextFS `context://` + L/H 分层 | "给模型看"那道门的实现思路：上下文先过虚拟层再进模型 |
-| skill 渠道随模型走 | skill 版本管理：按模型/平台出变体，而非单点维护 |

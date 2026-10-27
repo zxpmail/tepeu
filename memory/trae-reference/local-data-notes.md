@@ -9,7 +9,7 @@
 - `%APPDATA%/Trae CN/logs/`：无 "You are"/"你是" 主提示词命中
 - `%APPDATA%/Trae CN/ModularData/ai-agent/database.db`（4.6MB，对话库）：**加密**（随机字节头，非 sqlite 明文）
 - workbench `out/vs`、`agent-tool-host.exe`：均无主系统提示词（前两轮已验证）
-- 剩余路径仅抓包（且 Trae 网络层为 `sscronet.dll` = 字节 TTNet/Cronet fork，可能绕系统代理 + 证书校验，成功率存疑）
+- 剩余路径仅抓包（且 Trae 网络层为 `sscronet.dll` = 字节 TTNet/Cronet fork）。**2026-10-23 更新：mitmproxy 抓包已打通**（要点：改 Trae 自身代理设置为 manual + CA 进用户 Root 库），见文末"服务端路由抓包"节
 
 ## 意外收获 1：builtin_skills（注册表之外的第 27-31 个 skill）
 
@@ -55,3 +55,17 @@
 ## 用户已装社区 skill（顺带记录）
 
 `~/.trae-cn/skills/`：design-md、enhance-prompt、excalidraw-diagram、react-components、remotion、shadcn-ui、stitch-design、stitch-loop、taste-design、ui-ux-pro-max —— 与 tepeu 用户的 Claude skill 集高度重叠（社区流通的同一批）。
+
+## 服务端路由抓包（2026-10-23，第四轮）
+
+来源：mitmproxy 截获 `api5-normal.mchost.guru/api/ide/v1/get_skill_detail` 响应，存 `model-skill-routing-v2.json`。上面"成功率存疑"作废：sscronet 不理会环境代理，但改 Trae 自身设置 `trae.network.proxy.effectiveMode: "manual"` + 指向 mitmproxy 后全量可解（CA 进用户 Root 库）。
+
+结构：`meta` 平铺 + `new_meta` 按 agentType 嵌套（code / design / trae / work）两套并存。agentType 折叠：solo_agent→trae；solo_agent_lite/remote→code；solo_design_lite/remote→design；solo_work_lite/remote→work。
+
+- 模型 60 个（上面的本地表 32，本地快照落后于线上）：增量主要是 16 个 `custom_model_*` 槽位（用户自带模型），平铺层全部 `default`
+- 每模型一个渠道 tag：`default` / `non_multimodal` / `doutops`（Seed 代码线）/ `seed`（design、work 的 Seed 线）/ `r4_handoff_v1`（仅 trae 形态：DeepSeek-V4-*-Official、deepseek-v4.1-flash、glm-5.3、glm-5.3-flash）/ `hebe`（kimi-k2.6，code/work）/ `iphigenia`（aquila，仅 work）/ `iris`（仅 work 的 minimax-m3 系）
+- 同模型跨形态换渠道：`glm-5.3-flash` = non_multimodal(code/work) / r4_handoff_v1(trae)；`Doubao-Seed-2.1-Pro` = doutops(code/trae) / seed(design/work)；嵌套层里 `custom_model_doubao_*` 在 code 组落 `doutops` 而非 `default`
+- `-auto` 后缀模型（Doubao-Seed-2.0-Code-auto、Seed-2.1-Turbo-auto、kimi-k3-auto、doubao-for-auto）落 `default`；唯一例外 `Doubao-Seed-Evolving-auto` 跟随主模型落 `doutops`
+- `version_lock_tag: 20261014152702_external_prod_skill_version`：skill 版本锁，对应注册表 channel 四段的"构建批次"，服务端下发
+
+意义：skill 渠道变体按 **(agent 形态 × 模型)** 二维分发，不是只按模型；`get_skill_detail` 一次抓包即可枚举线上全部路由，不必再依赖本地 state.vscdb 快照。
