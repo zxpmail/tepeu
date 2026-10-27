@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "yingmi-mcp": {
+      "type": "streamableHttp",
+      "url": "https://stargate-partner.yingmi.com/mcp/v2/oauth/qieman",
+      "timeout": 30000
+    }
+  }
+}

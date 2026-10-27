@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "gitlab-docs": {
+      "type": "streamableHttp",
+      "url": "https://asmt.jihulab.net/mcp",
+      "timeout": 30000
+    }
+  }
+}

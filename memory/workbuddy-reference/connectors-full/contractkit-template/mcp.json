@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "contractkit-template": {
+      "type": "streamableHttp",
+      "url": "https://mcp.fatianshi.cn/v1/template",
+      "timeout": 30000
+    }
+  }
+}

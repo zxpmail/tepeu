@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "patchxnote": {
+      "type": "streamableHttp",
+      "url": "https://freenote.patch-x.cn/mcp",
+      "timeout": 30000
+    }
+  }
+}

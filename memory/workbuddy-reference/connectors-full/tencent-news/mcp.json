@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tencent-news": {
+      "type": "streamableHttp",
+      "url": "https://openapi.inews.qq.com/tencent-news-mcp"
+    }
+  }
+}

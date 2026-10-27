@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "recording-assistant": {
+      "type": "streamableHttp",
+      "url": "https://api.iflyrecorder.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

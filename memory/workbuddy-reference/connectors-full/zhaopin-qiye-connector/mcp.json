@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "zhaopin-qiye-connector": {
+      "url": "https://cgate.zhaopin.com/aimcp/mcp",
+      "type": "streamableHttp"
+    }
+  }
+}

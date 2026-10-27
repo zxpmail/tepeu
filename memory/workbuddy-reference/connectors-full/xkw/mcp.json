@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "xkw": {
+      "type": "streamableHttp",
+      "url": "https://openapi.xkw.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

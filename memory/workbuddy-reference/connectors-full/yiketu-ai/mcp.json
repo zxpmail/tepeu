@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "yiketu-ai": {
+            "type": "streamableHttp",
+            "url": "https://open-api.yiketu.art/api/mcp",
+            "headers": {
+                "X-User-Api-Key": "Bearer ${API_KEY}"
+            },
+            "timeout": 30000
+        }
+    }
+}

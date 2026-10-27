@@ -19,14 +19,19 @@
 memory/workbuddy-reference/
   ANALYSIS.md                       综合分析
   catalog/connectors.json           官方市场目录（443 条，含 auth_mode/visible_in/examples）
-  connectors/camscanner-mcp/        样本连接件（mcp.json + skills/SKILL.md + references/）
-  builtin-skills/                   4 个生态自举 skill（skill-creator、marketplace-skill-installer、
-                                    recommend-connectors、expert-manager）
+  connectors-full/                  市场全量知识层：443 连接件的 SKILL.md（1005 个）+ mcp.json/plugin.json
+                                    （~1400 文件，15MB）。references/ 与二进制未入库，按 CDN zip 重下
+  connectors/camscanner-mcp/        样本连接件全文（SKILL.md + references/，保留作完整形态对照）
+  builtin/                          builtin 全文镜像（skills/ 21 个 + builtin-plugins/ 10 插件的
+                                    skills+experts，61 SKILL.md，纯文本 ~5MB；含 workbuddy-docx
+                                    experts/ 的 9 个专家包实物）
   builtin-plugin/high-credit-gate.cjs   计费闸门 hook（479 行，注释即权限架构文档）
   builtin-plugin/miora-mcp/         builtin MCP 插件配置样本（.mcp.json + plugin.json）
   prompt-fragments/                 10 个提示词模板 fragment（记忆三层、通道路由、A2A）
-  .skill-list-cache.json → skill-list-cache.json   skill 扫描缓存（含 filePath/source/type）
+  skill-list-cache.json             skill 扫描缓存（含 filePath/source/type）
 ```
+
+学习入口建议：生态自举四件套 `builtin/skills/{skill-creator,marketplace-skill-installer,recommend-connectors,expert-manager}` → 专家包实物 `builtin/builtin-plugins/workbuddy-docx/experts/` → 连接件形态 `connectors/camscanner-mcp/` → 海量横向样本 `connectors-full/`。
 
 ## 未入库（有意）
 

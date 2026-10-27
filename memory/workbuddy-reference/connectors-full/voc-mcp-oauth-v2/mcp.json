@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "voc-mcp-oauth-v2": {
+      "type": "streamableHttp",
+      "url": "https://iautomark.sdm.qq.com/voc/mcp",
+      "timeout": 30000
+    }
+  }
+}

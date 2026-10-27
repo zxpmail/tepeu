@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+        "flomo": {
+            "type": "streamableHttp",
+            "url": "https://flomoapp.com/mcp",
+            "timeout": 30000
+        }
+    }
+}

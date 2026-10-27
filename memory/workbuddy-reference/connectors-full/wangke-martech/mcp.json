@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "wangke-martech": {
+      "type": "streamableHttp",
+      "url": "https://martech-mcp.wangxiaobao.com/open/mcp/martech-mcp",
+      "timeout": 30000
+    }
+  }
+}

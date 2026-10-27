@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "at-grid-connector": {
+      "type": "streamableHttp",
+      "url": "https://grid-mcp.ataiot.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

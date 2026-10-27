@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "zhitu-knowledge": {
+      "type": "streamableHttp",
+      "url": "https://knowledge.yctechgl.com/mcp",
+      "headers": {
+        "X-Bot-Token": "${ZHITU_BOT_TOKEN}",
+        "X-User-Id": "${ZHITU_USER_ID}",
+        "Authorization": "Bearer ${ZHITU_BOT_TOKEN}"
+      },
+      "timeout": 30000
+    }
+  }
+}

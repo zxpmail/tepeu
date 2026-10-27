@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "fedin-vibe": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@catchmexz/fedin-vibe-mcp-server-workbuddy"],
+      "runtime": {
+        "type": "node",
+        "version": "20"
+      },
+      "npmRegistry": "https://registry.npmmirror.com",
+      "timeout": 30000
+    }
+  }
+}

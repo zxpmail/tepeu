@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "特点人才系统-${COMPANY_NAME}": {
+      "type": "sse",
+      "url": "https://ai.tedianren.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TEDIANREN_API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

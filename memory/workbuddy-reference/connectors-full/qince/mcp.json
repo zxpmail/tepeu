@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "qincecrm": {
+      "type": "streamableHttp",
+      "url": "https://zk206.waiqin365.com/mcp/message",
+	  "timeout": 30000,
+      "description": "勤策 MCP 代理，负责签名并转发业务请求"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dingteam-suite": {
+      "url": "https://mcp.dingteam.com/endpoint/perf",
+      "type": "http"
+    }
+  }
+}

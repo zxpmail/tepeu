@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "octopus-phone": {
+      "url": "https://gj.zhangyusiyu.com/api/ai/mcp",
+      "type": "streamableHttp",
+      "timeout": 90000
+    }
+  }
+}

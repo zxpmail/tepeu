@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "awehome-loushu": {
+      "type": "streamableHttp",
+      "url": "https://agent-gateway.awehome.com/mcp/local/path_7ec89ebe3e5b4ca4af176053386e10e7/mcp",
+      "timeout": 30000
+    }
+  }
+}

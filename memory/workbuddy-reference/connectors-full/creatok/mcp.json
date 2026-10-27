@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "creatok": {
+      "type": "streamableHttp",
+      "url": "https://www.creatok.ai/api/mcp",
+      "timeout": 300000
+    }
+  }
+}

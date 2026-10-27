@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ruyi-creative": {
+      "type": "streamableHttp",
+      "url": "https://ruyi-aigc.zero0123.com/mcp-painting/oauth/mcp",
+      "timeout": 300000
+    }
+  }
+}

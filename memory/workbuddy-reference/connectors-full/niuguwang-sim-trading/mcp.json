@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "niuguwang-sim-trading": {
+      "type": "streamableHttp",
+      "url": "https://mcp-api.stockhn.com/mcp",
+      "timeout": 30000,
+      "defer_loading": false
+    }
+  }
+}

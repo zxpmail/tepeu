@@ -1,0 +1,14 @@
+{
+  "name": "workbuddy-pptx",
+  "version": "5.8.3-wb.41334564.gdb0e9b51.h4da087921e4a",
+  "description": "由腾讯文档团队出品的演示文稿智能助手，支持通过自然语言创建、编辑与排版幻灯片",
+  "author": {
+    "name": "Tencent Docs Slide Team"
+  },
+  "keywords": [
+    "presentation",
+    "slide",
+    "pptx"
+  ],
+  "skills": "./skills"
+}

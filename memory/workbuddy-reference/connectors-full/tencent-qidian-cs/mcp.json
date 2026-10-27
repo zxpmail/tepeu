@@ -1,0 +1,9 @@
+{
+  "mcpServers": { 
+    "qidian-cs": {
+      "type": "streamableHttp",
+      "url": "https://sse.qidian.qq.com/qidian-cs/mcp",
+      "disabled": false
+    }
+  }
+}

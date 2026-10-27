@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "tuwen-creator": {
+      "type": "streamableHttp",
+      "url": "https://tuwen.superzixuan.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TUWEN_API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

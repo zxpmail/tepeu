@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "fz-agents-tsp": {
+      "type": "streamableHttp",
+      "url": "https://mcp.fanzhi.cn/mcp",
+      "timeout": 30000,
+      "disabledTools": [
+        "project_set_sale_state"
+      ]
+    }
+  }
+}

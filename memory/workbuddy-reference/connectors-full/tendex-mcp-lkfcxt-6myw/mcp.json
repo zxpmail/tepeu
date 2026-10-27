@@ -1,0 +1,9 @@
+{
+  "mcpServers" : {
+    "tendex-mcp-lkfcxt-6myw" : {
+      "type" : "streamableHttp",
+      "url" : "https://tendex.echance.cn/api/mcp/s/tendex-mcp-lkfcxt",
+      "timeout" : 30000
+    }
+  }
+}

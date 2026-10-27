@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bayuegua-patent": {
+      "type": "streamableHttp",
+      "url": "https://mcp.bayuegua.com/api/v6qb6r/mcp?apikey=${BAYUEGUA_API_KEY}",
+      "timeout": 30000
+    }
+  }
+}

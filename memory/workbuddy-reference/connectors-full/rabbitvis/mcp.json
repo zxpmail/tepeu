@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rabbitvis": {
+      "type": "streamableHttp",
+      "url": "https://rabbitvis.rabbitpre.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

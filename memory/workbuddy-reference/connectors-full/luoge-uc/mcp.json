@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "luoge-uc": {
+      "type": "streamable-http",
+      "url": "https://mcp.logosdata.com/mcp-ns-uc-oauth",
+      "timeout": 60000
+    }
+  }
+}

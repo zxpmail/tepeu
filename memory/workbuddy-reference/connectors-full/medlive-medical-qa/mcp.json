@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "medlive-medical-qa": {
+      "type": "streamableHttp",
+      "url": "https://ebm-ai.medlive.cn/mcp",
+      "timeout": 300000,
+      "staticHeaders": {
+        "X-Connector-Version": "1.0.1"
+      }
+    }
+  }
+}

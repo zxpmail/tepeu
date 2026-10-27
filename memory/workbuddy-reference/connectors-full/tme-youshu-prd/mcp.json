@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "company-saas-mcp-server": {
+      "type": "streamableHttp",
+      "url": "https://cd-mcp.tencentmusic.com/mcp/company-saas/company-saas-mcp-server/GxJXdVgAk",
+      "timeout": 30000
+    }
+  }
+}

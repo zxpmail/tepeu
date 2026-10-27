@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "jufa-mcp-server": {
+      "type": "streamableHttp",
+      "url": "https://www.jufaai.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${JUFA_API_KEY}"
+      },
+      "timeout": 120000
+    }
+  }
+}

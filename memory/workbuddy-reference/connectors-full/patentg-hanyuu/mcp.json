@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "patentg-hanyuu": {
+      "type": "streamableHttp",
+      "url": "https://www.patentg.com/mcp",
+      "headers": {
+        "X-MCP-Orkey": "${PATENTG_ORKEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

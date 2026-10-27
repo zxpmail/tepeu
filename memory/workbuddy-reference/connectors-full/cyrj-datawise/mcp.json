@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "智数": {
+      "type": "streamableHttp",
+      "url": "https://workbuddy.cyrj.cc/mcp",
+      "timeout": 30000
+    }
+  }
+}

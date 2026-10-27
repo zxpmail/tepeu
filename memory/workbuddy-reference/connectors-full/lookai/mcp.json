@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "lookai": {
+      "type": "streamable-http",
+      "url": "https://api.look-ai.cn/v1/mcp",
+      "timeout": 30000
+    }
+  }
+}

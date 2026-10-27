@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "car-saas": {
+      "type": "streamableHttp",
+      "url": "https://car-mobile.aimctr.cn/mcp",
+      "timeout": 30000
+    }
+  }
+}

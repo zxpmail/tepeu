@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "miaozhen-lingmei-insight": {
+      "type": "streamableHttp",
+      "url": "https://datatap.deepminer.com.cn/api/gateway/insight-cube-mcp/mcp",
+      "headers": {
+        "Authorization": "Bearer ${DATATAP_TOKEN}"
+      },
+      "timeout": 30000
+    }
+  }
+}

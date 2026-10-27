@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "workrally": {
+      "type": "streamableHttp",
+      "url": "https://workrally.qq.com/zenstudio/api/mcp"
+    }
+  }
+}

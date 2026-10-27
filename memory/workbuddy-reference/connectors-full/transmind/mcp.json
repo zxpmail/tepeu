@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "transmind": {
+      "type": "streamableHttp",
+      "url": "https://open.dktalk.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

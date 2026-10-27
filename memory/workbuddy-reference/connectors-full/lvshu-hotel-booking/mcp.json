@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "lvshu-hotel": {
+      "type": "streamableHttp",
+      "url": "https://lvshu.seniin.com/mcp-distributor",
+      "timeout": 30000,
+      "headers": {
+        "Authorization": "Bearer ${LVSHU_API_KEY}"
+      }
+    }
+  }
+}

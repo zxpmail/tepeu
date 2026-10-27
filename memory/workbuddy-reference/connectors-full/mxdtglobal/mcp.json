@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "mxdtglobal": {
+      "type": "streamableHttp",
+      "url": "https://paas-gateway.mxdtglobal.cn/mcpp",
+      "timeout": 30000
+    }
+  }
+}

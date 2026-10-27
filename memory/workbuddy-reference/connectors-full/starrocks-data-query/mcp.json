@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "starrocks-data-query": {
+      "type": "streamableHttp",
+      "url": "https://dwmcp.senwellai.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${APP_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

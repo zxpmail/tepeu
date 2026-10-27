@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "kujiale-ai-draw": {
+      "type": "streamable-http",
+      "url": "https://api.manycoreapis.com/app-core/mcp",
+      "timeout": 30000
+    }
+  }
+}

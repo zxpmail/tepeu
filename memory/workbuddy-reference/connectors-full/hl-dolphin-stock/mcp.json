@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "hl-dolphin-stock": {
+      "type": "streamableHttp",
+      "url": "https://api-prod.chinalions.cn/mcp-external",
+      "timeout": 60000
+    }
+  }
+}

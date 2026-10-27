@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "yuanjie-bfp": {
+      "type": "streamableHttp",
+      "url": "https://swork.yuanjielab.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

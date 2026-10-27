@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "oneaix-sea-rate": {
+      "type": "streamableHttp",
+      "url": "https://agentic-api.excapp.com/public-api/v1/mcps/sea_rate/mcp",
+      "timeout": 180000
+    }
+  }
+}

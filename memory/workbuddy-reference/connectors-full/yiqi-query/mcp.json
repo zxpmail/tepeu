@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "yiqi-query": {
+      "type": "streamableHttp",
+      "url": "https://api.yiqibazi.com/mcp",
+      "timeout": 60000
+    }
+  }
+}

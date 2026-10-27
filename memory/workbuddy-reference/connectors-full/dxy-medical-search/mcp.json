@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "dxy-medical-search": {
+      "type": "streamableHttp",
+      "url": "https://ai.dxy.cn/api/cm/mcp",
+      "timeout": 30000,
+      "disabledTools": [],
+      "staticHeaders": {
+        "X-Client-Product": "workbuddy"
+      }
+    }
+  }
+}

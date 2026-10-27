@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "语忆Neosight": {
+      "type": "streamableHttp",
+      "url": "https://service-api.yuyidata.com/gateway/ai-chat/mcp/v2/neosight",
+      "headers": {
+        "Authorization": "Bearer devtest"
+      },
+      "timeout": 60000
+    }
+  }
+}

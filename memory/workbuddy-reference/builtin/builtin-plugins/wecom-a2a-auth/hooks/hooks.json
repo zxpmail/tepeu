@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "^A2A(SendMessage|GetTask|CancelTask)$",
+      "hooks": [{ "type": "command", "command": "node \"${CODEBUDDY_PLUGIN_ROOT}/dist/wecom-auth.mjs\"", "timeout": 660 }]
+    }]
+  }
+}

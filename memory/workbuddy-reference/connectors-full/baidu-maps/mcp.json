@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "baidu-map": {
+      "type": "streamableHttp",
+      "url": "https://mcp.map.baidu.com/mcp?ak=${BAIDU_MAP_AK}",
+      "timeout": 30000
+    }
+  }
+}

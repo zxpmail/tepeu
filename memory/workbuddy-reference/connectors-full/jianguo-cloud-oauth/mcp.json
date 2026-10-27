@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "jianguo-cloud-oauth": {
+      "type": "streamableHttp",
+      "url": "https://web.jg-pm.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

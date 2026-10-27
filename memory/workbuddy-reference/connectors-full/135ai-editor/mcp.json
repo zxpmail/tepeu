@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "135ai-editor": {
+      "type": "streamableHttp",
+      "url": "https://www.135editor.com/ai_html_mcp/mcp",
+      "timeout": 30000
+    }
+  }
+}

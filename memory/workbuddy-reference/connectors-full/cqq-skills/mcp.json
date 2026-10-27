@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cqq-skills": {
+      "type": "streamableHttp",
+      "url": "https://mcp-service.kolkoc.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

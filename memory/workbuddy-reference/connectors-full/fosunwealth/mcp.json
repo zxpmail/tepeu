@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "fosunwealth": {
+      "type": "streamableHttp",
+      "url": "https://aiapi.fosunhanig.com/ai-fin-agent/mcp",
+      "timeout": 180000
+    }
+  }
+}

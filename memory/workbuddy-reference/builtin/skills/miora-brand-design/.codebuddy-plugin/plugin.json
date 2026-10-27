@@ -1,0 +1,24 @@
+{
+  "name": "skill-miora-brand-design",
+  "version": "5.8.3-wb.41334564.gdb0e9b51.h4da087921e4a",
+  "description": "WorkBuddy bundled skill resource: miora-brand-design.",
+  "author": {
+    "name": "WorkBuddy"
+  },
+  "category": "skill",
+  "keywords": [
+    "workbuddy",
+    "builtin-skill",
+    "miora-brand-design"
+  ],
+  "workbuddy": {
+    "kind": "builtin-skill",
+    "legacyResourceName": "miora-brand-design",
+    "bundleSegments": [
+      "plugins",
+      "workbuddy-builtin",
+      "skills",
+      "miora-brand-design"
+    ]
+  }
+}

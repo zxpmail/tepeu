@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "haoxinqing-mood": {
+      "type": "streamableHttp",
+      "url": "https://goodmood.haoxinqing.cn/hxq-agent/mcp",
+      "timeout": 30000
+    }
+  }
+}

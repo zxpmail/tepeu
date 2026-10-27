@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CODEBUDDY_PLUGIN_ROOT}/dist/gate.mjs\" skill \"$(( $(date +%s) - SECONDS ))\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CODEBUDDY_PLUGIN_ROOT}/dist/gate.mjs\" expansion \"$(( $(date +%s) - SECONDS ))\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CODEBUDDY_PLUGIN_ROOT}/dist/gate.mjs\" expert \"$(( $(date +%s) - SECONDS ))\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

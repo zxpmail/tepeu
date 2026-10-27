@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dingdanbao": {
+      "type": "streamableHttp",
+      "url": "https://wbmcp.shansugou.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

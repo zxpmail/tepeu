@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "wandox": {
+      "type": "streamableHttp",
+      "url": "https://ai-api.wandox.com/mcp-server/user/mcp/",
+      "timeout": 60000,
+      "headers": {
+        "Authorization": "Bearer ${WANDOX_TOKEN}"
+      }
+    }
+  }
+}

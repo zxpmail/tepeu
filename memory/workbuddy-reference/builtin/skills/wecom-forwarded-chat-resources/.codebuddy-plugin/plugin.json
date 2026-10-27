@@ -1,0 +1,24 @@
+{
+  "name": "skill-wecom-forwarded-chat-resources",
+  "version": "5.8.3-wb.41334564.gdb0e9b51.h4da087921e4a",
+  "description": "WorkBuddy bundled skill resource: wecom-forwarded-chat-resources.",
+  "author": {
+    "name": "WorkBuddy"
+  },
+  "category": "skill",
+  "keywords": [
+    "workbuddy",
+    "builtin-skill",
+    "wecom-forwarded-chat-resources"
+  ],
+  "workbuddy": {
+    "kind": "builtin-skill",
+    "legacyResourceName": "wecom-forwarded-chat-resources",
+    "bundleSegments": [
+      "plugins",
+      "workbuddy-builtin",
+      "skills",
+      "wecom-forwarded-chat-resources"
+    ]
+  }
+}

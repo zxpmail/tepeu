@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "wenear-scrm": {
+      "type": "streamableHttp",
+      "url": "https://console.goodscrm.cn/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SCRM_TOKEN}",
+        "Accept": "application/json, text/event-stream"
+      },
+      "timeout": 30000
+    }
+  }
+}

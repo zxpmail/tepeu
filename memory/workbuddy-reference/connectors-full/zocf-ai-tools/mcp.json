@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "zocf-ai-tools": {
+      "type": "streamable-http",
+      "url": "https://ai-api.zocaifu.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${AITOOLS_API_KEY}",
+        "X-AITOOLS-SOURCE": "workbuddy",
+        "Accept": "application/json, text/event-stream"
+      },
+      "timeout": 30000
+    }
+  }
+}

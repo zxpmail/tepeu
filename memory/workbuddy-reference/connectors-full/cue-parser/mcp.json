@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cue-parser": {
+      "type": "streamableHttp",
+      "url": "https://mcpwxx.cuecue.cn/api/omni-reader/mcp/"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "longclaw-research": {
+      "type": "streamable-http",
+      "url": "https://nbai-innovate-gw.caizidao.com.cn/mcp-server/stock-ind/workBuddy/mcp",
+      "timeout": 30000
+    }
+  }
+}

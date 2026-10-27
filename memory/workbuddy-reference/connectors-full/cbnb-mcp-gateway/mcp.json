@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cbnb-mcp-gateway": {
+      "type": "streamableHttp",
+      "url": "https://mcpserver.cbnb.cn/mcp",
+      "timeout": 60000
+    }
+  }
+}

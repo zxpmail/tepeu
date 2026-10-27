@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "hrlink": {
+      "type": "streamableHttp",
+      "url": "https://ihcm-mobile.hrlink.com.cn/mcp",
+      "timeout": 60000
+    }
+  }
+}

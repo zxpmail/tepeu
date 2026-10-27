@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "yiya-dental": {
+      "type": "streamableHttp",
+      "url": "https://dental-mcp.wdreampool.top/mcp-public",
+      "timeout": 30000
+    }
+  }
+}

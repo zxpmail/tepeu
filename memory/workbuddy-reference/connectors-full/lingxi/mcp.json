@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "lingxi-ai": {
+      "type": "streamableHttp",
+      "url": "https://mcp.lingxi360.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

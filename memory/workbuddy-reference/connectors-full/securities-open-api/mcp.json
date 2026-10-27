@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "securities-open-api": {
+      "type": "streamableHttp",
+      "url": "https://securities-open-api.noahgroup.com/mcp",
+      "timeout": 60000
+    }
+  }
+}

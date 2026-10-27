@@ -1,0 +1,15 @@
+{
+  "_comment": "上奇产业通MCP连接器mcp.json。以下带 _comment的字段为配置说明，连接器加载器若拒绝未知字段可安全删除，不影响功能。",
+  "mcpServers": {
+    "sq-company-dynamic": {
+      "type": "streamableHttp",
+      "url": "https://api.chanyedata.com/mcp/3d1eed666d38dc6db60bd0395156006b/mcp",
+      "_comment_url": "URL 路径中的 32 位 hex（3d1eed666d38dc6db60bd0395156006b）是服务端分配的共享租户路由标识 Route ID，非敏感凭证；所有安装此连接器的用户共用同一标识，因此明文写入属于预期行为，并非硬编码密钥。",
+      "headers": {
+        "Authorization": "${API_KEY}"
+      },
+      "_comment_auth": "Authorization 直接传裸 Key（无 Bearer 前缀），因为服务端 api.chanyedata.com 接受裸 Key 格式，与 token-schema.json 中『无需 Bearer 前缀』的说明一致。",
+      "timeout": 30000
+    }
+  }
+}

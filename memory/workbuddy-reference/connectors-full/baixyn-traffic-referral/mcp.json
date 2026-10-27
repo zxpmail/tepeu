@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "baixyn-traffic-referral": {
+      "type": "streamableHttp",
+      "url": "https://leads.baixyn.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

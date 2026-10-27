@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "Szfiu-finance-data": {
+      "type": "streamableHttp",
+      "url": "https://ai.szfiu.com/api/mcp/v2",
+      "headers": {
+        "Authorization": "Bearer ${API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

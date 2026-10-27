@@ -1,0 +1,24 @@
+{
+  "name": "skill-wecom-media-upload",
+  "version": "5.8.3-wb.41334564.gdb0e9b51.h4da087921e4a",
+  "description": "WorkBuddy bundled skill resource: wecom-media-upload.",
+  "author": {
+    "name": "WorkBuddy"
+  },
+  "category": "skill",
+  "keywords": [
+    "workbuddy",
+    "builtin-skill",
+    "wecom-media-upload"
+  ],
+  "workbuddy": {
+    "kind": "builtin-skill",
+    "legacyResourceName": "wecom-media-upload",
+    "bundleSegments": [
+      "plugins",
+      "workbuddy-builtin",
+      "skills",
+      "wecom-media-upload"
+    ]
+  }
+}

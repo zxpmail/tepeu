@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dop-platform-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cscec3b-mcp/dop-platform-mcp@latest"
+      ]
+    }
+  }
+}

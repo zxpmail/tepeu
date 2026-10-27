@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "jiuliang-198-health": {
+      "type": "streamableHttp",
+      "url": "https://api.198.jiuliang-health.asia/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${API_KEY}"
+      },
+      "timeout": 90000
+    }
+  }
+}

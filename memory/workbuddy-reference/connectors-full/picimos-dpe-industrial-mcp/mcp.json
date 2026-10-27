@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "dpe": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "--yes",
+        "--package",
+        "https://dp.picimos.com/mcp/packages/dpe-mcp-gateway-7.9.175-9b90cea9297a47ab.tgz",
+        "dpe-mcp-gateway"
+      ],
+      "runtime": {
+        "type": "node",
+        "version": "22"
+      },
+      "npmRegistry": "https://registry.npmjs.org",
+      "timeout": 120000
+    }
+  }
+}

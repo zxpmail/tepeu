@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "warroom-webhook": {
+      "type": "streamableHttp",
+      "url": "${WARROOM_SCHEME}://${WARROOM_HOST}/api/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${WARROOM_TOKEN}"
+      },
+      "timeout": 30000
+    }
+  }
+}

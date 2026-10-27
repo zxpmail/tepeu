@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "weibo": {
+      "type": "streamableHttp",
+      "url": "https://cli.weibo.com/mcp"
+    }
+  }
+}

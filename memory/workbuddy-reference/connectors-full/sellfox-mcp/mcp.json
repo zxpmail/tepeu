@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sellfox-erp": {
+      "type": "streamableHttp",
+      "url": "https://api-mcp.sellfox.com/mcp",
+      "headers": {
+        "X-MCP-Key": "${SELLFOX_MCP_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

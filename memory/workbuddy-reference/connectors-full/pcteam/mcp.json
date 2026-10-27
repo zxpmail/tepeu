@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "pcteam": {
+            "type": "streamableHttp",
+            "url": "https://pm3.pcteam.com/api/ai/mcp",
+            "headers": {
+                "x-api-key": "391f4f23-de99-4a9f-8035-1333b6d985a0"
+            },
+            "timeout": 60000
+        }
+    }
+}

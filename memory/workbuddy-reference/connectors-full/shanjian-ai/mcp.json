@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+        "shanjian-ai": {
+            "type": "streamableHttp",
+            "url": "https://mcp-connector.shanjian.tv/mcp",
+            "timeout": 180000
+        }
+    }
+}

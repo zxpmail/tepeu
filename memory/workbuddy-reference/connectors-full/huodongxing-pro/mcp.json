@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "huodongxing-pro": {
+      "type": "streamableHttp",
+      "url": "https://openapi.huodongxing.com/organizer/v1/mcp",
+      "timeout": 30000
+    }
+  }
+}

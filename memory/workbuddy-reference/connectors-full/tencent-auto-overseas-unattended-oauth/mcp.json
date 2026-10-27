@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "tencent-auto-overseas-unattended-oauth": {
+            "url": "https://iautomark.sdm.qq.com/oversea-assistant-mcp/mcp",
+            "type": "streamableHttp",
+            "headers": {
+                "X-API-Key": "${IATMARK_API_KEY}"
+            },
+            "timeout": 30000
+        }
+    }
+}

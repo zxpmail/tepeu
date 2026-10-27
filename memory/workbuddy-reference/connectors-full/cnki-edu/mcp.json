@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "edu": {
+      "type": "streamableHttp",
+      "url": "https://gateway.cnki.net/yxrouter/yanxue-mcp-edu/mcpedu/mcp/edu"
+    }
+  }
+}

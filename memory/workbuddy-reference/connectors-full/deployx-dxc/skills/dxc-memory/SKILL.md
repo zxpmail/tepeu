@@ -1,0 +1,60 @@
+---
+name: dxc-memory
+description: DxC 创作记忆。保存、召回、更正和归档已确认的长期偏好、原则、判断、背景与表达；管理尚未生效的作者信号。
+---
+
+# DxC 创作记忆
+
+内部调用 DxC CLI 时只使用 PATH 中的全局入口：`dxc <参数>`。本 Skill 的版本是 `0.3.24`，
+安装流程必须已经验证 `dxc version --json`、本 Skill 集和该版本完全一致。正常任务不得通过 npm、
+npx 或其他包执行器解析 DxC，也不得硬编码任何用户的可执行文件绝对路径。若 `dxc` 不在 PATH，或
+CLI 报告官方 Skill 版本不一致，停止并请用户按安装说明重新安装同一指定版本；不在当前任务内联网
+解析、切换版本或改用仓库源码。
+
+DxC 的调用由本 Skill 给出。每次只直接执行当前 Skill 明确写出的一个 DxC 命令，不寻找或猜测替代命令。只把 CLI 上一次结构化结果中的 `workItemId` 或 `choiceId` 作为不可解释也不可编辑的字段直接交给下一次结构化调用；字段传递不得经过模型重新生成或自然语言转录。禁止手工复制、拼接、改写、截取、解码、重建、落盘、持久化或转存这些值，也不要求用户接触它们。
+
+调用仍在运行时，`DXC_BROWSER_EVENT` 只表示需要立即承载当前页面，不表示命令失败或完成。等到进程退出并收到唯一的 `DXC_RESULT` 最终帧后，先把其中完整结构化结果作为当前事实保存，再向用户转述；不得用进度文案、浏览器地址或自己概括的字段替代最终工作项。
+
+禁止用 Python、Shell、PowerShell 临时脚本、循环、管道、命令替换、后台任务、并发或定时器包装 DxC 命令。禁止调用 CLI help，禁止查看源码、日志、内部文件或解析返回值内部结构来推断下一步。没有明确的下一步时，停在这里，如实告诉用户当前还不能继续。
+
+CLI 失败时，若当前 Skill 明确规定了 CLI 返回选项、用户选择后继续的分支，只按该分支等待并提交用户选择。
+其余失败禁止再次调用、轮询、跳阶段、重新进入阶段或创建替代项目。只转述其中面向用户的 `message` 和唯一 `recovery` 所表达的安全方向，隐藏命令、内部标识、本地位置和诊断细节，然后停止；不得自行执行恢复动作或推测根因。
+
+若宿主无法把完整结构化字段直接传给下一次调用，停止并说明交接能力不足；不得为了继续而手抄或重建引用。
+状态目录权限被拒绝时，用户的自然语言同意不改变沙箱。只有宿主实际授予目标目录权限后才能继续；
+不要反复在相同受限环境执行，也不要修改全局安全配置、放宽目录权限或搬迁文章。doctor 的工作目录检查不代表文章状态目录可写。
+
+面向用户统一称为“创作记忆”，只展示内容、用途和是否仍有效，不要求用户区分内部存储，也不展示命令、内部标识、位置或实现过程。
+
+查看、导出、删除和个人数据更正免费；记录、召回、重建索引及把信号升级为生产上下文需要有效试用或订阅。收到 `DXC_BILLING_*` 时不写本地状态，只提供 CLI 返回的订阅恢复方向并停下。
+
+- 查看：执行一次 `dxc memory list --json`，概括仍有效的记忆。
+- 召回：围绕当前主题执行一次 `dxc memory search <当前创作主题或目标> --json`。返回的 `enforced` 必须遵守；`results` 只是指导或候选，不能自动逐字插入。
+- 保存：用户用“以后都……”“记住……”等自然语言明确表达长期意图时，即使没有说出 Skill 名称，也按用户语义选择以下一个类型：
+  - 目标受众发生长期变化：`audience-change`
+  - 品牌身份、定位或对外背景：`brand-context`
+  - 业务模式、产品或组织背景：`business-context`
+  - 可供未来文章候选使用的本人表达：`expression`
+  - 跨文章持续适用的判断：`judgment`
+  - 不应被单篇选题改变的创作原则：`principle`
+  - 有明确结束时间的短期活动：`temporary-campaign`
+  - 跨文章持续适用的写作偏好：`writing-preference`
+
+  再选择一个使用模式：明确要求必须遵守时用 `enforce`，作为长期指导时用 `guide`，只供挑选时用 `suggest`。执行一次 `dxc memory add --content <用户原话> --kind <精确类型> --mode <enforce|guide|suggest> --json`。`expression` 默认只使用 `suggest`；`temporary-campaign` 必须附 `--expires-at <到期时间>`，其他类型仅在用户明确指定时附上。时间用 UTC 的 ISO 8601 格式（如 `2026-10-01T00:00:00Z`），依用户明确的时区和截止时间换算，不清楚就问，不猜到期日。保存后给出可见回执。
+
+- 更正：用户明确指出某条记忆要改时，执行一次 `dxc memory correct --memory <用户选定记忆> --content <新内容> --json`，只提交用户明确改变的内容；改变用途时同时提交 `--mode`。
+- 归档：用户明确要求不再保留时，执行一次 `dxc memory archive --memory <用户选定记忆> --json`。首次成功为 `outcome=archived`；同一记忆已归档或已到期时，`already-archived` / `already-inactive` 仍是幂等成功，只向用户说明当前已不生效，不再重发命令。只有 `DXC_MEMORY_NOT_FOUND` 才表示该 ID 从未存在。
+- 长期学习：完成基础画像后默认开启；作者信号、画像、记忆和文章索引只保存在本机，并且可以随时关闭。查看或关闭分别执行一次 `dxc memory learning status --json`、`dxc memory learning disable --json`。用户曾明确关闭、现在要求重新开启时，先重申本机保存边界，确认后执行一次 `dxc memory learning enable --confirm-local-only --json`。首次画像尚未完成时，先交给 `dxc-profile` 完成基础画像。关闭后不再自动记录或发现新信号，已有 Profile、Memory、Knowledge 和待定信号不自动删除。
+
+本地长期学习开启时，官方写作 Skill 会把用户在文章中的可迁移修改、选择、拒绝或明确反馈记录为待定信号：执行一次带 `--automatic` 的 `dxc memory signals record`。明确关闭时 CLI 返回 `recorded: false` 且不落盘；不要提示或重试。用户明确要求手工记录时可以不带 `--automatic`。Agent 自己生成或重复的文字不能形成信号。信号不生效、不进入写作上下文，也不保存完整对话或完整 diff。
+
+文章审校通过时，工作流内核会自动执行稳定证据发现；独立查看时执行一次 `dxc memory signals candidates --json`。候选只负责把至少两个独立项目的相近信号和相关 Knowledge 证据归在一起，向量不能判定规律成立。核对方向一致、至少一次用户来源行为、适用范围和明显反例后，最多向用户提出一个候选：
+
+- 用户确认升级为记忆：执行一次 `dxc memory signals promote --signal <证据信号，可重复> --target memory --content <确认内容> --kind <精确类型> --mode <精确模式> --json`。
+- 用户确认升级为画像中的文风、视角、价值观、红线、频率、标题或视觉偏好：执行一次 `dxc memory signals promote --signal <证据信号，可重复> --target profile --content <确认内容> --field <对应画像字段> --json`。字段分别为 `writing-voice`、`point-of-view`、`core-values`、`red-lines`、`publishing-cadence`、`title-preferences`、`visual-preferences`，不携带 Memory 的 `--kind` 或 `--mode`。
+- 用户拒绝：执行一次 `dxc memory signals discard --signal <对应信号，可重复> --json`。
+- 用户暂不决定：不执行写动作，保留信号。
+
+只有目标 Profile 或 Memory 写入成功后，CLI 才清理已消费信号；同一批信号重试不得重复创建。单篇文章的选题、事实、标题、字数和视觉细节留在当前文章。无法判断是否应长期保留时，先问一个语义问题，不猜测、不连续试错。
+
+`memory list/search/add/correct/promote` 返回 `semanticIndexed: false` 或 `semanticStatus: limited` 时，关系真值和 FTS5 仍有效。用户允许准备本地语义模型后执行一次 `dxc memory reindex --prepare-model --json`；没有许可时只查看状态，不触发模型准备。

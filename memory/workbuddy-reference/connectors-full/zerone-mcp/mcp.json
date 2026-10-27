@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "zerone": {
+      "type": "streamableHttp",
+      "url": "https://ai.zerone.com.cn/mcp/pe",
+      "headers": {
+        "Authorization": "Bearer ${ZERONE_API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

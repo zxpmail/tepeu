@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+        "datayes-data": {
+            "type": "streamable-http",
+            "url": "https://dataapi-mcp-server.datayes.com/datayes-data/mcp",
+            "timeout": 30000
+        }
+    }
+}

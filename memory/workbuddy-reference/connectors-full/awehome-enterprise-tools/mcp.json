@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "awehome-enterprise-tools": {
+      "type": "streamableHttp",
+      "url": "https://agent-gateway.awehome.com/mcp/local/path_f43d437e92474d7da0c85c4a2f2236b0/mcp",
+      "timeout": 30000
+    }
+  }
+}

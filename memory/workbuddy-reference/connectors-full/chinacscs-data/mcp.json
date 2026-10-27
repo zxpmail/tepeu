@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "chinacscs-data": {
+            "type": "streamableHttp",
+            "url": "https://ds-mcp.chinacscs.com/common_query",
+            "headers": {
+                "Authorization": "${CSCS_API_KEY}"
+            },
+            "timeout": 30000
+        }
+    }
+}

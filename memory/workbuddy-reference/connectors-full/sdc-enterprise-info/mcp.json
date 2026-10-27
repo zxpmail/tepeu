@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "sdc-enterprise-info": {
+            "type": "streamableHttp",
+            "url": "https://tokensd.com.cn/litemcp/t/ucloud/mcp",
+            "headers": {
+                "Authorization": "Bearer ${LITEMCP_API_KEY}"
+            },
+            "timeout": 30000
+        }
+    }
+}

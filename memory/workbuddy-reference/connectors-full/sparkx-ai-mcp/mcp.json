@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sparkx-ai-mcp": {
+      "type": "streamableHttp",
+      "url": "https://mcp.sparkx.cn/mcp",
+      "timeout": 30000
+    }
+  }
+}

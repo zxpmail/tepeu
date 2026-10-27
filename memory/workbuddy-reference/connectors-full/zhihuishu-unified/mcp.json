@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "zhihuishu-unified": {
+      "type": "streamableHttp",
+      "url": "https://cloudapi.polymas.com/mcp-server/api/mcp/zhihuishu-unified"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "duifene-homework-grading": {
+      "type": "streamableHttp",
+      "url": "https://mcp.duifene.com/mcp",
+      "headers": {
+        "X-MCP-Key": "${MCP_API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

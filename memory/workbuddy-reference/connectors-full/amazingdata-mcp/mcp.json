@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "amazingdata": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "https://gitee.com/cgs2026/xysz/releases/download/v1.0.0/amazingdata-mcp-launcher-1.0.3.tgz"
+      ],
+      "env": {
+        "AD_USERNAME": "${AD_USERNAME}",
+        "AD_PASSWORD": "${AD_PASSWORD}",
+        "AD_HOST": "${AD_HOST}",
+        "AD_PORT": "${AD_PORT}"
+      },
+      "timeout": 600000
+    }
+  }
+}

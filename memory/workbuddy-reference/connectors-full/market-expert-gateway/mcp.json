@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "market-expert-gateway": {
+      "type": "streamableHttp",
+      "url": "http://129.204.159.232:32083/mcp",
+      "headers": {
+        "Authorization": "Bearer ${WORKBUDDY_AUDIENCE_GATEWAY_TOKEN}"
+      },
+      "timeout": 30000
+    }
+  }
+}

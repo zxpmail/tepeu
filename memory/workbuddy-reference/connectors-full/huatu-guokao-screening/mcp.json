@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "huatu-guokao-screening": {
+      "type": "streamableHttp",
+      "url": "https://position.htexam.com/position-mcp/mcp",
+      "timeout": 60000,
+      "disabled": false,
+      "staticHeaders": {
+        "Authorization": "Bearer d5d125dc0cc5fd3a4c9dff146c198a0dd85e1ab695de51938c53cc4a115ac8bb"
+      }
+    }
+  }
+}

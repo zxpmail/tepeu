@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sellerspace-mcp": {
+      "type": "streamableHttp",
+      "url": "https://www.sellerspace.com/mcp/",
+      "headers": {
+        "x-api-key": "${SELLERSPACE_API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "anbcd-enterprise": {
+      "type": "streamableHttp",
+      "url": "https://anbcd.com/api/mcp",
+      "timeout": 30000
+    }
+  }
+}

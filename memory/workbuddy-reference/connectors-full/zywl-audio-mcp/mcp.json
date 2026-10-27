@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "zywl-audio-mcp": {
+      "type": "streamableHttp",
+      "url": "https://app-mcp.zyfaiot.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

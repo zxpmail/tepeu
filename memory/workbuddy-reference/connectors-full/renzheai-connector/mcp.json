@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "renzheai-connector": {
+      "type": "streamableHttp",
+      "url": "https://api.renzheai.com/api/workbuddy/connector/mcp",
+      "timeout": 30000
+    }
+  }
+}

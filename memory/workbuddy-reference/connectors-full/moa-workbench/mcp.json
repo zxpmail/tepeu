@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "moa-workbench": {
+      "type": "streamableHttp",
+      "url": "https://mcp.kdzl.cn/mcp",
+      "timeout": 30000
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "brandct": {
+      "type": "streamableHttp",
+      "url": "https://mcp-x.brandct.com/mcp",
+      "headers": {
+        "x-api-key": "${BRANDCT_PAT}"
+      },
+      "timeout": 30000
+    }
+  }
+}

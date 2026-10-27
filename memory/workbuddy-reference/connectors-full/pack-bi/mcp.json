@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "pack-bi": {
+      "type": "streamableHttp",
+      "url": "https://portal.packbi.com/dw/bimcp/mcp",
+      "headers": {
+        "Authorization": "Bearer ${BI_SECRET_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

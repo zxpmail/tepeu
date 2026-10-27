@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bayuegua-trademark": {
+      "type": "streamableHttp",
+      "url": "https://mcp.bayuegua.com/api/q8mfg1/mcp?apikey=${BAYUEGUA_API_KEY}",
+      "timeout": 30000
+    }
+  }
+}

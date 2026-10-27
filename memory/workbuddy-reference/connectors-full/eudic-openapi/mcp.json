@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "eudic-openapi": {
+      "type": "streamableHttp",
+      "url": "https://api.frdic.com/${EUDIC_LANGUAGE}/mcp",
+      "headers": {
+        "Authorization": "NIS ${EUDIC_TOKEN}"
+      },
+      "timeout": 30000
+    }
+  }
+}

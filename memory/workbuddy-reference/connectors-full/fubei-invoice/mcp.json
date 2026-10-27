@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "fubei-invoice": {
+      "type": "streamable-http",
+      "url": "https://fubeifapiao-mcp.fshows.com/mcp",
+      "timeout": 30000
+    }
+  }
+}

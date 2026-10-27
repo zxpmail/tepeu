@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "beluga-mcp-prod": {
+      "type": "streamableHttp",
+      "url": "https://beluga-server-cn.heytapmobi.com/beluga-mcp/gateway",
+      "timeout": 30000
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "ciccwm-mcp": {
+      "type": "streamable-http",
+      "url": "https://appgateway.ciccwm.com/webgw/fre/ai-server-center/mcp",
+      "headers": {
+        "x-channel": "workbuddy"
+      },
+      "x-workbuddy": {
+        "displayName": { "zh": "中金财富 MCP", "en": "CICC Wealth Management MCP" },
+        "description": { 
+          "zh": "连接后可调用中金财富MCP工具，查询大盘行情分析、市场涨跌排行、实时行情动态、个股分析、条件选股、打新日历、基金分析、条件选基、ETF分析、热榜资讯、热点题材。",
+          "en": "Once connected, you can call CICC Wealth Management MCP tools to query market-wide index analysis, gainers and losers rankings, real-time quotes, individual stock analysis, conditional stock screening, IPO calendar, fund analysis, conditional fund screening, ETF analysis, trending news, and hot themes."
+        }
+      },
+      "timeout": 30000
+    }
+  }
+}

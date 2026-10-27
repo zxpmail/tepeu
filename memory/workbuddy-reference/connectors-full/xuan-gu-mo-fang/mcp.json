@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "xuan-gu-mo-fang": {
+      "type": "streamableHttp",
+      "url": "https://appmcp.abctougu.cn/mcp",
+      "timeout": 30000
+    }
+  }
+}

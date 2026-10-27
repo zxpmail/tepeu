@@ -1,0 +1,23 @@
+{
+  "preAuth": "cli",
+  "mcpServers": {
+    "welife-ai-workbench-connector": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "--yes",
+        "--ignore-scripts",
+        "--package",
+        "https://welifepublicmedias.oss-cn-beijing.aliyuncs.com/workbuddy/acewill-welife-ai-connector-2.1.5.tgz",
+        "--",
+        "welife-ai-connector",
+        "mcp"
+      ],
+      "runtime": {
+        "type": "node",
+        "version": "20"
+      },
+      "timeout": 30000
+    }
+  }
+}

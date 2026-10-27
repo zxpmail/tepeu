@@ -1,0 +1,16 @@
+{
+  "preAuth": "cli",
+  "mcpServers": {
+    "zspace-nas": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@zenithspace/nas-connector"],
+      "runtime": {
+        "type": "node",
+        "version": "20"
+      },
+      "timeout": 60000,
+      "disabledTools": []
+    }
+  }
+}

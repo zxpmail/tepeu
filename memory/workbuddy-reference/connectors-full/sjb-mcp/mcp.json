@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sjb-mcp": {
+      "type": "streamableHttp",
+      "url": "https://sjbmcp.hrtiger.cn/mcp",
+      "timeout": 30000
+    }
+  }
+}

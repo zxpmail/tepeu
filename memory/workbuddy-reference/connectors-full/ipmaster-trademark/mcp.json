@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ipmaster-platform": {
+      "type": "streamableHttp",
+      "url": "https://ai.quandashi.com/mcp/ipmaster_platform",
+      "timeout": 30000
+    }
+  }
+}

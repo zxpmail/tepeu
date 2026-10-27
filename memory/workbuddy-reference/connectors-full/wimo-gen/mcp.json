@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "wimo-gen": {
+      "type": "streamableHttp",
+      "url": "https://wimogen.com/mcp",
+      "timeout": 30000,
+      "disabled": false
+    }
+  }
+}

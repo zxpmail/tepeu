@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sf-intra-city": {
+      "type": "streamableHttp",
+      "url": "https://bottc.sf-express.com/clite/mcp",
+      "staticHeaders": {
+        "mcp-channel": "3001558"
+      },
+      "timeout": 30000
+    }
+  }
+}

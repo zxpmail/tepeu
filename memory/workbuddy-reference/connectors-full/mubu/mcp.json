@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "mubu": {
+      "type": "streamableHttp",
+      "url": "https://mubu.com/mcp/server",
+      "timeout": 30000
+    }
+  }
+}

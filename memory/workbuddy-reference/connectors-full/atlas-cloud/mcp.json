@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "atlas-cloud": {
+      "type": "streamableHttp",
+      "url": "https://mcp.atlascloud.ai/mcp",
+      "timeout": 30000
+    }
+  }
+}

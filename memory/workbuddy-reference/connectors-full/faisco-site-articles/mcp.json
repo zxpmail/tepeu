@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "faisco-site-articles": {
+      "type": "streamableHttp",
+      "url": "https://jzmcp.faisco.cn/mcp?key=${FAISCO_API_KEY}",
+      "timeout": 30000
+    }
+  }
+}

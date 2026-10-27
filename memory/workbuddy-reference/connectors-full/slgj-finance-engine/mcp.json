@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "slgj-finance-engine": {
+      "type": "streamableHttp",
+      "url": "https://www.slgj.cn/skills-api/api/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SLGJ_TOKEN}"
+      },
+      "timeout": 180000
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "lxjy-wanxiang-app": {
+      "type": "streamableHttp",
+      "url": "https://agent.wxlxjy.cn/api/workbuddy/mcp",
+      "timeout": 30000
+    }
+  }
+}

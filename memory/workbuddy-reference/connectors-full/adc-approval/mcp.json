@@ -1,0 +1,17 @@
+{
+  "_comment": "本连接器只配置一个 MCP Server（平台硬约束）。占位符由用户在客户端本机填写。路径与连接器同名（2026-10-06 由 /mcp/liuyun 改名而来）。本服务在服务端聚合两个上游：流云审批（含写工具）与安灯工单（全只读）。⚠️ disabledTools 里那两条（create_ticket / add_digital_employee_comment）是**空转的备用条目** —— 工单写操作压根没注册（适配器只开三条只读路径），留着是为了将来真开放写侧时继续挡住，不是\"现在禁用了某个工具\"。",
+  "mcpServers": {
+    "adc-approval": {
+      "type": "streamableHttp",
+      "url": "https://adc-bridgeservice.map.qq.com/mcp/adc-approval",
+      "headers": {
+        "Authorization": "Bearer ${ADC_MCP_TOKEN}"
+      },
+      "timeout": 30000,
+      "disabledTools": [
+        "create_ticket",
+        "add_digital_employee_comment"
+      ]
+    }
+  }
+}

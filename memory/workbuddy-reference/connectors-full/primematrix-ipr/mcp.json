@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "primematrix-ipr": {
+      "type": "streamableHttp",
+      "url": "https://mcp.yidian.cn/mcp/ipr",
+      "headers": {
+        "Authorization": "Bearer ${API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

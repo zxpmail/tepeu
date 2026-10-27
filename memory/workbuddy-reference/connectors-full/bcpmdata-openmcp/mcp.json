@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "bcpmdata-openmcp": {
+      "type": "sse",
+      "url": "https://openmcp.bcpmdata.com/general/sse",
+      "headers": {
+        "apiKey": "${API_KEY}"
+      },
+      "timeout": 30000
+    }
+  }
+}

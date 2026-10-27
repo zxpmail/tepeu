@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ydw-buddymcp": {
+      "type": "streamableHttp",
+      "url": "https://yudawang.top/buddymcp/mcp",
+      "timeout": 30000
+    }
+  }
+}
