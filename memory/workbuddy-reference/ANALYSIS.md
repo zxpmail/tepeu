@@ -69,17 +69,33 @@ frontmatter 在 Anthropic 通用格式（name/description）上扩了运行时�
 - **三层记忆**（`workbuddy-memory-system.md`）：云记忆（服务端画像自动注入，本地只读 + 会话结束覆盖）+ `conversation_search`（服务端检索历史会话，明确"零权访问当前对话、query 必须自包含"）+ 本地记忆层。每层读写策略写死在提示词里。
 - **通道路由**（`wecom-routing.md`）：企业微信操作收敛到两个通道（A2A 代理 Dayuan 管消息、`wecom-unified` skill 管非消息），明令禁直调 HTTP API，连术语都钉死（中文永远写"企业微信"不写"企微"）。
 
-## 七、可借鉴思想
+## 七、吸收裁决（2026-10-27，映射 tepeu 七篇）
 
-按证据强度排序：
+原"可借鉴思想"清单升级为裁决。分四档：值得吸收（有明确落点）、条件件（tepeu 长出对应物才启用）、不吸收（立场或形态不符）、反教材（记录验证用）。
 
-1. **连接件 = 传输声明 + 使用知识打包**（`mcp.json` + `skills/` 同目录分发）。工具怎么调的知识跟着工具走，市场一件分发——比"MCP 市场"只发端点地址的形态完整一层。
-2. **计费/高危门做在 hook + 声明式清单，单源派生**：插件自己声明、matcher 与文案从清单派生、判定先于 bypass、fail-closed、stdout JSON 契约、PII 不出 hook——这是"约束冻在机器门"的完整工程样板（对应 tepeu 的检查口/回答篇）。
-3. **PTC/Code Mode 的上下文经济**：工具文档注入 REPL 参数而非平铺 tool schema；skill 列表超限降级为"仅名字"；明令禁止用探测工具列目录。tepeu 给模型看篇可对照。
-4. **生态自举为 skill**：安装/推荐/创建/合规全用 skill + 少量专用工具（search_and_install_skills、skill_manage、search_plugins）实现，主程序零管理界面硬编码。
-5. **目录多渠道分发 + server-side auth**：一份目录 `visible_in` 控渠道可见性；凭证托管服务端、本地只拿 URL——本地 agent 不碰第三方 OAuth。
-6. **提示词 = 条件模板 + fragments**：按通道/模式/开关拼装，记忆分三层且读写策略入提示词。
-7. **反教材同样有用**：SKILL.md description 里堆几百字触发词（camscanner）是关键词匹配时代的补丁层——与 Trae 同病，验证"匹配该走结构化路由而非散文堆叠"。
+### 值得吸收（按优先级）
+
+1. **计费门五条死规矩 → 检查口 / 账**。`high-credit-gate.cjs` 是"约束冻在机器门"的完整工程对照物：① 声明式清单单源派生（插件放 `high-credit-tools.json`，matcher 与审批文案都从它派生，零硬编码）；② 判定发生在 bypassPermissions **之前**，默认放行模式也拦得住；③ fail-closed（hook 异常兜底为 ask——放行即静默扣费）；④ stdout 纯净单行 JSON、tool_input 属 PII 绝不出 hook、exit code 恒 0；⑤ 边界如实记录（单插件清单运行期损坏会放行该插件，防线放构建期校验）。做检查口时逐条对着写。
+2. **stale-turn 失效 + 提示词装配观 → 给模型看**。① 工具面切换时注入 "Earlier turns that said X are stale. Answer from this reminder and the current system prompt"——主动作废旧轮声明，治长会话抱过期工具目录；② 提示词面 = 命名模板 + fragments 按 include 拼装，**工具描述与人格同属一个版本化平面**（acc-product-config 128 篇是极致形态，服务端下发不抄，"提示词是版本化数据不是散落字符串"的组织方式照收）；③ PTC 上下文经济同归此条：文档随调用注入而非平铺 schema、列表超限降级仅名字、禁用探测工具列目录。
+3. **完成状态反走私 + 禁防御式编程 → 判断 / 完成权**。契约措辞参考："Do not write `r.status || "done"` — missing or running status is not completion"；spawn 失败必抛，明令禁 `r.taskId ?? r.id`、`.catch ? :`。tepeu 落地应冻成机器检查而非提示词，但接口契约的措辞直接可用。
+4. **记忆维护纪律 → 项目记忆维护**。turn 1 并行读全部候选文件 / turn 2 并行写（不读写交错多轮）；无事可记回 `NO_EXTRACTION_NEEDED` 哨兵；写路径白名单（只许碰 memory 目录）；只用最近 N 条消息、不回源码求证；索引文件是索引不是记忆（一行一条，超限截断）。可写进维护脚本或 skill。
+5. **字符预算 + 双文件记忆结构（参考）**。每层记忆一个字符预算进提示词、append-only 日保 + 30 天蒸馏成策展文件、"implicit learned vs explicit written" 层间分工。tepeu 记忆系统演进时对照。
+
+### 条件件（tepeu 长出对应物才启用）
+
+- **连接件 = 传输声明 + 使用知识打包**（`mcp.json` + `skills/` 同目录分发）——runtime 将来长出 MCP 类扩展时启用，现在不提前建。
+- **生态自举为 skill**（安装/推荐/创建/合规全用 skill + 少量专用工具，主程序零管理界面硬编码）——tepeu 自身 skill 层的参考，非 runtime 事。
+- **目录多渠道分发 + server-side auth**（`visible_in` 控渠道；凭证托管服务端、本地只拿 URL）——仅在出现连接件形态时相关。
+
+### 不吸收（立场或形态不符）
+
+- **服务端下发提示词**：tepeu 本地优先无云；且 prompt-as-config 的运营形态正是"约束冻在提示词"的反面教材的近亲——约束应在机器门。
+- **BaaS/glass-easel、skill/连接件市场、三层云记忆（L1 云画像）**：腾讯生态/云配套，本地单机无对应物。
+- **交互模式切片**（模式=提示词切片非代码分支）：思想成立，tepeu 无多模式 UI，属过早抽象。
+
+### 反教材（记录验证用）
+
+- SKILL.md description 堆几百字触发词（camscanner）是关键词匹配时代的补丁层——与 Trae 同病，验证"匹配该走结构化路由而非散文堆叠"。
 
 ## 八、不可达 / 未做
 
