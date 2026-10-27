@@ -35,8 +35,11 @@ memory/workbuddy-reference/
                                     plugin.json + fragments/）——模式 = 提示词切片
   welcomemode/                      欢迎场景分组（code/design/work）
   skill-list-cache.json             skill 扫描缓存（含 filePath/source/type）
+  prompts/                          服务端提示词配置快照（acc-product-config-v3：
+                                    128 篇命名提示词 + 20 agent 花名册，见其 README）
   notes-subagent-baas-memory.md     专项笔记：子代理 Agent/TaskOutput 契约、记忆三层
-                                    L2/L3、BaaS=glass-easel、交互模式对比
+                                    L2/L3、BaaS=glass-easel、交互模式对比、
+                                    系统提示词拼装与身份段下落
 ```
 
 学习入口建议：生态自举四件套 `builtin/skills/{skill-creator,marketplace-skill-installer,recommend-connectors,expert-manager}` → 专家包实物 `builtin/builtin-plugins/workbuddy-docx/experts/` → 连接件形态 `connectors/camscanner-mcp/` → 海量横向样本 `connectors-full/` → 专项深读 `notes-subagent-baas-memory.md`（子代理/记忆/BaaS/交互模式）。

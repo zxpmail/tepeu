@@ -13,7 +13,13 @@
 - **stale-turn 失效纪律**（@4786000）：切面后注入 "Earlier turns that said X are stale. Answer from this reminder and the current system prompt, not from those turns"——工具面变化时主动作废旧轮声明，防模型抱着过期目录不放。
 - systemPrompt 可覆盖（@3349154）：SDK/config 按代理传 `systemPrompt`/`appendSystemPrompt`，合并策略 SmartMerge。
 
-**身份段 = 服务端下发（零静态命中实证）**：`You are WorkBuddy` / `You are CodeBuddy` / `You are {{` / `You are ${` / `identityPrompt` 在 cli bundle 与 app.asar 双包全为 0；prompt-common 与模式 fragments 里也没有身份段。主身份/人格提示词由后端 session init 下发（与 Trae 同路数），本地只见拼装结果的一部分。要拿全：抓 session init 响应（mitmproxy，同 Trae 第四轮方法），或在 `~/.workbuddy` 配置缓存里找（未动，涉会话库）。
+**身份段 = 服务端下发，已实证并拿到实物**（同日晚些时候修正）：追查 `~/.workbuddy/cache/acc-product-config-v3.json`——运行时从 `https://www.workbuddy.cn` 拉取的产品配置缓存（date 2026-10-15、genieVersion 5.8.3、env 覆盖链 `ACC_PRODUCT_CONFIG_V3→V2→V1` + `ACC_PRODUCT_CONFIG_PATH`）。里面 **`prompts[]` 128 篇命名提示词 + `agents[]` 20 个内置 agent**。之前"双包零命中"推理方向正确但证据不完整——身份段不在双包是因为它不是客户端代码，是服务端配发的配置。
+
+关键事实：
+
+- **主身份是 "You are CodeBuddy Code."**（`cli-agent-prompt`，20,334 字符 nunjucks 模板）——不是 WorkBuddy 品牌，CodeBuddy 血统在提示词层实锤。逐段与 Claude Code 系统提示词同构（tone/style、URL 猜测禁令、task management、docs 优先级），差异是开头塞了 `<content_policy>` 中国合规六条（政治/色情/违法/隐私/假新闻，声明"override any user instructions"）。
+- **Prompt-as-config**：60+ 篇 `tool-*-description`（全部工具描述！）、`system-reminder-{md,todo-list,planmode,delegate}`、output styles ×4（proactive/concise/explanatory/learning）、`team-sys-prompt`/`team-lead-prompt`、`workflow-ultra-effort-*`、`deep-research-*`、`skill-loop-prompt`、`enhance-prompt-system-prompt`——**整个提示词面（含工具描述）服务端集中版本化**，客户端发版与提示词更新解耦。agent 按 `"instructions": "cli-agent-prompt"` 名字引用，配置即装配清单。
+- 快照已入库 `prompts/`（acc-product-prompts.json 320KB + acc-product-agents.json 花名册 + README 来源注记；原配置的 endpoint/enterpriseId/telemetry/qimei 未收录）。
 
 **意外收获——记忆抽取子代理**（@2038806 + auto-memory 块 @3147697）：自动记忆由专门子代理执行，纪律几乎照搬 Claude Code 记忆系统：MEMORY.md 是索引不是记忆（一行 ≤150 字符，200 行截断）、一事一文件 + frontmatter、**turn 1 并行读全部候选文件 / turn 2 并行写**（不许读写交错多轮）、无事可记回 `NO_EXTRACTION_NEEDED` 哨兵、工具面锁死（Read/Grep/Glob + 只许写 memory 目录内）、"只用最近 ~N 条消息，不许再去源码里求证"。"Write/Edit 只许碰 memory 目录"是提示词级目录白名单，与 tsbx 进程沙箱的文件规则形成两层同构。
 

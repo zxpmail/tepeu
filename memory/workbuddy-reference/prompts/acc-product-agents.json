@@ -1,0 +1,382 @@
+[
+ {
+  "name": "cli",
+  "description": "cli agent",
+  "instructions": "cli-agent-prompt",
+  "modelTags": [
+   "craft"
+  ],
+  "models": [
+   "fast-model",
+   "balanced-model",
+   "deep-model",
+   "hy4-preview",
+   "hy3",
+   "hy3-x",
+   "deepseek-v4.1-flash",
+   "step-5-preview",
+   "glm-5.3",
+   "glm-5.3-flash",
+   "glm-5.2",
+   "glm-5.1",
+   "glm-5v-turbo",
+   "space-bunny",
+   "minimax-m3.1-flash",
+   "minimax-m3",
+   "kimi-k3.1-pro",
+   "kimi-k3-1",
+   "kimi-k2.8-preview",
+   "deepseek-v4-pro",
+   "mimo-v2.6-pro"
+  ],
+  "tags": [
+   "cli",
+   "default",
+   "model:craft"
+  ],
+  "tools": [
+   "Agent",
+   "Read",
+   "Write",
+   "Edit",
+   "Bash",
+   "Glob",
+   "Grep",
+   "PowerShell",
+   "EnterPlanMode",
+   "ExitPlanMode",
+   "TaskCreate",
+   "TaskGet",
+   "TaskUpdate",
+   "TaskList",
+   "WebFetch",
+   "WebSearch",
+   "TaskStop",
+   "TaskOutput",
+   "Skill",
+   "AskUserQuestion",
+   "StructuredOutput",
+   "ToolSearch",
+   "DeferExecuteTool",
+   "SendMessage",
+   "TeamCreate",
+   "TeamDelete",
+   "ImageGen",
+   "LibraryUpload",
+   "VideoGen",
+   "AudioTranscribe",
+   "DelegateTool",
+   "WeChatReply",
+   "WeComReply",
+   "A2AGetAgentCard",
+   "A2ASendMessage",
+   "A2AGetTask",
+   "A2ACancelTask",
+   "ListMcpResources",
+   "ReadMcpResource"
+  ]
+ },
+ {
+  "name": "general-purpose",
+  "description": "general-purpose agent",
+  "instructions": "cli-agent-prompt",
+  "models": [],
+  "tags": [
+   "cli",
+   "general-purpose"
+  ],
+  "tools": [
+   "Read",
+   "Write",
+   "Edit",
+   "Bash",
+   "PowerShell",
+   "Glob",
+   "Grep",
+   "TaskCreate",
+   "TaskGet",
+   "TaskUpdate",
+   "TaskList",
+   "WebFetch",
+   "WebSearch",
+   "TaskStop",
+   "TaskOutput",
+   "Skill",
+   "AskUserQuestion",
+   "AskUserForStructuredInput",
+   "ToolSearch",
+   "DeferExecuteTool",
+   "StructuredOutput",
+   "SendMessage",
+   "SendUserMessage",
+   "NotebookEdit",
+   "LSP",
+   "ComputerUse",
+   "ImageGen",
+   "ImageEdit",
+   "VideoGen",
+   "AudioTranscribe",
+   "Artifact",
+   "ArtifactControl",
+   "ListMcpResources",
+   "ReadMcpResource",
+   "WaitForMcpServers",
+   "REPL"
+  ]
+ },
+ {
+  "name": "compact",
+  "description": "compact agent",
+  "instructions": "compact-agent-prompt",
+  "models": [],
+  "tags": [
+   "cli",
+   "compact"
+  ],
+  "tools": [
+   "Read"
+  ]
+ },
+ {
+  "name": "contextSummary",
+  "description": "Context summary agent for conversation compaction and max-token recovery",
+  "instructions": "context-summary-agent-prompt",
+  "models": [],
+  "tags": [
+   "cli",
+   "contextSummary"
+  ],
+  "tools": []
+ },
+ {
+  "name": "contentAnalyzer",
+  "description": "content analyzer agent",
+  "instructions": "content-analyzer-agent-instructions",
+  "models": [],
+  "tags": [
+   "cli",
+   "content-analyzer"
+  ],
+  "tools": []
+ },
+ {
+  "name": "terminalTitleGenerator",
+  "description": "Generate terminal window titles from conversation topics.",
+  "instructions": "terminal-title-generator-instructions",
+  "models": [
+   "builtin-lite"
+  ],
+  "tags": [
+   "cli",
+   "terminal-title-generator"
+  ],
+  "tools": []
+ },
+ {
+  "name": "promptSuggestion",
+  "description": "Suggest the user's next prompt after a conversation turn.",
+  "instructions": "prompt-suggestion-instructions",
+  "models": [],
+  "tags": [
+   "cli",
+   "prompt-suggestion"
+  ],
+  "tools": []
+ },
+ {
+  "name": "memorySelector",
+  "description": "Select relevant memories for the current query.",
+  "instructions": "memory-selector-instructions",
+  "models": [
+   "lite"
+  ],
+  "tags": [
+   "cli",
+   "memory-selector"
+  ],
+  "tools": []
+ },
+ {
+  "name": "summaryGenerator",
+  "description": "Generate session summaries from conversation content.",
+  "instructions": "summary-generator-instructions",
+  "models": [],
+  "tags": [
+   "cli",
+   "summary-generator"
+  ],
+  "tools": []
+ },
+ {
+  "name": "securityReviewer",
+  "description": "Review bounded security decisions without tools.",
+  "instructions": "security-reviewer-instructions",
+  "models": [
+   "lite"
+  ],
+  "tags": [
+   "cli",
+   "security-reviewer"
+  ],
+  "tools": []
+ },
+ {
+  "name": "autoModeClassifier",
+  "description": "Classify auto mode tool permission risk.",
+  "instructions": "auto-mode-classifier-instructions",
+  "models": [
+   "lite"
+  ],
+  "tags": [
+   "cli",
+   "auto-mode-classifier"
+  ],
+  "tools": []
+ },
+ {
+  "name": "promptHookEvaluator",
+  "description": "Evaluates prompt hooks using LLM to determine if conditions are met",
+  "instructions": "prompt-hook-evaluator-instructions",
+  "models": [
+   "lite"
+  ],
+  "tags": [
+   "cli",
+   "prompt-hook-evaluator"
+  ],
+  "tools": []
+ },
+ {
+  "name": "insightsAnalyzer",
+  "description": "Analyzes user usage data facets for the /insights command",
+  "instructions": "base-agent-instructions",
+  "models": [],
+  "tags": [
+   "cli",
+   "insights-analyzer"
+  ],
+  "tools": []
+ },
+ {
+  "name": "agentInstructions",
+  "description": "generating agent instructions",
+  "instructions": "agent-instructions",
+  "models": [],
+  "tags": [
+   "cli",
+   "agent-instructions"
+  ],
+  "tools": []
+ },
+ {
+  "name": "statusline-setup",
+  "description": "Use this agent to configure the user's Codebuddy Code status line setting.",
+  "instructions": "agent-statusline-instructions",
+  "models": [],
+  "tags": [
+   "cli",
+   "sub-agent"
+  ],
+  "tools": [
+   "Read",
+   "Write",
+   "Edit",
+   "ToolSearch",
+   "DeferExecuteTool"
+  ]
+ },
+ {
+  "name": "Explore",
+  "description": "Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. \"src/components/**/*.tsx\"), search code for keywords (eg. \"API endpoints\"), or answer questions about the codebase (eg. \"how do API endpoints work?\"). When calling this agent, specify the desired thoroughness level: \"quick\" for basic searches, \"medium\" for moderate exploration, or \"very thorough\" for comprehensive analysis across multiple locations and naming conventions.",
+  "instructions": "agent-explore-instructions",
+  "models": [
+   "lite"
+  ],
+  "tags": [
+   "cli",
+   "sub-agent"
+  ],
+  "tools": [
+   "Read",
+   "Bash",
+   "PowerShell",
+   "Glob",
+   "Grep",
+   "TaskCreate",
+   "TaskGet",
+   "TaskUpdate",
+   "TaskList",
+   "WebFetch",
+   "WebSearch",
+   "Skill",
+   "SendMessage",
+   "SendUserMessage",
+   "ToolSearch",
+   "DeferExecuteTool"
+  ]
+ },
+ {
+  "name": "Plan",
+  "description": "Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a multi-step task before writing code. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs. Read-only: it designs but does not modify files or exit plan mode; the caller reviews the plan and implements it.",
+  "instructions": "agent-plan-instructions",
+  "models": [],
+  "tags": [
+   "cli",
+   "sub-agent"
+  ],
+  "tools": [
+   "Read",
+   "Bash",
+   "Glob",
+   "Grep",
+   "TaskCreate",
+   "TaskGet",
+   "TaskUpdate",
+   "TaskList",
+   "WebFetch",
+   "WebSearch",
+   "Skill",
+   "ToolSearch",
+   "DeferExecuteTool",
+   "TeamCreate",
+   "TeamDelete",
+   "SendMessage",
+   "SendUserMessage"
+  ]
+ },
+ {
+  "name": "pulse",
+  "description": "Pulse recommendation agent with WebSearch for fetching latest information",
+  "instructions": "pulse-agent-prompt",
+  "models": [],
+  "tags": [
+   "cli",
+   "sub-agent"
+  ],
+  "tools": [
+   "WebSearch",
+   "WebFetch"
+  ]
+ },
+ {
+  "name": "handoff-summary",
+  "description": "Local task handoff summary generation agent",
+  "instructions": "handoff-summary-agent-prompt",
+  "tags": [
+   "cli",
+   "sub-agent"
+  ],
+  "tools": []
+ },
+ {
+  "name": "enhance-prompt",
+  "description": "Prompt enhancement agent for refining user input in WorkBuddy Desktop chat input box",
+  "instructions": "enhance-prompt-system-prompt",
+  "models": [],
+  "tags": [
+   "cli",
+   "sub-agent"
+  ],
+  "tools": []
+ }
+]

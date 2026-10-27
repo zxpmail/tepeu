@@ -83,6 +83,6 @@ frontmatter 在 Anthropic 通用格式（name/description）上扩了运行时�
 
 ## 八、不可达 / 未做
 
-- **主身份提示词 = 服务端下发**（实证：`You are WorkBuddy/CodeBuddy`、身份模板变量、`identityPrompt` 在 cli bundle 与 app.asar 双包全零命中）。客户端侧拼装层已全部提取（模式 fragments + prompt-common + bundle 字面量，见专项笔记§五）；要拿服务端那段需抓 session init 响应（同 Trae 第四轮 mitmproxy 方法）。
+- **提示词面 = 服务端下发（已实证、已入库）**：`~/.workbuddy/cache/acc-product-config-v3.json` 是运行时从 www.workbuddy.cn 拉取的产品配置，内含 128 篇命名提示词（主身份 "You are CodeBuddy Code."、60+ 工具描述、system-reminder、output styles、team/workflow 全套）+ 20 个内置 agent 装配清单——prompt-as-config，发版与提示词解耦。快照见 `prompts/`，深读见专项笔记§五。
 - expert 包实物已入库（`builtin/builtin-plugins/workbuddy-docx/experts/` 9 个）；expert/playbook/automation（企微机器人）运行面只见到配置与迁移表，未深挖。
 - 市场目录全量包已入库 `catalog/connectors-config.zip`（34.7MB，sha256 见 README），85MB 解压树留在 `%TEMP%/wb-connector-config/`。
