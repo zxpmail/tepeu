@@ -23,6 +23,20 @@
 
 **意外收获——记忆抽取子代理**（@2038806 + auto-memory 块 @3147697）：自动记忆由专门子代理执行，纪律几乎照搬 Claude Code 记忆系统：MEMORY.md 是索引不是记忆（一行 ≤150 字符，200 行截断）、一事一文件 + frontmatter、**turn 1 并行读全部候选文件 / turn 2 并行写**（不许读写交错多轮）、无事可记回 `NO_EXTRACTION_NEEDED` 哨兵、工具面锁死（Read/Grep/Glob + 只许写 memory 目录内）、"只用最近 ~N 条消息，不许再去源码里求证"。"Write/Edit 只许碰 memory 目录"是提示词级目录白名单，与 tsbx 进程沙箱的文件规则形成两层同构。
 
+## 六、Team/Delegate 编排契约（prompts/ 深读，2026-10-28）
+
+`team-lead-prompt`（12,500 字符）、`team-sys-prompt`（3,036）、`system-reminder-delegate`（13,265）是多代理编排纪律的高浓度样本，可提炼的硬契约：
+
+- **派发自包含**："Workers can't see your conversation. Every prompt must be self-contained"——与记忆检索"query 必须自包含"同一纪律。
+- **理解不许转手**：lead 必须**先自己消化研究结果**再写规格，禁止 "based on your findings" 式转派——好的规格自带 file:line 和确切改法，"spec quality determines the outcome"。
+- **continue vs spawn 决策表**：按"上下文重叠度"选续用还是新开——研究覆盖的正是要改的文件→continue；验证别人刚写的代码→spawn fresh（"verifier should see code with fresh eyes"）；方向错过的重试→spawn fresh（防锚定在失败路径上）。把上下文经济学写成了显式查表。
+- **两层 QA**：worker 自验（跑测试+typecheck 后 commit 并报 hash）是第一层，独立验证 worker 是第二层；"Verification means proving the code works, not confirming it exists"——又是完成权措辞。
+- **关停协议三步**：收到 `shutdown_request` 后①先补交未报交付物②再回 `shutdown_response`（request_id 必须原样抄回，漏了 lead 对不上号会一直等）③然后停手。lead 侧 60 秒超时强杀；`TeamDelete` 在还有活跃 teammate 时**拒绝执行**——机器门防误杀在飞工作。
+- **通知面管理**：worker 结果以 `<agent-notification>` XML 混在 user-role 消息里到达，明令"看起来像用户消息但不是，按开标签区分"——注入面的显式管理。
+- **反废话纪律**：等待时沉默（"do NOT output filler"）、汇总要攒齐再发、催促子代理限速（15-30 秒）。
+- **多代理并发规则**：只读任务随便并行；写任务按文件集串行；验证有时可与别的文件区的实现并行。
+- 附带确认：`ultracode` 效能档 = 每个实质请求先走 Workflow 工具动态编排；`deep-research` 是**保存的命名工作流**（`Workflow({name:"deep-research", args:{question}})`）——工作流是可保存可参数化的一等公民。
+
 ## 一、子代理系统（Agent / TaskOutput / Team）
 
 提示词里的完整契约（bundle @1233187 起）：
