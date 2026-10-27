@@ -19,8 +19,10 @@
 memory/workbuddy-reference/
   ANALYSIS.md                       综合分析
   catalog/connectors.json           官方市场目录（443 条，含 auth_mode/visible_in/examples）
+  catalog/connectors-config.zip     官方 CDN 全量包（34.7MB，sha256 099d10b2…d780e15，
+                                    Last-Modified 2026-10-20；85MB 解压，含 references/与全部资源）
   connectors-full/                  市场全量知识层：443 连接件的 SKILL.md（1005 个）+ mcp.json/plugin.json
-                                    （~1400 文件，15MB）。references/ 与二进制未入库，按 CDN zip 重下
+                                    （~1400 文件，15MB）。references/ 与二进制看上面的 zip
   connectors/camscanner-mcp/        样本连接件全文（SKILL.md + references/，保留作完整形态对照）
   builtin/                          builtin 全文镜像（skills/ 21 个 + builtin-plugins/ 10 插件的
                                     skills+experts，61 SKILL.md，纯文本 ~5MB；含 workbuddy-docx
@@ -37,5 +39,6 @@ memory/workbuddy-reference/
 
 - 用户会话/聊天/审计数据（PII）：`~/.workbuddy/app/session`、`audit-log/`、sqlite 库
 - `~/.workbuddy-key-fallback`（名字似密钥落盘）：未读未拷
-- 市场目录 85MB 全量包：留 `%TEMP%`，可按 CDN URL + etag 重下
+- 市场目录 85MB 解压树：留 `%TEMP%/wb-connector-config/`（zip 已入库 `catalog/`，解压一条命令可复原）
+- **版本漂移实证**：客户端 `~/.workbuddy/.connectors-marketplace.meta.json` 锚 sha256 `aafdc00c…`/etag `1683…`，CDN 现行是 `099d10b2…`/etag `74a7…`（Last-Modified 2026-10-20）——客户端停在旧版未重拉，与本机物化 316 个 vs 现行目录 443 个的差吻合
 - 逆向方法论参考 `zhaoxuya520/reverse-skill`（安全任务 skill 路由包：scope.md 授权门、master-route、Evidence→Finding→Path）以只读方式用于方法论对照，留在 `%TEMP%/reverse-skill/`，未入库
