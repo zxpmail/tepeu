@@ -1,6 +1,21 @@
-# WorkBuddy 专项笔记：子代理 / 记忆三层 / BaaS / 交互模式
+# WorkBuddy 专项笔记：子代理 / 记忆三层 / BaaS / 交互模式 / 系统提示词
 
-> 2026-10-27 补充提取。ANALYSIS.md 的延伸，四块小件。证据来源：codebuddy-lite bundle 字符串窗口（@offset 为 bundle 内字节位）、`interactionmode/`、`prompt-fragments/workbuddy-memory-system.md`、`extensions/workbuddy-baas-v2/server/`。
+> 2026-10-27 补充提取。ANALYSIS.md 的延伸。证据来源：codebuddy-lite bundle 字符串窗口（@offset 为 bundle 内字节位）、`interactionmode/`、`prompt-fragments/workbuddy-memory-system.md`、`extensions/workbuddy-baas-v2/server/`、双包（cli bundle + app.asar）二进制 grep。
+
+## 五、系统提示词拼装与身份段下落（2026-10-27 晚补）
+
+**拼装机制**（bundle @1283535 composer）：插件在 `components.settings.agent` 声明入口，fragments 按 `interactionMode|welcomeMode|workMode` 变量选择，`include "..."` 指令拼接——提示词确是模板系统。`<agent_loop>` 七步循环 fragment 就是模式文件本体（`interactionmode/*/fragments/agent-loop.md`，4 模式各有，quick 无）。
+
+**客户端静态层——已全部提取**：
+
+- 模式 fragments 45 文件 + prompt-common 10/10（对照过源目录，无遗漏）；
+- bundle 字面量：REPL 纪律、子代理契约、standing surface 切换（ptc/minimal/create/standard + Multitask overlay 进出提醒，包在 `<system-reminder data-role=...>` 里）、Agent Home 通道人格（@890333 起）、`/effort ultracode` 效能档（@3138824）、内置 agent 清单（cli/ptc/minimal/create/multitask/Explore，@1236985）、PTC 回归提醒（@4786492）；
+- **stale-turn 失效纪律**（@4786000）：切面后注入 "Earlier turns that said X are stale. Answer from this reminder and the current system prompt, not from those turns"——工具面变化时主动作废旧轮声明，防模型抱着过期目录不放。
+- systemPrompt 可覆盖（@3349154）：SDK/config 按代理传 `systemPrompt`/`appendSystemPrompt`，合并策略 SmartMerge。
+
+**身份段 = 服务端下发（零静态命中实证）**：`You are WorkBuddy` / `You are CodeBuddy` / `You are {{` / `You are ${` / `identityPrompt` 在 cli bundle 与 app.asar 双包全为 0；prompt-common 与模式 fragments 里也没有身份段。主身份/人格提示词由后端 session init 下发（与 Trae 同路数），本地只见拼装结果的一部分。要拿全：抓 session init 响应（mitmproxy，同 Trae 第四轮方法），或在 `~/.workbuddy` 配置缓存里找（未动，涉会话库）。
+
+**意外收获——记忆抽取子代理**（@2038806 + auto-memory 块 @3147697）：自动记忆由专门子代理执行，纪律几乎照搬 Claude Code 记忆系统：MEMORY.md 是索引不是记忆（一行 ≤150 字符，200 行截断）、一事一文件 + frontmatter、**turn 1 并行读全部候选文件 / turn 2 并行写**（不许读写交错多轮）、无事可记回 `NO_EXTRACTION_NEEDED` 哨兵、工具面锁死（Read/Grep/Glob + 只许写 memory 目录内）、"只用最近 ~N 条消息，不许再去源码里求证"。"Write/Edit 只许碰 memory 目录"是提示词级目录白名单，与 tsbx 进程沙箱的文件规则形成两层同构。
 
 ## 一、子代理系统（Agent / TaskOutput / Team）
 

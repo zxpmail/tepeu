@@ -83,6 +83,6 @@ frontmatter 在 Anthropic 通用格式（name/description）上扩了运行时�
 
 ## 八、不可达 / 未做
 
-- 主系统提示词的运行时最终拼装结果（nunjucks 模板变量值）本地不可见，需抓包/运行时 dump（本机 WorkBuddy 在跑，未做干扰性调试）。
+- **主身份提示词 = 服务端下发**（实证：`You are WorkBuddy/CodeBuddy`、身份模板变量、`identityPrompt` 在 cli bundle 与 app.asar 双包全零命中）。客户端侧拼装层已全部提取（模式 fragments + prompt-common + bundle 字面量，见专项笔记§五）；要拿服务端那段需抓 session init 响应（同 Trae 第四轮 mitmproxy 方法）。
 - expert 包实物已入库（`builtin/builtin-plugins/workbuddy-docx/experts/` 9 个）；expert/playbook/automation（企微机器人）运行面只见到配置与迁移表，未深挖。
 - 市场目录全量包已入库 `catalog/connectors-config.zip`（34.7MB，sha256 见 README），85MB 解压树留在 `%TEMP%/wb-connector-config/`。
