@@ -1,0 +1,105 @@
+s,subagentEnabled){let planFileInfo=exists?`A plan file already exists at ${planFilePath}. Read it first, then make incremental updates with the Edit tool.`:`No plan file exists yet. Create it at ${planFilePath} with the Write tool when you are ready to commit Phase 4 to disk.`,phases2=subagentEnabled?renderPhasesWithSubagent():renderPhasesNoSubagent(),text=`<system-reminder>
+Plan mode is now ACTIVE. You are operating in read-only mode for everything except the plan file below: do not run Edit / Write on any other path, do not run Bash commands that mutate state (commits, installs, config writes, deployments, etc.), and do not request such permissions. This overrides any earlier instruction that said otherwise.
+
+## Plan File Info
+${planFileInfo}
+Read / Grep / Glob and read-only Bash remain available. Iterate on the plan file as many times as needed; the gate denies writes to any other path.
+
+## Plan Workflow
+
+${phases2}
+
+Throughout the workflow, ask the user for clarification whenever intent is unclear — do not make large assumptions on their behalf.
+</system-reminder>`;return{...makeUserMessage(text,{isMeta:!0}),transientContext:"plan-mode"}}function buildSimplePlanReminder(planFilePath){let text=`<system-reminder>
+Plan mode REMINDER — still in plan mode. Read-only except the plan file (${planFilePath}) — the one file you can edit; do NOT Edit/Write any other path or run state-mutating Bash. Research as needed, write your plan into that file, then END your turn by calling ExitPlanMode to request approval — do this proactively, don't just say you'll do it. Never ask 'is this plan okay?' in chat text.
+</system-reminder>`;return{...makeUserMessage(text,{isMeta:!0}),transientContext:"plan-mode"}}function renderPhasesWithSubagent(){return`### Phase 1: Understand & frame the goal
+Goal: understand what the user wants and frame it as a path from a known starting point to a target. Critical: In this phase you should only use the explore subagent type.
+
+1. Re-read the user's latest message and extract the concrete deliverable. Then state the goal explicitly: write down the initial state (where things are now) and the goal state (what "done" looks like). A plan is the path between them — if either is vague, so is the plan. If the goal is not single and unambiguous, ask the user a clarifying question instead of guessing. Actively look for existing work to reuse rather than starting from scratch.
+
+2. **Launch up to 3 explore agents IN PARALLEL** (single message, multiple tool calls) to learn the initial state efficiently.
+   - Use 1 agent when the task is isolated to known areas, the user provided specific pointers, or you're making a small targeted change.
+   - Use multiple agents when: the scope is uncertain, multiple areas are involved, or you need to understand existing patterns before planning.
+   - Quality over quantity - 3 agents maximum, but you should try to use the minimum number of agents necessary (usually just 1)
+   - If using multiple agents: Provide each agent with a specific focus or area to explore.
+
+### Phase 2: Design
+Goal: Design an approach.
+
+Launch Plan agent(s) to design the implementation based on the user's intent and your exploration results from Phase 1. The Plan agent identifies the task type itself and applies the matching planning method — you don't need to tell it which.
+
+You can launch up to 3 agent(s) in parallel.
+
+**Guidelines:**
+- **Default**: Launch at least 1 Plan agent for most tasks - it helps validate your understanding and consider alternatives
+- **Skip agents**: Only for truly trivial tasks (typo fixes, single-line changes, simple renames)
+- **Multiple agents**: Use up to 3 agents for complex tasks that benefit from different perspectives
+
+Examples of when to use multiple agents:
+- The task touches multiple parts of the system
+- It's a large or architectural change
+- There are many edge cases to consider
+- You'd benefit from exploring different approaches
+
+Example perspectives by task type:
+- New feature: simplicity vs performance vs maintainability
+- Bug fix: root cause vs workaround vs prevention
+- Research: breadth vs depth vs source reliability
+
+In the agent prompt:
+- Provide comprehensive background context from Phase 1, including the initial-state findings and concrete pointers (filenames, code paths, sources)
+- Describe requirements, constraints, and the goal state
+- Request a short, actionable plan
+
+### Phase 3: Review
+Goal: Review the plan(s) from Phase 2 and ensure alignment with the user's intentions.
+
+1. Read the critical references identified by agents to deepen your understanding.
+2. Ensure that the plans align with the user's original request — fix any drift.
+3. If anything is still ambiguous, ask the user a concrete clarifying question instead of guessing.
+
+${renderTailPhases()}`}function renderPhasesNoSubagent(){return`### Phase 1: Understand & frame the goal
+Goal: understand what the user wants and frame it as a path from a known starting point to a target.
+
+1. Re-read the user's latest message and extract the concrete deliverable. If the request is genuinely a question (not a planning task), call ExitPlanMode immediately so the user can choose run / continue / abort — do not force a plan onto a non-planning prompt. Otherwise state the goal explicitly: write down the initial state and the goal state. A plan is the path between them — if either is vague, so is the plan. If the goal is not single and unambiguous, ask the user a clarifying question instead of guessing.
+
+2. **Explore directly with your available read-only tools** — Glob / Grep / Read for local material, search / fetch for external information. Read only what's necessary — start with targeted searches, then widen scope only if needed. Actively look for existing work to reuse rather than starting from scratch.
+
+### Phase 2: Design
+Goal: Design an approach based on the user's intent and the exploration results from Phase 1.
+
+Work out the approach in your own reasoning. For non-trivial tasks, consider at least 2 alternative approaches before settling on one — this guards against committing to the first idea that comes to mind. For truly trivial tasks (typo fixes, single-line changes, simple renames), a single direct approach is fine.
+
+Example perspectives by task type:
+- New feature: simplicity vs performance vs maintainability
+- Bug fix: root cause vs workaround vs prevention
+- Research: breadth vs depth vs source reliability
+
+Then decompose: skeleton first, then detail — only down to where dependencies become judgeable. Mark each step as self-controlled or dependent on something external, and flag the fragile joints where the plan could fail.
+
+### Phase 3: Review
+Goal: Review the plan from Phase 2 and ensure alignment with the user's intentions.
+
+1. Re-read whatever surfaced during Phase 1 exploration to deepen your understanding.
+2. Ensure that the plan aligns with the user's original request — fix any drift.
+3. If anything is still ambiguous, ask the user a concrete clarifying question instead of guessing.
+
+${renderTailPhases()}`}function renderTailPhases(){return`### Phase 4: Final Plan
+Goal: write the final plan into the plan file (the only file you can edit).
+
+Match the user's conversation language when writing the plan: for a Chinese-speaking user, write the plan in Chinese; for an English-speaking user, write in English. Keep code identifiers, file paths, command names, and technical proper nouns in their original form — but section headings are plain prose, NOT proper nouns, so translate them too (e.g. write 验证, not "Verification"; 步骤, not "Steps"). (This workflow reminder is in English for system reasons — do not let that bias the plan's language; what matters is the language of the user's own messages.)
+
+Keep it SHORT and executable — most good plans fit in ~40 lines, and a long plan is more likely to be rejected than a short one. Prose is a sign of padding. Follow the structure the design produced (it is tailored to the task type); typically:
+- One short line of context only if the outcome isn't already obvious — otherwise skip it.
+- The single recommended approach (mention rejected alternatives only as one-line callouts, not full analyses).
+- The concrete steps, organized into a handful of self-contained stages (typically 3-7). Write each stage as a one-line imperative heading (what to do), plus a line or two of detail and how you'll know it's done. Each stage must be independently checkable — after approval each stage becomes one todo item the user watches tick off. Attach an if-then + fallback ONLY at the fragile joints flagged earlier — do not over-condition.
+- A verification section (heading written in the user's language): what proves the change/outcome is correct (commands, tests, or checks appropriate to the task).
+
+Prefer bullets and concrete references over prose. Do not restate the user's request or add an "Overview" section.
+
+### Phase 5: Call ExitPlanMode
+First, do a quick pre-flight critique of the plan — not "does the user want this" (the approval dialog covers intent), but what is mechanically checkable: is the goal state reachable from the initial state, is any dependency unmet, is any assumption unverified? Fix what you find before proceeding.
+
+Once the plan file is what you want the user to approve, call ExitPlanMode. This is how planning ends — your turn should end either by asking the user a clarifying question OR by calling ExitPlanMode, nothing else.
+
+Do NOT ask for plan approval in chat text — phrases like "Is this plan okay?", "Should I proceed?", "How does this look?" or any similar variant MUST be expressed by calling ExitPlanMode. The ExitPlanMode dialog is the only approval surface.`}var init_reminders=()=>{};function emptyPendingReminderInjections(){return{afterToolResult:[],afterNextUserMessage:[]}}function buildPeriodicPlanReminder(planMode,n=PLAN_REMINDER_TURNS_BETWEEN_FULL){let curTurn=(planMode.turnsSinceEnter??0)+1,isFull=(curTurn-1)%n===0,reminder=isFull?buildEnterPlanModeReminder(planMode.currentPlanFile,!1,isSubagentEnabled()):buildSimplePlanReminder(planMode.currentPlanFile);return planLog("periodic plan reminder",{curTurn,isFull}),{reminder,nextTurns:curTurn}}function buildFromMarker(m){return buildEnterPlanModeReminder(m.planFilePath,m.exists,isSubagentEnabled())}function dedupAndBuild(markers){let seen=new Set,out=[];for(let m of markers){let key=`${m.kind}|${m.planFilePath}`;if(seen.has(key))continue;seen.add(key),out.push(buildFromMarker(m))}return out}function consumeAfterToolResult(state3,setAppState){let queued=state3.pendingReminderInjections.afterToolResult;if(queued.length===0)return[];return planLog("consumeAfterToolResult",{count:queued.length}),setAppState((prev)=>({...prev,pendingReminderInjections:{...prev.pendingReminderInjections,afterToolResult:[]}})),dedupAndBuild(queued)}function consumeAfterToolResultFromCtx(ctx){if(!ctx)return[];try{return consumeAfterToolResult(ctx.getAppState(),ctx.setAppState)}catch{return[]}}function consumeAfterNextUserMessage(state3,setAppState){let queued=state3.pendingReminderInjections.afterNextUserMessage;if(queued.length===0)return[];return planLog("consumeAfterNextUserMessage",{count:queued.length}),setAppState((prev)=>({...prev,pendingReminderInjections:{...prev.pendingReminderInjections,afterNextUserMessage:[]}})),dedupAndBuild(queued)}function collectTurnPlanReminders(getAppState,setAppState,promptId){let queued=consumeAfterNextUserMessage(getAppState(),setAppState);if(queued.length>0)planLog("injecting afterNextUserMessage reminders",{count:queued.length,promptId});if(!PLAN_REMINDER_ENABLED)return queued;let planMode=getAppState().planMode;if(planMode===null)return queued;let writeTurns=(turnsSinceEnter)=>setAppState((prev)=>({...prev,planMode:prev.planMode?{...prev.planMode,turnsSinceEnter}:null}));if(queued.length>0)return writeTurns(1),queued;let{reminder,nextTurns}=buildPeriodicPlanReminder(planMode)

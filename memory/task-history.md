@@ -7,3 +7,4 @@
 | 2026-10-27 | memory/ | WorkBuddy（腾讯 genie/codebuddy-lite）连接件/skill/提示词面逆向收口：全量档案 + 吸收裁决 | 提示词面=服务端下发已实证（acc-product-config 128 篇快照入库 prompts/，主身份 "You are CodeBuddy Code."）；吸收裁决落 ANALYSIS.md §七：计费门五规矩→检查口/账、stale-turn+装配观→给模型看、反走私→判断，其余条件件/不吸收 |
 | 2026-10-27 | specs+cli | 吸收裁决落地第一刀：检查口 G-01（说明读不出来的能力启动时挡下，其余照常） | 计费门五规矩对照后四条 tepeu 已有，唯一缺口是说明损坏未规定。CliRunner.jobs 改逐项装配坏者跳过并留一句话，exit 1 语义改为「没问成」；点头/范围矩阵声明化记为待裁开口。全树 67 绿 |
 | 2026-10-28 | docs | 密钥认出裁定草案（handoff 待审区）+ 开口记入 rewrite-1 §8 | 草案口径：位置优先、内容不扫（WorkBuddy 同款），密钥位置表命中=范围不在，复用 GATE_BLOCKED；待人审三问在 handoff。Team/Delegate 编排契约深读入 workbuddy-reference 笔记 §六 |
+| 2026-10-28 | memory/ | QianwenApp（千问 PC 5.0.7.276）提示词逆向收口：cowork-agent-host.asar 手工解析，17 件提取物入库 qianwen-reference/ | 血统=Claude Code 内核+中文消费 persona 层；吸收裁决三件：收尾承诺裁决器（完成权机器裁判）、授权来源白名单（点头枚举化）、澄清三条件+止损；详判在 ANALYSIS.md §八 |
