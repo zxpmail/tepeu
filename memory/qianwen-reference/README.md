@@ -24,6 +24,7 @@ asar 无 npm 包依赖手工解析：头布局 `jsonLen=uint32LE@12`、JSON@16�
 | `subagent-fleet.js.txt` | 子代理舰队 + 装配代码（54KB：general/exploration/planner/workflow/fork + ACTIONS_SECTION） |
 | `memory-system-sections.js.txt` | 记忆系统段（与 Claude Code 逐字同构：四类型/不记清单/取用时机/TRUSTING_RECALL） |
 | `plan-mode-and-compaction.js.txt` | 计划模式 + 上下文压缩提示词区 |
+| `plan-scenario-library.js.txt` | 计划场景库（code/research 两份计划骨架模板 + 注入装配） |
 | `permission-card-explainer.md` | 权限卡解释专家（向非技术用户解释命令后果） |
 | `tool-action-reviewer.md` | **独立工具动作审查器**（18KB：授权来源白名单/信任分级/组合影响） |
 | `turn-end-promise-judge.md` | **收尾承诺裁决器**（回复是否仍带未兑现动作承诺，true/false 契约） |
