@@ -8,3 +8,4 @@
 | 2026-10-27 | specs+cli | 吸收裁决落地第一刀：检查口 G-01（说明读不出来的能力启动时挡下，其余照常） | 计费门五规矩对照后四条 tepeu 已有，唯一缺口是说明损坏未规定。CliRunner.jobs 改逐项装配坏者跳过并留一句话，exit 1 语义改为「没问成」；点头/范围矩阵声明化记为待裁开口。全树 67 绿 |
 | 2026-10-28 | docs | 密钥认出裁定草案（handoff 待审区）+ 开口记入 rewrite-1 §8 | 草案口径：位置优先、内容不扫（WorkBuddy 同款），密钥位置表命中=范围不在，复用 GATE_BLOCKED；待人审三问在 handoff。Team/Delegate 编排契约深读入 workbuddy-reference 笔记 §六 |
 | 2026-10-28 | memory/ | QianwenApp（千问 PC 5.0.7.276）提示词逆向收口：cowork-agent-host.asar 手工解析，17 件提取物入库 qianwen-reference/ | 血统=Claude Code 内核+中文消费 persona 层；吸收裁决三件：收尾承诺裁决器（完成权机器裁判）、授权来源白名单（点头枚举化）、澄清三条件+止损；详判在 ANALYSIS.md §八 |
+| 2026-10-28 | specs+docs | 千问吸收项落地成文：判断.md 不包括补「正文里答应下一步做什么」；rewrite-1 §8 记压缩防跑两守则与机器裁判将来件 | 对照后三件不落：授权白名单、Prompt 不是授权（tepeu 已覆盖）、澄清三条件（无问人循环）。对照理由在 handoff 参考档案行 |
