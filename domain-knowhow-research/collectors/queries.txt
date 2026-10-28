@@ -1,0 +1,9 @@
+﻿# 查询组按「面」设计——每面一组，缺面即盲区（erp 试跑实证 6 盲区全是查询组缺口）
+# 示例（erp）：
+ERP inventory counting reconciliation process cycle count
+ERP month end closing procedure documents cost accounting
+ERP master data management material code one-item-one-code
+ERP implementation failure reasons case studies
+open source ERP comparison Odoo ERPNext manufacturing
+ERP sales purchasing inventory production module workflow
+ERP system roles key user permission design
