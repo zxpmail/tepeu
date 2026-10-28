@@ -213,3 +213,48 @@ bundle.cjs 14.5MB 已全部扫过：0–2M 框架、2–2.9M 记忆/快照/压�
 7. **不编造三分类 → 给模型看（条件件）**：固定说明第六句候选——「答给人的事实要么有已写下的返回撑着，要么明说不确定；不拿训练记忆填空」。等 tepeu 的结论文本面成形再议。
 
 另记一笔给密钥认出裁定人：权限卡的环境变量凭据名单是**名字标记**识别，与草案的位置优先口径同族（都是元数据），不与「内容不扫」冲突——待审三问可加第四问：位置表之外要不要收名字标记。
+
+## 十二、上下文机制（2026-10-28 专挖，压缩面完整架构）
+
+tepeu 给模型看篇「不包括：压缩、截断。这一轮不写」——将来件落地时的完整参照系在这里。
+
+### 四级流水
+
+每次调模型前的上下文管道（productionDeps）：**snipHistory → microcompact → autocompact → contextCollapse**。fork 子代理四级全换恒等函数（继承父上下文不重压）+ recursionGuard + maxTurns=5。另有两道预处理：剪掉被取代的 todo 结果（snipSupersededTodoResults）；**悬空工具调用补合成错误输出**（「工具执行未返回结果」，is_error）——协议卫生，不留没闭合的调用。
+
+### microcompact——时间隙微压缩（不调模型）
+
+`timeBasedMC` 配置驱动，触发标记 "time_gap"。可压缩的工具结果按新旧排序，**保最近 keepRecent 条**，其余三条处理：旧结果摘要化（替换为 `[Old tool result content cleared]`）、旧工具入参截断（`[old tool_use input compacted]`，**IMPORTANT_INPUT_KEYS 白名单**只留 action/command/file_path/pattern/query 等标识性键，≤180 字符 ≤8 字段——"当时调了什么"可辨，其余全丢）、重复结果去重（dedupMinChars 阈值）。已有剪枝标记的正则识别（`[Read…`/`[Duplicate of …`）防二次剪。
+
+### 路由决策——先算"局部截断够不够"再决定调不调模型
+
+`decideCompactRoute`：预算估算 < 阈值 → fits 不动；超了先算 `reducible`（**局部截断工具结果能省多少**，纯本地计算）：est−reducible < 阈值 → **truncate_only**（不调模型）；否则才 compact_then_truncate（模型摘要 + 截断）。**省钱的顺序：先薅工具结果，再动用模型。**
+
+### 截断阶梯与 cap
+
+单工具结果 cap 按窗口分档：200k 窗→16k、400k→32k、更大→64k，尾保留 4000 字符。放不进预算时 cap 阶梯下降：→8000→4000→2000→1000→512 逐级试（fitToolResultsWithinBudget），全失败仍返回 fits:false。
+
+### 自动压缩阈值
+
+缺省 = 窗口 70%，且**减去固定输入**（系统提示+工具+受保护消息）后对动态内容计——固定面越大，动态阈值越低。环境变量 `QWEN_AUTOCOMPACT_PCT_OVERRIDE` 可调（1-100）。用量优先取 provider 上报，不是纯估算。
+
+### 压缩质量审计（auditSummary）——本次专挖最大的宝贝
+
+每次压缩出的摘要**过三道机审**，不过即不合格：
+
+1. **必含章节**：Exact Identifiers / Pending Tasks / Constraints/Rules 三节标题必须在摘要里；
+2. **标识符保全**：从原文抽取标识符（≥8 位哈希、URL、POSIX/Windows 路径、file:line、≥6 位数字，≤12 个），**每个都必须原样出现在摘要里**——"标识符只许搬运不许制造"的机器化；
+3. **最新诉求重叠**：取最后一条真实用户消息（跳过 isMeta），抽关键词（停用词表含中文「继续/吧/请/帮我」），摘要必须与之重叠（≥3 词命中 2，少则命中 1）——**防摘要偏题：压完的上下文必须还能接上用户正在问的事**。
+
+配套反馈状态机：consecutiveFailures / ineffectiveCount / lastSavingsPct / candidateReused——压缩按 targetMet、requestFits、effectiveReductionPct、tailFitted 等字段做 **schema 版本化观测**，省不出钱的策略会被记录失效。**"压缩"本身也被验证**——完成权纪律应用在基础设施上。
+
+### 上下文经济学散件
+
+- **后台子代理全量输出落文件**，对话只进短摘要，TaskOutput 分页取——模型自控拉多少（§十已记）；
+- **旧 CUA 截图剥离/压缩**（stripOldCuaScreenshots，图像是上下文大头）；
+- **可靠采样信封**：protectedMessages 压缩中受保护，前后 detach/attach；
+- **上下文用量基线**：system/agentsMemory/toolSchemas/skillCatalog 分组件估 token，随压缩基线更新。
+
+### 对 tepeu 的映射（全部将来件，落 §8 时引用本节）
+
+将来给模型看篇写压缩时，可收的五条：①管道次序（先免费后花模型：剪杂→微压缩→局部截断→模型摘要）；②微压缩的入参白名单（标识键留、其余丢）；③路由先算 reducible 不瞎调模型；④**摘要三道机审**（必含章节/标识符保全/诉求重叠）；⑤压缩观测 schema 化（省不出钱记录在案）。tepeu 的「标识符逐字保留」守则（§十）在③④里有机器实现样板。
