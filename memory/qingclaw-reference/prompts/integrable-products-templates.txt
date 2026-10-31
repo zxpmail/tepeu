@@ -1,0 +1,111 @@
+total: 3
+
+
+########## [1] offset=3278 len=898 ##########
+<p>正文段落使用 16px、两端对齐、行距 1.75、字间距 1；段前段后均为 0。粘贴内容后请先清除原有格式再排版。</p>
+<h2>1. 一级分段标题（18px、加粗、颜色 #268bfb，可按内容加序号）</h2>
+<p>支持多级结构：先交代背景，再展开论据，保持段落短小。</p>
+<h3>（1）二级分段标题（17px、加粗、颜色 #268bfb）</h3>
+<p>二级标题下继续正文，样式与首段一致。</p>
+<div style="text-align:center;padding:0 64px;margin:16px 0 0;box-sizing:border-box;">
+  <img alt="中间配图" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22640%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f4%22 width=%22100%25%22 height=%22100%25%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23a8a29e%22 font-size=%2213%22%3E中间配图（自适应宽度）%3C/text%3E%3C/svg%3E" style="max-width:100%;height:auto;display:block;margin:0 auto;border:0;" />
+</div>
+<p style="margin:8px 0 0;padding:0 64px;font-size:14px;line-height:1.6;color:#78716c;text-align:center;box-sizing:border-box;">配图说明：14px、灰色、居中、左右缩进与图片一致</p>
+
+########## [2] offset=5585 len=2369 ##########
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style type="text/css">
+    .qc-sheet { max-width: 720px; margin: 0 auto; background: #ffffff; color: #333333; }
+    .qc-sheet h1 { margin: 24px 0 16px; font-size: 22px; font-weight: 700; line-height: 1.35; text-align: center; color: #333333; }
+    .qc-text p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.75;
+      letter-spacing: 1px;
+      text-align: justify;
+      color: #333333;
+    }
+    .qc-text h2 {
+      margin: 18px 0 8px;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #268bfb;
+    }
+    .qc-text h3 {
+      margin: 14px 0 6px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.45;
+      color: #268bfb;
+    }
+    .qc-img-slot {
+      text-align: center;
+      padding: 0 64px;
+      margin: 16px 0 0;
+      box-sizing: border-box;
+    }
+    .qc-img-slot img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border: 0;
+    }
+    .qc-img-cap {
+      margin: 8px 0 0;
+      padding: 0 64px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #78716c;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .qc-cta {
+      margin: 20px 0 0;
+      padding: 0 32px;
+      font-size: 16px;
+      line-height: 1.75;
+      letter-spacing: 1px;
+      text-align: justify;
+      color: #333333;
+    }
+    .qc-read-more {
+      text-align: center;
+      margin: 16px 0 32px;
+      padding: 0 64px;
+    }
+    .qc-read-more a { color: #268bfb; font-size: 15px; text-decoration: none; }
+  </style>
+</head>
+<body style="margin:0;background:#f5f5f4;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;">
+  <!-- 粘贴正文前请先清除原有格式，再按段落与标题层级排版 -->
+  <div class="qc-img-slot" style="margin-top:0;">{{header_image}}</div>
+  <article class="qc-sheet">
+    <div style="padding:0 32px;">
+      <h1>{{title}}</h1>
+      <div class="qc-text">{{lead}}</div>
+      <div class="qc-text">{{body}}</div>
+    </div>
+    <div class="qc-cta">{{cta}}</div>
+    <div class="qc-img-slot">{{footer_image}}</div>
+    <p class="qc-read-more">
+      <a href="{{read_origin_url}}" target="_blank" rel="noopener noreferrer">阅读原文，免费注册体验轻流👇👇</a>
+    </p>
+  </article>
+</body>
+</html>
+
+########## [3] offset=11087 len=412 ##########
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#ffffff;color:#78716c;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;">
+    <div style="max-width:320px;text-align:center;line-height:1.75;font-size:12px;">
+      未选择模板时，智能体会沿用当前默认写作方式，不额外注入 HTML 版式。
+    </div>
+  </body>
+</html>

@@ -9,3 +9,4 @@
 | 2026-10-28 | docs | 密钥认出裁定草案（handoff 待审区）+ 开口记入 rewrite-1 §8 | 草案口径：位置优先、内容不扫（WorkBuddy 同款），密钥位置表命中=范围不在，复用 GATE_BLOCKED；待人审三问在 handoff。Team/Delegate 编排契约深读入 workbuddy-reference 笔记 §六 |
 | 2026-10-28 | memory/ | QianwenApp（千问 PC 5.0.7.276）提示词逆向收口：cowork-agent-host.asar 手工解析，17 件提取物入库 qianwen-reference/ | 血统=Claude Code 内核+中文消费 persona 层；吸收裁决三件：收尾承诺裁决器（完成权机器裁判）、授权来源白名单（点头枚举化）、澄清三条件+止损；详判在 ANALYSIS.md §八 |
 | 2026-10-28 | specs+docs | 千问吸收项落地成文：判断.md 不包括补「正文里答应下一步做什么」；rewrite-1 §8 记压缩防跑两守则与机器裁判将来件 | 对照后三件不落：授权白名单、Prompt 不是授权（tepeu 已覆盖）、澄清三条件（无问人循环）。对照理由在 handoff 参考档案行 |
+| 2026-10-31 | memory/ | QingClaw（轻流 wingent-x 桌面端 1.7.0）逆向收口：asar 手写解析，本地提示词面全量入库 qingclaw-reference/ | 架构=薄壳+服务端引擎（场景库烧客户端、主系统提示词留服务端）；108 条场景库（四能力×七域）+ 组装系统（场景正文+能力后缀+域词表注入+编号跨函数续接）+ openui-lang 完整契约；企业语义词表与对 tepeu 映射在 ANALYSIS.md §四/§七 |

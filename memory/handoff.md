@@ -14,7 +14,7 @@
 - 已经定下的：没有架子。底账、顺序、检查口、判断、给模型看是组件；停止、范围、字段默认装上；问模型、费用、点头、记忆、读、写、跑可以不装。先问谁写在各块自己的说明上。一轮的顺序仍是总规则第 2.5 节：正题先问模型，只认回答旁边交来的工具，不另开编排。模型用的名字是 Read、Grep、Glob、Edit、Write 和跑命令。没有费用就不能问模型。写、改和跑默认要等人同意。字段没填齐和空话要分开。记下任务之后才判断一次。模型说做完了不算。读和查找成功也不算做成，写、改或跑成功才算。人拒绝或等超时，这一篇剩下的跳过，附注带上目标。跑命令里带路径的参数必须落在限制里。四种拒绝分开记。每项记录只有一个写入者。最多放行 8 次。过程记录不参与判断。停止默认「停」和 stop。这一段程序已经按规格做进一轮。
 - 问模型读本机 cc-switch 的 Xiaomi MiMo，密钥不进程序。还没定：怎样认出别的密钥；总规则第 8 节里以后另写的那些。
 - 不要做：改 `legacy/first-knife/`；再把「模型最后一句话」当成做完。
-- 参考档案（逆向研究，2026-10-23/28）：`memory/trae-reference/`（Trae 四轮提取）与 `memory/workbuddy-reference/`（WorkBuddy 连接件/skill/提示词面全量 + 吸收裁决 `ANALYSIS.md` §七——检查口/给模型看/判断三篇有对照工程样板）。提示词面=服务端下发已实证，快照在 `workbuddy-reference/prompts/`。`memory/qianwen-reference/`（千问 PC 5.0.7.276，2026-10-28）：cowork-agent-host.asar 提示词面 17 件，Claude Code 内核+中文 persona 层；吸收裁决 `ANALYSIS.md` §八/§十（收尾承诺裁判、授权白名单、澄清三条件、压缩防跑、Prompt 不是授权——后两者已记 rewrite-1 §8 将来件，其余经对照 tepeu 已覆盖）。
+- 参考档案（逆向研究，2026-10-23/28）：`memory/trae-reference/`（Trae 四轮提取）与 `memory/workbuddy-reference/`（WorkBuddy 连接件/skill/提示词面全量 + 吸收裁决 `ANALYSIS.md` §七——检查口/给模型看/判断三篇有对照工程样板）。提示词面=服务端下发已实证，快照在 `workbuddy-reference/prompts/`。`memory/qianwen-reference/`（千问 PC 5.0.7.276，2026-10-28）：cowork-agent-host.asar 提示词面 17 件，Claude Code 内核+中文 persona 层；吸收裁决 `ANALYSIS.md` §八/§十（收尾承诺裁判、授权白名单、澄清三条件、压缩防跑、Prompt 不是授权——后两者已记 rewrite-1 §8 将来件，其余经对照 tepeu 已覆盖）。`memory/qingclaw-reference/`（轻流 QingClaw wingent-x 1.7.0，2026-10-31）：薄壳+服务端引擎，本地提示词面=108 条场景库 + 提示词组装系统（xt/St/Ct/wt）+ openui-lang 完整契约（~13KB）；企业语义词表（字段类型/视图/按钮动词/流程规则六型/星型实体图）在 ANALYSIS.md §四，对 tepeu 映射 §七（两段式+词表注入、输出物清单化、错误消息即提示词）。
 - 待人裁决：仓库根 0 字节乱码文件 `鏇存棭鐨勬爣鏈湪`（删否）；`~/.workbuddy-key-fallback`（疑似密钥落盘，未读）。
 
 ## 待审裁定——密钥认出（2026-10-28 草案，未裁）
