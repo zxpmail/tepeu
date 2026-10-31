@@ -89,7 +89,27 @@
 
 **可学手法清单**：① 定时任务三句式（检查 X 找出 Y → 优先关注 Z（风险前置维度）→ 输出清单+影响+建议动作），12 预设提醒 + cron 语义 + 执行智能体绑定；② 错误消息教修复路径（"绑定的智能体已删除，请编辑任务并重新选择"）；③ 模板即规格（排版规则编码成带占位图 HTML 骨架，约束做成实物不写成话）；④ 夹具驱动 UI（消息契约用 fixtures 固化）；⑤ 工程壳层：cookie 桥登录复用 / requestStrategy proxy|direct / runtime-targets 构建期生成+环境覆盖 / OSS 更新；⑥ 表达式语言收敛（九个 @ 组合子出全部 KPI——语言越小越难错越好验）。
 
-## 九、复现方法
+**openui-lang 运行时**（客户端内嵌解析/求值/合并引擎，chat-bubble bundle）：① 流式容忍解析——每个 chunk 全量重解析，解析结果是类型化报告 `{root, meta:{incomplete, unresolved[], orphaned[], statementCount, errors[]}, stateDeclarations, queryStatements, mutationStatements}`，半截代码也能部分渲染；② 错误三元组 `{source, code, message, hint}`（如 parser/parse-failed）+ 多源合并（解析器错误 + schema 校验错误 + 渲染层 `__openui_errors` 注回）+ stringify 去重；③ 编辑 = 按语句名 merge（replace/append）+ 孤儿 GC；④ 闭集求值——内置函数是注册表里的 JS fn（bR() 白名单检查，无 eval），Query/Mutation 语句静态提取成独立注册表（运行时先验知道哪些语句是读/写）；⑤ Query 默认数据先渲染后换真数据、$binding 变更自动重取、refreshInterval；⑥ Action 步序失败语义按操作类型分（mutation 失败截断后续步骤，query 重取 fire-and-forget 不可能失败）。**SSE 代理**（main.cjs）：上游强制 `Accept-Encoding: identity`（防 gzip 缓冲）、响应删 content-length + `no-cache, no-transform` + `x-accel-buffering: no`、SSE 双重识别（路径 /events/stream 或 Accept 头）、hop-by-hop 剥离、代理错误 502 纯文本——流式代理的坑全套处理过。
+
+**思维链处理**（渲染层实证）：思考与正文是**两条独立 SSE 事件流**（`agent.thinking.delta` / `agent.generation.delta`），客户端按 segment kind 分装——thinking 可折叠、按阶段累计、带计数（"N 次思考"），思考原文在服务端。思考分相：`think`（推理）/ `orchestration`（编排叙述）/ `intent_refinement`（意图澄清）三种命名段型。fixtures 把一轮生命周期定为「思考 → 工具调用 → 工具完成 → 正文生成」，业务阶段叙述用业务动词命名（读取→整理→生成），**失败阶段默认折叠**。xt 后缀另有一层"审计型推理暴露"：结论必带判断依据/口径，但推理不全程放开；代码生成场景反向禁止解释（fence 外才算聊天）。
+
+## 十、上下文机制（index bundle 实证，2026-10-31）
+
+**内核工具注册表**（原文 `prompts/kernel-tool-registry.raw.js.txt`）分五类：meta（Bootstrap truncation warning、capability_dispatcher）/ file（read/write/delete/directory_list/search/grep/patch/download_url）/ **memory（query_long_term、query_short_term、query_dialogue_digest、read_archive、compress_hot、read_workspace_transcript）**/ runtime（python_interpreter、shell_executor）/ skill（manager_manual/source_authoring/list/get + authoring_guide）+ 工具发现组（list_toolsets、list_tools、list_tool_tags、**find_tools_by_tags、find_tools_by_semantic**、registry_refresh）。
+
+**五层记忆，pull 型工具化**：热记忆（可压缩）→ 短期 → 对话摘要 → 归档 → 工作区记录 + 长期记忆。模型只通过 query 工具拉取，不自动注入；压缩（compress_hot）本身也是工具。与千问档案 §十二（四级流水、摘要三道机审——服务端自动管线）是两条路线：QingClaw 记忆=工具（模型自主拉取+压缩），千问记忆=流水（服务端分层摘要）。
+
+**Bootstrap 字符预算 + 截断警告协议**：注入区有 bootstrapMaxChars / bootstrapTotalMaxChars 预算；截断发生时以 `[Bootstrap truncation warning]` 标题 + `- ` 条目（含 raw -> / injected / 预算值）注入消息流，客户端解析成结构化警告并从正文剥离——截断不静默，是协议。
+
+**不可信注入标注/清洗协议**：注入内容带 `System (untrusted): [tag]` / `Sender (untrusted metadata):` 前缀 + `[Mon YYYY-MM-DD]` 时间戳 + `{...}` 元数据块；cron 注入带 `[cron:...]` 前缀 + `Current time:` 尾注。客户端展示前剥离。**注入时打标、展示时清洗**。
+
+**HITL 是消息类型**：text / error / assistant_pending / sse_in_progress / **hitl_waiting / hitl_answered** / plain——人审往返是流里的消息类型（与 tepeu 点头/60 秒超时同型，但 QingClaw 把等待态显式建模）。
+
+**工具目录上下文经济学**：全量工具不预载上下文，模型用发现元工具按需取（tags / **semantic 搜索** / registry_refresh）——Trae get_skill_detail 同款思路，铺到工具层。
+
+**会话生命周期**：自动重命名带重试表 [0,180,420]ms；会话失效检测（"请重新发送一条消息开启新会话"）；运行中任务阻塞删除；**会话级消耗分析**（会话排行、Top 会话消耗分布）。
+
+## 十一、复现方法
 
 ```bash
 # asar 手写解析（npm 装不上 @electron/asar 时的路子）

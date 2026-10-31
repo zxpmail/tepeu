@@ -3,6 +3,7 @@
 轻流 QingClaw（wingent-x desktop v1.7.0）逆向档案。主对话/搭建引擎提示词在服务端（qingflow.com），本地不可达；本档案收录**客户端可见的全部提示词面与企业语料**。
 
 - 深读与结论 → [ANALYSIS.md](ANALYSIS.md)
+- 三方对照（runtime/思维链/上下文机制 × WorkBuddy × 千问）→ [COMPARISON.md](COMPARISON.md)
 - `prompts/scenario-library.md` — 108 条场景库（todo/entry/analysis/builder × 七域），`{key,title,description,prompt}` 结构还原
 - `prompts/single-app-prompts.md` — 18 条单应用搭建提示词（字段级语义范本）
 - `prompts/prompt-assembly.md` — 提示词组装系统（xt 能力后缀 / St 域报表词表 / wt 示例数据 / Ct 门户条款）
