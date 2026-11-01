@@ -13,6 +13,6 @@ Cursor（Anysphere，v3.27.22，VS Code fork）逆向档案。主 agent 系统�
   - `privacy-disclosure.raw.txt` — 数据流披露表（surface→why→RPCs）
   - `builtin-skills/` — `~/.cursor/skills-cursor/` 25 个内置 skill 全量拷贝（autopilot/goal/loop/review-bugbot 等）
 
-来源：`C:\Users\zxpma\AppData\Local\Programs\cursor\resources\app\`（无 asar，VS Code fork 解包目录；AI 层在 `out/vs/workbench/workbench.glass.main.js` 49.7MB）+ `~/.cursor/`（skills/worktrees/plans）。沙箱 helper：`resources/app/resources/helpers/cursorsandbox.exe`（Rust）。抽取脚本思路见 ANALYSIS.md §十。内容版权归 Anysphere，仅限内部研究，勿公开分发。
+来源：`C:\Users\zxpma\AppData\Local\Programs\cursor\resources\app\`（无 asar，VS Code fork 解包目录；AI 层在 `out/vs/workbench/workbench.glass.main.js` 49.7MB）+ `~/.cursor/`（skills/worktrees/plans）。沙箱 helper：`resources/app/resources/helpers/cursorsandbox.exe`（Rust）。抽取脚本思路见 ANALYSIS.md §十二。内容版权归 Anysphere，仅限内部研究，勿公开分发。
 
 关联：[[reference_trae_prompts]]（同为 VS Code 系 fork，抓包方法在彼条）、[[reference_workbuddy]]（沙箱 broker 对照）、[[reference_qingclaw]]（薄壳+服务端引擎同款拓扑）。
