@@ -1,6 +1,7 @@
 # 三方对照：QingClaw × WorkBuddy × QianwenApp（runtime / 思维链 / 上下文机制）
 
 > 2026-10-31。依据：千问 ANALYSIS（14.5MB 全扫穷尽）、WorkBuddy ANALYSIS §五/§六（连接件+运行时深读）、QingClaw ANALYSIS §三-§十（渲染层，服务端引擎不可达）。
+> **五方扩展版（并入 Cursor/Trae，六轴）→ [../cursor-reference/COMPARISON.md](../cursor-reference/COMPARISON.md)**
 > **证据基线不等**：QingClaw 各项排位证据强度偏低（薄壳，引擎不可达），已在表中标注。
 
 ## 一、Runtime

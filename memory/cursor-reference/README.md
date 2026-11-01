@@ -3,6 +3,7 @@
 Cursor（Anysphere，v3.27.22，VS Code fork）逆向档案。主 agent 系统提示词在服务端（`agent.v1.SystemPromptSpec` 下发）；本档案收录**客户端可见的协议形状、内嵌提示词、安全/运行时架构与内置 skill 全量语料**。
 
 - 深读与结论 → [ANALYSIS.md](ANALYSIS.md)
+- 五方对照（Cursor×WorkBuddy×Trae×千问×QingClaw） → [COMPARISON.md](COMPARISON.md)
 - `prompts/` — 客户端内嵌提示词原文：
   - `system-prompt-ide-*.md`（13 份）— **IDE 各模型的完整系统提示词**（state.vscdb 捞回，明文）：gpt-5.2/5.4/5.4-nano/5.1、codex-5.3、gpt-5.3-codex-low、qwen3.5-plus、composer-pair、composer、grok-4.5/4.6/4.7、cursor-generic-old。20–24K 全量版含 persistence/进度更新预算/citing_code 双方法契约/MCP 文件系统工具等完整规范
   - `system-prompt-composer-current.md` / `-old-sept.md` — CLI/Auto 流提示词两版演进（chats/*/store.db 捞回）
