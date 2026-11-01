@@ -1,0 +1,46 @@
+Group:5,model:"claude-4.5-opus-high-thinking",promptTemplate:`You are analyzing conversation transcripts to identify repeated user behaviors.
+
+## Transcript Location
+Transcripts are stored at: {{agentTranscriptsPath}}
+
+## Transcript Format
+Each '.txt' file is a human-readable conversation transcript with this structure:
+- 'user:' sections contain user messages (often wrapped in '<user_query>' tags)
+- 'assistant:' sections contain assistant responses
+- '[Tool call]' blocks show which tools were invoked
+- '[Tool result]' blocks show tool outputs
+
+Files can be large. Focus on extracting the '<user_query>' sections which contain the actual user requests. Do NOT try to read the entire file contents because it will pollute your context.
+
+## How to Read Transcripts
+1. Use Glob to list files: "{{agentTranscriptsPath}}/*.txt"
+2. For each file, extract just the '<user_query>' blocks - these show what users asked for
+3. You can use Grep to search for '<user_query>' patterns across files
+
+## Task
+Analyze the {{maxChatsToRead}} most recent conversations (by file modification time). Be thorough and do not bias towards recency when analyzing conversations. Ignore trivial conversations and conversations where nothing concrete happened.
+
+Your goal is to understand how the user interacts with the agent. Focus especially on the corrections that the user makes repeatedly. Focus on common terminal commands/workflows the user instructs the agent to do, changes, and other very stable patterns.
+
+## Evidence Standards
+When making claims about what the agent SHOULD or SHOULD NOT do, only cite conversations where:
+- The user explicitly corrected the agent for doing something wrong
+- The user undid or rejected an agent action
+- The user gave an explicit instruction ('don\\'t do X', 'always do Y')
+
+Do NOT infer 'don\\'t do X' from:
+- The user asking a question about X (e.g., 'should we add tests?' does not mean 'don\\'t add tests proactively')
+- The user doing X themselves (doesn't mean the agent shouldn't)
+- Absence of the agent doing X
+
+For each claim, ask: 'Is there a conversation where the user pushed back on the agent for doing this?' If not, don't include it as a guideline. For each piece of information you discern, you must cite 4 conversations. For each citation, verify that the conversation actually backs up your claim. Never include direct quotes from user messages; summarize at a high level.
+
+These are the sections to cover. Do not overlap these with existing user and project rules; if there is overlap or conflict always go with the existing rules.
+
+- Developer profile: How does the user interact with the agent. Focus on how much autonomy they like to give the agent vs. how much they would like to oversee the changes the agent is making. What is their workflow for getting tasks done. What kind of tasks do they often work on. Verify across many conversations, and do not extrapolate too hard.
+- Frequented areas of the codebase: Parts of the codebase the user primarily works in, and what kinds of tasks correspond to each part of the codebase.
+- Important terminal commands: Terminal commands/workflows the user runs repeatedly that are unique to the project/user workflow, and when they should be used. Focus on test, lint, and build commands. Do not include git commands.
+
+Do not write any files in this step. You will be asked in a follow-up message to write the final user profile to disk.`,secondStepPromptTemplate:`Turn your analysis into a concise 'index.md' markdown file that will be shown to all agents in the future.
+
+Write the file contents to: {{userInt

@@ -10,3 +10,6 @@
 | 2026-10-28 | memory/ | QianwenApp（千问 PC 5.0.7.276）提示词逆向收口：cowork-agent-host.asar 手工解析，17 件提取物入库 qianwen-reference/ | 血统=Claude Code 内核+中文消费 persona 层；吸收裁决三件：收尾承诺裁决器（完成权机器裁判）、授权来源白名单（点头枚举化）、澄清三条件+止损；详判在 ANALYSIS.md §八 |
 | 2026-10-28 | specs+docs | 千问吸收项落地成文：判断.md 不包括补「正文里答应下一步做什么」；rewrite-1 §8 记压缩防跑两守则与机器裁判将来件 | 对照后三件不落：授权白名单、Prompt 不是授权（tepeu 已覆盖）、澄清三条件（无问人循环）。对照理由在 handoff 参考档案行 |
 | 2026-10-31 | memory/ | QingClaw（轻流 wingent-x 桌面端 1.7.0）逆向收口：asar 手写解析，本地提示词面全量入库 qingclaw-reference/ | 架构=薄壳+服务端引擎（场景库烧客户端、主系统提示词留服务端）；108 条场景库（四能力×七域）+ 组装系统（场景正文+能力后缀+域词表注入+编号跨函数续接）+ openui-lang 完整契约；企业语义词表与对 tepeu 映射在 ANALYSIS.md §四/§七 |
+| 2026-10-31 | memory/ | 三方对照（runtime/思维链/上下文机制 × WorkBuddy × 千问 × QingClaw）入档 COMPARISON.md | 三种产物信任解法（沙箱/裁判/解析器）、思维链三哲学（风险/介质/UI）、上下文三战略（治/防/协议）；tepeu ≤32 问形态下防+协议够用，与「不包括压缩」裁定互证 |
+| 2026-10-31 | memory/ | Trae doc-writing-guide 写作 skill 质量评价（会话内评审，未入档） | 负空间规则=四标本唯一 LLM 写作病灶清单（one-statement/禁"不是X而是Y"/自造名词每段限一）；字数度量自相矛盾；抄禁令表不抄名词堆砌式风格校准 |
+| 2026-11-01 | memory/ | Cursor 3.27.22 逆向收口：VS Code fork（workbench.glass.main.js 49.7MB）入库 cursor-reference/ | 主提示词在服务端（SystemPromptSpec）；cursorsandbox.exe Rust 沙箱（决策日志带 matched_rule，win 网络仅代理级自认）；hooks 20 事件=Claude Code 契约兼容；内置 skill 25 份全量入库=四标本最高质量语料（autopilot/goal 完成审计/loop）；对 tepeu 映射 §八 |

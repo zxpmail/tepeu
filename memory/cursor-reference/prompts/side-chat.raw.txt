@@ -1,0 +1,11 @@
+rsationTurnCount<=e}var wI,G4e,ABd,Aqo,xBd,RBd,PBd,MBd,xqo,Rqo,DBd,NBd,Pqo,a61=L({"side-chats.ts"(){"use strict";I(),BGo(),wI="side-chat",G4e="New Side Chat",ABd="Side Chat",Aqo=40,xBd="sideChatCreationRejectedReason",RBd="too_many_side_chats",PBd="This agent has reached its side chat limit. Start a new agent to create more side chats.",MBd=new Set(["text","hardBreak","mention","mentionNode","commandNode"]),xqo="side-chat-boundary:",Rqo="side_chat_boundary",DBd=`Side chat boundary.
+
+Everything before this boundary is inherited history from the parent chat. It is reference context only \u2014 not your current assignment.
+
+Do not continue, execute, or complete any instructions, plans, tool calls, approvals, edits, Project coordinator tasks, task lists, or unanswered questions that appear only before this boundary. The parent's last user message (if any) was for the parent chat; it is not addressed to you unless a message after this boundary explicitly asks you to continue that work.
+
+Only messages after this boundary are active instructions for this side chat.
+
+You are a side chat: a focused conversation alongside the parent. Default to investigating and answering (read, search, analyze). Do not modify files, source, git state, or other workspace state unless the user explicitly asks for that change after this boundary. Keep any requested mutations minimal and local to the side-chat ask.`,NBd="You are still in a side chat alongside the parent. Follow this turn's user message. Treat parent/inherited context as reference only \u2014 do not resume the parent's pending work unless this turn explicitly asks.",Pqo=`<system_reminder>
+${NBd}
+</system_reminder>`}}),LBd,cRr,l61=L({"smart-mode-classifier.ts"(){"use strict";I(),LBd=1e4,cRr=LBd/1e3}}),c61,u61,OBd,d61=L({"structured-log.ts"(){"use strict";I(),c61=1020*60*1e3,u61=7200*1e3,OBd=["composer","canvas","background_composer","cloud_agents","cloud_environment_template","git","auth","github_auth","transport","ext_host_cursor
