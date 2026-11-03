@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Compact memory/task-history.md. UTF-8 only. Dedupe by session id.
+"""Compact memory/task-history.md. UTF-8 only.
 
-Keep the newest KEEP data rows. If unique rows exceed THRESHOLD, move the
-oldest excess into memory/task-history-archive.md (also deduped, one table).
-Does not re-append sessions already in the archive.
+第二列是工作位置，不是会话编号。只去掉整行完全相同的重复。
+超过 THRESHOLD 时，把最旧的移进归档，表里留下最新的 KEEP 条。
+归档里已经有的整行不再追加。
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ HEADER = """# Task History
 """
 ARCHIVE_HEADER = """# Task History Archive
 
-> One row per session id. Written UTF-8 by compact-task-history.py.
+> 整行相同才算同一条。由 compact-task-history.py 以 UTF-8 写入。
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
@@ -39,16 +39,16 @@ def read_text(path: Path) -> str:
 
 
 def unique_rows(text: str) -> list[str]:
+    """按整行去重。第二列相同的不同任务都保留。"""
     rows: list[str] = []
     seen: set[str] = set()
     for line in text.splitlines():
-        m = ROW.match(line)
-        if not m:
+        if not ROW.match(line):
             continue
-        session = m.group(2).strip()
-        if not session or session in seen:
+        key = line.strip()
+        if key in seen:
             continue
-        seen.add(session)
+        seen.add(key)
         rows.append(line.rstrip())
     return rows
 
@@ -70,13 +70,13 @@ def compact(root: Path) -> int:
         archived = unique_rows(read_text(archive))
 
     if len(live) > THRESHOLD:
-        keep, overflow = live[:KEEP], live[KEEP:]
-        have = {ROW.match(r).group(2).strip() for r in archived if ROW.match(r)}
+        # 文件按时间从旧到新。留下末尾最新的，把前面多出来的送去归档。
+        overflow, keep = live[:-KEEP], live[-KEEP:]
+        have = {r.strip() for r in archived}
         for row in overflow:
-            session = ROW.match(row).group(2).strip()
-            if session not in have:
+            if row.strip() not in have:
                 archived.append(row)
-                have.add(session)
+                have.add(row.strip())
         live = keep
 
     write_table(history, HEADER, live)

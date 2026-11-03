@@ -15,3 +15,15 @@
 | 2026-11-01 | memory/ | Cursor 3.27.22 逆向收口：VS Code fork（workbench.glass.main.js 49.7MB）入库 cursor-reference/ | 主提示词在服务端（SystemPromptSpec）；cursorsandbox.exe Rust 沙箱（决策日志带 matched_rule，win 网络仅代理级自认）；hooks 20 事件=Claude Code 契约兼容；内置 skill 25 份全量入库=四标本最高质量语料（autopilot/goal 完成审计/loop）；对 tepeu 映射 §八 |
 | 2026-11-01 | memory/ | Cursor 二三轮深挖+13 份按模型系统提示词捞回：state.vscdb cursorDiskKV 13 族全文（GPT 系 20-24K）、chats/store.db CLI 两版 | 压缩管线=投机双阈值+确定性降级+摘要禁自指+截图幸存；CoT 三道闸（长思考提醒实验/推理循环检测/空响应分类重试）；141 个客户端 prompt section，isFable5 逐字复用 Claude Code 文本；Grind 多 agent（task spec 向下/handoff 向上/代码走 git）；影子工作区 GetLintsForChange=编辑前自检 |
 | 2026-11-01 | memory/ | 五方对照入档 cursor-reference/COMPARISON.md（Cursor×WorkBuddy×Trae×千问×QingClaw 六轴） | 执行安全 WorkBuddy>Cursor>千问；完成权 千问裁判器第一、Cursor 审计+影子自检第二；上下文深度 千问流水第一、Cursor 投机+降级第二；CoT 运行时管理 Cursor 三道闸第一；提示词语料 Cursor 141 section 最富；CC 已成事实标准（三厂商三种姿势接入） |
+| 2026-11-02 | memory/ | 任务记录 7 条被压缩脚本删掉后已恢复 | 第二列是工作位置不是会话号。整行相同才合并。超过 30 条时留下最新的，旧的送进归档 |
+| 2026-11-03 | memory/ | AutoGPT 与 caveman 只写入参考 memory/外部对照-2026-11-03.md | 未改规则，未改程序。等人看过再决定要不要实施 |
+| 2026-11-03 | memory/ | Stable Diffusion web UI 补进同一份参考 | 只看了公开说明。画图网页，不是任务账本。未改规则，未改程序 |
+| 2026-11-03 | memory/ | shadcn/ui 补进同一份参考 | 网页零件，源码交进项目再改。这一轮没有网页。未改规则，未改程序 |
+| 2026-11-03 | memory/ | Open WebUI 补进同一份参考 | 自己架的聊天站。未改规则，未改程序。等人看过再定 |
+| 2026-11-03 | memory/ | Firecrawl 补进同一份参考 | 把网页收成给模型看的文字。未改规则，未改程序。这一轮不上网 |
+| 2026-11-03 | memory/ | Axelor Open Platform 补进同一份参考 | Java 业务框架。未改规则，未改程序。这一轮没有网页 |
+| 2026-11-03 | memory/ | Awesome Opus 5.5 Videos 补进同一份参考 | 别人用模型做动画网页的目录和说法。未改规则，未改程序 |
+| 2026-11-03 | memory/ | 各家系统说明柜子补进同一份参考 | 只记地址和查法。未抄原文，未改规则，未改程序 |
+| 2026-11-03 | memory/ | prompts.chat 补进同一份参考 | 给人用的说法库，另有机器人和小组。未抄说法，未改规则，未改程序 |
+| 2026-11-03 | memory/ | Generative AI for Beginners 补进同一份参考 | 微软 21 课入门。未抄课文，未改规则，未改程序 |
+| 2026-11-03 | memory/ | erupt-skill 补进同一份参考 | 一句话生成 Java 管理后台的技能。未抄技能，未改规则，未改程序 |

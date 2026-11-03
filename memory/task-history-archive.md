@@ -1,6 +1,6 @@
 # Task History Archive
 
-> One row per session id. Written UTF-8 by compact-task-history.py.
+> 整行相同才算同一条。由 compact-task-history.py 以 UTF-8 写入。
 
 | Date | Session | Task | Key Decisions |
 |------|---------|------|---------------|
