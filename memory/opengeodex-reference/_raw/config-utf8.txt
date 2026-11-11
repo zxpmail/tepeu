@@ -1,0 +1,2 @@
+---UTF8---
+'gbk' codec can't encode character '\ufffd' in position 2457: illegal multibyte sequence

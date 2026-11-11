@@ -1,0 +1,155 @@
+{
+ "id": "geodata-osm",
+ "name": "OSM",
+ "version": "0.2.1",
+ "description": "通过 Overpass API 查询 OpenStreetMap 道路、水系、建筑、POI 和行政边界等矢量数据，结果保存为文件。",
+ "details": {
+  "category": "数据获取",
+  "features": [
+   {
+    "title": "Overpass QL 查询",
+    "text": "执行 Overpass QL，按标签和 S,W,N,E 范围筛选节点、路径与关系；需要几何时用 out geom，单次请求最长等待 300 秒。"
+   },
+   {
+    "title": "常用查询模板",
+    "text": "数据源页内置道路、水系、建筑、POI、行政边界五类模板，填入范围即可生成查询；POI 模板覆盖 amenity、shop、tourism 标签。"
+   },
+   {
+    "title": "结果落盘与摘要",
+    "text": "查询结果写入会话产物目录，只返回 path、字节数、要素数、node / way / relation 计数和前 10 个名称，城市级大结果不会进入对话。"
+   },
+   {
+    "title": "两种输出格式",
+    "text": "[out:json] 存为 Overpass JSON（.json，不是 GeoJSON）；[out:xml] 存为 .osm，可由 GDAL 的 OSM 驱动直接读取转换。"
+   },
+   {
+    "title": "端点自动切换",
+    "text": "未指定连接器时依次尝试 overpass.kumi.systems、overpass-api.de，失败自动换下一个；也可用 Overpass 连接器固定自建端点。"
+   },
+   {
+    "title": "错误页识别",
+    "text": "端点返回限流提示或 HTML 错误页时直接报错，不会当作数据落盘；out_path 只接受相对产物目录的路径，拒绝绝对路径和 ..。"
+   }
+  ],
+  "support": [
+   "数据源：OpenStreetMap，经 Overpass API 查询；坐标为 WGS84。",
+   "输出格式：Overpass JSON（.json）与 OSM XML（.osm）。",
+   "端点：内置 overpass.kumi.systems、overpass-api.de 公共镜像，也支持自建 Overpass 服务（填到 /api/interpreter 为止）。"
+  ],
+  "requirements": [
+   "需联网访问 Overpass 公共服务器或自建端点；公共服务器有频率限制，大范围、高频查询建议自建并配置 Overpass 连接器。"
+  ]
+ },
+ "dependency": {
+  "mode": "bundled"
+ },
+ "enabled_by_default": true,
+ "guard": 1,
+ "expert_roles": [
+  "collector"
+ ],
+ "skills": [
+  "skills/geodata-osm.md"
+ ],
+ "probe": {
+  "command": "${plugin}/bin/geodata-osm.exe",
+  "args": [
+   "--version"
+  ],
+  "on_missing": "OSM CLI 缺失；请重新安装完整 OpenGeodex 包。"
+ },
+ "cli_tools": [
+  {
+   "name": "osm_query",
+   "background": "auto",
+   "summary": "用 Overpass QL 查询 OSM 矢量数据并保存为文件",
+   "description": "用 Overpass QL 查询 OpenStreetMap 矢量数据（道路 / 水系 / 建筑 / POI / 边界）。返回的是**文件路径**：结果写入会话产物目录（[out:json] 存为 .json，[out:xml] 存为 GDAL 可直接读的 .osm），只回 path、bytes、要素数与前几个名称，不内联整份数据；拿到 path 后交给 fs / gdal / zealmapview 继续处理，不要重复调用。query 开头建议声明 [out:json][timeout:120]，需要几何时用 out geom;，bbox 顺序为 S,W,N,E。connector 可选：指定一个 Overpass 连接器 ID 使用自建或指定端点；省略时依次尝试内置公开镜像。",
+   "command": "${plugin}/bin/geodata-osm.exe",
+   "argv": [
+    "osm_query"
+   ],
+   "stdin": "$args",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "Overpass QL，如 [out:json][timeout:120];way[highway](30.5,114.2,30.6,114.4);out geom;"
+     },
+     "connector": {
+      "type": "string",
+      "description": "可选，Overpass 连接器 ID（来自 connection_list，如 overpass:0）"
+     },
+     "out_path": {
+      "type": "string",
+      "description": "产物文件路径，相对会话产物目录（如 原始数据/武汉道路.json），可带子目录；不能是绝对路径或含 ..；缺省按查询的主标签自动命名"
+     }
+    },
+    "required": [
+     "query"
+    ]
+   },
+   "connectors": [
+    {
+     "param": "connector",
+     "type": "overpass",
+     "access": "read",
+     "required": false
+    }
+   ],
+   "effect": "read",
+   "parse": "json",
+   "timeout_seconds": 330
+  }
+ ],
+ "connector_types": [
+  {
+   "id": "overpass",
+   "name": "Overpass",
+   "description": "连接 OpenStreetMap Overpass 服务。",
+   "category": "public_geodata",
+   "guide": [
+    {
+     "text": "不需要注册或密钥。不添加这个连接器时，插件会自动轮流使用内置的公共服务器，一般直接用即可。"
+    },
+    {
+     "text": "只有想固定用某个镜像、或单位自建了 Overpass 服务时才需要添加：端点填到 /api/interpreter 为止。公共服务器有频率限制，大范围、高频查询建议自建。",
+     "url": "https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances",
+     "url_label": "公共镜像列表"
+    }
+   ],
+   "access_modes": [
+    "read"
+   ],
+   "fields": [
+    {
+     "key": "endpoint",
+     "label": "端点",
+     "type": "text",
+     "required": true,
+     "default": "https://overpass-api.de/api/interpreter",
+     "description": "填到 /api/interpreter 为止，如 https://overpass-api.de/api/interpreter。"
+    }
+   ]
+  }
+ ],
+ "data_source_providers": [
+  {
+   "id": "osm_templates",
+   "name": "OSM 查询模板",
+   "description": "常用 OSM 数据类型与 Overpass 查询模板。",
+   "resource_types": [
+    "vector",
+    "template"
+   ],
+   "cache_ttl_seconds": 86400,
+   "discover": {
+    "command": "${plugin}/bin/geodata-osm.exe",
+    "argv": [
+     "data_source_discover"
+    ],
+    "timeout_seconds": 30
+   }
+  }
+ ]
+}

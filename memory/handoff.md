@@ -4,7 +4,14 @@
 > 旧规划 [`docs/rewrite-0.md`](../docs/rewrite-0.md) 留着，不再往下写。旧程序在 `legacy/first-knife/`，只读。  
 > 更早的标本在 `legacy/os-9/`。`Product-Spec.md` 和 `DEV-PLAN.md` 是上一版的档案。
 
-**上次更新**：2026-10-27。程序在 `tepeu/runtime`。命令行在 `tepeu/cli`，Spring Boot，没有网页。不带参数就一问一答，键盘按屏幕同一种编码读。说「停」或 stop 结束，这一次最多问 32 次。不带参数时人说一句就开工，限制是启动时所在的目录；工具从回答旁边交，不从给人看的话里抠。模型认得的名字是 Read、Grep、Glob、Edit、Write，再加跑命令。Read 按读东西记账，Write 按写东西记账。Grep、Glob 不问点头，成功不算做完。Edit 和写、跑一样要人点头，成功算做完。这一轮不上网。三个参数仍可跑一轮正题。改、写和跑要在屏幕上输入「同意」或「拒绝」，60 秒没答记等太久；这一轮问模型够问 8 次。问模型读本机 cc-switch 的 Xiaomi MiMo。编排已做进一轮。人拒绝或等超时就跳过这一篇剩下的，附注带上目标。给模型看会带上要做什么、限制、怎样算做完，失败和超时有正文也放上。做完和没做完抄上这次任务的编号。跑命令里带路径的参数必须落在限制里，工作目录用限制。人交来的名单不读。只聊天不放行这些工具。怎样认出别的密钥还没定，读到的字仍会原样交回。这次改动已提交（`6f794cf`，2026-10-11）。没有 tepeu 进程锁着包，重新打包前不必先停别的窗口。结构看 [`docs/agent-os.md`](../docs/agent-os.md)。外面那一道门在 [`docs/specs/对外.md`](../docs/specs/对外.md)。行为仍看 rewrite-1 和 specs。通配这一轮不做。关机后还在，还没做。快捷方式那两条验收，这台机器没有管理员权限，没跑到。
+**上次更新**：2026-11-03。运行时仍在 `tepeu/runtime`，本段不改它的行为。同日另完成「领域应用基座」设计，入口 `docs/gnex-domain-base/09-网页呈现/index.html`，规格在 `docs/gnex-domain-base/specs/`。这是设计文档，没有改运行时代码。
+
+## 领域应用基座（2026-11-03）
+
+- 做完的是方案和可开发规格，不是程序。
+- 基座是 gnex 旁边的业务拼装层：应用、页面、数据、安装、给智能体的组装单。登录、租户硬边界、智能体循环仍归 gnex3。
+- 评审意见已改回文档。有一条不采纳：管理员第一次安装应用不走智能体审批。
+- 下一步若要写代码，从 `specs/spec-idn-context.md` 和 `specs/spec-pkg-install.md` 开工，先不要做进程内加载业务 jar。
 
 ## 现在做到哪
 
@@ -17,6 +24,7 @@
 - 参考档案（逆向研究，2026-10-23/28）：`memory/trae-reference/`（Trae 四轮提取）与 `memory/workbuddy-reference/`（WorkBuddy 连接件/skill/提示词面全量 + 吸收裁决 `ANALYSIS.md` §七——检查口/给模型看/判断三篇有对照工程样板）。提示词面=服务端下发已实证，快照在 `workbuddy-reference/prompts/`。`memory/qianwen-reference/`（千问 PC 5.0.7.276，2026-10-28）：cowork-agent-host.asar 提示词面 17 件，Claude Code 内核+中文 persona 层；吸收裁决 `ANALYSIS.md` §八/§十（收尾承诺裁判、授权白名单、澄清三条件、压缩防跑、Prompt 不是授权——后两者已记 rewrite-1 §8 将来件，其余经对照 tepeu 已覆盖）。`memory/qingclaw-reference/`（轻流 QingClaw wingent-x 1.7.0，2026-10-31）：薄壳+服务端引擎，本地提示词面=108 条场景库 + 提示词组装系统（xt/St/Ct/wt）+ openui-lang 完整契约（~13KB）；企业语义词表（字段类型/视图/按钮动词/流程规则六型/星型实体图）在 ANALYSIS.md §四，对 tepeu 映射 §七（两段式+词表注入、输出物清单化、错误消息即提示词）。§八 路由分工/质量评价/可学手法 + openui-lang 运行时 + 思维链处理；§十 上下文机制（五层记忆 pull 型工具、bootstrap 截断警告协议、untrusted 打标清洗、HITL 消息类型、工具发现语义搜索）；三方对照（runtime/思维链/上下文 × WorkBuddy × 千问，证据基线不等已标注）在 `COMPARISON.md`——对 tepeu 三启示：验收报告结构（部分合格一等状态）、过程呈现三件（分相/失败折叠/审计型暴露）、最便宜改进两件（截断显式化+注入打标）。
 - `memory/外部对照-2026-11-03.md`（2026-11-03，仅参考，未实施）：公开仓库说明。文件开头有按问题查的表。没有写入现行规则，没有改程序。要参考时打开这一份，不要当成待做功能。
 - `memory/cursor-reference/`（Cursor 3.27.22，2026-11-01）：VS Code fork，AI 层=workbench.glass.main.js 49.7MB；主系统提示词在服务端（SystemPromptSpec 下发），客户端可见=协议形状+内嵌提示词+内置 skill 25 份全量（`prompts/builtin-skills/`，四标本最高质量语料——autopilot 注入防御/完成权分离、goal 完成审计协议最严、loop 服务端陷阱文档化）。安全：cursorsandbox.exe（Rust，决策日志带 matched_rule，Windows 网络过滤=代理环境变量自认无内核阻断）、权限四模式+admin denylist、hooks 20 事件=Claude Code 契约兼容、MCP 沙箱+策略指纹（win32 stdio 用户扩展明跑自认）、隐私披露表+CPI fail-closed。上下文：行为学习两段式（证据标准 4 会话引用/禁反推）、Merkle 增量同步+路径加密、上下文记账八分类。对 tepeu 映射 §八（goal 完成审计→完成权机器门参照、错误消息带补救路径、接口契约对齐 Claude Code）。§九 质量评价。
+- `memory/opengeodex-reference/`（OpenGeodex 1.1.4，武汉智图/ZealMap GIS 多 Agent 桌面工作台，2026-11-11，五轮已结案）：Tauri 2.11.5 Rust 壳，全部行为提示词明文内嵌 exe 并已提取（`prompts/` 8 份：主 Agent+5 专家+共享切片+辅助件）；领域技能正文 OGXSK1 密文（X25519+ChaCha20-Poly1305，私钥不内嵌）且不落库——两层 IP 保护防提取实证有效。五标本中最干净的多 Agent 上下文隔离契约（「最终回复是主 Agent 唯一能看到的东西」+5 点回报+结构化回弹+finish-before-delegate 代码级拦截）。语义卡四层（卡进上下文/正文按需）、数据源三层 DSL（connector_types→cli_tools.connectors→data_source_providers，guide 即 UI、密钥 env 注入、插件 CLI 进程级凭证门）、持久化零依赖（向量=BLOB 暴力检索+gen 代计数器、遥测日聚合+revision 幂等）、agent.soul 一句话人设（行为固定/灵魂可换）。真实任务轨迹还原（2h22m/201 调用）在 §12.1。对 tepeu 启示在 ANALYSIS.md §10 与 §12 各节；仅参考未写入现行规则。
 - 待人裁决：仓库根 0 字节乱码文件 `鏇存棭鐨勬爣鏈湪`（删否）；`~/.workbuddy-key-fallback`（疑似密钥落盘，未读）。
 
 ## 待审裁定——密钥认出（2026-10-28 草案，未裁）

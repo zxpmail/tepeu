@@ -1,0 +1,314 @@
+b@
+----
+b@
+----
+pB
+----
+`
+@
+----
+P
+@
+----
+list_sessionslist_projectsopen_data_storage_dirsave_projectdelete_projectset_current_projectload_sessionmark_ui_readynew_sessionlist_background_jobscancel_background_jobrename_sessionensure_conversationpending_approvalsturn_statuscancel_turnresolve_approvalset_soloopen_file_resourceviewer_availablesave_table_resourceopen_external_urlshow_desktop_notificationset_taskbar_busyreveal_file_resourcedelete_file_resourcelist_memory_itemsdelete_memory_itemget_user_profilesave_user_profilelist_user_skillslist_registered_skillssave_user_skilldelete_user_skilllist_knowledge_docslist_knowledge_chunksdelete_knowledge_docdependency_statusruntime_service_statusrecord_performance_metricreplay_agent_eventslist_trace_timelinesdeveloper_statusdeveloper_remove_dirdeveloper_reloadasr_model_statusvision_model_statusembedding_model_statusdelete_embedding_modelapp_metalist_pluginsplugin_model_statusdelete_plugin_modelget_visualization_settingsset_zealmapview_linkedlist_plugin_connector_typeslist_plugin_data_source_providerssuggest_file_rootslist_summonable_expertsget_desktop_configsave_desktop_configset_trace_enabledget_notification_settingssave_notification_settingsoperation_send_password_change_codeoperation_send_password_reset_codeoperation_remembered_loginoperation_forget_loginget_license_statusget_telemetry_settingsset_telemetry_settingsexit_appuninstall_skillstatelinkedidinputprojectIdcallIdapproverememberconversationIdonpathjobIdtierlimitapptitlebodyurlincludeJobsdocIdpluginIdbusyenableddemandSamplesmodelRewritesettingsnamevalueMslabelmodelIndexmodelIdexecutionIdafterSeqskillIdkindindexconfig
+----
+@
+----
+и@
+----
+PpB
+----
+OPENGEODEX_DATA_DIRpluginsOPENGEODEX_USER_PLUGINS_DIRworkterminated  stale supervised process(es)
+----
+9pB
+----
+DpB
+----
+closed stale runtime state: tools= approvals= jobs= plans=
+----
+
++pB
+----
++pB
+----
++pB
+----
+runtimeagent-events.jsonl[opengeodex-desktop] 连接器密钥加密失败: 
+----
+创建数据目录失败 
+----
+
+pB
+----
+初始化执行事件日志失败: 
+----
+,pB
+----
+写入默认配置失败 
+----
+P,pB
+----
+
+pB
+----
+创建配置目录失败 
+----
+
+pB
+----
+创建用户插件目录失败 
+----
+-pB
+----
+
+pB
+----
+crates\opengeodex-desktop\src\state.rs
+----
+@-pB
+----
+@-pB
+----
+skills
+----
+@-pB
+----
+license.jsonoperationsession.json-wal-shmopengeodex.db
+----
+I.pB
+----
+crates\opengeodex-desktop\src\operation.rs
+----
+h.pB
+----
+h.pB
+----
+h.pB
+----
+运营服务返回了无法识别的数据
+----
+h.pB
+----
+/api/notify/email邮件通知需要先登录 OpenGeodex 账号
+----
+h.pB
+----
+h.pB
+----
+error无法连接运营服务: 
+----
+连接运营服务超时运营服务请求失败 ()
+----
+0pB
+----
+0pB
+----
+assertion failed: validate_scale_factor(scale_factor)
+----
+assertion failed: subclass_result.as_bool()C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tao-0.35.3\src\platform_impl\windows\event_loop.rs
+----
+Initializing the event loop outside of the main thread is a significant cross-platform compatibility hazard. If you absolutely need to create an EventLoop on a different thread, you can use the `EventLoopBuilderExtWindows::any_thread` function.
+----
+assertion failed: removal_result.as_bool()
+----
+PostMessage failed ; is the messages queue full?3pB
+----
+ @
+----
+@@
+----
+@,@
+----
+ <@
+----
+ @
+----
+ Z@
+----
+Ж@
+----
+|@
+----
+P@
+----
+ Z@
+----
+ @
+----
+Unexpected GetWindowRect failure; please report this error to tauri-apps/tao on GitHub
+----
+assertion failed: flush_paint_messages(None, &subclass_input.event_loop_runner)
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tao-0.35.3\src\platform_impl\windows\event_loop\runner.rs
+----
+RedrawRequested dispatched without explicit MainEventsCleared
+----
+08pB
+----
+RedrawEventsCleared emitted without explicit MainEventsCleared
+----
+NewEvents emitted without explicit RedrawEventsCleared
+----
+09pB
+----
+0k@
+----
+`;@
+----
+0H@
+----
+assertion failed: old_event_handler.is_none()
+----
+either event handler is re-entrant (likely), or no event handler is registered (very unlikely)
+----
+assertion failed: self.event_handler.replace(Some(event_handler)).is_none()
+----
+Setting a menu on a child window is unsupported
+----
+@;pB
+----
+tao::platform_impl::platform::windowC:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tao-0.35.3\src\platform_impl\windows\window.rsUnexpected ClientToScreen failure
+----
+<pB
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tao-0.35.3\src\platform_impl\windows\monitor.rs
+----
+OleInitialize failed! Result was: `OLE_E_WRONGCOMPOBJ`
+----
+OleInitialize failed! Result was: `RPC_E_CHANGED_MODE`. Make sure other crates are not using multithreaded COM library on the same thread or disable drag and drop support.
+----
+0;@
+----
+ p@
+----
+assertion failed: RegisterDragDrop(win.window.0, &file_drop_handler).is_ok()
+----
+0
+V@
+----
+`@
+----
+`@
+----
+x@
+----
+`@
+----
+`@
+----
+@
+----
+@
+----
+httphttps
+----
+0N@
+----
+://
+----
+0f@
+----
+@@
+----
+g@
+----
+0O@
+----
+@
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\wry-0.55.1\src\webview2\mod.rs
+----
+hBpB
+----
+0h@
+----
+hBpB
+----
+@'@
+----
+@@
+----
+N@
+----
+Object.defineProperty(window, 'ipc', { value: Object.freeze({ postMessage: s=> window.chrome.webview.postMessage(s) }) });
+----
+@
+----
+Pq@
+----
+hBpB
+----
+@@
+----
+N@
+----
+--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required --proxy-server=http:// --proxy-server=socks5://
+----
+Bad RequestOK
+----
+
+pB
+----
+P5@
+----
+ @
+----
+ W@
+----
+ @
+----
+GET
+----
+a Display implementation returned an error unexpectedly/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234\library\alloc\src\string.rs
+----
+cannot transmute_copy if Dst is larger than Src
+----
+XGpB
+----
+/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234\library\core\src\str\pattern.rs
+----
+ -@
+----
+r@
+----
+called `Result::unwrap()` on an `Err` value
+----
+0u@
+----
+0 @
+----
+07@
+----
+p@
+----
+Not a MenuC:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\muda-0.19.3\src\lib.rs
+----
+2NpB
+----
+Not a Submenu
+----
+2NpB
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\muda-0.19.3\src\items\check.rs
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\muda-0.19.3\src\items\submenu.rs
+----
+POpB
+----
+ErrorInitScriptError
+----
+RpcScriptError
+----
+NulError
+----
+ReceiverError
+----
+SenderErrorMessageSender
+----
+WebView2Error
+----
+HttpErrorProxyEndpointCreationFailed
+----
+WindowHandleErrorUnsupportedWindowHandle
+----
+Utf8ErrorNotMainThreadCustomProtocolTaskInvalidU

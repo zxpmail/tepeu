@@ -1,0 +1,238 @@
+{
+ "id": "geodata-dem",
+ "name": "DEM",
+ "version": "0.3.1",
+ "description": "按经纬度范围下载 Copernicus、NASADEM、AW3D30、SRTM 等公开 DEM 栅格，部分产品免密钥直下。",
+ "details": {
+  "category": "数据获取",
+  "features": [
+   {
+    "title": "免密钥瓦片下载",
+    "text": "从公开瓦片下载 cop30、cop90、nasadem、aw3d30 的 1° 瓦片，免 API Key、不排队；单次上限依次为 25、100、60、50 块。"
+   },
+   {
+    "title": "多镜像自动切换",
+    "text": "Copernicus 依次尝试 AWS、OpenTopography 存储、微软 Planetary Computer，其余产品走 Planetary Computer；连不上自动换下一个。"
+   },
+   {
+    "title": "服务端裁剪单文件",
+    "text": "经 OpenTopography 按 bbox 裁成单个 GeoTIFF，可选 Copernicus、SRTM 30m / 90m、ASTER GDEM、AW3D30；需 API Key，高峰期可能排队。"
+   },
+   {
+    "title": "ALOS PALSAR 12.5m",
+    "text": "经 NASA Earthdata 检索 ALOS PALSAR RTC 产品并取出其中的 DEM 层；12.5m 为上采样 posting，垂直精度不优于 30m。"
+   },
+   {
+    "title": "续传与拼接提示",
+    "text": "多瓦片时返回 tiles 清单，纯海域格子列入 missing_tiles；中断后重试只补缺块。结果附 gdalwarp -te 拼接裁剪命令、高程基准和各产品标准署名。"
+   },
+   {
+    "title": "产物落盘",
+    "text": "文件写入会话产物目录，只返回 path、size_bytes 与 bounds，不内联栅格；out_path 只接受相对路径，拒绝绝对路径和 ..，未写扩展名时补 .tif。"
+   }
+  ],
+  "support": [
+   "公开瓦片渠道：Copernicus GLO-30（cop30）、GLO-90（cop90）、NASADEM（nasadem）、AW3D30（aw3d30）。",
+   "OpenTopography 渠道：Copernicus GLO-30 / GLO-90、SRTM GL1 / GL3、ASTER GDEM、AW3D30。",
+   "ASF 渠道：ALOS PALSAR 高分辨率 RTC（ALOS_PSR_RTC_HIGH）产品中的 DEM 层，12.5m posting。",
+   "输出格式为 GeoTIFF；公开瓦片为 EPSG:4326、高程单位米，高程基准 Copernicus 为 EGM2008，NASADEM 与 AW3D30 为 EGM96。",
+   "ASF 分块可能分属不同 UTM 带，需统一重投影后再拼接。",
+   "范围参数为 WGS84 经纬度 bbox（south、west、north、east）。"
+  ],
+  "requirements": [
+   "公开瓦片渠道需能访问 AWS、OpenTopography 存储或微软 Planetary Computer 等海外镜像，连不上时在「设置 → 网络」配置代理。",
+   "使用 OpenTopography 渠道需在「设置 → 连接器」添加 OpenTopography 连接器，填写在 opentopography.org 免费申请的 API Key。",
+   "使用 ASF 渠道需添加 NASA Earthdata 连接器（Earthdata 用户名与密码），并先登录 ASF Vertex 同意数据使用协议；国内访问通常需开启代理。"
+  ]
+ },
+ "dependency": {
+  "mode": "bundled"
+ },
+ "enabled_by_default": true,
+ "guard": 1,
+ "expert_roles": [
+  "collector",
+  "remote_sensing"
+ ],
+ "skills": [
+  "skills/geodata-dem.md"
+ ],
+ "probe": {
+  "command": "${plugin}/bin/geodata-dem.exe",
+  "args": [
+   "--version"
+  ],
+  "on_missing": "DEM CLI 缺失；请重新安装完整 OpenGeodex 包。"
+ },
+ "cli_tools": [
+  {
+   "name": "dem_download",
+   "background": "auto",
+   "summary": "按经纬度范围下载公开 DEM 栅格到产物目录",
+   "resource": "network",
+   "description": "按 bbox（WGS84 度）下载 DEM 到会话产物目录。返回的是**文件路径**（path、size_bytes、bounds），栅格内容不内联；拿到 path 后交给 gdal / zealmapview 等工具继续处理。DEM/地形栅格一律用本工具，不要自己写爬虫。source=open_tiles（首选）：产品 cop30 / cop90 / nasadem / aw3d30，从公开瓦片直接下载，免 API Key、不排队，多个海外镜像（AWS、OpenTopography 存储、微软 Planetary Computer）自动切换；按 1° 瓦片返回 tiles 清单，需要单一文件时用 GDAL 拼接裁剪。source=opentopography：产品 cop30 / cop90 / srtm30 / srtm90 / aster / aw3d30（服务端按范围裁剪成单个文件，需 OpenTopography 连接器的免费 API Key，高峰期可能排队较慢）。source=asf：产品 alos_palsar_dem（12.5m posting，需 NASA Earthdata 连接器；国内通常需开网络代理）。选源细节见插件技能。",
+   "command": "${plugin}/bin/geodata-dem.exe",
+   "argv": [
+    "dem_download"
+   ],
+   "stdin": "$args",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "source": {
+      "type": "string",
+      "enum": [
+       "open_tiles",
+       "opentopography",
+       "asf"
+      ],
+      "description": "下载渠道"
+     },
+     "product": {
+      "type": "string",
+      "enum": [
+       "cop30",
+       "cop90",
+       "nasadem",
+       "srtm30",
+       "srtm90",
+       "aster",
+       "aw3d30",
+       "alos_palsar_dem"
+      ],
+      "description": "DEM 产品"
+     },
+     "bbox": {
+      "type": "object",
+      "properties": {
+       "south": {
+        "type": "number"
+       },
+       "west": {
+        "type": "number"
+       },
+       "north": {
+        "type": "number"
+       },
+       "east": {
+        "type": "number"
+       }
+      },
+      "required": [
+       "south",
+       "west",
+       "north",
+       "east"
+      ]
+     },
+     "out_path": {
+      "type": "string",
+      "description": "产物文件路径，相对会话产物目录（如 地形/武汉_cop30.tif），可带子目录；不能是绝对路径或含 ..；不写扩展名时补 .tif；缺省按渠道与产品命名"
+     }
+    },
+    "required": [
+     "source",
+     "product",
+     "bbox"
+    ]
+   },
+   "effect": "write",
+   "parse": "json",
+   "timeout_seconds": 1800
+  }
+ ],
+ "connector_types": [
+  {
+   "id": "opentopography",
+   "name": "OpenTopography",
+   "description": "连接 OpenTopography 地形数据平台。",
+   "category": "public_geodata",
+   "docs_url": "https://portal.opentopography.org/myopentopo",
+   "docs_label": "去 OpenTopography 申请 API Key",
+   "guide": [
+    {
+     "text": "在 OpenTopography 免费注册账号并登录。",
+     "url": "https://portal.opentopography.org/newUser",
+     "url_label": "注册账号"
+    },
+    {
+     "text": "打开 MyOpenTopo 个人页，在「API Key」处申请（Request API Key），复制生成的 Key 填到下方。学术邮箱注册可用的数据集更多。",
+     "url": "https://portal.opentopography.org/myopentopo",
+     "url_label": "打开 MyOpenTopo"
+    }
+   ],
+   "access_modes": [
+    "read"
+   ],
+   "fields": [
+    {
+     "key": "api_key",
+     "label": "API Key",
+     "type": "password",
+     "secret": true,
+     "required": true,
+     "env": "OPENTOPOGRAPHY_API_KEY",
+     "description": "MyOpenTopo 个人页申请到的 API Key。"
+    }
+   ]
+  },
+  {
+   "id": "nasa_earthdata",
+   "name": "NASA Earthdata",
+   "description": "连接 NASA Earthdata 数据平台。",
+   "category": "public_geodata",
+   "docs_url": "https://urs.earthdata.nasa.gov/users/new",
+   "docs_label": "去 NASA Earthdata 注册账号",
+   "guide": [
+    {
+     "text": "在 NASA Earthdata 免费注册账号；下方填的是 Earthdata 用户名（不是邮箱）和登录密码。",
+     "url": "https://urs.earthdata.nasa.gov/users/new",
+     "url_label": "注册 Earthdata"
+    },
+    {
+     "text": "用该账号登录一次 ASF Vertex；如提示需要同意数据使用协议，同意后再回来下载，否则 ALOS PALSAR DEM 可能被拒绝（401/403）。",
+     "url": "https://search.asf.alaska.edu/",
+     "url_label": "打开 ASF Vertex"
+    }
+   ],
+   "access_modes": [
+    "read"
+   ],
+   "fields": [
+    {
+     "key": "username",
+     "label": "用户名",
+     "type": "text",
+     "env": "NASA_EARTHDATA_USERNAME",
+     "description": "Earthdata Login 的用户名，不是注册邮箱。"
+    },
+    {
+     "key": "password",
+     "label": "密码",
+     "type": "password",
+     "secret": true,
+     "env": "NASA_EARTHDATA_PASSWORD"
+    }
+   ]
+  }
+ ],
+ "data_source_providers": [
+  {
+   "id": "dem_products",
+   "name": "DEM 产品",
+   "description": "Copernicus、NASADEM、AW3D30、SRTM、ASTER、ALOS PALSAR 等 DEM 产品。",
+   "resource_types": [
+    "raster",
+    "dem"
+   ],
+   "cache_ttl_seconds": 86400,
+   "discover": {
+    "command": "${plugin}/bin/geodata-dem.exe",
+    "argv": [
+     "data_source_discover"
+    ],
+    "timeout_seconds": 30
+   }
+  }
+ ]
+}

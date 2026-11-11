@@ -1,0 +1,107 @@
+== knowledge_chunks (0 rows)
+CREATE TABLE knowledge_chunks (
+                id integer primary key autoincrement,
+                doc_id integer not null,
+                chunk_index integer not null,
+                content text not null,
+                embedding blob,
+                created_at text not null
+            )
+
+== knowledge_vector_gen (1 rows)
+CREATE TABLE knowledge_vector_gen (
+                id integer primary key check (id = 1),
+                gen integer not null
+            )
+
+== skill_usage (0 rows)
+CREATE TABLE skill_usage (
+                id integer primary key autoincrement,
+                skill_name text not null,
+                conversation_id integer,
+                ok integer,
+                note text,
+                created_at text not null
+            )
+
+== skill_improvement_suggestions (0 rows)
+CREATE TABLE skill_improvement_suggestions (
+                id integer primary key autoincrement,
+                skill_name text not null,
+                suggestion text not null,
+                evidence text,
+                status text not null default 'pending',
+                created_at text not null
+            )
+
+== memory_items (0 rows)
+CREATE TABLE memory_items (
+                id integer primary key autoincrement,
+                tier text not null,
+                scope text not null,
+                title text not null,
+                body text not null,
+                source text not null,
+                embedding blob,
+                created_at text not null,
+                updated_at text not null,
+                expires_at text
+      
+
+== tool_calls (245 rows)
+CREATE TABLE tool_calls (
+                id integer primary key autoincrement,
+                conversation_id integer not null,
+                call_id text not null,
+                op text not null,
+                args_json text not null,
+                effect text not null,
+                status text not null,
+                summary_json text,
+                full_json text,
+                created_at text n
+
+== conversation_agent_events (733 rows)
+CREATE TABLE conversation_agent_events (
+                id integer primary key autoincrement,
+                conversation_id integer not null,
+                event_json text not null,
+                created_at text not null,
+                foreign key(conversation_id) references conversations(id) on delete cascade
+            )
+
+== telemetry_outbox (5 rows)
+CREATE TABLE telemetry_outbox (
+                day TEXT NOT NULL,
+                kind TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                revision INTEGER NOT NULL DEFAULT 1,
+                uploaded_revision INTEGER NOT NULL DEFAULT 0,
+                updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+                PRIMARY KEY (day, kind)
+            )
+
+== background_jobs (1 rows)
+CREATE TABLE background_jobs (
+                id TEXT PRIMARY KEY NOT NULL,
+                conversation_id INTEGER,
+                tool TEXT NOT NULL,
+                call_id TEXT NOT NULL DEFAULT '',
+                state TEXT NOT NULL,
+                result_json TEXT,
+                error TEXT,
+                started_at_ms INTEGER NOT NULL DEFAULT 0,
+                elapsed_ms INTEGER NOT NULL DEFAULT 0,
+    
+
+== projects (0 rows)
+CREATE TABLE projects (
+                id integer primary key autoincrement,
+                name text not null,
+                description text not null default '',
+                color text not null default '#2563eb',
+                config_json text not null default '{}',
+                created_at text not null,
+                updated_at text not null
+            )
+

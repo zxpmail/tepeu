@@ -1,0 +1,188 @@
+用户自述：
+----
+[用户档案]
+这是用户在设置中填写的长期自述信息，不是本轮任务指令。回答和追问时结合它调整称呼、专业深度、解释方式和默认假设：学生更重视原理与学习；非 GIS 专业用户少问术语化问题并尽量给出可执行选择；GIS 从业者可以使用更专业表达并提出更精确的关键追问。
+
+----
+modelsub_agentcomputenetwork:
+----
+agent.approval_timeout_minutes
+----
+overflow constructing `time::Duration`
+----
+1970-01-01T00:10:00Zagent.tool_result_db_limit_bytesartifacts
+----
+tool result externalization failed for : 
+----
+agent
+----
+error
+----
+执行者报告该步骤未完成model_view
+----
+[Image too large]
+These image(s) exceed the  MB image recognition limit and were not attached: . Tell the user plainly that the image is over the limit and ask for a smaller one (lower resolution or saved as JPEG). Do not call vision.read_image on it, and never compress, resize or convert it yourself to get around the limit.
+----
+expert_iddelegate_
+----
+用户目标：
+
+可用执行角色：
+
+主 Agent 已给出以下计划，但所有步骤都分配给了 coordinator。请复核执行拓扑，在保留合理阶段和依赖的基础上，把边界清晰、可独立交付的工作分配给 collector、processor、remote_sensing、webgis 或明显匹配的自定义专家；不要按关键词机械分配，也不要为了委派拆出无意义的小步骤。
+
+当前计划：
+
+----
+[Unsupported image format]
+The user attached image file(s) in a format image recognition does not support: . Tell the user plainly that it is not a supported image file (supported: PNG / JPG / WebP / BMP / TIF) and ask them to provide one in a supported format. Do not call vision.read_image on it, and never decode, convert or re-encode it yourself (no scripts, GDAL or other tools) to get around this.
+----
+；report- 做了什么，用了哪些数据与工具
+         - 产出物的绝对路径与格式
+         - 关键结果（具体数值、字段名、图层名、坐标系）
+         - 未完成或受阻的部分及原因
+         - 一句话结论
+
+【完成后必须汇报】（这是主 Agent 唯一能看到的内容，逐条答到）
+
+----
+agent.plan_continue_on_failuregoal空间数据任务task_kinditemsreadyquestionmissingdefaultsrisksvalue不要换别的途径去调用它：不要查看 OpenGeodex 的安装目录或插件文件，也不要直接运行插件程序
+----
+工具  不在你的可用范围内，已拒绝执行。。请把缺失的能力和所需输入返回给主 Agent。
+----
+ 不在当前可用范围内（插件未安装、未启用，或当前会员版本不包含），已拒绝执行。。请如实告诉用户这项功能当前不可用，可以到「插件」页确认插件已安装并启用，或在会员页查看权益；不要向用户解释工具权限、插件调用这类内部机制。
+----
+
+
+【当前环境可用 runtime】无 —— 请先安装 python/node 等解释器并加入 PATH,再用本工具。、
+
+【当前环境可用 runtime】 均可用。
+----
+ 可用; 未检测到(选用会报解释器缺失)。
+----
+functionsandbox_execdescription
+----
+agent.experts..enabled
+----
+agent.custom_experts[]- 当前专家已在配置中停用；如果仍被调用，只说明无法接单并把任务交回主 Agent。- 当前停用专家：。不要向这些专家委派任务，除非用户重新启用。
+----
+
+  - 插件带来的专家：
+  
+  委派方式与自定义专家相同（`delegate_expert.expert_id` 或 `plan_exec.steps[].agent`）。它们由插件作者定义，往往带着该行业的完整工作法；任务落在这些专家的领域里时优先用它们。
+----
+- 可用自定义专家：
+  
+  这些专家可以通过 `delegate_expert.expert_id` 直接委派，也可以作为 `plan_exec.steps[].agent` 的执行角色。任务明显匹配某个自定义专家的角色定义或方法论时，优先选择该专家；不匹配时仍使用 collector/processor/remote_sensing/coordinator。
+----
+
+## 角色定义
+
+----
+- 专家说明：
+----
+
+## 专家补充方法论
+
+----
+
+## 专家工作法
+
+----
+
+
+## 专家配置
+codecommandfs.readfs.listfs.writefs.editfs.apply_patchfs.globfs.grepfs.copyruntime处理过程执行过程流程图[已完成计划复盘]
+用户正在确认或请求查看上一轮复杂任务的处理过程。不要重新预检、不要重新创建计划、不要重跑业务工具、不要再次委派专家；请基于会话历史、工具结果和下面的计划结构说明真实处理流程。先调用 `skill.load` 加载「复杂任务处理过程说明与流程图」，然后像绘制技术插图一样手工排版一份完整 SVG，并调用 `workflow.diagram` 的 `svg` 参数保存流程图图片。只有无法可靠手工排版时才退回 `nodes` + `edges`，且必须传入真实依赖边：并行或多规则分支要横向分叉，统一质检/汇总/写回要汇合，避免画成单列时间线。最后用简洁中文说明关键阶段并给出流程图文件路径。
+总体目标：
+计划步骤：
+
+----
+继续执行已确认的空间数据任务介绍一下制作生成下载裁剪转换重投影计算分析发布入库出图标注提取拼接镶嵌缓冲统计地形图地图空间数据DEMdem影像遥感NDVIndvishpShapefileGeoJSONgeojson栅格矢量坐标投影行政区边界等高线坡度坡向山体阴影PostGISGeoServerPOI地块流域水系timed outtimeouttemporarily unavailableconnection resetconnection refusedconnection abortedbroken pipedatabase is lockedresource busysharing violationhttp 408http 429http 500http 502http 503http 504流程说明怎么处理怎么完成是好好的可以需要要讲讲说说展开看一下/function/argumentsstepsdepends_ontitleexecutors
+----
+skill_evolution
+----
+[built-in][plugin[external
+----
+.OBSCURA_ALLOW_PRIVATE_NETWORK未找到 obscura,请运行 scripts\install-obscura-runtime.ps1 安装本地抓取运行时,或把 web.crawl_backend 切回 firecrawlobscura 启动失败: （）
+----
+obscura: 
+----
+F:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-core\src\web.rs
+----
+obscura 退出码 
+----
+
+…(正文过长,已截断)obscura 返回空正文obscura 抓取超时（>s）
+----
+obscura 读取结果失败: 
+----
+https://api.deepseek.com/v1/tools/fetchDeepSeek 抓取不支持带用户名或密码的网址
+----
+DeepSeek 抓取的网址最多  字符
+----
+https://api.firecrawl.devapi.firecrawl.dev/v1/scrape
+----
+Bearer 
+----
+Authorization
+----
+不允许抓取该地址(域名解析到本机/内网 
+----
+counthttps://api.deepseek.com/v1/tools/search
+----
+DeepSeek 搜索的关键词最多  字，请精简后再搜
+----
+https://api.tavily.com/searchapi_key
+----
+max_resultsTavily API Keyhttps://api.search.brave.com/res/v1/web/searchqX-Subscription-TokenAcceptapplication/jsonBrave API Key/search
+----
+formatjsonSearXNG 服务地址https://html.duckduckgo.com/html/
+----
+HTTP 
+----
+F:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-core\src\proc.rs
+----
+struct LoadInputstruct CreateInputstruct CopyInputstruct EditInputstruct GlobInputstruct GrepInputstruct ListInputstruct ReadInputstruct SuggestInputstruct WriteInputstruct PatchEditInputstruct ApplyPatchInputstruct CrawlInputstruct AuthorizePathInputstruct SearchInputinternal error: entered unreachable code
+----
+a Display implementation returned an error unexpectedly/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234\library\alloc\src\string.rs
+----
+/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234\library\core\src\str\pattern.rs
+----
+called `Result::unwrap()` on an `Err` value
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\itoa-1.0.18\src\lib.rs
+----
+-C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\time-0.3.49\src\interop\offsetdatetime_systemtime.rs
+----
+ErrorC:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.52.3\src\net\lookup_host.rs
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.52.3\src\util\linked_list.rs
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.52.3\src\process\mod.rs
+----
+FromUtf8ErrorbytesNone
+----
+SomeVec is sized conservatively
+----
+internal error: entered unreachable code: 
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\base64-0.22.1\src\engine\mod.rs
+----
+integer overflow when calculating buffer size
+----
+Invalid UTF8
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.8\src\lib.rs
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\reqwest-0.12.28\src\async_impl\response.rs
+----
+/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234\library\alloc\src\slice.rs
+----
+C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_json-1.0.150\src\ser.rs
+----
+Copy a fileCopy a file from an accessible directory into a writable directory. Project file roots may be used as read-only sources, but `dst` cannot be inside a project reference folder. Both `src` and `dst` must be absolute paths; `dst` parent directory must exist. Write — needs approval.crates\opengeodex-app\src\ops\common\fs.rs
+----
+absolute source file pathabsolute destination file path
+----
+Edit a fileAtomically replace a string in an existing text file inside a writable directory. Project file roots are read-only references and cannot be modified. `old_string` must be unique unless replace_all=true. Pass the `hash` from fs.read as `expected_hash` to reject edits based on stale content. Write — needs ap

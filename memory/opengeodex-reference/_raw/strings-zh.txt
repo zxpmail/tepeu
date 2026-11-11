@@ -1,0 +1,8054 @@
+                 where status not in ('ok','failed','rejected','interrupted')update approvals set decision='interrupted', decided_at=?1 where decision is nullupdate jobs set state='failed', error='应用在任务完成前退出', updated_at=?1
+                 拒绝后来者
+             set state='interrupted', error='应用在作业完成前退出
+             后果
+             文件所有者并不自动拥有它
+             要启用这层保护
+            "description": "GeoServer 工作空间与已发布图层
+            "description": "MySQL / MariaDB 数据库里的表
+            "description": "天地图在线瓦片底图图层
+            "description": "常用 OSM 数据类型与 Overpass 查询模板
+            "description": "星图地球在线瓦片底图图层
+            "description": "气象
+            "description": "连接 GeoServer 地图服务器
+            "description": "连接 MySQL / MariaDB 数据库
+            "description": "连接 NASA Earthdata 数据平台
+            "description": "连接 OpenStreetMap Overpass 服务
+            "description": "连接 OpenTopography 地形数据平台
+            "description": "连接 PostgreSQL / PostGIS 数据库
+            "description": "连接天地图开放平台
+            "description": "集成天地图在线底图
+            "description": "集成星图地球在线底图
+            "name": "DEM 产品",
+            "name": "GeoServer 图层",
+            "name": "MySQL 图层",
+            "name": "OSM 查询模板",
+            "name": "PostGIS 图层",
+            "name": "公开地理数据目录",
+            "name": "天地图",
+            "name": "天地图在线底图",
+            "name": "天地图底图",
+            "name": "星图地球在线底图",
+            "name": "星图地球底图",
+            "summary": "下载人口分布栅格
+            "summary": "下载省
+            "summary": "从看图窗口移除图层
+            "summary": "修改图层名称
+            "summary": "列出或切换看图窗口的在线底图",
+            "summary": "列出看图窗口中的图层及加载状态",
+            "summary": "列出表
+            "summary": "在 WGS84
+            "summary": "执行只读 SQL 查询
+            "summary": "执行导出文件
+            "summary": "执行转换
+            "summary": "把 GeoJSON 建表导入
+            "summary": "把 GeoJSON 新建成表
+            "summary": "把 PostGIS 表发布为图层或为图层应用 SLD 样式",
+            "summary": "把 WT/WL/WP 或整个 MPJ 工程转为 Shapefile",
+            "summary": "把数据
+            "summary": "把点
+            "summary": "把看图窗口切换到前台显示",
+            "summary": "按关键词检索中国标准地名",
+            "summary": "按系统主键 _id 更新或删除单行数据",
+            "summary": "按经纬度范围下载公开 DEM 栅格到产物目录",
+            "summary": "文件更新后重新读取图层并保留样式",
+            "summary": "查看 MapGIS 文件类型
+            "summary": "查看栅格与矢量数据的元信息与统计",
+            "summary": "查询 DuckDB 命令用法与可用空间函数",
+            "summary": "查询 GDAL 子命令与参数用法",
+            "summary": "查询中国省
+            "summary": "查询工作空间
+            "summary": "查询某个点位的历史逐日气象时间序列",
+            "summary": "检索 Whitebox 工具清单并查询工具参数",
+            "summary": "用 Overpass QL 查询 OSM 矢量数据并保存为文件",
+            "summary": "用天地图把地址查成坐标
+            "summary": "缩放到指定图层或经纬度范围",
+            "summary": "获取 GlobeLand30 土地覆盖分幅下载地址",
+            "summary": "运行一个地形
+            "text": "450 多个独立工具可按关键字筛选
+            "text": "CGCS2000 按与 WGS84 等价处理
+            "text": "Copernicus 依次尝试 AWS
+            "text": "[out:json] 存为 Overpass JSON
+            "text": "spatial 扩展随插件内置并自动加载
+            "text": "上传完整 SLD 创建全局样式并设为图层默认样式
+            "text": "从公开瓦片下载 cop30
+            "text": "从民政部地名信息库查询省
+            "text": "从阿里云 DataV 下载省
+            "text": "内联返回的真实坐标与属性值只显示在界面上
+            "text": "列出工作空间
+            "text": "列出库内各 schema 的表
+            "text": "列出库内的表
+            "text": "发布与样式都需用户审批
+            "text": "只读打开数据
+            "text": "只读查询免审批
+            "text": "只读检查 WT/WL/WP/MPJ
+            "text": "可从已有 MPJ/WT/WL/WP 复制 MapGIS 私有投影参数
+            "text": "可直接读取 S3 或 HTTP 上的 GeoParquet
+            "text": "在常用栅格
+            "text": "地址超过 200 字
+            "text": "基于 DEM 生成山体阴影
+            "text": "多瓦片时返回 tiles 清单
+            "text": "天地图 TK 由
+            "text": "对 DEM 做填洼
+            "text": "对 LAS/LAZ 点云做分类
+            "text": "导入的新表自带系统主键 _id
+            "text": "将图层导出为 GeoPackage
+            "text": "打开
+            "text": "执行 Overpass QL
+            "text": "把一个或多个本机文件送进看图窗口
+            "text": "把会话产物目录里的 GeoJSON 或 GeoJSONSeq 建成新表
+            "text": "把单个 WT
+            "text": "把点
+            "text": "指定 PostGIS 连接器
+            "text": "按 QGIS 表达式筛选并分页读取要素
+            "text": "按中国范围矩形
+            "text": "按单一符号
+            "text": "按国家 ISO3 代码下载 WorldPop 人口 GeoTIFF
+            "text": "按工作空间与图层名查询图层的经纬度范围
+            "text": "按稳定 key 引用图层
+            "text": "按经纬度点查询 Open-Meteo ERA5 日值数据
+            "text": "按范围中心定位 GlobeLand30 2010 或 2020 年版的 5
+            "text": "按范围裁剪栅格与矢量
+            "text": "探查信息不足以回答字段
+            "text": "接口未声明坐标基准
+            "text": "支持 WGS84
+            "text": "数据源页内置道路
+            "text": "整个导入在一个事务里完成
+            "text": "文件写入会话产物目录
+            "text": "新建失败会删掉刚建的表
+            "text": "新建打印布局
+            "text": "普通图片
+            "text": "未指定连接器时依次尝试 overpass.kumi.systems
+            "text": "查看栅格的坐标系
+            "text": "查询结果写入会话产物目录
+            "text": "检索并调用 QGIS Processing 算法
+            "text": "每次运行一个工具
+            "text": "气象
+            "text": "用 COPY 把查询结果导出为 Parquet
+            "text": "用 ST_Read 等函数直接读取 GeoParquet
+            "text": "用表达式做栅格代数
+            "text": "端点返回限流提示或 HTML 错误页时直接报错
+            "text": "经 NASA Earthdata 检索 ALOS PALSAR RTC 产品并取出其中的 DEM 层
+            "text": "经 OpenTopography 按 bbox 裁成单个 GeoTIFF
+            "text": "经本插件导入的表带系统主键 _id
+            "text": "缓冲
+            "text": "计算地形湿度指数
+            "text": "转换在本机完成
+            "text": "转换属于写操作
+            "text": "输入中文地址或地名
+            "text": "输入经纬度
+            "text": "配合 GDAL 与 PostGIS 插件
+            "text": "配置天地图或星图地球密钥后
+            "text": "预览最多 100 个要素
+            "text": "默认保留 6 位小数
+            "title": "GeoJSON 入库",
+            "title": "LiDAR 点云处理",
+            "title": "MapGIS 转 Shapefile",
+            "title": "Overpass QL 查询",
+            "title": "Processing 地理处理",
+            "title": "SLD 样式管理",
+            "title": "Shapefile 写回 MapGIS",
+            "title": "Shapefile 发布流程",
+            "title": "三维
+            "title": "两种输出格式",
+            "title": "事务与回滚",
+            "title": "云端与跨库查询",
+            "title": "产物落盘",
+            "title": "人口分布栅格",
+            "title": "免入库 SQL 分析",
+            "title": "免密钥瓦片下载",
+            "title": "内容分析衔接",
+            "title": "写操作管控",
+            "title": "加载成果到窗口",
+            "title": "历史气象时间序列",
+            "title": "发布 PostGIS 表",
+            "title": "受控修改",
+            "title": "只读与会话隔离",
+            "title": "四种坐标系互转",
+            "title": "图层样式与刷新",
+            "title": "图层清单查询",
+            "title": "图层范围查询",
+            "title": "土地覆盖分幅",
+            "title": "在线底图",
+            "title": "地址查坐标",
+            "title": "地形分析",
+            "title": "坐标基准标注",
+            "title": "坐标查地址",
+            "title": "境外坐标不偏移",
+            "title": "多镜像自动切换",
+            "title": "失败自动撤销",
+            "title": "安全写入与参照系提示",
+            "title": "密钥托管与脱敏",
+            "title": "工具检索",
+            "title": "工程与图层管理",
+            "title": "常用查询模板",
+            "title": "打印布局与图集",
+            "title": "投影参数与中文编码",
+            "title": "数据导出与坐标转换",
+            "title": "数据检查",
+            "title": "数据脱敏",
+            "title": "数据脱敏与只读会话",
+            "title": "文件快速探查",
+            "title": "无坐标系数据直接看",
+            "title": "服务端裁剪单文件",
+            "title": "栅格代数与矢栅互转",
+            "title": "格式转换与重投影",
+            "title": "水文分析",
+            "title": "矢量处理",
+            "title": "空间函数计算",
+            "title": "空间表发现",
+            "title": "端点自动切换",
+            "title": "符号化与标注",
+            "title": "纯本地计算",
+            "title": "结果导出",
+            "title": "结果落盘",
+            "title": "结果落盘与摘要",
+            "title": "续传与拼接提示",
+            "title": "行政区划与地名",
+            "title": "行政区边界",
+            "title": "裁剪
+            "title": "要素查询与编辑",
+            "title": "读写分离与审批",
+            "title": "输入校验",
+            "title": "输出精度控制",
+            "title": "运行与审批",
+            "title": "近似处理说明",
+            "title": "错误页识别",
+            "title": "预览与分页读取",
+            "title": "高级地形指数",
+            -- 向量缓存的失效代数
+            -- 启动/中断恢复会按 status
+            -- 所有写入路径
+            -- 每行都挂着几十 MB 的 full_json
+            -- 用部分索引把
+          ".prj 的 WKT 不会反解为 MapGIS 私有投影
+          "ASF 分块可能分属不同 UTM 带
+          "ASF 渠道
+          "DuckDB CLI 1.5 及以上
+          "GeoServer 在其他机器上时
+          "IvorySQL 5 已实测
+          "MapGIS 6.x 矢量文件
+          "MapGIS 样式以 DBF 辅助字段近似保留
+          "MySQL 5.7 与 MariaDB 的几何列不登记坐标系
+          "MySQL 8.0 及以上
+          "OpenTopography 渠道
+          "PostGIS 连接器中的主机
+          "PostgreSQL 17 + PostGIS 3.5 已实测
+          "TiDB 没有空间类型
+          "openGauss 7 已实测
+          "spatial 扩展随插件安装
+          "三维
+          "不含 PostgreSQL
+          "不处理栅格数据
+          "不支持 MySQL 5.6 及更早版本
+          "不支持栅格数据
+          "人口
+          "仅做地名
+          "仅支持明文连接
+          "使用 ASF 渠道需添加 NASA Earthdata 连接器
+          "使用 OpenTopography 渠道需在
+          "使用在线底图需在
+          "入库和改表需使用有 CREATE
+          "入库和改表需使用有建表或写入权限的账号
+          "公开瓦片渠道
+          "公开瓦片渠道需能访问 AWS
+          "内置连接程序基于上游 qgis-mcp v0.4.5
+          "发布 PostGIS 表前需先配置 PostGIS 连接器
+          "发布的数据源仅限 PostGIS 表
+          "只写二维几何
+          "只查询可用只读账号
+          "可加载 QGIS 能打开的矢量
+          "可读取 GeoParquet
+          "可读取 S3
+          "可读取 WMS
+          "含中文等非 ASCII 字符路径下的 netCDF-4 文件可能退回 HDF5 驱动打开
+          "土地覆盖
+          "坐标
+          "坐标系
+          "导入坐标系按 EPSG 代码指定 SRID
+          "导入格式
+          "布局导出格式为 PDF
+          "常用格式
+          "平台
+          "支持 QGIS Desktop 3.28 及以上版本
+          "数据源
+          "服务
+          "未启用 PostGIS 扩展的库只能浏览普通表
+          "本机回环端口 9876 不能被防火墙
+          "栅格
+          "栅格支持 GeoTIFF 与 Whitebox 自有的 .dep 格式
+          "每次使用前需打开 QGIS
+          "气象
+          "用 ATTACH 连接 PostGIS 时需自备数据库账号
+          "界面依赖 WebView2 运行时
+          "矢量
+          "端点
+          "范围参数为 WGS84 经纬度 bbox
+          "行政区划与地名
+          "行政边界
+          "表格
+          "读取空间图层需该库已启用 PostGIS 扩展
+          "输入为单个经纬度点
+          "输出格式
+          "输出格式为 GeoTIFF
+          "运行平台为 64 位 Windows
+          "运行平台为 Windows
+          "连接 openGauss / GaussDB 时
+          "连接远程数据库时
+          "通过 GeoServer REST 接口访问
+          "需先添加 MySQL 连接器
+          "需先添加 PostgreSQL / PostGIS 连接器
+          "需在 QGIS
+          "需在天地图开放平台注册并完成开发者认证
+          "需在本机安装 QGIS Desktop 3.28 或更高版本
+          "需有可访问的 GeoServer 服务
+          "需联网访问 Open-Meteo
+          "需联网访问 Overpass 公共服务器或自建端点
+          "需联网访问天地图服务
+         - 一句话结论
+         - 产出物的绝对路径与格式
+         - 关键结果
+         - 未完成或受阻的部分及原因
+        "category": "位置服务",
+        "category": "制图与可视化",
+        "category": "地图服务",
+        "category": "数据处理与分析",
+        "category": "数据获取",
+        "category": "桌面 GIS 联动",
+        "category": "空间数据库",
+      "description": "内置 DuckDB 与 Spatial 扩展
+      "description": "内置 GDAL 3.12 命令行
+      "description": "内置 WhiteboxTools Open Core
+      "description": "在 WGS84
+      "description": "把栅格
+      "description": "按经纬度范围下载 Copernicus
+      "description": "获取历史气象时间序列
+      "description": "读取 MapGIS 6.x 的 MPJ/WT/WL/WP 文件
+      "description": "调用天地图地理编码服务
+      "description": "连接 MySQL / MariaDB 数据库
+      "description": "连接 PostgreSQL / PostGIS 数据库
+      "description": "连接本机运行的 QGIS Desktop
+      "description": "通过 Overpass API 查询 OpenStreetMap 道路
+      "description": "通过 REST 接口连接 GeoServer
+      "name": "WebGIS 开发专家"
+      "name": "地图制图专家"
+      "name": "地理数据处理专家"
+      "name": "地理数据采集专家"
+      "name": "地理空间领域专家"
+      "name": "天地图服务",
+      "name": "技能超市"
+      "name": "智图看看",
+      "name": "自主进化系统"
+      "name": "自定义专家"
+      "name": "遥感与云计算专家"
+  # firecrawl_key: ""             # 网页抓取的云端备用方式
+  # resource_id: seed-tts-2.0                     # 合成模型
+  # speed: 1.0                                    # 语速 0.5 ~ 2.0
+  # voice: zh_female_vv_uranus_bigtts             # 音色 ID
+  # volc_resource_id: volc.seedasr.sauc.duration  # 火山引擎识别资源 ID
+  # 搜索引擎可配置多个
+  $晷
+  - 插件带来的专家
+  approval_timeout_minutes: 10     # 写操作审批超时
+  enabled: false                   # 开启后写入 app_data/traces
+  env_backend: uv                   # 依赖安装统一走 uv
+  env_root: ""                      # 留空则使用 app_data/python_envs
+  http_proxy: ""                 # 例如 http://127.0.0.1:7897
+  http_proxy_enabled: false      # 是否为内置 HTTP 请求和沙箱注入代理
+  max_steps: 100                   # agent 单轮最大执行步数
+  memory_limit_mb: 4096             # 每个沙箱进程内存上限
+  reply_suggestions: true          # 每轮回复后给出快捷回复候选
+  show_tool_calls: false           # 会话中显示工具调用
+  soul: "你是严谨的 GIS 工程助手
+  timeout_ms: 120000                # 每次沙箱执行默认超时
+  专家汇报
+  个子进程
+  内置
+  原因
+  各步产出
+  委派方式与自定义专家相同
+  插件
+  服务就绪
+  结果
+  这些专家可以通过 `delegate_expert.expert_id` 直接委派
+ )s声&O
+ *e0礿<q
+ -R萲
+ / 不是支持的图片文件
+ / 共  行
+ / 后续还有内容
+ //滗
+ 1习h
+ 3-8 项H
+ 4Ll怵
+ :繢jZ
+ =迳S
+ >'媱
+ AI 模型 
+ A_A^^鑅
+ FAILS with 'Permission denied' (the OS blocks low-integrity writes to normal dirs). To produce files for the user: write RELATIVE paths in cwd (e.g. open('out.geojson','w')) and list them in outputs. If out_dir is omitted, the host copies outputs to the current conversation default output directory. Explicit out_dir must be a current conversation asset folder or a user-authorized read_write directory; never write into project source folders. Call fs.list without path to see meaningful asset folders such as 原始数据, 过程数据, 制图资料, 最终成果 and choose a clearer out_dir when appropriate. Without network:true (needs approval this run) no proxy is configured and network access is not supported 
+ G鏡9z ,Q
+ IdX蠜
+ JY腯
+ MCP 服务
+ P靣`,
+ Webhook 地址不是机器人接口
+ Webhook 地址不能包含用户名或密码
+ Webhook 地址必须以 https:// 开头
+ []_^A\A^A_騥
+ [_^A\A]A^A_閶J
+ [_^A\A]A^A_陧
+ [_^A\A]A^A_鱴
+ [_^A^A_郘b
+ [_^A^A_鈣b
+ [_^A^A_鐮
+ [_^A^A_閗b
+ [_^A^A_鮩
+ [_^A^A_鰯
+ [_^A^A_鱫b
+ [_^A^]黃
+ [_^飕
+ [_^鱮
+ [_^鸴
+ [sandbox]  读取超时,输出可能不完整
+ ^邲-
+ a3阪
+ even when you think you know the general answer, because the user's own standard may differ; also when the user asks to check the knowledge base. Rephrase with the likely document wording if the user's words are colloquial (e.g. 地形倾斜程度 
+ mTg嚀
+ m報YK
+ no attachments or files. Only use when the user explicitly asked to be notified (e.g. "通知我" when a task finishes); keep it brief and do not include raw data, file paths, credentials or tool output. Write 
+ nx廄w
+ n絻}k}
+ |魛y
+ 不在当前可用范围内
+ 个人中心
+ 个元素
+ 个字段
+ 个工具
+ 为地理空间而生的智能体  配置文件
+ 亐Jc
+ 以下后台作业已经结束
+ 任务通知 
+ 位专家已完成
+ 允许应用通过受控文件夹访问
+ 内存上限
+ 分  秒
+ 分幅 ZIP
+ 分支平级展示 
+ 勒索软件防护 
+ 只执行只读查询
+ 可用; 未检测到(选用会报解释器缺失)
+ 后台计划
+ 含不允许的地址
+ 均可用
+ 坡度分级). Read-only. Results may contain private user content; use only what is relevant and cite the doc/chunk in your reasoning when helpful.crates\opengeodex-app\src\ops\knowledge.rs
+ 声明了 foreground_wait_seconds
+ 处应有的文字有  处识别不到:整图文字大概率没显示出来(中文字体缺字成方框
+ 天地图
+ 失败: 
+ 小时  分
+ 小时版识别模型 1.0 
+ 小时版识别模型 2.0 
+ 工作线程异常退出
+ 已就绪
+ 并发版当前选择的识别模型
+ 并发版当前选择的识别模型负载长度不足/result/text/result/utterancesdefiniteJSON 解析失败: 
+ 并发版识别模型 1.0 
+ 引用的外部路径过多或授权后仍不可访问
+ 形状 
+ 必须声明
+ 必须至少给出 role_definition 或 methodology
+ 或  Webhook 地址的域名应为 
+ 执行超时
+ 插件 里卸载后重新安装
+ 插件 里卸载后重新安装即可
+ 插件 里重新启用后可用
+ 插件缺少 
+ 是 OpenGeodex 自身的内部目录
+ 智图看看]
+ 正在下载中
+ 汇合关系按实际依赖连接</text>
+ 沙箱 
+ 病毒和威胁防护 
+ 的 background 必须是 never / auto: 
+ 的 foreground_wait_seconds 必须在 ..=
+ 的 plugins 里有无效插件 ID: 
+ 的 test
+ 的 timeout_seconds 必须在 1..=
+ 的引号未闭合
+ 的文件  需要大小
+ 的文件名无效或重复: 
+ 的连接器参数无效或重复: 
+ 的连接器权限无效: 
+ 的连接器类型无效: 
+ 管理并安装插件
+ 簤5.
+ 类型为 
+ 缺少 API Key
+ 缺少 Base URL
+ 缺少取值
+ 缺少模型名
+ 网络 配置代理后重试
+ 网络抓取
+ 联网搜索
+ 諐]h
+ 请先安装 python/node 等解释器并加入 PATH,再用本工具
+ 超出范围
+ 过往成功经验]
+ 返回 : 
+ 返回异常: 
+ 连接器
+ 连接器 
+ 雯_0
+ 需先转换格式
+ 音色库
+ 页没有文字层
+ 页由本地 OCR 识别x
+ 页解析失败
+ 页识别后也没有文字
+ 页识别失败
+ 页高精度 OCR 服务识别失败
+!+'/<}c柝
+!/f鞩
+!6瓦P
+!9w齍
+!9邈q
+!>j东
+!A"箢g)
+!D\渚
+!J郂Y
+!J钢)
+!M~啧
+!N颦(T
+![便4
+!lQ楎&G
+!l毧l
+!z超D
+!刘fx
+!士6w
+!嬅J[
+!珙P&
+!邕tk
+"  # agent 人设提示词
+" 睌j
+"'R霅
+"(tG躘
+"+_礕
+".o贫
+"1?L筚;
+"4Xc銫
+"Hb霉
+"L]蜚
+"O薹x|
+"Q俤v&
+"S餢X
+"X鯤l
+"Z僬<
+"]%6獰
+"]x撎9U
+"d簕c
+"fP尒Z
+"i貚[9@
+"k片6
+"q孨v
+"t"g鴚4
+"{p[绯3
+"儏-b?
+"磄`/&
+"腚b+
+"艪[2
+"骑j:v.
+#       expert_roles: [collector, processor]   # 缺省仅主 Agent 可用
+#       name: 项目群
+#     - name: 高德地图
+#     name: 连接名称
+#   - type: <插件声明的连接器类型>
+#   name / base_url / api_key / model_name(必填) / default(可选 true)
+#   任务结束时通过群机器人 Webhook 发一条简短通知
+#   推荐在
+#   连接器类型由插件声明
+#   通用字段
+#  密钥在盘上是加密保存的
+#  本文件由 OpenGeodex 自动维护
+# Agent 对话行为
+# Python 运行环境
+# e饐
+# 沙箱执行
+# 火山引擎
+# 网络
+# 联网检索
+# 识图 (OCR / 多模态)
+# 语音朗读 (TTS)
+# 语音识别 (ASR)
+# 运行日志
+## 专家工作法
+## 专家补充方法论
+## 专家路由矩阵
+## 专家配置
+## 任务预检边界
+## 你的工具目录
+## 后台作业
+## 回复
+## 安全与审批
+## 导入说明
+## 工作原则
+## 工作方式
+## 工具纪律
+## 执行策略
+## 标准工作法
+## 核心原则
+## 沟通规范与执行节奏
+## 第  页
+## 角色定义
+## 身份与边界
+## 输出格式
+## 输出语言
+## 过程反馈与收尾
+## 运行环境
+### 第 
+##蚚a
+#)u湆-
+#4鉏9
+#98醶
+#;y紮C
+#<x趶
+#?D嗫:C虏/
+#K矪es2z"
+#R^鑧i
+#Rl殢
+#TF芥
+#Wg[鈇
+#W祄H
+#Z?渌
+#]V鵸
+#eff6ff输入#059669#ecfdf5采集#7c3aed#f5f3ff处理#fffbeb质检#0f766e#f0fdfa交付#475569#f1f5f9决策#4f46e5#eef2ff专家#64748b步骤
+#ihC褄
+#jH5懹
+#ox獛
+#p其Y
+#晕V蝜
+#襼bN
+$'睗^z
+$(箪x
+$,C矩
+$0H椵[A
+$7%鷻
+$7稼r*d
+$<Q蓒
+$G%G鱋P
+$K艖8P
+$SQ夀
+$[f9<YT鬓
+$[皕K
+$c囥#Y
+$ej?薊
+$g綝E
+$h 嚐5
+$oVa邲
+$r豓(
+${N蜈
+${plugin}[integrity] 无法给插件目录  贴完整性标签
+$叆>J
+$漕?L 
+$第*a
+$腎[TO
+$鏆v=
+$飯;:
+%(3瞓
+%*鄲<Qm
+%.傕,
+%1:釃
+%1D缉
+%<縟r
+%??鹘
+%A^聭.
+%S隰98
+%Y-%m-%d上传失败
+%\ 儼
+%l羁<S
+%oRt翠
+%pe扰4
+%zs蹨
+%{嗔Mh
+%崱/H
+%攐%%
+%涃v^
+%貞Uc
+%鬦+?
+&#牄`8^ 
+&;旇R
+&C 漰$
+&F凜L
+&I"廊O
+&I弓YC
+&amp;&lt;&gt;&quot;&apos;处理流程<svg xmlns="http://www.w3.org/2000/svg" width="" height="" viewBox="0 0  ">
+&bL怜
+&gM鍰=p
+&gm犫m
+&i媩q
+&兜O-A
+&堬!`E
+&毩E6{
+&觐!eA
+&觨>1
+&郣)G
+&颏?XH
+' (stdio) 缺少 commandp
+'#寘*~
+'(9)勺P
+'-妫x
+'2w4揄
+'>輯2
+'C2溦
+'JI黳
+'V#璓Rk
+'a)J義
+'a-阌
+'cJ(I釰'
+'f覥y
+'j焾$
+'k險(
+'塓oo
+'悪nn
+'枇U@
+'煻9#
+'鿪_Woa
+(!5i嘜
+()i+東
+(,W滵$
+(-孮0
+(0襲Ih
+(?:一个[省市县]级行政区\s*){2,}iX
+(B襵U
+(Cr癚
+(DCs皬
+(LM閥ra
+(R檀JS
+(UG乼
+(Y*哎7D
+([]_^A\A]A^A_鑰
+([]_^A\A]A^A_閹J
+([]_^A\A]A^A_鰱
+([]_^A\A]A^A_鹺J
+([]_^A^A_鸸J
+([]_^閍
+([]_^閣
+([]_^鶢
+([_^A\A^A_鸷J
+([_^A^A_]阜
+([_^A^A_]鴛
+([_^A^錟
+([_^A^閦
+([_^A^閮
+([_^A^雚
+([_^A^霂
+([_^A^頷
+([_^A^饀
+([_^A^馱
+([_^A^駹
+([_^A^駻I
+([_^A^麭
+([_^A^麴
+([_^A^齰
+([_^A^龴6
+([_^A^鿄
+([gU哈
+(_^逮N
+(_^鈙o
+(_^鈹/
+(_^錠
+(l&娇
+(n渤+
+(v=IU氋
+(員fjMq"
+(坐标已省略,完整数据在制品中)geometry[二进制已转存 #]
+(娾夯)gq1
+(子进程输出过大,已截断并保留开头与结尾)
+(寏Z@X
+(嶶79
+(已截断)
+(徙u@
+(本行超过 64KB,已截断)
+(正文过长,已截断)obscura 返回空正文obscura 抓取超时
+(沷>@
+(简体)(繁體)hrvatskiitalianorom
+(编码错误)你是资深地图制图质检员
+(转存失败,
+(输出超过 64KB
+(驈sh
+)!骈HjH
+)""馫
+)&糂U
+)&軏=
+)).臇y
+)2 璷
+)21黗
+)C/}茋
+)KWa氥
+)Q梦#
+)S-qjr 薌
+)UK陙E6
+)]+一个文件(?:^|\s)(?:/[^\s/"'<>
+)d#$诊
+)h_蕰
+)t$ 萵
+)v;遉
+)w:隯
+)x蒵Ua
+)侢18z.
+)劸OL<
+)宿$%:A
+)漪w]
+)玚"Y
+)稽6v
+)軲)j
+)長Vo
+)顰h>`
+* 衣\
+*(袁j
+**不得凭空假设或编造表名/路径/字段/数值
+**只处理已经就位的数据**
+**未完成或受阻的部分及原因**
+**禁止脚本内 open()/写绝对路径**
+**禁止自己实现坐标偏移等算法或手写爬虫**
+*-8+誷{OuYS
+*/閘V
+*2H贈jH
+*6t筡
+*9<奆
+*:~茥
+*:潾X$S
+*Ci慽
+*Ny坴
+*R/鬳
+*Yqm铝
+*_d鼏
+*f濆@
+*q|k鑴
+*r 4軡=<
+*v_嫩
+*娲$]
+*樉FdX
+*獱rL
+*璑js
+*畯,?]
+*繨*%
+*詎rZ#
+*賝([g
++!$瀕6
++"$|滐
++"7蝋
++*嗈P
++,捳&
++0&d繻\
++1o潉<
++9E漾
++C*H塥
++C猤}W<
++Ei瞖
++J鐓0
++Q!楅
++R|`d鵯
++S.f召RO
++W+Y甌R
++WyT砪
++Y莕/
++h櫞|
++p!f韱
++s2O(n爌
++t巸 [
++vM:鯨
++w臙D
++~杓\
++刮Lf5
++玞Cf
++盕i}
++笯>j[
++羥v:
++页PE!
++驳8^
+, []  (依赖: )
+, [opengeodex-desktop] 已删除旧远程通道遗留文件: 
+, 对象
+, 无效的记忆分类 ''
+,#媀(
+,)\ro鱜gT
+,3鸼f
+,@K莓F9%r
+,Cs蚮
+,M蜓;o
+,S絛_
+,ZY塡
+,Z镛B'
+,_d趥
+,_伒P
+,`1SYwH(uZ<顉
+,d#n9>r搛s
+,l7盢n}
+,q@司
+,q\刎
+,v@语
+,~瘼Qw
+,坱oX
+,常见于缺字方框被识别成汉字含方框字符(字体缺字)含替换字符 
+,晹jF
+,朐g%Be`j
+,柦mJ
+,汄bz
+,駫iD
+- **你的最终回复是主 Agent 唯一能看到的东西**
+- **写后必验证**
+- **失败止损**
+- **常见单目标任务要收敛**
+- **总原则
+- **改大文件先定位再改**
+- **查询用 bash**
+- <system-reminder> 标签里的内容是系统注入的背景上下文
+- OpenGeodex 会把你的文字
+- OpenGeodex 自身的安装目录
+- WebGIS 开发专家
+- [后台作业通知] 是宿主发的系统消息
+- `skill.suggest` 只给用户看候选卡片
+- episodic = user preferences / personal conventions (e.g. the user goes by 小明)
+- sandbox runtime 选择要明确
+- 三句话方向各不相同
+- 不创建计划
+- 不可逆或对外发布的操作先确认再做
+- 不堆叠标题
+- 不知道文件在哪
+- 不要为了找文件去翻目录
+- 不要寒暄和客套
+- 不要把临时工具日志
+- 不要猜用户指的是哪个连接
+- 不要重复发起同一个任务
+- 专家说明
+- 中间文件
+- 主 Agent
+- 云端能力是可选的
+- 云端遥感工作按已安装插件技能组织数据筛选
+- 产物分两类放
+- 介绍自己时说清你是
+- 代码
+- 任务里若带有
+- 你不做
+- 你可以读取 PostGIS/GeoServer 元数据
+- 你的产物应当是可运行
+- 你的最终回复交给主 Agent 汇总
+- 你能做
+- 使用最短可靠路径
+- 保留工具调用产生的关键结果
+- 保留用户最新意图
+- 保留重要文件路径
+- 信息足够且默认值安全时
+- 信息足够就行动
+- 先做数据就绪审计
+- 先做最小可用地图
+- 先定制图目的与数学基础
+- 先明确交互目标
+- 先明确遥感任务口径
+- 先查稳定来源
+- 先界定采集对象
+- 先确认数据形态
+- 再一句
+- 再做图面整饰与印前输出
+- 再完善图层体验
+- 再核查数据并做制图综合
+- 删除重复
+- 动手前用一句话说你要做什么
+- 动手前用一句话说明将做什么
+- 助手
+- 助手刚向用户提问或请用户确认时
+- 历史里 `plan_exec` 的结果是 `status: "running"`
+- 只完成收到的独立任务
+- 只完成用户要求的范围
+- 只完成被派发的任务
+- 只读动作
+- 可以并行发起互不依赖的多个工具调用
+- 可用自定义专家
+- 同一个结果重新生成后
+- 同一工具或同一路线失败一次后先阅读错误并修正
+- 后面的步骤确实必须用到结果
+- 地名
+- 地图应用必须验证
+- 地理数据处理专家
+- 地理数据采集专家
+- 坐标转换
+- 处理专家
+- 处理前定义目标产物
+- 处理链路要可复现
+- 多阶段任务结束时必须收束
+- 如实汇报结果
+- 如果包含子 Agent 或专家执行过程
+- 如果本轮最终跑通了一条值得复用的路径
+- 完成后先说结果
+- 工具的真实名称
+- 工具目录是当前可调用能力的唯一事实来源
+- 工具结果已足以回答时立即收敛
+- 工具表是当前能力的唯一事实来源
+- 工具返回 `status: "running"` 和 `job_id`
+- 已在插件页停用
+- 开头一句点明这是第一次见面
+- 开始实质工作时给一句轻量说明
+- 开工前先用
+- 当前会员版本不包含
+- 当前停用专家
+- 当确实需要 sandbox 时
+- 技能正文要写成未来可复用的操作方法
+- 拿不准某操作有没有对应专属工具时
+- 指数与掩膜要可追踪
+- 接着两三句说清
+- 提示词最开头会注入
+- 数据缺失就回弹
+- 数据选择要解释清楚
+- 整段介绍控制在七句以内
+- 更细的用法
+- 最后用一句自然的过渡进入正题
+- 最后验证和交付
+- 最终回复让主 Agent 能直接看懂并转述
+- 最终返回
+- 最终返回给主 Agent
+- 查找文件
+- 栅格
+- 桌面端不内嵌地图
+- 每个结果给一个稳定的 key
+- 每个落地文件都要校验
+- 沙盒
+- 然后一句
+- 然后建立符号系统与视觉层次
+- 状态更新应当有信息量
+- 用户
+- 用户确认预检后
+- 用户要停止后台作业时用 `job_cancel`
+- 用户询问 OpenGeodex 本身的功能
+- 用用户的口吻
+- 申请时只要任务需要的那个具体文件夹
+- 简单结果用短段落
+- 系统消息里的 [后台作业状态] 列出仍在运行的作业与进度
+- 能从上下文确定就行动
+- 能力回弹
+- 自定义专家
+- 若动态上下文出现
+- 范围之外的位置只能由用户扩大
+- 被问到身份时说
+- 质量门必须通过
+- 贴着这次回复的具体内容
+- 输出应当紧凑但可行动
+- 遥感与云计算专家
+- 采集专家
+- 采集结果保持原始性
+- 长耗时任务不要沉默
+- 预检是语义整理
+- 默认把本轮生成的普通文件写到 `fs.list` 返回的 `default_output_dir`
+-+(i$Y薡
+-->流程图 SVG 注释未闭合
+--sense-voice-language=auto--sense-voice-use-itn=true--num-threads=4--model-type=sense-voice语音识别执行超时
+-3+貋
+-5皏q
+-bk*聣 
+-c`姂
+-q+旬
+-w梔T
+-y 鮆`
+-{驠:
+-}K眬:
+-}殤)
+-匚 N*
+-憓O<X7
+-暻?u
+-檌:n
+-痹dLg
+-禍{q
+-筆DY
+-遘K?w
+-鄲1%
+.!G亵~A
+.%`捏s
+.,r纱
+.1糅dn
+.2,M嗸'
+.3I蜙
+.=焋Vi
+.A)|度
+.B梩Q
+.E/#繻Z
+.G霡L
+.H"榮X
+.OBSCURA_ALLOW_PRIVATE_NETWORK未找到 obscura,请运行 scripts\install-obscura-runtime.ps1 安装本地抓取运行时,或把 web.crawl_backend 切回 firecrawlobscura 启动失败: 
+.O慜Do 
+.PN罧Th
+.U宵|
+.X/M縇!
+.^%戝pQ$
+.^Zu迪 
+.aux.xml 或索引文件
+.cW猴>
+.command 不能为空
+.concurrent 为并发版
+.enc不是加密技能文件opengeodex-skill-v1技能解密失败
+.m.J薎
+.mtl 与贴图放同目录
+.opengeodex-receipt.json插件文件与官方发布不一致不在官方发布清单中安装凭据无法识别安装凭据验签失败
+.opengeodex-receipt.json缺少 manifest.json目录里没有 manifest.jsonconfigadvanced_settings
+.timeout_seconds 必须在 1..=
+.{r徣
+.{齰 
+.|N孅
+.仐>T
+.兮U`@c;
+.备份已还原
+.抣Q[
+.盁obo
+.縚*LY
+.蟼t&-
+.鯩+U
+/"鍯g6
+/&d殃
+/6J曆
+/7.伷T
+/8-犘
+/9道Ot
+/L30PV籽
+/Mpa/\象
+/W<蕧
+/Z劢*
+/api/auth/password请先登录后再修改密码
+/api/feedback请先登录 OpenGeodex 账号
+/api/notify/email邮件通知需要先登录 OpenGeodex 账号
+/b2鐲{?
+/robot/send Webhook 地址格式不正确
+/wu{穢-
+/yI0捊v
+/|nr虖
+/~zC{礚
+/宝]_
+/庲?{
+/廕MY@;~E
+/榴,i
+/罾?;
+/鍕}I
+/馊e?W
+0 条结果
+0$i脙
+0$彿 L"
+0&贘d
+0.!H請
+06惁U
+0A_A^A]][頑
+0A__[醠
+0F6氅
+0W3f阪UB
+0Wq絅KO
+0X$鰠
+0[_^A\A^A_]酡
+0[_^A\A^A_]鐝
+0[_^A\A^A_]鬷#
+0[_^A^A_鬸.
+0[_^A^A_鶞
+0[_^A^]遘
+0[_^A^]邧
+0[_^A^]鄿
+0[_^A^]鑔
+0[_^A^]颠
+0[_^A^]鱐
+0[_^A^]黀
+0[_^鈽L
+0\偀P
+0]酙r
+0]鉿 
+0]錩F
+0]鎕t
+0]鎰<
+0]鬬P
+0]鹭e
+0]齦-
+0_^]鉀b
+0_^]鉉
+0_^]鉊a
+0_^]鉜
+0_^]鉯
+0_^]鑰
+0_^]际h
+0_^]陖
+0_^]陘h
+0_^]陨
+0_^]陷
+0_^]陻
+0_^]隹
+0_^]餸/
+0_^]驇b
+0_^]驐
+0_^]驣
+0_^]驫
+0_^]驶
+0_^]鹌h
+0_^]鹐a
+0_^]鹟h
+0_^]鹯
+0a帐R
+0c+.虊
+0jf彄
+0tR蠉
+0|j犼
+0}P葹
+0勻q$
+0煊&M4
+0籔R}
+0薖un
+0覥@y
+0铖ui
+0饚%o
+1. 保留任务意图和专业信息
+1. 文字压盖:注记与注记
+1. 纯问答
+1.$稭{
+10 类
+10.5 理论可用
+12.5m 为上采样 posting
+12P闹0
+191俞
+1940 年至今
+1G^管
+1UD竗`
+1U宸th_
+1]塀C
+1km 与 100m 两档
+1nwE瑼
+1u!vv碩
+1做khh`
+1妤(w
+1華[[
+1貢|=9^%
+2 檜}
+2&Mf'鼌
+2&U舫
+2)硗N
+2. 把人名
+2. 文字显示:中文是否显示为方框
+2. 普通操作
+2.0 小时版
+2.r鮇
+2010 与 2020 年版
+2020 年
+21旓o
+24 个字符/api/auth/profile
+24 位用户名
+2;.叵
+2=cp梮
+2A斿_Ihv
+2N朋;]
+2N鱒[
+2Y<壉
+2`蛿a
+2e:餰U
+2g嚅8
+2kn5韺
+2p頙\
+2v鬦?
+2xe黯
+2z磶-
+2{_D骤f
+2悇%\
+2櫚/:P
+2熁]xK
+2瘱ZY
+2翋aY
+2肯86
+2遄u1[
+2隖3-
+3. 从下列类别编码中选一个最贴切的
+3. 任务预检
+3. 地图要素:标题
+32V霛"\V~
+33#璕,
+39<腀
+3:B促
+3:vtLZ卵
+3D Tiles 在三维视图按模型自身坐标显示
+3E蚓S
+3Hp-鎼
+3T捂5
+3XF臎+
+3[u趂
+3^=年
+3a祠@R)
+3a韂pk
+3b噀f
+3f乁5!x?
+3o(o詰
+3pq籔
+3v詆5,
+3yxM贝
+3z鼈|O
+3偦cy
+3卪V2
+3埝~j
+3滄D9
+3獱LGQU/
+3蘏:y3I
+3铣[}
+3鞝LG
+3頇+;
+3鶱H@
+4. 只输出 JSON
+4. 可见计划
+4. 布局:主图是否居中
+401403invalid api key认证鉴权
+42请把图片中的文字按自然阅读顺序完整转写出来
+450 多个独立工具
+49轨k$
+4DR鴢"
+4E夯 4
+4I籍R
+4J拌(
+4N菁_x
+4Q:]|舸
+4a訏q
+4e婭c4F
+4{9昂
+4柯Ku
+4阁H0
+4际&*
+5#2塸
+5. 专家委派
+5. 可读性:字号层级是否清楚
+50 块
+500502503504server errorinternal error服务端
+54u蕥
+55搑l
+5Dn媳#JJ
+5ZpM靴
+5]T;顤
+5]視2
+5dy纠
+5hO驠
+5h疋Y
+5i灪B
+5j现J
+5k^M扰
+5p笣+
+5zb恄
+5{d瘰
+5}*}eD偪
+5佃B"=
+5俛Na
+5兊'p
+5唔3QhS
+5縞Q<
+5脸Ut
+5蹍b/
+5靑1FE
+6 6畖u
+6 頥)
+6!嘂'
+6+v肧
+6. 不嵌套编排
+61N箔
+68j洦
+6Bo9}F7礮
+6Cc荴'
+6Lv鵣
+6R'彉
+6T楹|
+6YX吕
+6Z0珉U
+6Z扳XZ
+6o>&c叡
+6o萌c
+6x靓C
+6yJ祪'0
+6丁d*
+6捃>V
+6摑J$R
+6枥x#QW
+6次woC
+6浧pl?
+6狍_nP
+6穻TGp
+6辍X幜t$
+6齑+U
+7 觮d
+7. 用户明确要求使用或测试子 Agent 时
+7.婕o2
+71&2|輻
+74溎N
+79A4崖
+7O0暜
+7Ou鍆
+7PAJG<2兵
+7S蚗|
+7YR栃.A
+7anagMWQ站
+7c磾u^
+7i尔La
+7l<槯2
+7m涇\
+7}Jk)軱
+7}趟K
+7损W$
+7瀻<Y
+7肍/>
+7辍?%
+7酤3+
+8$,W昗
+8%v候
+8*諜<
+8. 用户点名由某个专家执行
+80嘁H> 
+80軁dm
+84厇>{
+85}凍
+86腭~
+8Kk栴9
+8Mh溈
+8Q鸅[xF
+8S@珃(
+8Y!7l朽
+8Y槹t
+8[_^A\A]A^A_]鍯0
+8[_^A\A]A^A_]鳊
+8[_^A\A]A^A_]鵌
+8[_^A^A_]鏸
+8[_^A^A_]鑚
+8[_^A^A_]鬴
+8[_^]鈷
+8[_^]霑
+8[_^]鴹v
+8^]遴
+8^]遻.
+8^]遼
+8^]邂
+8^]郺
+8^]酂
+8^]酭
+8^]醄
+8^]醯
+8^]釉
+8^]鉐
+8^]鉕
+8^]銚
+8^]鋀
+8^]鋸
+8^]録
+8^]鐜
+8^]鐬
+8^]鑻
+8^]锂
+8^]锋
+8^]锹
+8^]镐
+8^]镬
+8^]阯6
+8^]阻
+8^]陨6
+8^]陲
+8^]陳
+8^]隂
+8^]霂
+8^]霴
+8^]鞄
+8^]韁
+8^]韸
+8^]額
+8^]颛6
+8^]飱
+8^]飲e
+8^]饀]
+8^]駇
+8^]駊
+8^]騉
+8^]驁
+8^]髂#
+8^]髱
+8^]鬁
+8^]鮖
+8^]鮡
+8^]鰪
+8^]鰭
+8^]鲀
+8^]鲭
+8^]鵋
+8^]鷜
+8^]鸟
+8^]鹢
+8^]鹽
+8^]黁
+8^]鼨 
+8^]齞
+8^]龫
+8_^閧
+8f#暟
+8f,泀L
+8ge-魧
+8g芎!
+8iX讏
+8t"茽
+8t"載
+8t&谯
+8w^淯
+8y舥n5|
+8ze鶈
+8|k鸮u
+8~`魶rZ9
+8檈rq)
+8欙g;
+8洸lL
+8粍,$
+8覑8@U
+8謅o5
+8鎚b*
+8鷿N)
+9!T衱NY
+9#囤{
+9*-簡
+9+眶k
+9+腠5
+90pct+70-90pct40-70pct10-40pctlt10pct发布geoserverwmswfs
+90臔,Z
+92i駉"
+93}恩
+97_鉴i
+9=亂p
+9E0岭
+9FQ瓵@
+9Fb諅~
+9Gs嗥
+9I;o噷
+9L4鎴
+9Nt埍
+9U毸;
+9]:鶕
+9a51鴷
+9a藉mh
+9g铴r"
+9m9謕K
+9pa哚xn
+9q鑮P.96
+9s55迗]_<@
+9t镻l
+9v璑䡭_
+9冾gH
+9嵤to
+9快cd
+9羠=3
+9翴z#
+9褹}N
+9镏(v
+9鬣b%
+:#D墾:h
+:,J尳
+:1G逘;6TS-I
+:4#?鼠
+:4琘X
+:7檎^2
+::嬕y
+:<#湭
+:Jxcs+疌aa
+:J剣%
+:OE鯩3
+:R掫a
+:\5c注qsx<
+:_镠;-UZI
+:t5B爏6n7
+:t憝 
+:vC=3鍏
+:可能缺字(方框)
+:可能缺字成方框
+:喤dP
+:銂&_
+:骫9w
+;$稈]
+;'z睓
+;/#苦
+;:Z8h0柶+N
+;>;洘3}
+;A>洸^
+;YR鐱?
+;\]螿
+;\糞58
+;]+'?按某字段筛选 too_shorttoo_longtoo_many_replacements某名称assertion failed: m.is_empty()C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\regex-automata-0.4.14\src\util\iter.rs
+;^蘓%
+;`Yw鰈
+;f0橧
+;o溻y6)
+;p禃V
+;x^絨!
+;唃&N
+;愓|?
+;桫C92X
+;熯)h
+;猐I^
+;脕J%
+;蕔a?
+;襾i 
+;郱#4}6
+;麰r-.
+< DT傹U|/
+<%L筑
+<.麴y
+</流程图 SVG 结束标签未闭合
+<;P揈
+<;衾V~Hee3
+<> 却以 </> 结束
+<E殾o
+<O槆u
+<S鎸x
+<Y瘇_
+<[罛(
+<]O瘕,oi
+<_#勌
+<_Y鷸e2|
+<f"徏
+<jxhC靫
+<svgviewbox=流程图 SVG 缺少 svg 根节点或 viewBoxwidth=流程图 SVG 缺少 width 属性<textPingFang SCMicrosoft YaHeiNoto Sans CJK SC流程图 SVG 缺少中文安全字体栈fill="#ffffff"fill="#f8fafc"流程图 SVG 需要绘制浅色画布背景
+<text x="" y="88" fill="#64748b" font-size="14" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif">基于本次实际执行记录整理 
+<y鰑|
+<{B槅w*
+<縑I#
+<葩xAU
+= 嚱M
+="流程图 SVG 不允许 DOCTYPE / DTD / CDATA 声明流程图 SVG 缺少 svg 根节点流程图 SVG 标签 <> 未闭合
+="踣=6
+=5滨d
+=92q渾
+=?曌C
+=A(犂D1
+=HI?磌?
+=P.rC婀8
+=R蝸]4
+=UD麖
+=Y刃O
+=[翎8
+=]恵H.
+=^x枨
+=^|菶+
+=`K蘆Xx4
+=m4欩sp
+=pi瑣Sg
+=p妭6
+=惥@#
+=扡b)
+=皈lS@
+=矙OZ
+=礝3K
+=饷g-
+> 的属性无法解析
+>(F鳬C
+>7}蘠
+>9yC咥:1s
+>`&妈R
+>`u顯
+>gZT蹎f
+>屶)=
+>溆~].B|f
+>狐Zf
+>琥f;-\
+>缥8,-
+>襢*u
+>赠&?
+>釷3|,r
+>鷰g1
+?*揽Hu_
+?+猓Q
+?/gI惊
+?/集C?
+?2挭W
+?>流程图 SVG 的 XML 声明未闭合
+?@+k}粘[%ThE
+?ES粑t
+?F疪t
+?O:$oY凚
+?O~抢
+?S南=
+?T箁F
+?VjZ瘝
+?[4踱
+?b&蓄
+?f琠]
+?k;%摳
+?pjfjnt8~訲
+?u佹n
+?w@蘷
+?倫J`
+?写入临时图片失败
+?吉Oe)
+?澐\F
+?砑Q{,
+?蛔st
+@$-B豶
+@)杛%)i
+@--'E覾 L
+@2;钁
+@8=獅
+@8僀n
+@E靄: 
+@H婘[En
+@OYV箪
+@S裩[8
+@Vk&隃
+@X縬I/a=
+@Y淔Kj
+@Zj橊
+@Z疣r
+@[^]阼
+@[_^A\A^A_]鰷
+@[_^A^]逃
+@[_^A^]鉷8
+@[_^A^]陌
+@[_^A^]鞊#
+@[_^郰O
+@[_^顒L
+@[_^鰐V
+@[_^鱂V
+@]逝y
+@]逥i
+@]鈗i
+@]銐d
+@]鋌`
+@]鋎_
+@]鋐f
+@]鋔e
+@]鋫#
+@]鋭`
+@]鋯_
+@]鋸f
+@]鋺e
+@]錡h
+@]錤h
+@]錧h
+@]錪h
+@]錭h
+@]錰h
+@]錳h
+@]錶h
+@]錹h
+@]錼h
+@]錿h
+@]鑦#
+@]雎`
+@]雐_
+@]雒f
+@]雖e
+@]雯`
+@]雱_
+@]雺f
+@]霖i
+@]顝y
+@]駜#
+@]髐`
+@]髒_
+@]高e
+@]髱`
+@]髳_
+@]鬙i
+@]鶘i
+@]鹂2
+@]鹿-
+@]麜a
+@]麟a
+@]麢a
+@]麥a
+@]麨a
+@]麫a
+@]麮a
+@]麱a
+@]麴a
+@]麷a
+@]麺a
+@]麽a
+@]黒`
+@]黔_
+@]黚e
+@]黳`
+@]黵_
+@_^]鐛K
+@_^]馤
+@_齗Ke
+@n/0嗕
+@n9蘁;=
+@{緃L
+@哻4'
+@濨s[
+@罱3"?[
+@胉8nx
+@贐c]B
+A#dZK`A烦
+A'l齻
+A'魁T
+A/G霯
+A6巊"
+A7繒W61)
+A9B屈
+A<G婜
+A=嚘lj
+AH鲃j^L>
+AI 助手或聊天机器人
+AI 连接失败: 
+AIX铯t
+ALOS PALSAR 等 DEM 产品
+ALOS PALSAR 高分辨率 RTC
+ALTERCOPYCREATEDELETEDROPEXPORTIMPORTINSERTMERGEREPLACETRUNCATEUPDATE 版本探测超时
+ANjR獨1*
+API Key 无效或已过期
+API Key 无效或无权访问
+API 标识符
+AR,塂
+ARH欽
+ASR 流式模型缺少 decoder
+ASR 流式模型缺少 encoder
+ASR 流式模型缺少 joiner
+ASR 精修模型尚未安装
+ASR 精修模型缺少 tokens.txt
+ASR 运行时包中没有找到 sherpa-onnx-online-websocket-server.exe
+AWJ,.肤
+AY橲O
+A_X柫
+Aa斑?/P
+AgX辪
+Aj麑z
+Al昄i
+AwBA瘿'
+A}攜p*
+A乸}hH
+A绪*>
+A蟔|c
+A袚Bm
+A赭U3#4
+A霆*&'f
+B 酻y
+B"箤H
+B)J曼
+B)皬q
+B,V岆G
+B2~瞫3
+B5Uk$驤(s
+B5吥_
+B6&摖
+B7銪>8
+B>觛u
+BA鑌o
+BD09 与 CGCS2000 之间做单点经纬度坐标互转
+BE%拪
+BF眳F5
+BH沺{
+BII3,飶
+BK锧d
+BN+炢$
+BPy:婄+
+BQl0諐
+BRP冞
+BU1苟,
+B`ur綡
+Bijq鎾T
+B乚X&
+B动2D
+B砵IS
+B羀H"^
+B肣6h
+B蟠@)
+C"3翠
+C&I-x籥x
+C'KZF!驃
+C*$!店
+C27E357777AAEF03B0665BB3164D6704551F5E7A046789033D45E174997107FF签名证书不受信任
+C2i哨I
+C4E琦y
+C:\\OSGeo4W* 目录定位 QGIS
+C=頞i
+CGCS2000 之间转换单点坐标",
+CGCS2000 任意两两互转
+CG剧q
+CIjo绍
+CLI 工具未找到: 
+CLI 工具调用超时CLI 调用线程失败: 
+CLI 静态链接 C 运行时
+COG 预览
+CO箍b
+CPY錨
+CRS 明确
+CRS/范围/分辨率或要素数量
+CSV 与矢量文件
+C^d絮
+CbgEF裆
+Cbo@l儁a
+Ci偁=
+Cn诿^
+C桱t0
+C濞|W.H
+C禣I"
+C粱lx
+C軶Lm]
+C遵ypm
+C鋋7O
+C鲽Zc
+C齨k^,
+D Z試
+D!v蛝tL
+D$ 胻
+D$ 腎
+D$ 膐
+D$ 苲
+D$ 菶
+D$ 蓔
+D$ 蔬
+D$ 蕨
+D$ 藰
+D$ 虨
+D$ 蚠
+D$ 螃
+D$ 螗&
+D$ 衼
+D$ 訆[
+D$ 詛
+D$ 謖7
+D$ 贓
+D$ 贜
+D$ 趼
+D$ 踭
+D$ 軄
+D$ 輻
+D$(衋
+D$(裺
+D$(諅
+D$*囂,
+D$,脪
+D$0耥
+D$0肞
+D$0蘫
+D$0蟁
+D$0蠏
+D$0觾
+D$0誔7
+D$0贖%
+D$0赅
+D$0赒
+D$0踜
+D$0踨
+D$8聑;
+D$8赭o
+D$@菞
+D$@譔
+D$@诩
+D$@豂5
+D$H蛄
+D$L舱
+D$P貌
+D$`荶
+D$`謖
+D$p苁
+D$p褞@
+D$x聈
+D$x詓
+D0埕 
+D2CA讔
+D3 求:I
+D4f麓
+D4睷cFF-g
+D8 流向
+D94獠<
+D:N删f
+D?(顩
+D@踸lS^J
+DBF 编码可选 auto
+DC迁;
+DEM/影像/土地覆盖/POI/OSM/气象等外部数据获取
+DH颂,
+DNE傎
+DROP 权限的账号
+DXF 图纸与局部工程坐标数据按原始坐标在平面视图显示
+DX斧e{
+DataV 与民政部数据为 CGCS2000 / WGS84 体系
+DeepSeek API Key 无效DeepSeek 账户余额不足
+DeepSeek 抓取的网址最多  字符
+DeepSeek 搜索的关键词最多  字
+DeepSeek 联网接口每个账户每秒最多 5 次
+Dk8骚J&
+DmP痾
+Do囯)l
+Duu&M隗
+DwIB殭
+D|才Y
+D佉6'
+D史K&md
+D槐hA
+D甕ZkVu_E
+D蠹HS
+D貥[F
+E 衳Y
+E!W=]撗(
+E!唲"=
+E&k諊V
+E.薰玪
+E8貍?
+E9缀R
+E;騱bt
+E;鹐<
+E@薅A
+E@辝A
+EA緛1
+EK欵?
+EP胝#
+EP輳#
+EQ噕x
+E`蓬<
+E`褪>
+E`讎<
+Earthdata 用户名与密码
+Efi旬
+Error缺少配置:请在设置页填写 }]
+Et"谌
+Evz紖
+Excel 等在表格视图分页只读浏览
+E}"筪"
+E夺^5r 
+E柭hOd
+E籜2䑀
+E脊)B
+F?,G邃CQn
+F@;9p谛
+FA鰅r
+FES@P蕶N
+FH<卸
+FJ]衾5
+FX飰`L
+F^%-嶞
+F_ 志
+Fe乗<
+For routine 'today/now' reasoning the 当前时间(本地) line in the system prompt is enough; call this when you need detailed system status or exact timestamps.
+Fq]埘X
+Fr竣-
+FtG齢
+FtK鰓82
+F劊W@
+F軴(d
+F鰑O!F
+G#j誵
+G#斎-
+G&Y嗃
+G)5h鬁a
+GAF瘅
+GB]鐷
+GCJ02 反算 WGS84 采用单步近似
+GEE 云端计算
+GEE 云计算处理 Sentinel
+GEE 仅在连接器启用时可用
+GEE 是可选连接器
+GE鋆i
+GIS 从业者可以使用更专业表达并提出更精确的关键追问
+GIS/地理数据熟悉度
+GS銹6DU
+GU;羷
+GU絧_
+Gbe筅
+Gei奞`%
+GeoJSON 一律写入会话产物目录
+GeoJSON 一律写入会话产物目录且坐标统一经度在前
+GeoJSON 等
+GeoJSON/Shapefile 转换结果
+GeoPackage 栅格
+GeoServer 发布
+GeoServer 发布与样式
+GeoServer 发布或最终综合验收
+GeoServer 连接器须设为
+GeoTIFF 等
+GeoTIFF 等数据及 XYZ
+GeoTIFF 等文件
+GeoTIFF 转 COG
+Gl)帉P@
+Gl1筮
+GlobeLand30 全球 30m
+Gn漌\
+Gr/n移
+G磮NCRPsobs
+G鴻Q6
+H 芅L
+H 芴p
+H 莛q
+H 讏u
+H 贶Z
+H"nr册d
+H%h疻
+H'[枆+!p
+H(袳N
+H(袿w
+H,N嚢
+H0肥t
+H0藕k
+H1魫 :
+H6躪u
+H7Fo挅
+H8脶w
+H8脿w
+H8蚍Y
+H8躨Y
+H9緛B"(
+HDF 等 GDAL 可读格式
+HDJ嗢
+HHl挆
+HH豭%
+HI.针T
+HN捡 
+HPA#紉
+HP荷n
+HTTP client 构建失败: 
+HTTP 上的远程数据
+HTTP 远程数据时需联网
+HU闏&
+H[]_^A\A]A^A_闥
+H[_^A\A]A^A_]鄚
+H[_^A\A]A^A_]阷j
+H[_^A\A]A^A_]魙
+H[_^A\A]A^A_]鯋
+H[_^A^A_]鈵
+H[_^A^A_]馬A
+H[_^A^A_]齷
+H[_^]郍
+H[_^]鄁
+H[_^]鄠
+H[_^]酻/
+H[_^]釩-
+H[_^]鉐
+H[_^]铐H
+H[_^]锯
+H[_^]闕
+H[_^]隁
+H[_^]韌H
+H[_^]頻
+H[_^]飷C
+H[_^]餶#
+H[_^]驊M
+H[_^]骕
+H[_^]髁
+H[_^]鬌F
+H[_^]魯
+H[_^]鯻
+H[_^]鲗
+H[_^]鴪-
+H[_^]鸂
+H[_^]鹙
+H[_^]鹧
+H[_^]麊
+H[_^]鼅F
+H\縭%
+H^]遲i
+H^]酃
+H^]酦M
+H^]鈐
+H^]銋
+H^]鋰
+H^]鑭
+H^]闁
+H^]陣M
+H^]霏
+H^]顔
+H^]風
+H^]騟#
+H^]騢
+H^]髏
+H^]魪
+H^]鮾#
+H^]鲾
+H^]黏
+H^]鼣
+H^]鿧
+H_^][鏔
+H`5睼
+H`摒?
+HcK,謮
+HcPt艳
+Hh贔w
+Hi&氖
+Hk,獷n,
+Hk昄%
+HpR礕w
+Hp訿w
+Hq睈/
+Hs沵$
+HuT}霢
+Hx聖s
+Hx艿w
+Hx褼w
+Hx谙r
+Hx踚r
+H{踒X
+H喼Q=A
+H慊+y
+H渚$^
+H牑q(
+H矡j@
+H繲RJ%
+H腣DA
+H褺0u
+H鿼e.
+I #萖
+I!掟 h
+I$Z阂Ty
+I,%A3睃
+I-劢{
+I.tW坏
+I/寮a
+I61:%a箱Rr
+I7r俏
+ID牂H
+IG$崉@i
+IH%aHQ1鼚/
+IJ6揨
+ILMoR趄
+INSERT 等写入语句会被直接拦下
+IY驴l
+IZbk曻
+I^鯝#
+IbE雽\
+Ig5e鯈
+Ir蹇OQ
+I䚚凾W
+I僃U!
+I嫢`h
+I峡Q1
+I澆3u
+I焼-"
+I祳i&
+J&#r嶐
+J&哊@
+J(J焵
+J(VD\刈
+J5Y飥
+J6L}公
+J6q茝E
+J=[崗<D
+J?_棳
+JDn嘐
+JK鮈9q
+JM|趡
+JPG 或 SVG
+JSON 密钥文件插件包内容与所选插件不一致
+JSON 等类型
+JU>嘛"c;
+JZt厙i/
+JZ徨#
+J^巒0]*
+JavaScript 工具链用 `node`
+Je餷5~
+Jh\攩
+Jq3q呧
+Jso跽
+J~K冚-
+J偾0<
+J咹#I
+J椿I>
+J楞(o`
+K#F煆
+K't陮=
+K-e欗}`
+K4a宙
+K8胲M
+K8萊L
+K8衾M
+K>Q愦
+K@膏f
+KKM伐
+KML 等格式先经 GDAL 转成 GeoJSON 再导入
+K_g雗fAw
+K_遷q
+Ka輌5\A
+KeA殂
+Kpp|凇
+Kp嬲nU
+Kp誄&
+Kt熘9z
+KxO碲
+K堄7:
+K嵯<$}
+K慺%B
+K筞?I
+K諑ZLUb
+K讴=Q
+K騖k 
+K鬴ce
+L"5Od圝
+L$ 聰)
+L$ 臛
+L$ 舅
+L$ 舫
+L$ 茏
+L$ 葖
+L$ 葝
+L$ 蕱
+L$ 薟
+L$ 虞p
+L$ 蛍
+L$ 蝳j
+L$ 螥>
+L$ 蠉
+L$ 襖
+L$ 詋
+L$ 誫
+L$ 譇
+L$ 贏
+L$ 赡
+L$ 辀n
+L$ 迢
+L$(聿
+L$(腟!
+L$(莰
+L$(蒠,
+L$(蓫E
+L$(蔞
+L$(蘚
+L$(蚀
+L$(蚐/
+L$(蛥/
+L$(蠇
+L$(蠟
+L$(襂
+L$(要
+L$(觙-
+L$(誃
+L$(說
+L$(讷
+L$(讻,
+L$(误
+L$(谆d
+L$(豍Y
+L$(趄
+L$(躕!
+L$(輕
+L$(輖S
+L$(辚
+L$0耍%
+L$0耎%
+L$0耵
+L$0耶
+L$0耷
+L$0耸
+L$0胂5
+L$0胃5
+L$0胳
+L$0胴
+L$0艒I
+L$0艝5
+L$0荗
+L$0莵
+L$0菷"
+L$0菹
+L$0萚5
+L$0蟂
+L$0蠘I
+L$0觯
+L$0訽
+L$0詜5
+L$0諁
+L$0诂
+L$0谙5
+L$0谜5
+L$0賮
+L$0蹆
+L$0迸
+L$8腋
+L$8蘈"
+L$8虖
+L$8觱X
+L$8質
+L$8越
+L$@胐d
+L$@覐"
+L$@赑d
+L$@赶
+L$@身
+L$@魼
+L$D蘚
+L$H聅
+L$H舙
+L$H苦
+L$H螧g
+L$H裾
+L$H蹑
+L$P芚N
+L$P蒃
+L$P蘚
+L$P蛡
+L$P蜠
+L$P裕:
+L$P觀
+L$X胆
+L$X舱
+L$X舴
+L$X蒲
+L$X蘸
+L$X螵
+L$X訚
+L$X訯
+L$X踳
+L$`蝮
+L$`譍#
+L$`轈
+L$p誋
+L$p軲
+L(=C幌,)E
+L+遶)I
+L2f窹
+L?U']M+挠O1
+L@咈P
+LD?哧*
+LFqa藯
+LLM 流读取超时/prompt_tokens_details/cached_tokensLLM 返回失败: 
+LLM 请求失败
+LLM 连接超时LLM 返回了无效的 UTF-8 流: 
+LP攥g
+LW@茿
+Ld釻%+
+List a directoryList a directory's entries. Omit `path` to return accessible directories, conversation asset folders, and `default_output_dir` for the current conversation. Generated files should be written into the most meaningful conversation asset folder: 原始数据 for copied source data, 过程数据 for intermediate files, 制图资料 for map materials, 最终成果 for every user-requested deliverable regardless of format (images, tables, vectors, rasters, documents or models), 临时文件 for disposable scratch files. `default_output_dir` is for intermediate work only. Before the final reply, organize this turn's user-facing deliverables and their required companion files into 最终成果; do not classify by extension or promote drafts and QA images. In project conversations, project source folders are read-only references; generated files still belong to the current conversation. With an absolute `path`, lists that directory.absolute directory path; omit to return accessible directories
+L|椩x'
+L~g駾
+L攔FMz
+L昜O1
+L槚$^
+L氷<I{
+L瓴)3P~
+L瘒(X`.
+L碢il*
+L蓨`k
+L蚳"p
+M 耥M
+M 艐P
+M 艮:
+M 芉5
+M 苅n
+M 苐n
+M 苻n
+M 蒩Q
+M 衫n
+M 諛n
+M 豨L
+M 軩S
+M 軰$
+M 軰n
+M 輆n
+M 輶Y
+M 违]
+M!稈a
+M%w鐄P
+M(膄,
+M(苠\
+M(蚵 
+M(蜠B
+M(裁]
+M(襈:
+M(觊5
+M(谨W
+M(跀5
+M(軧]
+M(軰]
+M(麪B
+M0苓a
+M0萁U
+M0葍M
+M0葶n
+M0螂U
+M0袅D
+M0褲t
+M0訢z
+M0軕]
+M8耩S
+M8脸l
+M8苀a
+M8荬A
+M8蘦]
+M8蘯]
+M8虗M
+M8蛟\
+M8衉L
+M8訸]
+M8諩$
+M?U欙
+M@聥N
+M@苶&
+M@藸]
+M@蛒a
+M@蜔]
+M@跛N
+MA%蝼
+MCP  超过  秒
+MCP SSE 运行时线程 paniccrates\opengeodex-app\src\mcp.rs
+MCP client mutex poisoned服务调用已取消或超时
+MCP 子进程 stdin 不可用MCP 子进程 stdout 不可用
+MCP 工具调用超时
+MCP 服务
+MCP 状态锁损坏MCP 服务暂时不可用
+MCP 请求头  的值无效
+MCP 请求头名称无效
+MCP 调用线程失败: 
+MCP 调用线程失败: XG}B
+MCP服务返回 HTTP : 
+MD>鸄
+MHt%获
+MH臈5
+MH虩y
+MH蜡D
+MH螒X
+MH蠇5
+MH製o
+MH誶 
+MH讉V
+MH谑X
+MH谵R
+MH贩\
+MH赼\
+MK^沏
+MPJ 还会列出其引用的图层清单
+MP蝩N
+MP褡S
+MP轲N
+MS琪J
+MX耥V
+MX聥;
+MX脵V
+MX芛5
+MX芻\
+MX苨;
+MX萉Z
+MX蕁L
+MX褒X
+MX覼d
+M^鄧n
+M`蓈6
+M`蛓M
+M`評2
+M`辇C
+MapGIS 6.x 19 字节限制
+MapLibre/Leaflet/OpenLayers/deck.gl 前端开发
+MapLibre/Leaflet/OpenLayers/deck.gl 等交互地图网页
+MariaDB 10.6 及以上已实测
+Mb点`(Jq
+Mh茹&
+Mh赇3
+Mp蛽$
+Mp誺(
+Mp込o
+MrSID 等专有驱动
+MultiPoint 和多部件线会拆成多条 MapGIS 记录
+Mu蛗|bb`a
+Mv浇bb
+Mx胦 
+Mx腺j
+Mx躟q
+MySQL 数据库驱动
+MySQL 模式
+M俴9i
+M厧 h.
+M庍2W
+M揉Y?
+M敳zz
+M檽Al
+M瓹)D
+M砙^#
+M祛頍r
+M譊|~
+M鍸l*`
+M鐢`X'
+M钲!4
+N#/牎
+N%翏+s
+N0迠t
+N8虅+
+NASADEM 与 AW3D30 为 EGM96
+NDVI/NDWI/NDBI 等
+NDVI/NDWI/NDBI 等公式不得写错波段
+NDVI/NDWI/NDBI 等指数
+NEOB輬
+NF*诞
+NGh9禧
+NH缌"
+NLw&爑
+NX聭u
+NY板"
+Nn帱;G
+Node/Git Bash/PowerShell 仅作为高级兼容运行时
+Np:漲
+Np茝F
+Nx詥y
+N嚽I!
+N爁2{
+N玫t<
+N羒W!u
+N胱b,4
+O#W蓌
+O'jPS鳉
+O69禪
+O8觇+
+OCR 疑似误识不得推断为缺字或乱码
+OCR 疑似误识和轻微审美建议不阻断交付
+OCR 识别
+OGC API - Features 等网络服务
+OI|襤
+ON蹍8
+OOO顡
+OPENGEODEX_FONTS_DIR助手
+OPENGEODEX_PLUGINS_DIR未找到 plugins 目录plugin-install-progressenabled_by_defaultdependencybundleddistributioncli_toolsnative_toolstoolsskillsconnector_typesdata_source_providerslifecycle_hooksdetailscategoryfeaturessupportrequirements
+OSM PBF 文件
+OSM PBF 等矢量与表格数据
+OSM 对照
+OSM 等公开数据
+OV2緌
+OV3諌_
+OZ鮝N
+O]=蟃=H
+Office 在里面起不来
+OoT鎗V
+Open-Meteo 历史天气接口
+OpenGeodex 无法启动
+OpenGeodex 自带的  运行环境缺失或无法运行
+OpenGeodex 通知测试
+OpenGeodex 通知返回 HTTP 
+OpenGeodex/1.1.4无效代理 : 
+OpenGeodex[opengeodex-desktop] 麦克风权限处理未挂上
+OpenTopography 存储
+OpenTopography 存储或微软 Planetary Computer 等海外镜像
+Oq2桭
+Ox胳-
+O~廼)4
+O嗸&JO$
+O固B'
+O洯B[EuJK].Q
+O衉Dn
+O谹T3
+O郹q-
+O铇k|.1
+O鳦@@
+P N恢
+P(舔}
+P(萁S
+P0l苅
+P4}瘶[.-:}
+PB崌S-\
+PDF / Word 文档请用 doc.read 读取
+PDF 与 DOCX 在文档视图阅读
+PDF 或
+PDF 结构不规范
+PG5椏
+PL2宛
+PN桺-#
+POI 和行政边界等矢量数据
+POI 检索
+POI 模板覆盖 amenity
+POST  失败: 
+PROJ 与 ST_* 函数
+PROJ_LIBPROJ_DATAGDAL_DATAGDAL_DRIVER_PATHGEOTIFF_CSVPYTHONHOMEPYTHONPATH字段名无效或重复: 
+PSF話
+PX\T|皁
+PZ/a襰&
+P[_^A^A_騛b
+P[_^A^A_鴪b
+P[_^A^]选
+P[_^A^]选O
+P[_^A^]阤
+P[_^A^]阳
+P[_^A^]騡
+P[_^A^]鳾
+P[_^A^]鸬
+P_^]阸
+Pl?F_傻
+PolarDB for MySQL 可连接
+PolarDB for PostgreSQL 等兼容库未实测
+PostGIS / MySQL 入库
+PostGIS / MySQL 读写
+PostGIS 图层概览这类任务
+PostGIS/GeoServer 图层或后端接口
+PostGIS/GeoServer 最终发布
+PowerPoint 等
+Ppr睭H
+Pt筰r
+PuE苩,
+Pv;(鎀
+Pv蟾G
+Python 依赖请先调用 python.env_install
+Python 环境python_env_statuspython_env_installeQ|B
+Python 脚本缺第三方包时
+P倢X6
+P剩$y
+P榗p,
+P稕Qc
+P莯Hf"
+P邵|hi
+P阖Kw
+Q!/L倔'j
+Q#{茹#
+Q$味pZ
+Q'衅EgmW`
+Q5照o
+Q5照~
+Q:瑺Q
+QI鋨/
+QJ艘,2,|
+QR/麂
+QU量C 
+QqQ橝zU
+Qs钶.
+Qt蝸o
+Qz肆掚LZ
+Q|思-
+Q嚖 :[
+Q垈0]
+Q奪Uf
+Q妩\z|
+Q渦_t6l
+Q灤hC
+Q瑏ME
+Q逳uY
+Q颖jI'
+Q齋NE+@Zb
+R%d弡
+R.K@书
+R/`::钖
+R0垐m
+R12 到 R2018 及以后各版本
+R4]垁
+R>賋KJ
+RD1t倸"
+RG閫m
+RH桢f
+RK|i+9眽~<W
+RV餏^T
+Range 分块
+RapidOCR (飞桨 PP-OCR)本地识图超时
+Rer;齗
+RiW鮩
+RsV冠
+RxX珞
+Rx笮`
+R懪=F
+R本3]wof
+R訑+;\
+R鼅q0
+S $誚]
+S$霅y~Qqc5
+S)h[氺
+S-d澵D
+S0彾r^
+S8c覷
+S> 灧
+S?%硲
+S?醚(
+S@OZ晡O
+SAGA 等提供者
+SE?詉
+SE鞷t=l3B
+SHA-256 不一致
+SONL 行H
+SQL 和路径使用 Markdown 代码格式
+SRID 从 PostGIS 读取
+SRID 从数据第一行读取
+SRID 缺省读文件 crs 声明
+SRTM 等公开 DEM 栅格
+SW[畁
+SYA艺
+SZI奱
+SZ塧2
+S\{翥r
+Sd丩p
+Sentinel-2 / Landsat 指数GEE 大范围计算遥感时间序列与栅格统计
+Sentinel/Landsat/MODIS/ERA5 等遥感数据处理
+SpatiaLite 等格式能否打开取决于随包 GDAL 驱动与数据版本
+Sqk雂
+Sr@焍
+SrA転$1
+Sth舭
+S凝*/#o\
+S卻uG^
+S咛+6{5kY)>~
+S婡$=
+S寴V8
+S擾AB
+S澀/m
+S皊GI
+S蕶{.$
+S鑫~Tn
+S陓E^J
+S顇;ak
+S鬕DX
+S鸾6a2R
+T$ 脻R
+T$ 芷R
+T$ 蒷
+T$ 衳
+T$ 议b
+T$ 軶
+T$$蘩
+T$$蛢
+T$$蠥
+T$$蠫
+T$$衦
+T$$謿
+T$$豪
+T$$豭
+T$'菹8
+T$'袺8
+T$'詧>
+T$'躙(
+T$(荓
+T$(诤7
+T$(谾
+T$)迺G
+T$/諘(
+T$0莁
+T$0莵
+T$0蘉D
+T$0蛴)
+T$0螹
+T$0螻3
+T$0觝D
+T$0誼
+T$0讽
+T$0访3
+T$0辀
+T$0辴
+T$@蕿
+T$@赍E
+T$@趲X
+T$H襂
+T$P蓅
+T$P觅
+T$P蹜
+T$P錌
+T$X蔅
+T$X蟵
+T$X遥
+T$X镥
+T$`胖
+T$`菙
+T$`蕾
+T$`誷
+T$h踙
+T$p襙
+T$x芈(
+T$x赜U
+T-%4謙
+T1蘇_
+T<瑲E
+T@ly嶐
+TA`俲
+TB,惴
+TN唻}U
+TO]箯
+TRI 等常用指数
+TSV 表格保存表格失败: 
+TSV 表格预览编辑表格文件过大
+T^阘T
+Th+W逿
+Ti歮Y-
+TryFromSliceError读取向量模型失败: 
+Tu'l蒺
+Tz窟=
+T|*鉓Y
+T劓n/
+T坁tnK
+T壞DN
+U 芔Q
+U 萖q
+U(藨0
+U(蘕J
+U(譸o
+U)!6嚅
+U.V眈M'f
+U0薪>
+U4堄c
+U4芩W
+U7桒9
+U8趠B
+U;腒[]
+U@蒆Z
+U@蒔$
+U@蛛'
+U@蝘H
+UD誃S
+UD躔W
+UEM旊>
+UH膾+
+UH裷W
+UP袜t
+UP謲P
+UP轖Z
+US<{%Uls咜
+USERskill.createCreate a custom skillDistill a proven, working procedure into a reusable user skill and persist it. Call ONLY when the user explicitly asks to remember / save this procedure as a skill ('记住这个流程', '保存为技能', '以后都这样做'); for your own idea of a reusable workflow use skill.suggest instead. The user is ALWAYS asked to confirm in person, even with auto-approve on; until the result says ok, do not claim the skill is saved, and if it is rejected the user declined 
+UT芶R
+UX膁y
+UX蛀y
+UX迸y
+UZ\桔m
+U]`賉4U
+U_蝬.
+U`蛭f
+U`踘*
+Ug橁"
+Uh蓯6
+Uh衢S
+Uh諁'
+Uh豂'
+Uh貃o
+Ul噆P?
+Uo賥5
+Up誚7
+Uq4艉
+Utf8Errorvalid_up_toerror_len不支持的 runtime: 
+Utf8Errorvalid_up_toerror_len识图解析失败: 
+U吐nD-z4
+U囯'[
+U暀(,n
+U殕GN
+U玅?kpNA
+U瘮?:8
+U迴{U
+U魑P 
+U鯻3K
+V 表格H
+V$秎L
+V&詄D
+V5袡F
+V8X鄨c
+V9琻F
+V:1BBI夒
+V>:暘.V
+V>xN膿
+V@6燅
+V@JU慷
+VACUUM INTO ?1备份路径包含无法处理的字符crates\opengeodex-store\src\skills.rs
+VB湇2e"4}
+VN誮:.vsn
+VQA劽I
+VTZ)a叕
+Ve~1邎
+Vi倍[$
+Vj2蠒
+VjH徻
+Vr虲(
+V{S臆#"~I"
+V凧z'
+V哱h)
+V癗|b
+V窏:R,
+V鲇^F
+V鸥`Z
+W(|k薎
+W(虴>
+W)蹅hT
+W3萪P"
+W5焨cP
+WA么c7
+WC[軠
+WFS 图层
+WFS 服务
+WIN32_ERROR(5)(os error 5)[integrity] 暂时无法给  贴完整性标签
+WLl瀄
+WO換|^
+WPj床
+WT 注记外框无法由 Point SHP 完整表达
+W\醖yp;g
+WcMn駓
+WebGIS 应用
+WebGIS 开发专家
+WebGIS 开发专家交互式地图网页
+WebGIS 页面图层面板与属性弹窗地图控件和专题可视化
+Webhook 地址
+Windows 11 已自带
+Windows cmd 内建命令才用 `shell`
+Word 无法创建工作文件
+WorldPop 按国家 / GHSL 按范围
+WorldPop 按国家分发的人口栅格
+Wq鞌zM^
+WuY}H嫥*
+W{!掏cV
+W呓7Bap
+W弉5N
+W鰸U8
+X 厐*
+X!怤7
+X,L窊
+X.vz駵~6
+X0漦$
+X>:坁
+XBf谙Z
+XKjj曙
+XKy植
+XS;q'舰
+X[_^A^錫:
+X[_^]邝
+X[_^]銬
+X[_^]鏃
+X[_^]鏄
+X[_^]鏉
+X[_^]鏊
+X[_^]鏓
+X[_^]鏝
+X[_^]鏰b
+X[_^]鏹
+X[_^]隙j
+X[_^]韋
+X[_^]韒
+X[_^]韠c
+X[_^]韧
+X[_^]響
+X[_^]鯀
+X[_^]鯁
+X[_^]鯌
+X[_^]鯛
+X[_^]鯤c
+X[_^]鯪
+X[_^]鯿
+X[_^]鿔
+X[_^]鿙
+X[_^]鿚b
+X[_^]鿬b
+X[_^]鿮c
+X[_^]鿴
+X[_^]鿷c
+X^闠b
+Xi@瘇u
+Xt豯X
+XvdA-藠
+X声|J
+X憊lB
+X櫅)53
+X甎Ikf
+X綢=?
+X蛭Z%F&
+X蹬9kr^
+X鲑[E
+Y)#i躯
+Y.^褜fS
+Y0;蓡P
+Y6R-*襚
+Y8|@&g氢6
+Y;C;8V蓶m
+Y?酎c
+YG2眾#
+YN憊bI
+YT搌d
+Y^!挙p
+Ya3郫
+Yi?斿=
+Ym稜5:-_
+Yn&莁{
+Yru薍'
+Ys僆3
+Y}鱯]}
+Y~h鹌
+Y漝:Om
+Y砧}[
+Y貳5:
+Y錘/@
+Z#[嵔
+Z/M 值会被丢弃
+Z6C椒f
+Z;/m粭G
+Z=勍E
+Z?錉h
+ZIP 备份
+ZJ溦9
+ZKQ軩
+ZP粶l
+ZRT遰
+ZWE核
+ZX鎊Det
+ZY~竺B4=
+Zb膛C
+Zf.熄
+Zf獩0
+Zg'瓗
+ZmE槺7
+Zn謂,
+Zs6涡8
+Ztt鱜
+Z{薻pg8
+Z|堀<
+Z啕]/
+Z巷FS
+Z怈cb
+Z柪y^
+Z樲}gE3
+[ t"贓
+[ 读取超时,输出可能不完整]
+[$3>17蒂
+['h[傟Z'7
+[...]begin <= end ( <= ) when slicing ``啣B
+[=h羺K
+[B緙'X
+[JO陹U
+[J靮Y
+[R@杹
+[Rd臧
+[UNK][CLS][SEP]词表缺少 
+[W壷V
+[Z嵗a
+[\p{Han}A-Za-z]{2,}(?:公司|集团|局|院|厂|所|中心|项目|工程|标段|大学|学院|银行|医院)
+[\p{Han}]{1,3}(?:先生|女士|老师|总|工|经理|主任|处长|科长|局长)
+[\p{Han}]{2,4}(?:特别行政区|自治区|自治州|自治县|地区|盟|省|市|区|县)|北京|上海|天津|重庆|香港|澳门
+[\p{Han}]{2,5}(?:小区|花园|大厦|园区|村|镇|乡|街道)iX
+[\p{Han}]{2,6}(?:路|街|大道|巷|胡同)(?:\d+号?|[一二三四五六七八九十百]+号|与[\p{Han}]{2,6}(?:路|街|大道)|交叉口|口)iX
+[^嗝P
+[_^A\A]A^A_]醾
+[_^A\A]A^A_]銦m
+[_^A\A]A^A_]鏂?
+[_^A\A]A^A_]鏖
+[_^A\A]A^A_]鬏
+[_^A\A]A^A_]鰒
+[_^A\A]A^A_]鲄?
+[_^A\A]A^A_]鿆?
+[_^A\A]A^A_]鿪
+[_^A\A^A_]魣
+[_^A^]頫
+[_^A^]髻
+[_^]釔
+[_^]錻
+[_^]魽L
+[_^]鹼
+[a6宼Rm
+[approval]  超过 s 无人处理
+[approval] call_id 撞键 
+[approval] 归属不符
+[asr] 无法解析火山引擎响应: 
+[asr] 火山引擎识别会话结束: 
+[built-in] 仅当任务边界清晰
+[built-in] 当用户提出会产生数据成果的空间数据任务
+[bundle] 不加载 
+[bundle] 插件可信清单无法识别
+[bundle] 插件可信清单缺少签名
+[bundle] 插件可信清单验签失败
+[bundle] 缺少插件可信清单 
+[bundle] 跳过 0
+[embedding] 加载本地向量模型失败
+[integrity] 没有权限给  贴完整性标签
+[mi鏯
+[m甫-
+[opengeodex 提示] 沙箱脚本只能写自己的临时工作目录(cwd)
+[opengeodex-desktop] 删除旧远程通道文件失败 
+[opengeodex-desktop] 已从  删除废弃的远程通道配置节 channels
+[opengeodex-desktop] 最大执行步数由旧默认值  调整为 
+[opengeodex-desktop] 清理废弃的远程通道配置失败: 
+[opengeodex-desktop] 调整最大执行步数失败: 
+[opengeodex-desktop] 连接器 ID 补全失败: 
+[opengeodex-desktop] 麦克风权限处理未挂上
+[opengeodex-license] 开发者模式已变化
+[opengeodex-license] 申请票据失败
+[opengeodex-license] 票据无效
+[opengeodex-license] 续期失败
+[opengeodex-update] 安装包签名通过
+[opengeodex-update] 检查更新失败
+[opengeodex-update] 警告
+[opengeodex] notifications 配置格式有误
+[opengeodex] 插件凭证服务创建管道失败: 
+[out:xml] 存为 .osm
+[o屪/
+[stderr] 后台作业监督线程异常退出crates\opengeodex-app\src\document.rs
+[~韮1
+[任务预检提醒]
+[会员权益]
+[后台作业状态] 本会话以下作业仍在后台运行
+[后台作业通知]
+[后台作业通知]- : 
+[图片 img_[image img_[Image attachment]
+[实时输出过长
+[层级过深
+[已加载技能
+[已截断  字符]
+[当前运行环境]
+[当前项目] 
+[悟@P
+[挺$N
+[文件访问范围]
+[晚V)b
+[枳,i
+[用户召唤专家]
+[用户指定专家]
+[用户插话] 上面是用户在你执行任务过程中发来的消息
+[用户档案]
+[相关记忆]
+[知识库相关片段]
+[绣zvo?
+[萏3H
+[賢Ot)
+[输出过长
+[鉸x_&
+[长任务时间刷新]
+[项目记忆]
+[首次见面]
+[鼹/\
+\ 粶u?
+\$0藭
+\$H臲X
+\*蜻}
+\,&G鉻
+\/[瀓
+\/n葢Q/R%=`
+\5i)晏
+\@n趬
+\E椥R
+\H珞!
+\Ib拧k
+\ST礃umYO
+\[旨P
+\\.\physicaldrive禁止直接访问物理磁盘/dev/sd禁止直接写入块设备/dev/nvmemkfs.禁止格式化文件系统diskpart禁止调用磁盘分区工具bcdedit禁止修改系统启动配置-encodedcommand禁止执行隐藏的 PowerShell 编码命令set-mppreference -disablerealtimemonitoring禁止关闭系统安全防护netsh advfirewall set allprofiles state off禁止关闭系统防火墙rm-rf/禁止递归删除文件系统根目录rm-fr/remove-itemc:\-recurse禁止递归删除系统盘根目录remove-itemc:/-recurserd/s/qc:\del/f/s/qc:\:(){:|:&};:禁止执行进程耗尽脚本gitbash禁止执行隐藏的编码命令networkoutputsruntimeOpenGeodex/1.1.4build shared LLM HTTP clientcrates\opengeodex-app\src\agent\llm.rs
+\`畵0*
+\e钠pjD)
+\ll六W&
+\ns壓`|nV@
+\set衍*
+\t!聯
+\}F哲
+\奁|B
+\旼=rM
+\縱uzRh
+\謵y5o
+]"[慾i
+]%蒛5+
+]+){2,} 一个文件\b\d{17}[\dXx]\b某证件号\b1[3-9]\d{9}\b某电话\b0\d{2,3}-?\d{7,8}\b\b\d{16,19}\b某号码[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼][A-Z][A-Z0-9]{5,6}某车牌\b[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}\b某机构代码\b(?:sk|ak|pk|key|token)[-_]?[A-Za-z0-9]{16,}\b某密钥\b[A-Za-z0-9]{32,}\b-?\d{1,3}\.\d{3,}\s*[,
+]+P曈o
+]-^隔
+]0t"蹺
+]3牨d
+]4W筦
+]:矒=
+]=飊YtB
+]>2燱
+]Ct尝7h
+]GONL騷
+]I=狢N5
+]LQ襠Z{
+]N謲h
+]P单)
+]V<櫸
+]X荡@
+]YB怪
+]\s*-?\d{1,3}\.\d{3,}某坐标\b\d{5,8}\.\d+\b\b[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*\b一张表\b[A-Za-z_][A-Za-z0-9_]*\s*(?:=|==|!=)\s*'?[^\s,
+]_F缪
+]a[a8`穲V
+]vpC鷂i
+]x\鐏
+]噔y7
+]夷`.
+]慣[\F
+]璹jS
+]甗\Y
+]虵UZ
+^#[芩
+^#f溆
+^.硙]
+^9觵d
+^Q眼Y
+^Rz樼
+^TBL>恱
+^Y吶:
+^]w柄
+^k鷎~k
+^匴}U
+^嶈L#y
+^槣Z2
+^瀻@,
+^硘9s
+^醉qZ
+^锳Ij
+_%獵~
+_).祁
+_)H鋄
+_+鬐a
+_/铋^
+_/鶆M
+_@幤.
+_C伡38
+_E碷m
+_Y7蹿]
+_Zr掮
+_^]頃
+__connector_testconnector 没有数据源 
+__data_source_discover 需要指定连接器
+__invalid_arguments__[附件 ]
+__mxy_绿
+_m焤t
+_t%创
+_vK彞w
+_}蟴K#i
+_䂆V擣Y0
+_啌.6
+_圽#2_
+_漞?@}z_
+_薮_W
+_锸fu
+_隧?q
+_鵆i;
+` c豢
+`$R习
+`*7嫺
+`*朸^
+`3鷼m
+`<field_name>` 这类占位符
+`Db{"綁
+`Fy嵪
+`Odw暁
+`UN晗
+`Xo菸
+`Xu-訿
+`[_^A^]钣x
+`[_^A^]颟
+`^Z 溸
+`_外Gt
+`delegate_cartographer` 或 `delegate_expert`
+`delegate_expert.expert_id` 或 `plan_exec.steps[].agent`
+`m..序1
+`n胓>
+`p嶸YG
+`si薜.
+`wY姉DL
+`湡|\?
+`蘊rxx
+`蹌+t
+`邧*Xw
+a*}q忛
+a2枕y
+a9嘽+i
+aA.&嬴/
+a^F>~泈
+a_M穆)VWr
+ac`i銃
+account_login保存的密码已失效
+ad;朶+
+adqV俟(
+agent 必须填写上方可用执行角色里的真实 id
+agent-event另一个会话要执行 
+agent.custom_experts[]- 当前专家已在配置中停用
+agent.custom_experts[]expertcustom_expertsfeature已在专家设置中停用
+agent.plan_continue_on_failuregoal空间数据任务task_kinditemsreadyquestionmissingdefaultsrisksvalue不要换别的途径去调用它
+agent.soul[用户自定义技能 
+agent.time_refresh_minutes工具  的参数不是合法 JSON
+agriculture_forestry交通公路铁路航空港口物流
+aij!魔
+allruntimessherpa-onnx-v1.13.6-win-x64-static-MT-Release-no-tts.tar.bz2388654755fb59c23eefaaab297e2d43660e08c9695cec5b7391ccdd3e274e917https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.6/sherpa-onnx-v1.13.6-win-x64-static-MT-Release-no-tts.tar.bz2ASR 运行时
+application/octet-stream多模态模型只接受 PNG / JPEG / WebP 图片
+ap劓/
+argv 占位符未闭合: 
+artifacts工具产物技能名称不能为空请填写什么时候用这份技能技能内容不能为空
+asr.provider语音识别未开启
+assertion failed: src.len() == dst.len()衢B
+assets/plugin-index.json 格式错误crates\opengeodex-app\src\plugin_index.rs
+as椳l
+attachments请把这一点如实告诉用户
+auto 遇 .cpg 标为 UTF-8 时转成 GBK
+availableBalancecodeAPI Key 无效或已过期
+aw3d30 的 1
+ayIi衉
+a}攟F
+a兯Tr
+a屚=m
+a廝$'a
+a粃~V
+a苳K>
+a蚕fM
+a赚$w
+a踧Je&IR
+a饓>K
+b$e觶
+b/jx=歗
+bD眹c
+bE% 僞
+bH散n
+bIu苑&
+bJ褱J
+bLc3狧q
+bPW瘄
+bYr;u偽
+b]*F嬸
+balance_infos响应里没有余额信息total_balancecurrencyCNYstatusdataavailable_balanceUSDlimitsusageweeklyresetTime响应里没有套餐额度信息detailwindowmsgmessagedurationtimeUnitSECONDHOURDAYfive_hourdailymonthlytotal_creditstotal_usageleveltypeTOKENS_LIMITCREDIT_LIMITpercentagenextResetTimeunittotalBalancebalance查询失败
+bd%沄
+bd=U秾F
+bge-small-zh-v1.5embedding-model-progressmodel_nameindexed_chunkstotal_chunksindexing向量模型正在下载中markdown知识库文件过大
+bhu踳5i}
+bilinear 等重采样方式
+binusrmingw64InitializeProcThreadAttributeList: 无法获取属性表大小UpdateProcThreadAttribute: 
+bj}=嚨6O
+bk@圴
+bmpwebpjpgpng提示
+bnh咰
+bt藕#p
+bwf嬕
+b侗!KW%6
+b向`B
+b棉L=
+b腀{G
+c 儵g
+c2ypL驽r
+c<坁&
+c?d襶zH
+cG犓yD
+cM艄'/
+cS2峥
+call_id  属会话 
+cancelled[任务预检提醒]
+cartographer地图制图专家制图专家
+cd&]躬H?
+clipped_for_context结果较大
+codecommandfs.readfs.listfs.writefs.editfs.apply_patchfs.globfs.grepfs.copyruntime处理过程执行过程流程图[已完成计划复盘]
+codemsgStatusMessageerrcodeerrmsgStatusCode还没有启用的通知目标
+collector地理数据采集专家数据采集专家采集专家
+conda-forge 构建
+config.jsonhidden_size 不能被注意力头数整除vocab.txtmodel.safetensorsembeddings.word_embeddings.weightembeddings.position_embeddings.weightembeddings.token_type_embeddings.weightembeddings.LayerNormencoder.layer.
+connectedLLM 返回了异常大的无分隔数据块usageprompt_tokenscompletion_tokenstotal_tokensprompt_cache_hit_tokensprompt_cache_miss_tokenschoicesdeltatool_callsreasoning_contentcontentmodel_first_token
+connectnetworkdns连接网络
+connector id 重复: 
+connector 缺少 typeconnector '' 缺少 name
+connector_ids[项目连接器]
+content[已压缩的历史上下文]
+contentbody用户目标
+content你负责预测用户在对话中的下一句话
+content未知子角色 
+context summary model returned empty contentcontext_compacting正在压缩上下文.....
+context_summaryagent.context_compact_token_triggeragent.context_compact_message_triggeragent.context_compact_keep_recentkindfrom_message_idto_message_id@技能[
+contextmaximum contexttoo long上下文
+conversation_id这是 OpenGeodex 自身的程序
+conversation对话消息tool_results工具结果system系统提示词builtin_tools内置工具plugin_tools插件工具external_toolsMCP 工具skills技能清单notes环境与记忆x_opengeodex
+coordinator 仅用于跨阶段决策
+coordinator 只负责跨阶段决策
+coordinator 步骤由你执行
+coordinator 由主 Agent 执行
+coordinator地理空间领域专家cartographer地图制图专家collectorgdal-cligeodata-demgeodata-osmgeodata-publiczealmapviewlbs-coreqgistianditu_cli
+createdcreate 目标已存在: 
+cs玡#
+cv^a0d悦
+c含Py
+c序Z/
+c翽[p
+c臹TT
+c蜃-c
+c蜼AM
+c鏈a|
+c魡@" 
+c鼗+>
+d 为空H
+d 无效H
+d!P菝
+d$@蘩
+d$h蒈
+d$h鶩
+d$h黨
+d%砋tL
+d+2c胭
+d+px7瘬
+d,苃a1
+d2:垿
+d2Y鍐
+d4q礟]
+d@,梄
+d@W彁
+decision 做全表 UPDATE
+defa藒
+defa谘
+defa貄
+delegate_collector[built-in] 仅当采集工作可作为独立工作流隔离执行时
+delegate_parallel 位专家并行执行中
+delegate_processor[built-in] 仅当处理分析工作规模较大
+delete 目标文件不存在: 
+denied拒绝访问权限未授权unauthorized
+desktop你是 OpenGeodex 的会话上下文压缩器
+detaildisabled,列 
+disable_markdown_filterdisable_emoji_filterhttps://openspeech.bytedance.com/api/v3/tts/unidirectional单段朗读文本过长
+disk is full无法导出数据库
+display_nameowned_by/architecture/input_modalitiesnamecontentAI base URL must start with http:// or https://请先配置 AI API Key
+djR儱
+dj逭VH&^v
+dl#蚖[
+doc.read 只支持 PDF
+doc.read 最多读取  MB 的文件
+docs/15-性能审查清单.md 链路 B5
+docx 与 txt
+docx 用 python-docx
+downloadingplugin-model-progress 正在下载中
+dpi 与色彩模式符合目标
+dv%^觨
+d|L驗
+d叀2}
+d抔wT
+d睧TI
+d虦'oQ
+d韤cX
+d駀6W
+d髖1dWy
+d鿬^?
+e$w緯
+e1:鱱<
+e6瀶4>
+e6瓬K
+e9懗\
+e;鐀><'
+eE赖C
+eFZ潿
+eFa拾[
+eH悡7
+eMC~遚
+eN$M稷
+ePI驡
+ePt"臥
+eU9槬T
+e\溂c
+e]s3蚹
+e]燥KxK
+e^$/衉?
+edits 数量必须为 1..64
+education_research互联网软件it信息技术
+eh1鐇!
+embedding-model-progress读取文档失败
+embedding向量模型正在下载中
+emergency气象海洋气候
+enabled: false 停用
+energy_power地质矿煤
+engine 可选 
+environment农业林业农林畜牧
+eqm執
+errormessage响应体超过  MB 上限,已中止读取
+error无法连接运营服务: 
+eu>C藆8cj
+eu肟r
+ewY關
+explorer打开所在目录失败: 
+externalbuiltin扩展工具custom_experts.json读取自定义专家失败 : 
+ey蓧t
+e}I仩
+e~區&
+e~鍲lsTH
+e嘴"V
+e引y~i
+e撃cf#
+e涀t^i
+e舵\9
+e蜶D?,U
+e髍Lv
+e龲X,
+f%6踄
+f'lO棝Q
+f.f:怅
+f4S脳
+f5鸾_
+f7lK羷!
+f;l2痗
+f=l租
+fF會6
+fF楅E%
+fG袮|
+fL}瓖
+fQ察`A
+fWz浬
+f]#j臇
+f]~妜s
+failedplan: synthesis done最终汇总失败
+fdH愋
+fd嶪af
+feature当前会员版本不包含技能超市技能超市是的功能
+fg6N鳌%
+fg耣u
+file_roots[项目源文件夹]
+fm蓁vS
+forbiddenapproval_waitingmanual用户拒绝执行此写操作nametrigger_conditionbodyreasonagent.tool_timeout_ms
+forbiddenapproval_waitingmanual用户拒绝执行此写操作nametrigger_conditionreasonagent.tool_timeout_ms
+forbiddenapproval_waitingmanual用户拒绝执行此写操作trigger_conditionbodyreasonagent.tool_timeout_ms
+fork: retryfork: resource temporarily unavailablecannot forknot enough quotawinerror 1816outputs 只能是工作目录内相对路径: 
+formatapp_versionentriestaskphasedonetotal可能在资源管理器
+formatjsonSearXNG 服务地址https://html.duckduckgo.com/html/
+fs.authorize_pathstatus 引用了未授权路径: 
+fs.authorize_pathstatuserror 引用了未授权路径: 
+fs.read 仅适用于文本文件
+fs.read 只读文本文件
+fs幓hO
+fx8}RkK銑>
+f刯A%6
+f戂0J'
+f攅DS
+f蓃ww
+f鼰R1g
+g!Y 縈
+g"剓zc
+g0癳1)
+g;X鼱9
+g=1窪V
+gJ窙&f
+gN悜VC
+gQ横7p
+gUK橑&
+gV圑X
+gW企o
+gateway.logchannel-media[opengeodex-desktop] 删除旧远程通道目录失败 : 
+gcj_02 等常见别名
+gg#蛨
+gj,X華
+goal面向用户的总体目标
+gq0娔
+gxX瀄_
+g愤U~雚4
+g捾jT
+g槞$!m\|r1
+g汫p'
+g璏%M
+g癕|f
+g籐3L
+g緧5`Nf
+g绎*p
+g鈟m7Y6
+g锘ei
+g鳜Y5Y
+h#(艊
+h$n嗄
+h'db4踉
+h8畠R7
+h;橨%X
+hA剭s
+hCj挸1
+hH5舣|
+hNZ娔
+hV;韈
+hW娣q
+h[]_^A\A]A^A_靥
+h[_^A^A_]钂
+h]kK桏VB%0
+h^莒i`
+h_^騀:
+hashlinestotal_lines内部制品句柄不再支持读取
+hc[N忰
+high 仅用于明确影响正确性或使用的严重缺陷
+hoa掍
+hover/selected 状态
+hq"y芬n
+hr9V爝
+https://api.deepseek.com/v1/tools/fetchDeepSeek 抓取不支持带用户名或密码的网址
+https://openrouter.ai/api/v1/credits未填写 API KeyF:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-core\src\ai\usage.rs
+https缺少主机名本机/内网地址仅支持 http/https不是合法的 URL不能以 '-' 开头不允许抓取该地址(): 
+h桋J=S,
+h桑ik9 >B
+h缇dR
+h薝iN
+h蚻9N1=@
+h霛.<
+h騌Jk
+i'搸~
+i4N6Z$诈
+i5析uo5
+iDk噕
+iQ1嘯
+iS禖E/
+iTXt蟴B
+iX>翦
+idname' 当前为只读权限
+idupdated技能正文不能为空技能名不能为空
+ie_喱O
+ig>秷
+image/pngimage/jpegimage/webpimage/gifimage/svg+xmlimage/bmp只能保存文件资源当前仅支持保存 CSV
+internal error: entered unreachable code: write_trailers invalid state: 藊B
+interrupted用户已停止任务
+invalidargument参数schemaexpected格式不正确
+invite_code/api/auth/register请填写 2
+ip婀H
+ir搗Q
+items 中要保留一项
+iu缗s
+i~O$~%%捾
+i~m瑓
+i~虉o7
+i~韈F
+i娠WX"
+i嵱8.
+i閙852Uu
+j 鬳&
+j%6眎
+j(蘄|
+j8g恘
+jH慑C
+jMq0n憜M
+jN{凖
+jRb氬
+jS潯V
+j[撈"
+ja\屳
+javascript:vbscript:data:file: 的 url() 只允许引用同文档片段
+jh>獫
+jk!埀
+job_cancel 取消
+jsonb 等类型
+jsonlrunningincompletedonefailedevent.jsonlttsevent应用启动运行结束conversation_idchannelconversationturn_idrolemodel 
+js掓A
+jw敇j-r 
+jw躭_3
+j傴}m
+j璒EIdN
+j竃QS
+j綟t!o
+j缤PK
+j羭)ki^
+j賏Lp
+j踣ZT
+j鈝.e
+j麚XK
+k +覉
+k!9甗
+k+Y獈
+k0N蕍
+k4揗J
+kJm霜
+kV(鳁
+kWu稟_K-
+k`-藾
+kd絭e{KD
+keyaccess_token Webhook 地址不能指定其他端口
+kfy鱗a
+kidsig发布签名密钥未知
+kindmodelssummaryeffectreadinstall_kindactions项目名称不能为空file_roots新建项目需要至少指定一个源文件夹
+kind结果较大
+kj&愋h
+kl}T嫕+
+kl瓖_:bY
+knowledge知识与记忆knowledge_searchproject_memory_update
+kq施Q
+kv聍w|(+
+k檡%F+
+k皻GL
+k茪k*
+k萙(s
+k醑R&
+k隴#b
+k頂K7
+k飀=a
+l!晦;@
+l$ 藸
+l$@誢
+l$h蚶
+l&赌c.
+l,m喃f
+l86[藱
+l:'D8P沅
+l?'背
+lGU鐐
+lQu0P杞
+lTM繜tG
+l[籽-`
+last_error当前有任务正在运行
+layout 内容非预期 JSON: 
+ld簁o
+licenseinstalledtotal_bytesmissing_bytesdirvision-models-progress项目目录配置目录数据目录插件目录运行时目录当前目录选择的文件路径无效: 
+limitremainingusedsuccesscodingplan不存在没有未开通not existnot foundnot havedoesn't havenot subscribed
+lj:忣
+lkz榌
+ln袀C
+loD8鉊L
+lr|圤Gt<
+lu"璝P
+lu礃^
+ly,"脽Q
+lz仼H
+l慔Nm%
+l煯;L
+l脒'0
+l螰)x
+l跓KA
+l隇 NS
+l韶IhM'
+l鬤_K
+m 葔(
+m!'/Y贛~
+m(%z傪
+m2S幞n
+m8a冐J
+m:6鋊j
+m<Ra樃
+m?盨Y
+mK艺H
+mN奜rS
+m`聶(
+maB憢)g
+mag凌
+main已完成已取消已中断失败后台作业 
+manifest 不再支持 ``
+manifest 解析失败: 
+manifest.json 无法解析
+market.json安装技能失败
+mcp server '' (sse) 缺少 url
+mcpready_services 工具 
+memoryerrorout of memorycannot allocate memoryallocation failedpermission deniedaccess is deniedno such file or directoryfile not foundcannot find the pathruntime_error命令执行失败
+message已加载
+meteorology_ocean智慧城市政务城市管理数字孪生
+me賄5Ym
+mining_geology应急防灾消防减灾
+missing_texthigh图上没有识别到
+mj甃y
+model_index项目默认模型: 
+model_request_start模型请求
+model_rewritetelemetry.enabledtelemetry.demand_samplestelemetry.model_rewrite配置文件格式无效yesnomessages_senttelemetry_opt_outhostdbnamedatabaseuserusernameworkspace
+modenode_countedge_countfile_resource_panel流程图已写入当前会话产物目录
+my粕\
+m勐8/N%
+m茭`&
+m鍦 Z
+m騼'-bfCN-
+n 腡)
+n+佘]=
+n4柍r:
+n9A7罡
+n:8dyU勷9_
+n<居c
+n?乢WSt
+nP$煯c
+nR燏(
+nW'*惹
+name襖
+name连接器不存在
+natural_resources规划城乡建筑设计
+nay釂
+node / way / relation 计数和前 10 个名称
+not foundno such file不存在找不到无法找到
+not installedmissing未安装缺少未找到可执行not recognizedno module named
+not_found所需文件或程序不存在
+note第三方识图未配置完整:请在设置页填写 base_url 与 model
+notify通知推送notify_send
+n|B鋜
+n~t擬
+n冕mbj
+n勯_,
+n厵/,x=
+n嘯u^e
+n妊|HA
+n桨OB
+n桽>~
+n澻("r
+n碂[E
+n藴sb
+n郓qv
+n驢*/e
+n龝)@
+o ~J髚
+o#她e
+o$%Q'竐
+o'~K钃]
+o,&軛
+o/2璱
+o8U綨
+o?l膶
+oE庑}#
+oG8犱
+oQVWz焍
+oR"僮
+oSH8槚
+oZu鏪
+o^g娳
+obscura 读取结果失败: 
+obscura 退出码 
+obscura.exequery不在可访问目录内模型只收 PNG / JPEG / WebP文件无法读取文件不存在或无法读取
+obt土puBj
+ob鴴Tt
+oe>+滪x&0Y
+oek兰
+offset= 超出范围
+off识别模型 2.0 
+of亓n'
+og婷w
+og规Vp
+ok/error/message智图看看没能打开这个文件:;
+old_string 未找到文件已被其他操作修改
+om噭'4
+opQ栓C
+openai_compat_othergeotiffimgnetcdfhdfshapefilegeojsongpkgkmlgdbcsvexceldxfdwglasmapgismbtilesimage429rate limittoo many requests限流
+opengeodex-backup.json无法读取备份清单
+opengeodex-desktopenable_nonstream构造语音识别请求失败: 
+opengeodex-guard[opengeodex] 插件凭证服务启动失败: 
+opengeodex.ymlapp_dataLOCALAPPDATAOpenGeodexpluginsopengeodex.example.ymlOPENGEODEX_PLUGINS_DIROPENGEODEX_RUNTIME_DIRruntimeCargo.tomlcratesopengeodex-desktop.opengeodex-installedPrograms插件  没有声明模型 
+opup脂
+op工具toolapproval审批decisionwait_msdelegationsub_role子 Agenttask计划步骤serverMCP 工具
+os渪?{q
+other临时文件deletebytescleanablecautionfreed_bytesremoved_filesskipped_files对话记录会话消息
+otn驅xkA[L
+ou@=秦
+out_of_memory沙箱内存不足
+out_path 只接受相对产物目录的路径
+out_path 只接受相对路径
+outputsartifacts原始数据过程数据制图资料最终成果临时文件HTTP_PROXYHTTPS_PROXYALL_PROXYhttp_proxyhttps_proxyall_proxyconnector_ids创建资产目录失败(): 
+overpass-api.de 公共镜像
+o{扰.
+o};禅
+o優}0
+o摧F=E
+o甓E:
+o秅+3I
+o蒑7s
+o蓐?h
+o釓PRO
+o鍢s|S
+p"s冯
+p#J豶B4r
+p'蝬9
+p+`鹼
+p,嫇p
+p.{缓
+p4拠++5:~g
+p>5碷
+pDD鋦C
+pF墅{X
+pK,}睗1
+pS睍B
+pTA淾
+pZc劈
+p[_^A^]鎅-
+p]_藕
+p]獿=z$
+packages 不能为空
+path识别失败的页请如实告诉用户没有读取扫描件识别设置为高精度 OCR 服务
+pdf- / 共  页
+pe#螻
+pe.籍
+permission_denied沙箱没有该操作权限
+pipinstall--default-index--upgradeUV_HTTP_TIMEOUT20UV_HTTP_RETRIES1Python env 创建后未找到解释器
+plan_exec[built-in] 为至少三个用户可感知阶段的复杂任务建立真实可见计划并逐步执行
+plugin_dirsskill_dirsdeveloper.json保存开发者目录失败: 
+plugincoordinatornametrigger_conditionbodyreasonfile\app_data\\outputs\conversation-\users\\temp\\tmp\技能内容包含绝对文件路径
+plugininstall_hookOPENGEODEX_USER_PLUGINS_DIR创建用户插件目录失败 
+plugins请选择有效的 zip 插件包inspect正在检查插件包manifest正在读取插件声明.install--
+plugin插件未启用
+pngimage/pngjpgjpegimage/jpegwebpimage/webpbmpimage/bmptiftiffimage/tiffchoicesmessage响应缺 choices[0].message.content响应非 JSON: 
+postgismysql数据库入库
+po憻'l
+pptx 用 python-pptx
+pqr槏
+process_limit脚本创建的子进程超过了沙箱上限
+processor地理数据处理专家数据处理专家处理专家
+project_id项目的源文件夹只读
+project_memory.update 只能在已选择项目的会话中使用python.env_statusPython environment statusInspect the managed Python runtime used by sandbox.exec. Read-only.crates\opengeodex-app\src\ops\common\python_env.rs
+pted轞
+p耆gu
+p萵.r
+p鰠njH
+q(蘤-
+q/奫(
+q2R4侚i
+q3懭K"G>3
+q:Y纥S
+q;C躨,
+q@貜3
+qRB;FH縆
+qSN髯:
+qS鰎F
+qaj涜
+qsi|褼
+qt潂,
+query 不能为空
+queued_sub_agent等待子 Agent
+qxc奁1
+qy翋Bo
+q亲9e5
+q劓sQ
+q珲)4
+q豬q\
+r*vR诨
+r-@刣^
+r.<lC<鬥
+r/||@蕁`
+r2r轰
+r3c鋚
+r8怨z.
+r=[葥
+rB|檿
+rG懡G+
+rH雂j
+rKZp瓎Y
+rK坞]
+rK快!
+rM1l癬j
+rS睳=S
+rZ6驃+
+rZ~簜
+r_眗>
+rd鐋F
+ready=true 时可为空
+region 可传 adcode 或名称
+rejected用户拒绝授权外部路径: 
+release-prod-1:bf93b6bc60be0428979ce92bd50878f9c1c435c882084c8a56dd8e9f18692926,release-prod-2:9ee0a797005ac3be89b9b98a8691ee8ce7bcaa34acc750bf3026417ddb9ef397发布索引无法识别[opengeodex-update] 更新  未通过安全校验
+reload正在刷新插件能力插件安装完成安装插件失败: 
+remote_sensing遥感与云计算专家遥感专家云计算专家
+report- 做了什么
+resource_queuelanguagepythoncode拒绝rejectedapprovedapproval_wait_longguard_rejectedout_of_scopetool_errorplugin_unavailableretry_stormproposed
+resources数据源发现结果缺少 resources 列表idmetadata
+resultsdescriptionMozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36无效代理 : 
+rg蟤^
+rj詍mvX
+rp純$
+rsD7鏽y
+rucG酱
+rundll32url.dll,FileProtocolHandler打开链接失败: 
+runningsucceededfailedcancelledinterrupted退出 OpenGeodex[opengeodex-desktop] 
+runtimeagent-events.jsonl[opengeodex-desktop] 连接器密钥加密失败: 
+runtime运行时能力准备classresourcelabel资源 排队
+r婔w\
+r尖cv
+r銤ZQH
+s 目录H
+s$刌1
+s,( 箟
+s<锍K
+s@sq毸
+s@唐溔
+sB巔r
+sD剄a
+sD嫃S@9
+sN耨V
+sQ絘D
+sZw坔*
+sandbox 仅在没有专用能力时使用
+sandbox 只做最后手段
+sandbox 永远是最后手段
+sandbox 里跑 curl/wget/python(urllib/requests)
+sandbox.exec 不再自动安装依赖
+sandbox.exec 声明的输出产物未生成: 
+sandbox.exec 引用了 OpenGeodex 内部目录 
+sandbox.exec 引用了未授权路径: 
+sandbox.exec 的 out_dir 不在当前会话产物目录或用户授权的读写目录内: 
+sandbox.exec 的代码里有 
+scripts/ 里
+secret 为飞书/钉钉签名密钥
+sed/awk/find/tar/gzip/curl 和可移植批处理优先用内置 `gitbash`
+see鄐
+sert虃
+service没有可加载的 MCP 服务
+sfO磈
+shapedata_offsets缺 data_offsets 大小与形状不符
+sherpa-onnx-online-websocket-server.exesherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz227ffbd9ee24ad186d99acc2f6354d7992b27bcab490812510665fa8f9389c5f8https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz2stream_modelmodel_streamASR 流式模型
+sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2f6b2a72ebcb1ac7a764d4cfccd886e6bcb2a95c4657c2199d0ba95ed4b9ea71ahttps://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2final_modelmodel_finalASR 精修模型
+sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17runtimes/asr/sherpa-onnx-offline.exeruntimes/asr/bin/sherpa-onnx-offline.exeruntimes/asr/sherpa-onnx-offlineruntimes/asr/bin/sherpa-onnx-offlineapp_data/runtimes/asr/sherpa-onnx-offline.exeapp_data/runtimes/asr/bin/sherpa-onnx-offline.exeapp_data/runtimes/asr/sherpa-onnx-offlineapp_data/runtimes/asr/bin/sherpa-onnx-offlineruntimessherpa-onnx-offline.exeapp_datamodel.int8.onnxmodel.onnx归档包含不安全路径: 
+sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20127.0.0.1:0读取语音识别端口失败: 
+show显示 OpenGeodexquit退出
+shq娕N
+size_bytes 与 bounds
+si繫z{
+skill_evolutionzealmapviewzmv_add[展示结果 
+skills 只能是插件目录内的相对路径: 
+skill技能
+skill技能名不能为空技能不存在
+skipped没有能看图的对话模型
+smart_city教育科研高校学校研究学生
+sp豪wx
+srlU鲹 Rob
+ss}徰
+stdout 非合法 JSON: 
+struct BackupManifestmainOpenGeodex任务已完成只能打开 http/https 链接链接包含非法字符execomscrpifcplmsimspmstmscapplicationappref-msgadgetjarxlldllsysdrvocxbatcmdps1psm1psd1psc1vbvbsvbejsjsewsfwshwswscscthtapypywpycpyopyzpyzwrbplshlnkurlwebsitelibrary-mssearch-mssearchconnector-mssettingcontent-msscfshbshsdesktopreginfinsispchmhlpdiagcabmofdocmdotmxlsmxltmxlampptmpotmppamppsmsldmiqyslkxlm
+struct SkillListItemstruct SkillManifestattachmentsdaydescriptionversionauthormin_planmanifestSKILL.mdSKILL.md.enc当前已有会话正在执行
+sub_agent_running正在处理...
+succeededfailedcancelledinterrupted后台作业  不存在
+summary完整工具结果体积较大
+surveying自然资源国土不动产林草
+system资源快照日志包含无法解析的 JSONL 行打开日志失败: 
+s皪A$
+s祥sQf
+s緌/Z
+s葧l(
+t!萭"
+t!譓C
+t!賆y
+t!趒M
+t"耬)
+t#u嗣
+t#蚮m
+t#諩;
+t$ 苨
+t$ 蓄
+t$0蛶
+t$0訩
+t$8裴
+t$`鎜
+t$`靈
+t$`鯥
+t$h蠟
+t$h襽
+t%菒&
+t%贩O
+t&蘕!
+t&袄4
+t(脯:
+t-觥+
+t5;遹(
+t9觓+
+t;f:服
+t< 皲
+t>鬑y`j.
+t@P夜i
+tA&礯O
+tA腳.
+tK檠n
+tU湍W
+t[茠=
+t[蚭t
+t_絹c
+tam钓
+ta麡j
+td蛐y
+telemetryconnector_ids开发者模式未开启plugin_dirsskill_dirsrejectedreload_neededloadederrorscrates\opengeodex-desktop\src\commands\developer.rs
+text/event-stream读取响应: 
+text/markdown当前仅支持 PDF
+text:text解析归档大小失败: 
+textno_textocrfailedocr_engine第  页没有文字层
+text没有提供 expected_texts
+timeouttimed out超时
+timestampsign不支持的通知类型
+tion视
+title 和 body 不能为空
+tnh濁
+tokens.txtASR 流式模型缺少 tokens.txt
+tool-resultsmedia[二进制已转存 #]
+tool_calls(结果未留存)/function/name未知工具{结果未留存}  - 工具  结果
+tool_callstexttaskokrouted_fromrouted_tofailed周一周二周三周四周五周六周日%Y-%m-%d %H:%M:%S写操作结果较大
+tool_calls是否需要了解处理过程处理过程流程图sourcecrates\opengeodex-app\src\artifact\mod.rs
+tourism 标签
+transportation电力电网能源石油燃气光伏风电
+truncatednote工具摘要过大
+ts粡ax2
+turn开始处理latency_msok处理完成处理结束steptotal_tokens模型响应 
+type 与字段见各插件 manifest 的 connector_types
+typefeaturesrowsproperties/geometry/typebase64application/octet-stream非表格结果, 字节,系统仅回灌摘要;需要完整内容请生成文件资产
+t噅S`*
+t弻YF
+t棹*9X
+t橇/r
+t沢";
+t煖Rv#%A
+t礮`{}
+t茱Y9
+t鏇EV
+t齙'1:
+t齾y[
+u Ps罳
+u!W*^p苇
+u$葈L
+u&詽WL$
+u(靛M
+u-痆'
+u.耤4
+u.舍4
+u.蒰4
+u.藼4
+u.號6
+u.蟠6
+u.裉5
+u.謽4
+u.贗5
+u.蹰6
+u.軎4
+u.迀6
+u.迱6
+u27g繜:
+u4耐5
+u4胗6
+u4菑5
+u4蒘6
+u4蓸6
+u4袹6
+u4釺|
+u?厥S
+u@t"観
+uC專obt
+uG圑)p<!
+uJ}汛
+uK#遒
+uKd巐
+uOE蛨
+uO程iR
+uR]氆
+uh蔧=R
+ul></div></div>after the deathwith respect tostyle="padding:is particularlydisplay:inline; type="submit" is divided into中文 (简体)responsabilidadadministraci
+unknown测绘测量地理信息gis
+update 操作必须提供 new_stringupdate 目标文件不存在: 
+update 操作必须提供 old_stringweb.searchSearch the webSearch the web; returns title/link/snippet results, each tagged with the engine that found it. The user may configure several search engines (the result lists them in engines_available). Omit `engine` to use the default engine (it falls back to the next one on error). If the results are poor, search again with a different `engine` from engines_available; use engine="all" to query every enabled engine in parallel and merge the results (for broad or important questions). Results are only snippets 
+update-download-progress[opengeodex-update] 更新失败
+urban_planning水利水务水文~
+user[已安装但当前不可用的插件]
+uuuV鋜
+uv]駱
+u{荅4
+u~蛙5
+u~蟉6
+u忌mE
+u渽gQ{
+u禯X䒾
+u鐹<_
+v ~蛖
+v!,匽
+v"p淛]
+v&-蟏F
+v&屁+
+v-wI癶
+v1悬S
+v9D聅
+vA(6犍
+vDI茇
+vN笨8
+vSW丧
+vUD勜
+v\!矠L
+v^;吵
+v^紱@
+vb鷤i
+vc]&mPE~鋒?
+vd#填.
+venv--python.uv_cacheUV_CACHE_DIR创建 Python env 失败: 
+vf$馧va6
+vision.read_imageRead text from an imageExtract text from an image the user provided: a local image file given by its absolute path (files dropped or added in the chat box arrive as paths in the message), or an attachment marked like [图片 img_xxx: 名]. A path outside the accessible directories must be authorized with fs.authorize_path (permission=read) first. mode=text returns reading-order plain text (use when you only need the content); mode=layout also returns each block's pixel coordinates / layout (use for position / reformatting / reconstruction); mode=table restores table structure (rows, columns, merged cells) as HTML <table> 
+vn_^後
+vocab.txt 不是 UTF-8: 
+volcengine.api_key未配置火山引擎 API Key
+vtokenpluginok凭证协议版本过高
+vt廞T
+vzt亃
+v九_8
+v臛u0
+v见ol
+v遊Hi
+v鳈sU
+w&K9)嫸
+w($受
+w+Y箼W
+w7r猤Ph
+w@t"貒;
+wA泚I
+wG蛱0
+wMM鑔
+wN祊@
+wYf卛
+w]g_邁
+water环境环保生态
+wb+尀/
+web gismaplibreleafletopenlayersdeck.glthree.js前端网页地图应用交互地图可视化大屏代码
+webgis 或明显匹配的自定义专家
+webgiswebgis开发专家webgis专家
+wjQ1>+蛫
+wm穞p
+woA/窳
+word/document.xml不是有效的 .docx 文件
+wptrv)寽{xz
+w匊mL
+w鉕{eR
+w銎53
+w鬡dE
+x 数据H
+x!歐YM
+x&y视
+x'D卛
+x10UP磓
+x3O腦|[
+x=車,#
+xP窸}
+xS.六9%y
+xV賒d
+xXwW櫱
+x[_^A\A]A^A_]鄩x
+x[_^A\A]A^A_]锥
+x_opengeodexexpert_rolesdatabasecpucustom_experts用户自定义专家由插件  提供
+xa櫛_t
+xi%B耥)1
+xi>D`汅>G
+xlsx 用 openpyxl
+xml 等文本文件扫描件识别设置为高精度 OCR 服务
+xml 等文本文件知识库内容不能为空知识库文档名称不能为空
+xml 等文本文件知识库文档只能导入文件
+x{n绽4
+x仰+:
+x卽*3T
+x厡VO_
+x嘍x8
+x妗>;
+x菺G`(=
+x裓k=ltM
+x鈁DB
+x饗| X?
+y$渌8]
+y)e諴d
+y-0琤
+y0@迮'
+y1! 徽
+y35歟
+y:湜?
+y=~旯
+yIh黕ry
+yQ佢_
+yT5\<鬥
+yTQ齣P,
+yU?k躦
+ye-缃,
+yg%玂'gSa+
+yj"堿BK<
+yn獄?q
+yo]櫇
+your-key<youryour_geo_datasourcesnotifications[opengeodex-desktop] 已清理专家  沉淀的  条技能
+yw氟=
+yxw磣
+yz+鸆
+y涻E~
+y瑶s[
+y蚯)d
+y袴,=>
+z%;瀯
+z'騾CY
+z*I吟1
+z8賬V:
+z:叔W
+zWy忯t
+zXi疄
+zealmapview插件包必须包含且只能包含一个 manifest.jsoninstall hook . ok=
+zf柲i
+zgv罨
+zg艌/X
+zy蕕5B
+z~铑9
+z临鷜A
+z憕#;:
+z析Mg
+z蚝[;
+{"issues":[{"type":"overlap|text|element|layout|readability","severity":"high|medium|low","location":"问题在图上的位置","detail":"具体问题","suggestion":"修改建议"}],"summary":"一句话总体评价"}
+{"ok":false,"interrupted":true,"error":"任务已被强制停止"}update tool_calls
+{"ok":false,"interrupted":true,"error":"应用在操作完成前退出"}update tool_calls
+{"text": "改写后的描述", "category": "类别编码"}
+{+蜎@
+{-d窚2
+{0[緑
+{0ggfW甶Ur
+{2莶>
+{4M媆
+{5{喓L4t
+{:TuW塉
+{<Z巛
+{=A初
+{=尨r
+{>=^銙
+{E8畼
+{E擱\
+{F帅z
+{H鉼Z
+{Q6洶
+{V+楖-YZ
+{e{罣
+{jD荧
+{v'聮m
+{x餜_~
+{yr溌
+{~淑q
+{岧q$G
+{舓!"1
+{蜙Lf
+{銸XP
+| K髡
+|#|缷
+|$ 菹
+|$ 術
+|$ 譞
+|$ 跑
+|$ 蹛l
+|$p郟
+|$p銓
+|$p陟
+|$p靂
+|$p驽
+|$p麓
+|$p鼟
+|$p龑
+|1T欗D
+|1e廴
+|>|I蝼>
+|IV燲
+|V鼔_
+|Zm#k裾
+|o:雧
+|v6$雠
+|w挗*
+|歠"Pz
+|眆Cu
+|虐q1
+|輷8%
+|錯}|
+} 蔪6
+} 蟴P
+}5癯j
+}8豎d
+}:/_檭c
+}BG氺
+}EK鱇
+}G/K舑
+}K鶿W
+}M綮 
+}S4褤|
+}V衚:G|<
+}]D缞
+}_I踣
+}e}螟
+}jh缪
+}phb觪
+}t%膫
+}u_離p
+}u~徶
+}w冒R
+}|撖jg
+}凮f+
+}泍G#
+}犎e:
+}螥cEV
+}谈D(
+}輐el
+}鐛i{:
+~$TJ鬍X
+~((鱯Yp
+~-吪E
+~5{I赎
+~8冄w
+~9軭'
+~[诙'
+~\瀺S1EfPm
+~c黑L
+~d埛o
+~iw豏
+~i瞠U
+~rJ掱f
+~w澧<
+~{]z玝
+~奕R^
+~愤,h
+~楩v[
+~澮=x
+~瀐]&
+~紙Yv
+~隩N|e
+一个县级行政区
+一个县级行政区一个市级行政区一个省级行政区
+一个地理空间智能体
+一个非 coordinator 步骤只承接一个边界清晰
+一份行政区边界
+一句话结论
+一张地块表
+一律以它为准
+一律优先用工具目录里对应的专业插件
+一次下载
+一次产出多个结果时逐个加载
+一次对话完成从文件到服务
+一次性读写
+一次搜索
+一次最多直接附  张
+一次最多等 60 秒
+一次直接校验通常足够
+一次调用可串多步
+一次轻量工具检查不要预检
+一直这样的话
+一行一条
+三维与表格
+三维模型
+三维模型辅助截图
+上传音频失败: 
+上游 QGIS MCP 声明兼容 3.28
+上限  字节
+上限 1800000(30分钟)
+上限 200 行
+上面的默认产物目录与资产分类目录
+下一步是什么
+下一轮会带着确认摘要回来
+下划线和连字符
+下发给 WebGIS 开发专家
+下发给地图制图专家
+下发给地理数据处理专家
+下发给地理数据采集专家并等待结构化结果
+下发给遥感与云计算专家
+下载 dem下载dem高程数据
+下载/转换/渲染/校验阶段
+下载中断: 
+下载失败
+下载失败: 
+下载或做空间分析
+下载数据并处理
+下载本地识图模型
+下载本地识图模型(约  MB),下载完成后再识图
+下载模型
+下载模型文件  失败
+下载获取数据爬取
+不交给模型拼连接串
+不代表要求切换语言
+不任意选取
+不会当作数据落盘
+不会改用这台电脑上其他的 
+不会暴露给智能体
+不会自动重跑
+不会自动重跑',
+不会自动重跑crates\opengeodex-store\src\background_jobs.rs
+不依赖 MapGIS 软件或 SDK
+不保证无损还原
+不做入库
+不做后续处理
+不做坐标系转换
+不做数据采集
+不做空间分析
+不做网络搜索和数据抓取
+不做营销式页面
+不允许外部或 data/file 地址
+不允许抓取该地址(域名解析到本机/内网 
+不允许的运营事件
+不允许跟随: 
+不内联栅格
+不再创建计划或继续委派
+不出现在工具参数和返回结果中
+不创建计划
+不删除文件",
+不匹配时仍使用 collector/processor/remote_sensing/coordinator
+不参与分析
+不含 ECW
+不因 warn 自动重绘重查
+不因缺少图例
+不在 references/
+不在沙箱内安装依赖
+不在源目录生成 .ovr
+不在界面显示Show system info and statusReturn a full host & runtime snapshot:
+不复述用户原话
+不安全或无效的包名: 
+不对任务开放
+不得公开使用
+不得只在文字中声称已委派
+不得只输出 Markdown 表格或文字计划
+不得自行勾绘国界线
+不循环试探
+不必拆计划
+不必等用户开口
+不必走它
+不手工解析 MapGIS 二进制
+不扩展到其他步骤
+不把居中
+不拿小比例尺的边界去画大比例尺的图
+不据此重投影或叠加底图
+不提供影像
+不提供更新
+不支持 SSL 加密连接
+不支持 Z / M 值
+不支持图片输入
+不支持的 patch action: 
+不支持的 runtime: 
+不支持的动作类型 
+不支持的搜索后端: 
+不支持的激活函数 
+不支持的语音识别方式
+不是 GeoJSON
+不是 OpenGeodex 的数据备份
+不是万能兜底
+不是任务数据
+不是你的
+不是合法的技能附属文件路径
+不是固定向导
+不是失败
+不是客服话术
+不是必经流程
+不是指令
+不是文本文件
+不是文本文件(检测到二进制内容): 
+不是本轮任务指令
+不是用户发给你的指令
+不是用户新发的消息
+不是用户消息
+不替对方猜
+不检查更新
+不消耗配额
+不清楚的地方你会先问一句再动手
+不满意直接讲
+不生成 MPJ
+不用列表
+不用小标题
+不直接面向用户
+不相关就忽略
+不确定函数名时可先列出当前版本可用的空间函数
+不经连接器管理
+不继续委派
+不编造执行状态
+不能写入或覆盖
+不能原地覆盖或修改其中的文件
+不能只留在工具结果里
+不能在沙箱里启动或操控 Microsoft Office / WPS
+不能在这里清理
+不能寄望于
+不能导入目录读取文本文件失败: 
+不能执行  语句
+不能执行写操作
+不能授权 
+不能授权为可写
+不能用 fs.read
+不能由你发起
+不能直接打开可执行文件
+不能访问
+不能访问 
+不自动重绘或复查
+不自己采集
+不自行追加出版级要求
+不自行采集
+不要不加说明就缩小数据量重跑
+不要不用不需要无需不必不让别|
+不要不用不需要无需不必不让别地理空间领域专家跨阶段决策
+不要丢失用户已经确认的偏好
+不要为了等待它们而轮询
+不要为凑成果数量复制中间件
+不要为复杂计划的全部步骤都选择 coordinator前置步骤 id
+不要为这类查询写 sandbox 脚本
+不要主动推销
+不要从头重做已经完成的步骤
+不要从头重来
+不要代码块
+不要保存内部控制提示词
+不要假装完成
+不要假设
+不要先反问用户或做任务预检
+不要再委派或在计划里安排其他专家
+不要再安排其他专家
+不要再次委派专家
+不要再罗列步骤或解释过程
+不要写入本轮的具体文件路径
+不要写具体路径
+不要凭印象重做一遍
+不要凭猜测描述界面或设置项
+不要凭空臆造工具名
+不要凭记忆臆测日期
+不要列盘符
+不要删除文件
+不要刷屏
+不要原样重复调用
+不要原样重试
+不要反复调用
+不要只按名称相似度判断
+不要只输出文字计划
+不要合并成一个宽泛的专家步骤
+不要向用户解释工具权限
+不要向这些专家委派任务
+不要含糊其辞
+不要因为预期会审批就回避正确的写工具
+不要因工具调用数量多而创建计划
+不要在 sandbox 脚本里调用 pip/npm
+不要在本轮绘制流程图
+不要堆叠日志
+不要声称
+不要委派普通读写文件
+不要委派给 
+不要安排其他专家
+不要引号
+不要手动编辑
+不要承接可独立下发的重型采集
+不要承接可独立下发的重型采集或处理阶段
+不要把不同会话的产物堆到 app_data 根目录或全局 downloads 目录
+不要把任务硬套进写死模板
+不要拆给别的专家
+不要按关键词机械分配
+不要换其他目录继续尝试
+不要换别的写法再去调用 Office
+不要据此认为这就是全部结果
+不要无限创建子进程
+不要查看
+不要查看 OpenGeodex 的安装目录或插件文件
+不要查看其中的文件
+不要混用不兼容的波段或分辨率
+不要猜测
+不要用 `job_status` 轮询
+不要用 sandbox 自己写脚本重复造轮子
+不要申请整个盘或它的上级目录
+不要直接下载
+不要直接跳到 sandbox
+不要硬凑
+不要等待
+不要继续循环探测
+不要编造
+不要编造对话里没有出现过的文件路径或数据
+不要臆造缺失内容
+不要自动重试
+不要自己写 urllib/requests 脚本去爬
+不要自己去弄
+不要自己找别的途径绕过
+不要自称助手
+不要自行扩大范围
+不要自行转换格式
+不要装到 Program Files
+不要解释
+不要解释;看不清的单元格写 [?],不要猜
+不要让后续 Agent 从头重来
+不要说成功
+不要说成成功
+不要说成没有安装
+不要负责重型采集
+不要超过 8000 字
+不要跳过预检直接下载
+不要轮询
+不要输出 JSON 以外的任何内容,不要用代码块包裹
+不要输出任何额外文字
+不要输出其他内容
+不要输出内部推理
+不要输出寒暄
+不要逐个文件夹试探
+不要逐页读取全量
+不要遗漏
+不要重复发起同一计划
+不要重复已经完成的事
+不要重复提及
+不要重复添加
+不要重复调用
+不要重复调用同一个工具
+不要重新创建计划
+不要重新预检
+不要重试同一个失败的方式超过一次
+不要重跑业务工具
+不要重跑已完成的步骤
+不要顺手做投影
+不要预加载无关技能
+不要额外做网页搜索
+不要默认追加网页搜索
+不覆盖已在等待的那个
+不调用工具或创建计划
+不调用接口
+不负责最终综合交付
+不超过 16 个字
+不超过120字
+不超过30字
+不输出内部思考
+不连用感叹号
+不适合直接读进上下文
+不逐要素随手调
+不重复检查
+不重复调用
+不需要 skill 参数
+不需要账号或密钥
+不需要额外安装 VC++ 运行库
+不靠肉眼自评
+不顺手改不相关的东西
+与 GCJ02 地图叠加前需确认坐标系
+与 GeoJSONSeq
+与 OSM XML
+与各插件工具是当前可用能力的准确信息源
+与更新版本
+专业深度
+专家  必须显式声明 plugins
+专家  缺少 display_name
+专家 Agent 是按需能力
+专家 Agent 遇到 `running`
+专家 ID 无效: 
+专家 ID 重复: 
+专家不会自动重跑
+专家只完成收到的任务
+专家完成后不会自动继续对话
+专家工作只交给点名的专家
+专家步骤的 agent 只填被召唤专家的 id
+专家的过程实录不会进入你的上下文
+专家能力参考
+专家角色 ID 无效: 
+专家输出的数据
+专家配置
+专有名称及必要的原文引用保持原样
+专题内容占视觉中心
+专题内容或统计问题时
+专题制图
+专题可视化或前端地图工程任务边界清晰
+且任务确实适合脚本时才用
+且必须传入真实依赖边
+且必须清晰可读的文字:
+且执行前需要确认关键条件
+且执行前需要确认区域
+且找不到可授权的父目录路径不存在或不可访问: 
+且数据已经就位时
+且无法恢复制图用的样式
+且目标表已存在
+且结构无法有效截断
+且连接器须设为
+且预计很快结束时
+两者差异在米级以内
+中下载本地运行时和模型
+中国行政区划与地名
+中安装作者为 nkarasiak 的
+中文字段不乱码
+中文字段名不报错
+中文简体繁體信息中国我们一个公司管理论坛可以服务时间个人产品自己企业查看工作联系没有网站所有评论中心文章用户首页作者技术问题相关下载搜索使用软件在线主题资料视频回复注册网络收藏内容推荐市场消息空间发布什么好友生活图片发展如果手机新闻最新方式北京提供关于更多这个系统知道游戏广告其他发表安全第一会员进行点击版权电子世界设计免费教育加入活动他们商品博客现在上海如何已经留言详细社区登录本站需要价格支持国际链接国家建设朋友阅读法律位置经济选择这样当前分类排行因为交易最后音乐不能通过行业科技可能设备合作大家社会研究专业全部项目这里还是开始情况电脑文件品牌帮助文化资源大学学习地址浏览投资工程要求怎么时候功能主要目前资讯城市方法电影招聘声明任何健康数据美国汽车介绍但是交流生产所以电话显示一些单位人员分析地图旅游工具学生系列网友帖子密码频道控制地区基本全国网上重要第二喜欢进入友情这些考试发现培训以上政府成为环境香港同时娱乐发送一定开发作品标准欢迎解决地方一下以及责任或者客户代表积分女人数码销售出现离线应用列表不同编辑统计查询不要有关机构很多播放组织政策直接能力来源時間看到热门关键专区非常英语百度希望美女比较知识规定建议部门意见精彩日本提高发言方面基金处理权限影片银行还有分享物品经营添加专家这种话题起来业务公告记录简介质量男人影响引用报告部分快速咨询时尚注意申请学校应该历史只是返回购买名称为了成功说明供应孩子专题程序一般會員只有其它保护而且今天窗口动态状态特别认为必须更新小说我們作为媒体包括那么一样国内是否根据电视学院具有过程由于人才出来不过正在明星故事关系标题商务输入一直基础教学了解建筑结果全球通知计划对于艺术相册发生真的建立等级类型经验实现制作来自标签以下原创无法其中個人一切指南关闭集团第三关注因此照片深圳商业广州日期高级最近综合表示专辑行为交通评价觉得精华家庭完成感觉安装得到邮件制度食品虽然转载报价记者方案行政人民用品东西提出酒店然后付款热点以前完全发帖设置领导工业医院看看经典原因平台各种增加材料新增之后职业效果今年论文我国告诉版主修改参与打印快乐机械观点存在精神获得利用继续你们这么模式语言能够雅虎操作风格一起科学体育短信条件治疗运动产业会议导航先生联盟可是問題结构作用调查資料自动负责农业访问实施接受讨论那个反馈加强女性范围服務休闲今日客服觀看参加的话一点保证图书有效测试移动才能决定股票不断需求不得办法之间采用营销投诉目标爱情摄影有些複製文学机会数字装修购物农村全面精品其实事情水平提示上市谢谢普通教师上传类别歌曲拥有创新配件只要时代資訊达到人生订阅老师展示心理贴子網站主題自然级别简单改革那些来说打开代码删除证券节目重点次數多少规划资金找到以后大全主页最佳回答天下保障现代检查投票小时沒有正常甚至代理目录公开复制金融幸福版本形成准备行情回到思想怎样协议认证最好产生按照服装广东动漫采购新手组图面板参考政治容易天地努力人们升级速度人物调整流行造成文字韩国贸易开展相關表现影视如此美容大小报道条款心情许多法规家居书店连接立即举报技巧奥运登入以来理论事件自由中华办公妈妈真正不错全文合同价值别人监督具体世纪团队创业承担增长有人保持商家维修台湾左右股份答案实际电信经理生命宣传任务正式特色下来协会只能当然重新內容指导运行日志賣家超过土地浙江支付推出站长杭州执行制造之一推广现场描述变化传统歌手保险课程医疗经过过去之前收入年度杂志美丽最高登陆未来加工免责教程版块身体重庆出售成本形式土豆出價东方邮箱南京求职取得职位相信页面分钟网页确定图例网址积极错误目的宝贝机关风险授权病毒宠物除了評論疾病及时求购站点儿童每天中央认识每个天津字体台灣维护本页个性官方常见相机战略应当律师方便校园股市房屋栏目员工导致突然道具本网结合档案劳动另外美元引起改变第四会计說明隐私宝宝规范消费共同忘记体系带来名字發表开放加盟受到二手大量成人数量共享区域女孩原则所在结束通信超级配置当时优秀性感房产遊戲出口提交就业保健程度参数事业整个山东情感特殊分類搜尋属于门户财务声音及其财经坚持干部成立利益考虑成都包装用戶比赛文明招商完整真是眼睛伙伴威望领域卫生优惠論壇公共良好充分符合附件特点不可英文资产根本明显密碼公众民族更加享受同学启动适合原来问答本文美食绿色稳定终于生物供求搜狐力量严重永远写真有限竞争对象费用不好绝对十分促进点评影音优势不少欣赏并且有点方向全新信用设施形象资格突破随着重大于是毕业智能化工完美商城统一出版打造產品概况用于保留因素中國存储贴图最愛长期口价理财基地安排武汉里面创建天空首先完善驱动下面不再诚信意义阳光英国漂亮军事玩家群众农民即可名稱家具动画想到注明小学性能考研硬件观看清楚搞笑首頁黄金适用江苏真实主管阶段註冊翻译权利做好似乎通讯施工狀態也许环保培养概念大型机票理解匿名cuandoenviarmadridbuscariniciotiempoporquecuentaestadopuedenjuegoscontraest
+中断后重试只补缺块
+中断要如实告诉用户
+中添加没有 ID 为
+中西文注记排版
+中途只在有实质进展
+中途只在有实质进展或改变方向时简短更新
+中途按过程反馈规范更新
+中间输出都不会进入主 Agent 的上下文
+临时文件
+临时文件夹
+临时文件放草稿与检查截图
+丸r("
+为 0 表示数据未设坐标系
+为了保证结果可控
+为什么计算机笔记本討論區服务器互联网房地产俱乐部出版社排行榜部落格进一步支付宝验证码委员会数据库消费者办公室讨论区深圳市播放器北京市大学生越来越管理员信息网serviciosart
+主 Agent 已交代来源
+主 Agent 已给出以下计划
+主 Agent 负责跨阶段决策和最终汇总
+举两三个具体的地理空间场景
+么 1ip
+之后再分块处理或释放中间数据
+之类的错误框
+乓~191~
+也不受网络环境影响
+也不得从 OSM
+也不是用户在本次对话中给出的路径
+也不要为了委派拆出无意义的小步骤
+也不要你自己动手做实质工作
+也不要停在介绍上等对方回应
+也不要再次申请
+也不要向用户讲插件调用方式
+也不要在这里放网址
+也不要把一个完整写流程人为拆成多次来反复申请
+也不要把历史成果当成本轮新成果
+也不要改做别的事凑数
+也不要未经用户同意就重新发起会写入数据的操作
+也不要未经用户同意就重新发起同样的写操作
+也不要用 bash / sandbox.exec 绕过去看
+也不要用别的工具绕过
+也不要直接运行其中的程序
+也不要直接运行插件程序
+也不要给 sandbox_exec 传 packages
+也不要轮询
+也不要重复发起同一计划
+也不要重复委派同一任务
+也不要重跑已完成的步骤
+也不要预检
+也不计入数据图层
+也仍由你在当前上下文中完成
+也可以作为 `plan_exec.steps[].agent` 的执行角色
+也可合并
+也可在坐标系之间转换点坐标和范围
+也可用 Overpass 连接器固定自建端点
+也可通过 /vsicurl/ 读取网络上的文件
+也支持自建 Overpass 服务
+也没有提供给任何专家
+也能把多步流程保存为 .model3 模型
+也要先预检确认默认值和风险
+也还没有结果
+乧KmM
+二进制资源请用 sandbox.exec 带 skill 参数
+云/阴影/水体/无效值处理
+云端依赖作为阻塞返回
+云量阈值
+互不依赖的数据准备应拆成平级专家步骤
+互相独立
+交互地图
+交互式地图开发前端空间可视化不做重型数据采集或遥感计算
+交互式地图网页
+交付什么
+交付时明确告知
+交叉地理编码或重复元数据检查
+交回主 Agent 处理
+交给 WebGIS 开发专家的明确任务描述delegate_cartographer[built-in] 仅当需要产出正式成品地图
+交给地图制图专家的明确任务描述
+交给处理分析子 Agent 的明确任务描述delegate_remote_sensing[built-in] 仅当遥感影像
+交给审批引擎决定
+交给遥感与云计算专家的明确任务描述[built-in] 仅当交互式地图网页
+交给采集子 Agent 的明确任务描述要求该专家完成后必须汇报的内容
+产出用户会想看的结果后
+产品中的 DEM 层
+产物位置或验证依据
+产物和必要验证
+产物和遗留问题
+产物文件名
+产物更新后替换或重读并保留样式
+产物的绝对路径
+产物绝对路径
+产物路径
+人口栅格
+人大金仓
+仅供内部使用的图必须在图面标注
+仅供内部参考
+仅修复确认影响使用的实际问题
+仅在独立上下文确有价值时委派专家
+仅当上述专属工具都覆盖不了
+仅当子任务边界清晰
+仅当缺少会改变结果的必要参数
+仅跨阶段决策
+仅限中国
+仍未结束就告诉用户它在后台运行
+仍能读取该文件
+仔`J"e
+他可以怎么处理
+他能看到我前面做了什么
+以 ${plugin}/ 开头
+以上是为完成总体目标
+以下几个问题
+以下插件已安装
+以下是一次用户对话的摘要
+以下片段按本轮问题从用户的私有知识库自动召回
+以下能力当前未解锁
+以及 MPJ 工程
+以及 TPI
+以及仍需继续的任务
+以及你会边做边报进展
+以及可直接转述给用户的图面说明和需要用户目视确认的点
+以及含 WKT 或经纬度字段的 CSV
+以及是否需要处理专家继续制图
+以及矢量栅格化与栅格矢量化
+以天地图控制台显示为准
+以密文保存
+以工具目录里的插件说明为准
+以此时间为准
+以环境变量注入
+价格服务返回了无法识别的数据
+仹2WY
+任何形式的数据获取都不允许
+任何生成或覆盖数据的操作完成后
+任务已中断[opengeodex-desktop] event journal flush failed: 
+任务已由用户取消
+任务已经完成就向用户简要说明结果
+任务明显匹配某个自定义专家的角色定义或方法论时
+任务未能及时退出
+任务范围应当已经自包含
+任务落在这些专家的领域里时优先用它们
+优先使用可靠的专用工具
+优先使用稳定的内置采集工具
+优先加载对应插件技能后用其工具
+优先复用项目已有框架
+优先汇报数据范围
+优先瓦片化或后端服务
+优先用专用工具**
+优先短句和清晰分段
+优先调 skill.load 加载完整步骤
+优先选择该专家
+优先选择语义最贴近任务的内置或专用工具
+会作为图片资产显示在消息流和文件资源中
+会写文件的运行需用户审批
+会在用户桌面上弹出
+会增加 token 消耗
+会显示成方框
+会覆盖文件或写库/发布服务时遵守审批
+会话 等  个会话
+会话等数据已还原
+会话过程仅在开发者模式下可用traces
+会请用户确认
+传感器/产品级别
+但 background 不是 auto
+但合并重复工具过程
+但它们的工具本轮没有提供给你
+但当前不是会话上下文
+但所有步骤都分配给了 coordinator
+但服务地址或模型没有填写
+但未找到 ASR 运行时sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz227ffbd9ee24ad186d99acc2f6354d7992b27bcab490812510665fa8f9389c5f8https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz2stream_modelmodel_streamASR 流式模型
+但模型没认出测试图的内容
+但每个关键写结果后立即验证
+但设置没能还原模型
+但载入还原后的数据失败
+低完整性
+低完整性令牌不能写普通目录
+作业结束后系统会自动给你发一条 [后台作业通知] 继续对话
+作为建议提出
+你不能自行申请
+你之后只看得到这份汇报
+你只消费已落地的本地文件与库内数据
+你只负责分派
+你好您好hihellohey嗨在吗在不在谢谢多谢感谢谢啦thanksthank you你是谁你叫什么你能做什么再见拜拜bye好的好嗯嗯嗯okay收到明白知道了
+你无法调用
+你是 OpenGeodex 专家团中的
+你是 OpenGeodex 的 WebGIS 开发专家
+你是 OpenGeodex 的主 Agent
+你是 OpenGeodex 的地图制图专家
+你是 OpenGeodex 的地理数据处理专家
+你是 OpenGeodex 的地理数据采集专家
+你是 OpenGeodex 的遥感与云计算专家
+你是任务规划器
+你是接下目标自己决定步骤
+你的任务是把很长的历史会话压缩成后续大模型可直接依赖的语义接力摘要
+你的具体角色定义
+你的工具目录
+你的思考过程
+你的职责是入库
+你的职责是处理遥感影像
+你的职责是把地理数据
+你的职责是把已经就位的空间数据做成可用于出版印刷
+你的职责是获取
+你看不到自己出的图
+你能替对方做成哪一类事
+你能访问的文件位置是受限的
+你负责给对话起标题
+你负责计划的第  步
+你负责计划的第 / 步
+使其监听 127.0.0.1:9876
+使用 gdal 统一命令行
+使用了不支持的压缩方式或加密
+使用工具目录中提供看图能力的插件
+例如 DEM地形分析
+例如 ["第一句","第二句","第三句"]
+例如"这一步使用专业版的某插件可以直接完成"
+例如桌面或其他磁盘
+供后续轮次保持任务连续性
+供看图或 GDAL 继续处理
+便于在地图上定位或作为后续裁剪
+便于核对
+保存下载文件失败: 
+保存发票失败: 
+保存后读不回该技能\\app_data\\outputs\conversation-\users\\temp\\tmp\技能内容包含绝对文件路径
+保存在本地数据库中各会话交付的成果文件对话中引用这些成果的链接会失效
+保存文件任务失败: 
+保存文件失败: 
+保存粘贴的图片失败: 
+保存自定义专家失败 
+保存运营状态失败: 
+保存配置失败: 
+保守原则
+保持 3-8 项缺失且会影响结果的必要条件可以直接采用的默认值执行前应让用户知道的风险或不确定性信息是否足以继续执行ready=false 时向用户追问的一句话
+保留的是原始结构的前若干项
+保留矢量等多文件格式所需的配套文件
+信息不全时让专家按合理默认值推进并在汇报里说明
+信息可能不在公开网页
+俨8[z
+倽"%"Ui;
+偈[Ti
+偏好的回答风格
+做了什么
+做字段统计
+做得好不好对方说了算
+做栅格镶嵌
+做轻量格式适配和示例数据准备
+偟#fqG
+偡eqh
+偻'?_
+傈pAD
+傢ym;
+像元大小/字段 schema
+像元类型
+像同事第一天见面那样自然
+僥b}$l
+儈ENd
+儥5m2
+儹}U@gF>k
+先做不依赖它结果的其他工作
+先判断图面是否含国界
+先加载对应插件技能再用其工具
+先加载对应数据插件的技能
+先加载该插件的技能
+先反馈而不是径直动手
+先把 Shapefile 转成 GeoJSON 并导入 PostGIS
+先明确告诉用户
+先用只读工具检查产物
+先用只读探查类工具看清数据再动手
+先简短回应
+先给结论
+先调 `python.env_install` 安装到 OpenGeodex 管理环境
+先调 list 类工具列出选项让用户选
+先调 skill_load 查相关技能
+先调用 `skill.load` 加载
+先调用 fs.authorize_path
+先调用 task_preflight 整理目标
+先转为 Shapefile
+免 API Key
+免入库 SQL 分析
+入口文件名需含 tileset
+入库和服务发布等通用处理分析
+入库请使用 PostGIS 或 MySQL 插件
+全表扫代价极高
+全部步骤完成已中断
+全部步骤已完成第  步
+公共服务器有频率限制
+公共源 
+公开使用需送审取得审图号
+公开数据下载等领域能力
+公开瓦片为 EPSG:4326
+共  个字符
+共  页
+关联技能
+关键决策
+关键参数
+关键参数确认或领域经验沉淀
+关键数值
+关键条件
+关键结果
+关键结果或路线变化时简短更新
+关键设计选择和剩余风险
+关键限制
+关闭时只显示模型回复
+其他目录一律不收
+其余为插件字段
+其余产品走 Planetary Computer
+其余字段完整
+其余已丢弃
+具体地名与地址
+具体数值
+具体数值/路径/字段/图层名
+内容详略
+内置 Git Bash 带 `curl`
+内置 overpass.kumi.systems
+内置工具
+内置技能自建技能插件技能官方技能开发中的技能已有同名的
+内部控制提示或冗长过程当作最终答案
+再交给 GDAL 查看字段 schema
+再加上用户已经同意过的位置
+再发布为图层并配置样式
+再开始业务工具调用
+再开始处理对方的事情
+再把同名相对路径填入 outputs
+再查网页线索
+再次失败就换路线或把不确定性写进最终回复
+再用 fs.edit 局部替换
+再用 sandbox 的 `out_dir`+`outputs` 由主进程拷出
+再用其下载/查询工具
+再给产物路径或关键结果
+再给出最终答复
+再给出现有工具能做到的替代方案
+再给必要证据
+再缺省视为 EPSG:4326
+再试不是有效的 PDF 文件
+再说明验证方式
+再选其他工具
+再通过 outputs 复制
+再通过 outputs 拷出
+再重新识图
+写入/删除文件
+写入: 
+写入临时文件失败: 
+写入临时音频失败: 
+写入技能元数据失败
+写入技能文件失败
+写入插件文件失败: 
+写入解压文件失败: 
+写入默认配置失败 
+写出 Shapefile 时自动按 UTF-8 编码并生成 .cpg
+写出用户最可能接着说的 3 句话
+写回后再检查记录数和范围
+写工具结果失败: 
+写成可以直接发给助手的指令或回答
+写操作需用户审批
+写文件或创建计划
+写清对象和动作
+冧t\O
+准备技能文件失败
+减少单次数据量
+减少重复审批与半成品
+几何修复
+几何列按实际类型收窄
+几何列按实际类型收窄并建空间索引
+几何类型
+几百 KB 起)不要整文件读进上下文
+凡是你后续要转述或接手时用得上的
+凡涉及今天/现在/最新的判断
+凡直接满足用户原始需求
+凭据只注入对应插件进程
+凭据或服务地址请声明为连接器
+凭据配置状态等可能影响后续执行的信息
+出于安全考虑
+出图脚本
+出版交付把已经就位的空间数据做成可用于出版印刷
+出版印刷 / 论文配图 / 汇报挂图 / 内部草图
+出版级成品地图版面与图廓整饰不做采集与空间分析
+出现多个候选时应由用户确认
+分别转为 WT
+分区矢量数据
+分区统计
+分区选择识图方式(本地
+分析或制图用 processor
+分析或发布
+分析缓冲叠加裁剪统计
+分析过程中看结果用的快速可视化由处理专家或主 Agent 直接完成
+分段读取
+分类和可读性
+分级分档分等等级级别划分
+分级色带是否能区分
+分组聚合和多表连接
+分辨率 1km 或 100m
+分辨率和记录量
+分配语音识别端口失败: 
+分页读取和整表导出数据",
+分页返回
+切过去确认后才会继续
+刊)F|7uqaS6
+列举会话文件任务失败: 
+列出默认值并等待用户继续
+则忽略本提醒
+刚才的回复
+创建临时文件失败: 
+创建临时目录失败
+创建临时目录失败: 
+创建会话产物目录失败(
+创建会话失败: 
+创建技能目录失败
+创建插件目录失败: 
+创建数据目录失败 
+创建文件失败 
+创建模型目录失败: 
+创建用户插件目录失败 
+创建目录失败 
+创建目录失败: 
+创建目标目录失败: 
+创建网络客户端失败: 
+创建自定义专家目录失败 
+创建语音识别日志目录失败: 
+创建运营状态目录失败:  !rB
+创建配置目录失败 
+创建附件目录失败: 
+初始化后必要时 resize
+初始化执行事件日志失败: 
+初始化进程监督器失败: 
+初始样式并缩放定位
+初次见面摆链接像广告
+删制品目录失败: 
+删除会话任务失败: 
+删除或覆盖前先看清目标
+删除技能失败
+删除模型失败: 
+删除要素和字段
+判断不了就按含国界处理
+别的进程
+别罗列工具名
+到 设置 
+制作地图
+制图出图专题图地图排版图例
+制图或写文件
+制图或领域专题阶段时必须安排合适专家,不得把所有步骤都交给 coordinator
+制图的范围依据
+制图等专业处理
+制图综合
+制图资料
+制图资料放辅助出图材料
+前提不成立
+前端工程
+前端握手失败: 
+前置步骤未完成或依赖关系无效
+剜)(g
+剪贴板里没有图片内容剪贴板里的内容不是 PNG / JPEG / WebP / BMP 图片%Y%m%d-%H%M%S粘贴图片-
+劎-Mj
+劘68:
+加 LIMIT
+加密技能文件已损坏struct Probe with 3 elements
+加载 Shapefile
+加载/失败/空状态
+加载一个外部 MCP 服务
+加载与编辑图层
+加载后它的工具从下一步起可用
+加载对应技能
+加过滤条件 / LIMIT / 只取需要的字段
+势NY8
+勥ujC
+勳v軶1
+勴4$F4
+包含判断
+包括开场说明
+包根目录只能放 SKILL.md
+匔T=~
+化简与概括
+北纬 0.8293
+匹配到合适技能时调 `skill.load` 取完整步骤
+区位选址poi地址坐标位置行政区
+区县三级
+区县三级区划树与区划代码
+区县行政区划树与代码",
+区县行政区边界 GeoJSON
+区县行政区边界 GeoJSON",
+卅ydjn
+升3g7
+升级会员后即可使用
+升级会员后可用
+升级后即可下载使用
+单文件上限 512 MB
+单文件嗅探
+单次上限依次为 25
+单次最多 50 条
+单次请求 15 秒超时
+单次请求最长等待 300 秒
+单次读文件
+单次转换
+单目标任务即使需要多次相关工具调用
+单表查询或短工具链
+南海诸岛
+占比是否合适,各要素是否对齐
+卨;|J
+卮R4u
+印前输出
+印前输出与合规判定
+即使你能推断默认值
+即便该路径已可访问也会被 OS 以 Permission denied 拒
+即可恢复
+卸载插件失败: 
+历史上下文][已压缩的历
+压缩或缩放图片后再识别
+原始  字节
+原始数据raw过程数据process制图资料cartography最终成果finaltempother_outputsoutputsopengeodex.dbconversationsopengeodex.db-walopengeodex.db-shmdownloadstmpmapviewtraceslogsopengeodex.loguser_filesartifactsexpertsenvironmentsmodelsruntimespython_envsZjrB
+原始数据放输入副本
+原文共  字
+原有读写配置已按项目规则降级为只读-  (只读引用)
+原样返回
+去掉版本号重试
+叁!Dz
+参数拿不准先调插件的帮助 / 只读探查工具查准
+参数铁律
+及 XYZ
+发到登录账号的注册邮箱
+发布和出图
+发布图层
+发布图层和管理样式需有 REST 写权限的账号
+发布服务等请求
+发布签名密钥未知
+发布签名格式错误发布签名无效owned_byvisioncontext_windowC:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-tungstenite-0.26.2\src\lib.rs
+发布签名格式错误发布签名无效spreadifargsplugin_dirsskill_dirs
+发现偏移
+发现别的问题
+发现和交付物必须写进回复
+发现已安装的遥感插件时先加载对应插件技能
+发现异常立即修正参数重跑
+发票文件无效OpenGeodex-发票-
+发送失败
+发送语音识别建连请求失败: B
+取技能列表失败
+取消或中断要如实告诉用户
+受众与媒介决定比例尺
+受控文件夹访问
+受限执行失败: 
+叠加裁剪分析统计处理overlayanalysis
+口口口锟斤拷烫烫烫屯屯屯含典型乱码(UTF-8 被按 Latin-1 解码)含典型乱码(GBK/UTF-8 混用)连续的
+另存一份无密码的 PDF
+另存图片任务失败: 
+另存图片失败: 
+另存文件任务失败: 
+另存文件失败: 
+只下载一份公开数据
+只保留平面坐标
+只保留继续完成任务真正需要的信息
+只做了乱码与压盖检查
+只允许基础绘图元素
+只含任务标题
+只告诉用户哪项功能用不了
+只回 path 与预览
+只回要素数与名称预览
+只回路径
+只在任务确实需要该服务时加载
+只完成这一步
+只报告你在图上确实看到的问题,看不清的不要猜
+只报告影响既定用途的实际缺陷
+只有 PowerShell 专属能力才用 `powershell`
+只有任务包含至少三个用户可感知阶段
+只有任务确实需要脚本直接访问外网/API 时
+只有信息确实需要分组时才使用标题或列表
+只有当其中某项与用户当前任务直接相关时
+只有无法可靠手工排版时才退回 `nodes` + `edges`
+只有每一步都确实依赖持续共享的主上下文时才可全部使用 coordinator
+只有用户把文件或文件夹拖进对话
+只有用户提出会产生数据成果的空间数据任务
+只有用户明确要求
+只有用户明确要求使用其他语言时
+只有确定可以并行的独立准备工作才使用空数组
+只有这些结构化编辑确实搞不定
+只能保存文件资源
+只能删除文件资源删除文件失败: 
+只能另存文件资源opengeodex-output另存文件产物
+只能在 opengeodex 中使用调用凭证
+只能打开当前会话可访问资源目录内的文件读取文件资源失败: 
+只能浏览普通表
+只能读取文件资源
+只能预览文件资源
+只说明无法接单并把任务交回主 Agent
+只读取和批量导出
+只读命令免审批
+只读工具  不能要求 read_write 连接器权限
+只读工具里出现 COPY
+只读查看免审批
+只读连接器直接拒绝
+只输出 JSON 字符串数组
+只输出 JSON,形如 {"steps":[{"title":"下载边界","agent":"collector","depends_on":[]},{"title":"计算NDVI","agent":"processor","depends_on":["s1"]}]}
+只输出一个 JSON 对象,不要用代码块包裹,形如
+只输出一个 JSON 对象,形如 {"width":整数,"height":整数,"text":"全文(阅读顺序)","blocks":[{"text":"...","bbox":[x0,y0,x1,y1],"kind":"text|table|title"}]},坐标为像素整数
+只输出文字本身,不要翻译
+只输出标题本身
+只输出识别结果,不要翻译
+只返回 JSON
+只返回 path
+只返回结果
+只追问最关键的一句话
+可 ATTACH PostgreSQL / PostGIS 数据库
+可与本地文件跨库 JOIN
+可串联完成从原始 DEM 到流域边界的整套流程
+可交付成品放
+可以在本目录或下一级子目录
+可以带一句出处
+可以深入或调整的地方
+可以读写
+可列出并切换影像
+可加载的服务
+可只查文件大小
+可对多组参数批量运行
+可导入导出 QML 样式文件并保存地图主题
+可并行或失败风险不同的任务仍应分开
+可并行的独立准备步骤用空数组3-6 个阶段
+可指定 QGIS 色带
+可按 _id 更新或删除单行
+可按覆盖图层逐要素导出 Atlas 图集
+可换 obscura 或 firecrawl 再试DeepSeek 没能取到该网页内容
+可换 obscura 或 firecrawl 再试请求过于频繁
+可独立交付的子任务
+可独立交付的工作分配给 collector
+可用专家
+可用区划代码限定范围
+可用执行角色
+可用技能
+可用管道和 && 一次完成
+可用范围内
+可由 GDAL 的 OSM 驱动直接读取转换
+可直接用 ST_* 函数做范围过滤
+可能与当前客户端版本不匹配
+可能只有图片
+可能是被安全软件隔离或被误删了
+可能有个别错字或漏字
+可能有文件正在使用:  
+可自由执行
+可设名称
+可访问范围只能由用户扩大
+可输出 JSON
+可选 Copernicus
+可选最高 / 最低气温
+可通过 precision 调整
+可附城市提示
+台湾与藏南
+叿k6C
+合成策略和导出格式
+合规结论
+同一外部服务或同一验证路线最多重试一次
+同一成果最多复查一次
+同一目标需要多处或多文件修改时用 fs.apply_patch 一次校验并提交
+同名异类型图层自动加类型后缀
+同名技能只有一个能生效
+同名样式会被更新
+同时最多 32 个
+同样需 MD5 认证
+同类要素在同一张图里的表达必须一致
+名称 + 触发条件
+名称时提醒用户核对原文
+后即可还原表格
+后台作业已达上限
+后台计划完成的 [后台作业通知] 带有各步产出
+后台计划已经全部完成
+后续 Agent 应把它当作接力上下文
+后续内容仅保留在工具结果中]
+后重新调用
+向量模型文件格式不对: 
+否则它一个工具都拿不到
+否则它与主 Agent 没有区别
+含 GBK 编码
+含 GEOS
+含 Multi 类型
+含 Oracle 兼容端口
+含 SKILL.md
+含 manifest.json
+含其中的机器人凭据
+含则必须以自然资源部标准地图为底图
+含别的连接
+含国界的地图必须走合规
+含图层组
+含子 Agent
+启动失败
+启动失败: 
+启动语音识别代理失败: 
+启动语音识别服务失败: 
+呈T?}\
+告诉用户文件在哪
+呩!Wa}
+呺ip}
+命中用户技能或内置技能时
+命令不在插件目录内
+命令引用了 OpenGeodex 内部目录 
+命令引用了未授权路径: 
+命令执行bashsandbox_exec
+命令行查询connectionmemoryskill其他系统状态记忆与技能连接管理脚本执行(最低优先级)图像识别网络搜索文件操作任务下发/function/description
+命令里有 
+和 Word
+和一条短语式正文
+和原件对比效果
+和属性表
+咐-`4
+咖Vz\
+响应式布局和前端工程化
+响应格式无法识别
+响应缺 choices[0].messagereasoning_content
+响应解析失败: 
+哐R;Y+
+員1kZQ;
+哪个插件适合什么任务
+哫?i:
+唅*o{
+唓?>2
+商业底图或任意矢量数据拼接国界
+啌0*Y
+喈k H[^
+喰5(b
+喷&N)v7
+嘩l+o
+噛R W<
+噝yTL4
+噞t#q
+嚖iLv
+嚫57t
+回传识别结果失败: 
+回传音频失败: 
+回复时告诉用户各页由哪个引擎识别
+回复第一行只写
+回答和追问时结合它调整称呼
+国内访问通常需开启代理
+国内镜像与官方源都连接不上
+图上应当出现
+图例与出图素材已有地图需要重新出图下载或导入的原始数据
+图例项数与分级数一致
+图层与范围
+图层叠加运算和属性 SQL 筛选
+图层同时出现在数据源页
+图层名为
+图层清单与图层经纬度范围",
+图层管理
+图层非空
+图层面板
+图片  MB
+图片.png另存图片
+图片内容编码无效: 
+图片识别
+图片过大
+图片里写的是什么数字?只回答数字本身
+图里对应的文字
+图集导出为单个多页 PDF
+图面整饰
+图面整饰和印前输出
+图面要素清单
+圀13&
+圚+}X
+土地覆盖
+土地覆盖或 GEE 数据集必须说明选择原因
+在 GeoServer 中以 PostGIS 数据存储方式登记
+在 设置 
+在会员页查看权益
+在保留合理阶段和依赖的基础上
+在回复里写明 job_id 和它在做什么
+在安全软件里恢复被隔离的文件
+在当前上下文内用最短工具链完成并返回结构化结果
+在指定工作目录下读写文件
+在最终回复里说明
+在最终回复里说清
+在沙箱工作目录的 skill/ 使用
+在沙箱里处理 skill/
+在设置页填写
+在资源管理器中显示
+圩oS,wJ
+圮(EL=
+地名查成经纬度候选
+地名结果超过 16 KB 时写入会话产物目录
+地图前端工程和本地预览验证
+地图前端控件
+地图前端控件或前端空间可视化使用 webgis,用于出版印刷
+地图前端控件或前端空间可视化用 webgis
+地图发布
+地图容器
+地图尺寸和文件格式
+地图应用负责把地理数据
+地图数据
+地图检查图例
+地图组件和轻量前端 GIS 工具
+地图非空
+地址与坐标互查
+地址与经纬度候选列表
+地址无效
+地形dem高程坡度坡向等高线山
+地形分析和栅格代数等处理
+地形分析等写文件处理",
+地形晕渲
+地形晕渲及各自的注记
+地形晕渲等在线底图
+地形水文
+地形水文分析
+地形起伏起伏度地势
+地理数据采集专家地理数据处理专家referencesassetsscripts
+地理空间智能体
+地理编码
+地理编码/逆地理编码
+地理编码地址坐标转换纠偏gcjbd09
+地类土地利用用地类型
+圷;s>a
+均无需账号或密钥
+坊aW7
+坐标不会发送到任何在线服务
+坐标与范围
+坐标为 WGS84
+坐标投影修复
+坐标查询
+坐标系与地理参考可能缺失
+坐标系与经纬度范围
+坐标系参考系投影(
+坐标系名称也可写作 wgs-84
+坐标系已识别或建议的值已识别或可默认的关键条件
+坐标纠偏与转换
+坐标须为有限数字且在经纬度合法范围内
+坘/zE
+坡向朝向
+坡度 / 坡向 / 等高线缓冲与叠加统计PostGIS / MySQL / GeoServer 交付
+坡度倾斜陡缓陡峭0
+坡度坡向山体阴影地形
+垂直精度不优于 30m
+垯hM=bT
+垻d@O
+埁L?9H
+城市/项目专属事实或最终结论
+城市提示超过 80 字
+城市级大结果不会进入对话
+埔6'M
+埕BTnS
+埖%1"LFZ
+埯f]hu;G
+基础交互先跑通
+堆满不等于信息量大
+堎SxK'W)
+堷(S<
+塕t{0
+填入范围即可生成查询
+填写 TK
+填写主机
+填写在 opentopography.org 免费申请的 API Key
+填到 /api/interpreter 为止
+墎=q1
+增&T[
+墶kzq%
+声明式清单
+处理动作
+处理和产出
+处理已落地数据空间分析与统计不主动采集下载
+处理方法
+处理等前后环节也交给点名的专家完成
+处理等前后环节也由它完成
+备份 OpenGeodex 数据zip
+备份不含密钥
+备份文件
+备份文件中的
+备份文件中的清单  无法识别
+备份文件包含不安全路径
+备份过程意外中断
+复刻音色
+复杂任务处理过程说明与流程图
+复杂计划不应把所有步骤都交给 coordinator
+复杂计划不要把全部步骤都标成 coordinator
+复杂计划存在可独立执行的采集
+复用已有结论
+复用本版本结论
+外部路径pathfs.authorize_path 工具未注册
+外部路径pathlabelfs.authorize_path 工具未注册
+外部路径需先授权
+多个互不依赖的准备工作应拆成平级步骤并用空依赖并行
+多个互不依赖的数据准备应拆成平级步骤
+多为中文
+多半是被安全软件隔离或被误删了
+多步骤执行
+多流向等 GDAL 未提供的地形指标
+大数据避免直接塞 GeoJSON
+大文本(HTML/JSON/代码
+大结果集处理与导出
+天地图开放平台地理编码接口
+失败修正
+失败则原表不动
+失败原因和修复经验
+失败完成### 
+失败就说失败并附上错误
+失败自动回滚
+失败自动换下一个
+失败要明确失败点和下一步
+失败降级
+头部不是 JSON: 
+头部不是对象dtypeF32
+头部长度越界
+奐潛lYqQ{
+如 NDVI
+如 Shapefile 转 GeoPackage
+如 `cd /f/data && find . -name '*.shp' | wc -l`
+如 `fs.*`
+如 `open('out.geojson','w')`
+如 s1
+如 区域
+如一个国家的 1km 人口栅格
+如任务涉及今天
+如到插件页启用
+如实告诉用户本机无法渲染
+如实告诉用户该功能当前不可用
+如果仍被调用
+如果使用自定义专家
+如果只是想用现有版本
+如果它确实卡住
+如果是你的自建技能
+如果是在插件市场安装的扩展插件
+如果有值得记住的内容
+如果没什么值得长期记住的
+如果这一步没能完成
+如相关记忆
+如自己写 urllib 下 DEM
+如降低 DPI 或存为 JPEG
+如需继续使用
+妑4/M+
+妴M1U
+委派专家
+委派已转入后台执行delegate_detachedmcp_load
+委派已转入后台执行delegate_detachedmcp_load0a
+委派已转入后台执行delegate_detachedmcp_loadH>}B
+委派已转入后台继续
+委派时只用对应的委派工具
+委派时把用户的原始要求
+娣@z=
+娰=VAw
+婤,]3
+媧y&N
+嫈_6T
+嫐sny
+嫪N8R
+嬴epj
+子 Agent 执行失败
+子任务执行完成 OpenGeodex 派发的独立任务
+子任务汇报和最终回复
+子进程无 stdout子进程无 stderrbg-
+字体处理
+字体已嵌入
+字号与颜色
+字太小或与背景对比度不足
+字段与图层名
+字段与要素数
+字段名受 Shapefile 10 字节
+字段名等摘要
+字段和值域
+字段类型或标签无效: 
+字段过多
+存在高影响分叉或不可逆选择时才询问用户
+孙猘cH
+学生更重视原理与学习
+孯BxxH
+孴Q@(`
+它们由插件作者定义
+它会阻止 OpenGeodex 往
+它可能已被移动或删除没有访问权限
+它每次都会弹确认框
+它能自己取数
+安全软件拦截或被其他程序占用
+安装 Python 依赖失败
+安装 Python 依赖失败: 
+安装 Python 依赖超时
+安装包签名校验未通过
+完全控制
+完成OpenGeodex 任务
+完成后不会自动继续对话
+完成后再还原
+完成后必须汇报
+完成后用一两句话说明结果
+完成并验证了就直接讲清楚
+完成投影
+完整内容可用 job_status 读取
+完整数据未回灌上下文;需要完整结果请生成文件资产或使用专用工具处理
+完整结果请查看外置的工具结果文件或生成的文件资产
+完整说明如下
+宕zUn
+宠ObC
+家 idH
+容器宽高稳定
+宼@ES
+宿主不会自动执行
+宿主实时提供
+宿主随即结束了那一轮
+密钥不符或文件被改动
+密钥应为十六进制密钥应为 64 位十六进制
+寉~{g
+審%R(
+寴=v"eq
+对 DEM 做水文与高级地形指数分析
+对方防火墙需放行端口
+对栅格与矢量数据做信息查看
+对空间图层可查看字段
+对话主题
+对话内容
+对齐等审美偏好当作必须修复的问题
+导入知识库任务失败: 
+导出 PDF
+导出 Shapefile 时按 UTF-8 写出
+导出后用脚本核对可验证项
+导出文件
+导出时可指定目标 EPSG 重投影
+小nFw
+小写 SHA-256 与 https 下载地址(
+少 typeH
+尚未安装本地 ASR 运行时和模型模型已安装
+尤其经历了绕路
+就按这个方案来
+就直接问用户
+就给出完整报告正文
+届|9N
+届时根据专家汇报继续任务专家已执行  秒仍未结束
+届时综合各步产出给出最终结果计划已转入后台执行
+屌H]1C
+属性列推断为 BIGINT
+属性列自动推断为 bigint
+属性字段数
+属性弹窗
+属性按页读取
+山体阴影和 TIN 插值
+岇Q_X
+岥K4Bm
+岱]#k
+岻f:sIS
+峎GS%
+峛r<Q
+峺;e!
+崶!sd
+嵌套层级写法
+嵚Z$L
+嵲h:G
+嶠X3b
+嶤'S)UH*
+嶵rs{O$
+嶸sdr
+工作根见 fs.list
+工作空间:表名
+工作空间和数据存储不存在时自动创建
+工作空间等标识符只允许字母
+工具  不在你的可用范围内
+工具  的 resource 必须是 heavy / network / compute: 
+工具不可用或被拒绝时
+工具对超过 1GB 的文件会自动只回报大小
+工具报错且无法绕过
+工具活动和计划分别渲染到界面
+工具目录中的系统工具
+工具细节只在用户需要排查时展开
+工具结果和下面的计划结构说明真实处理流程
+工具缺失或软件故障
+工具调用
+工具输出的数据
+工具顺序
+已仅保留形状摘要
+已从实时消息流移除
+已停止卸载内置插件不能卸载删除插件目录失败: 
+已停止卸载这个插件不能卸载插件目录和 manifest.json 中的 id 不一致
+已停止安装
+已停止安装extract正在解压插件文件插件包解压后体积异常
+已停止安装读取插件包失败: 
+已停止当前任务
+已停止还原
+已写入的数据不会回滚
+已删除的文件不会恢复
+已发布图层及其所属工作空间
+已取消 执行超时
+已取消已中断
+已在 1 MiB 处截断]
+已复查则停止并说明未解决项
+已存于  (,  字节)
+已完成 / 步
+已完成事项
+已完成已中断
+已完成步骤的产出
+已完成计划复盘
+已属会话 
+已强制停止已强制停止当前任务
+已忽略: 
+已恢复为还原前的数据无法创建临时目录
+已截断并保留开头与结尾)
+已打开时复用
+已拒绝删除卸载失败
+已拒绝安装
+已拒绝安装技能包不是有效 zip
+已拒绝安装技能包文件名无法识别技能包解压后过大
+已拒绝安装技能包里的文件太多
+已拒绝安装技能清单与条目不符
+已拒绝安装技能清单无法识别技能签名校验失败
+已拒绝执行
+已按版面返回每行文字与坐标
+已按结构截断
+已损坏或不是 zip 格式
+已换  重试仍为空
+已改用本地 OCR
+已改用本地 OCRcrates\opengeodex-app\src\ops\common\doc.rs
+已改用本地 OCR未知错误 页高精度 OCR 服务识别失败
+已改用本地 OCR这个 PDF 是扫描件
+已放弃该文件
+已放弃该文件缺少有效的 SHA-256 校验值setup..下载文件名无效发布索引版本
+已无法使用
+已有同名的自建技能
+已有备份
+已有消息正在处理
+已有相近技能时优先沿用原名称做改进
+已省略]
+已知风险
+已知风险和可直接转述的交付说明
+已终止服务进程
+已终止本地识图失败: 
+已终止进程树
+已终止进程树.}falsetruenull{C:\Users\liuxu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pdfium-render-0.9.4\src\bindings\dynamic_bindings.rs
+已终止进程树titlecontentcrates\opengeodex-app\src\agent\mod.rs
+已终止进程树创建 Python env 超时
+已经确认什么
+已经确认的选择
+已落地数据的投影
+已请求取消
+已转入后台继续执行
+已转入后台继续运行
+已达步数上限
+已运行 
+已退出登录
+带向量的分块增
+常见失败修复
+幎l"L
+幜s.0"
+幦h"3|t
+年份 2000
+并一次声明全部 outputs
+并与 Shapefile 双向转换
+并且优先级高于这里的通用说明
+并且某个自定义专家或插件专家明显更适合独立处理时调用
+并且每次都要用户手动确认
+并且独立上下文能显著降低干扰时调用 `delegate_collector`
+并优先用当前可用的工具给出可行的替代做法
+并先登录 ASF Vertex 同意数据使用协议
+并在 QGIS MCP 面板点击
+并在 sandbox 参数里设 out_dir + outputs
+并在图廓外预留审图号位置
+并处理 LAS/LAZ 点云
+并导出结果
+并把 OpenGeodex 的安装目录加入信任
+并把各阶段结果收敛成面向用户的交付
+并把缺失前置条件交回主 Agent
+并把连接器设为
+并按关键词精确或模糊检索地名
+并排版导出 PDF/PNG 地图
+并查询每个工具的完整 JSON 参数
+并没有失败
+并添加 GeoServer 连接器
+并直接给出 3-6 个阶段标题
+并等待用户审批本次联网执行
+并管理图层与样式
+并能联网
+并行或多规则分支要横向分叉
+并说明你先简单介绍一下自己
+并说明可在
+并调用 `workflow.diagram` 的 `svg` 参数保存流程图图片
+并附上相关页面链接
+庅RCA
+庆{\O
+序列化: 
+序列化自定义专家失败: 
+序列化运营状态失败: 
+序列化配置失败: 
+应以  开头
+应先用 `plan_exec` 把该方案转成可执行计划
+应用在作业完成前退出
+应用异常退出
+应用样式
+应用重启
+底图仅作显示背景
+底图或网格背景
+底图退为背景
+底层错误: 
+庭Y/Qd
+庾OtZ
+廊x<f
+廔9:$
+廧iLO
+廷,a1
+建工具结果目录失败: 
+建表或写库只能走单独工具
+建表或写库的 SQL",
+建表或写库请改用本插件的写入工具
+建计划时专家步骤的 agent 只填点名专家的 id
+建议 2048~8192
+建议交给哪个后续专家处理
+建议等还原完成后再退出
+开发环境运行 scripts/install-pdfium-runtime.ps1加载 PDF 解析组件失败
+开始按计划执行前置批次失败
+弓6k $
+引用关键数字
+引用本地文件选择 GEE 默认导出目录选择项目源文件夹选择插件配置目录选择插件配置文件插件路径选择类型无效选择 GEE 服务账号 JSONjson
+弜(@"4"
+归档条目缺少文件名/
+当前 OpenGeodex 支持 v
+当前上下文不支持下发子 Agent请实际完成计划的第 
+当前产物
+当前仅支持 PDF
+当前任务命中触发条件时
+当前会员版本不包含该能力
+当前会话不存在或已被删除
+当前会话不是桌面会话
+当前会话的后台作业已达上限
+当前图片格式不支持直接预览读取图片任务失败: 
+当前已有会话正在执行
+当前或最新数据
+当前数据没有改动.opengeodex-restore-
+当前数据没有改动知识库正在后台建立检索索引
+当前无可用工具
+当前时间(本地)
+当前有任务正在运行
+当前本地时间
+当前桌面语音输入先支持本地 sherpa-onnx
+当前模型还没有配置有效 API Key
+当前模型配置不完整
+当前没有可用的更新该版本没有安装程序正在下载更新X
+当前没有可绑定授权的会话路径不存在
+当前环境不支持邮件通知
+当前环境可用 runtime
+当前环境实际可用
+当前目标 / 已完成 / 关键决策与用户偏好 / 重要路径与资源 / 工具与专家结论 / 未完成事项 / 风险与注意
+当前计划
+当某个自定义专家的角色定义
+当角色定义
+录zUF
+彫+pD"
+彼此独立时可以分别委派
+彾<AKM
+往往带着该行业的完整工作法
+待压缩材料
+徖AhL*
+微软 Planetary Computer
+必要的解压
+必要附图
+必须产生真实的 `delegate_collector` / `delegate_processor` / `delegate_remote_sensing` / `delegate_webgis` / `delegate_cartographer` / `delegate_expert` 调用
+必须保存到
+必须汇报的内容
+必须真实调用 `plan_exec`
+快捷方式或带宏文档
+怪Xxf,
+总体目标
+恠~6ha
+恢复办法
+恳t[Gv
+悉&wP
+悕yy{
+愀/DzKx
+愂_c!
+慴FQ$
+憺tlB
+懸CfJ9
+成功后原子换名
+成品的程序化核对
+成品越贴近对方要的样子
+成品路径与格式
+成品验收只做能用脚本核对的项
+成果形式
+我是 OpenGeodex
+或 all 并行
+或 all 并行搜索全部
+或 host_groups
+或不属于当前会话
+或不是本次任务产生的
+或不是用户自建的技能写入技能失败
+或任何下载/抓取/爬取
+或任务明显最适合用它时
+或任务超出你的职责
+或使用安装版
+或写出它的完整路径
+或向上反馈
+或在 `plan_exec.steps[].agent` 中指定专家角色 id
+或在会员页查看权益
+或在对话里写出了路径
+或在文件资源中查看
+或在文件资源中查看完整结果
+或在设置 > 集成 > 语音中把
+或在设置中提高沙箱超时时间
+或当前会员版本不包含
+或执行 PyQGIS 代码处理未覆盖的操作
+或把 MPJ 引用的全部支持图层批量导出到独立目录
+或把坐标查成地址",
+或文件已损坏="
+或星图地球应用 Token
+或杀毒软件正在扫描数据库仍在使用中
+或用户只说了
+或由你自己完成
+或由经纬度反查省市区与格式化地址
+或稍后再还原一次备份路径无效data-storage-progresscrates\opengeodex-desktop\src\commands\storage.rs
+或经 GDAL 驱动导出 Shapefile 等空间格式
+或缩小范围
+或者打开 Windows 安全中心 
+或者读不出来
+或被安全软件拦截
+或让工具把输出写入文件后分段读取
+或识别后无文字
+或请主 Agent/用户补充
+或逐要素输出 PNG
+戠Pr?
+截断长字符串 
+戻 hj
+所以凡是主 Agent 转述或后续接手时需要的信息
+所在磁盘空间不足
+所有写操作需用户审批
+所有写文件操作需用户审批
+所有搜索引擎都失败
+所需数据
+所需文件或数据不存在
+手改容易把配置改坏
+才会写入
+才可以用 fs.authorize_path 申请
+才按其要求切换
+才显式传 `network:true`
+才用 `job_wait`
+才简短提一次
+才调用 `plan_exec`
+才调用 `skill.create` 写入
+才调用 `task_preflight`
+才退回 sandbox
+打开文件失败: 
+打开文件选择框失败: 
+打开智图看看失败: 
+扣VE>
+执行专家
+执行前需用户审批
+执行并交付的智能体
+执行指定任务
+执行者=
+执行者报告该步骤未完成model_view
+执行脚本
+执行角色与依赖
+执行超过时限
+扩展装在非 public schema 时可自动识别
+扫描件或图片页
+扫描件识别不可用
+扫描件识别设置为高精度 OCR 服务
+扫描页超过单次识别上限
+批量要素转换应交给 GDAL 等处理工具
+找不到下载目录: 
+找不到命令 
+找不到图片附件: 
+找不到备份文件
+找不到数据目录
+找不到文件
+技能 ID 不合法
+技能 ID 不合法该技能未安装技能路径不合法
+技能不存在: 
+技能内容包含当前环境或会话目录
+技能列表接口返回了无法识别的数据
+技能包只接受源码脚本
+技能包无法解密
+技能包里有不允许的文件
+技能包里没有 SKILL.md
+技能包里的
+技能已加载
+技能是否值得保存
+技能正文过短
+技能签名密钥  不受信任
+技能签名格式错误notifications配置文件根节点不是对象序列化通知设置失败: 
+技能超市中没有该技能请先登录运营账号后再安装技能技能版本号不合法/api/public/skills//download
+技能里没有文件
+技能附属文件路径越出了技能目录
+把 OpenGeodex 加进去
+把 PostGIS 表发布为图层并应用 SLD 样式
+把下面这段 GIS 软件用户的任务需求改写为一段不超过 150 字的中文描述
+把中文地址
+把共享同一批输入和依赖
+把用户目标拆成 3-6 个具体步骤
+把用户这条请求整体委派给 
+把结果写到本会话的产物目录
+把结果导出成 Shapefile
+把表发布为 WMS / WFS 图层
+把边界清晰
+把里面的内容移回
+把首屏地图
+投影与坐标系
+投影与坐标系说明
+投影后的图层
+投影和 MPJ 图层",
+折叠过深层级  处
+抡O~i
+报错带出错行号附近的信息
+报错解释
+拄FQ#
+拆成多个短 sandbox 调用
+拆解或多步骤执行时必须调用本工具
+拒绝绝对路径和 ..
+拷贝产物  失败: 
+拿到汇报后再给出最终答复
+持续时间较长且展示进度确有价值时
+指数公式
+指数计算
+按 EPSG 代码重投影
+按不支持图片输入处理
+按与 WGS84 等价处理
+按交付用途而非文件格式分类
+按会话清理时只移除本会话加载的图层
+按传入坐标原样查询
+按几何类型校验输出后缀
+按各自所长拆分
+按字段汇总
+按字段汇总等查询
+按已完成的步骤如实说明
+按技能声明的工具
+按拒绝处理
+按新要求调整或停下
+按标签和 S,W,N,E 范围筛选节点
+按此确认执行
+按比例尺做取舍
+按行修改并把 GeoJSON 导入成表
+按输出媒介定格式
+按顺序排列
+挪[/w
+捎y-/锛
+换一个不受保护的位置保存
+换一种方式
+换关键词 / 加地名 / 换语言重试
+换成 CGCS2000 坐标系重新做
+换成已开通的版本
+换掉会影响同项目其它会话正在跑的脚本
+换搜索引擎重试
+换方法或回弹
+换源/换 URL
+据此综合出最终结果交给用户
+授权后再读取该路径或执行沙盒脚本
+授权该路径
+排Ey>
+排在工具表最后
+探查/转换 GIS 文件
+接<9m
+接口收下了图片
+控件不遮挡
+控件保持克制
+控制台 
+控制台错误
+推荐 LTR 版 MSI 安装包并保持默认安装路径
+掵i,?4
+提交工具结果失败: 
+提取成一条简洁的标题
+提醒叠加专业数据前先核对坐标系
+插件 ID 无效: 
+插件 manifest.json 中的 id 无效phaselabelprogresslinkedinstalledlicensed.opengeodex-receipt.json写入插件安装凭据失败: 
+插件 manifest.json 格式无效: 
+插件 yml:
+插件/扩展工具
+插件不可用时只使用本地或已落地数据
+插件仓库不可达时可从 ZIP 安装
+插件入口  声明无效: 
+插件包不是有效 zip: 
+插件包不能覆盖内置插件创建临时插件目录失败: 
+插件包包含不安全路径
+插件包无法校验
+插件包签名校验失败
+插件包缺少 manifest.jsonreplace正在替换旧插件write正在写入插件目录写入插件目录失败: n
+插件发布版本号无效
+插件市场中没有该插件当前会员版本不包含该插件该插件需要
+插件市场安装的扩展插件到 设置 
+插件并重启 QGIS
+插件或配置目录
+插件技能会讲清调用方法
+插件暂未覆盖的能力
+插件服务返回了无法识别的数据
+插件未安装
+插件本身不生成 SLD
+插件没有下载地址该插件需要更新版本的客户端
+插件生命周期动作 ID 无效或重复: 
+插件生命周期动作类型无效: 
+插件生命周期动作过多: 0
+插件生命周期命令必须是插件目录内的程序
+插件目录缺少 manifest.json
+插件缺少发布版本信息
+插件调用这类内部机制
+插件通过注册表及 C:\\Program Files\\QGIS*
+插件需要调用凭证协议 v
+插值等值线克里金
+揫jMT
+搜索引擎  未启用
+搜索或下载由主 Agent 直接完成
+搜索或直接运行其中的程序
+摍2G@b
+摕ZxN
+摞RS_
+撟k31
+撨z"hQ
+撪Jh5,
+擌SC2
+攌_lCT
+支持图片输入
+支持多波段与已有金字塔
+支持正向地理编码与逆地理编码
+支持重分类
+收到任务先确认所需数据已到位
+收到任务先确认要画的图层存在且可读
+收到这条消息说明配置可用
+收尾前调用 `skill.suggest` 提出候选技能
+改了扩展名也一样
+改名或删除后再装
+改向量时加一
+改用 -so / --summary 之类的摘要参数
+改用关键词检索
+改由本地 OCR 识别
+放在触发器里
+政区H1
+效果良好
+敏感配置项不能在插件包中声明默认值: 
+数值区间
+数值和来源
+数值范围
+数字与图示
+数字和 -: 
+数据 CRS/bounds 正确
+数据交付消费已经就位的数据
+数据位置正确
+数据字段
+数据库入库
+数据库写入
+数据库口令只保存在连接器中
+数据库名
+数据库地图服务
+数据库地址 / 库名 / 表名 / 字段值
+数据库里有这张表/图层
+数据必须已就位
+数据搜索
+数据来源
+数据来源/制图说明是否齐全,图例与图面符号是否一致;
+数据来源与时间
+数据核对图
+数据没到位就回弹
+数据源  未声明发现入口
+数据源发现 ID 无效或重复: 
+数据源发现入口
+数据源发现声明过多fonts插件专家功能- 
+数据源发现失败: 
+数据源发现引用了未声明的连接器:  -> 
+数据源类型无效: 
+数据目录在 %LOCALAPPDATA% 下
+数据表当前仅支持 CSV
+数据量和加载成本
+数据限制或人工需确认事项
+数据集/影像数量或时间范围
+文件产物请先写入工作目录相对路径
+文件内容编码无效: 
+文件内的 EPSG/投影只作线索
+文件可能是只读的
+文件名与路径
+文件大小与预期不一致
+文件大小合理
+文件正被其他程序占用
+文件结构不规范
+文件落地
+文件读写fs_readfs_listfs_globfs_grepfs_writefs_editfs_apply_patchfs_copyfs_authorize_path
+文件资源
+文件路径
+文件路径一律使用绝对路径
+文件路径存在且可读
+文件转 GeoJSON
+文件过大
+文字:J
+文字图层没画上或被整体遮住)
+文字对照改用看图模型转写
+文本文件请用 fs.read
+文档太大
+文档或备选下载地址
+文档过大
+文档里没有可导入的文字内容[opengeodex-knowledge] 已补建  条向量
+断点续传或简单 API 调试且没有专用下载/抓取工具时用它
+新建和保存 .qgs/.qgz 工程
+斲`;*
+方法论和关联技能会在后续
+方法论或关联技能明显更贴近任务时
+方法论或关联技能比内置专家更贴近任务时优先使用
+旒V@4
+无可用工具
+无效代理 : 
+无文字产出
+无法下载: 
+无法写出
+无法创建临时还原目录
+无法创建备份文件
+无法创建备份文件夹
+无法创建数据目录
+无法判断哪些文字缺失或显示成方框
+无法发起路径授权
+无法启动 
+无法启动安装程序更新版本号无效
+无法在主对话中继续
+无法备份
+无法完成什么 + 原因 + 建议交给哪个角色或需要用户补充什么
+无法定位数据目录
+无法导出数据库
+无法授权外部路径
+无法放入还原的
+无法暂停当前服务
+无法替换
+无法检查文字框压盖
+无法生成备份清单
+无法生成备份的设置文件
+无法生成备份路径
+无法生成支付二维码: 
+无法用于后续匹配触发条件不能为空
+无法确定安装目录
+无法确定安装目录安装目录  没有写入权限
+无法自动更新
+无法解密
+无法解析MCP响应: 
+无法识别扫描页
+无法读取
+无法读取备份文件
+无法读取导出的数据库无法读取数据目录中的
+无法读取数据文件
+无法读取目录
+无法读取签名证书k
+无法读取设置文件cancelledokbusyin_usepermissiondisk_fullnot_foundinvalid_archivereload_failedotherdata_storage/opengeodex.ymlyml.restore-
+无法连接运营服务: 
+无空几何时建空间索引
+无错误输出
+无需 sandbox 或网页搜索
+无需先定义坐标系
+无需先建表即可做过滤
+无需再调 skill.load
+无需取消
+日志不加载
+日本語简体字繁體字
+日照时长等变量
+旧版 .doc 需另存为 .docx
+时间序列
+时间序列与 GEE 云端计算
+时间序列和 GEE 云端计算
+时间序列和大范围遥感计算
+时间序列或 GEE 云计算任务边界清晰
+时间序列或 GEE 云计算使用 remote_sensing,交互式地图网页
+时间序列或 GEE 云计算用 remote_sensing
+时间序列统计
+时间范围
+旷]\c
+旷d~&
+明确否定过的方案
+明确说明阻塞
+昞;n)
+是可执行文件或编译产物
+是否含国界
+是否需送审
+是被 Windows 防勒索拦截
+昵称需要 2
+晌kqN
+晩i YE
+普通一次性任务不要建议
+普通处理由主 Agent 直接完成
+普通数据处理
+普通解释不要调用
+普通读文件
+普通问答
+普通问答复杂任务拆解多专家结果整合
+智图看看
+智能体可换用其他引擎或并行搜索全部
+智能体在这个项目里默认只能读取这些文件夹项目配置无效: 
+暂不支持旧版 .doc
+暂不能切换日志记录
+暂不能切换配置
+暂不能删除
+暒gfP4F
+暗色模式
+暗色模式可用
+曝roZB
+曞(Uzj
+曧6>,
+曧O3jM
+曭#Lv
+更不得自己去下**
+更不要用 sandbox 去重复实现已有专属工具能做的事
+更具体的查询
+更改所有者
+更新服务地址不安全
+更新服务返回了无法识别的数据http只允许 https 地址
+更新校验失败
+曾@FG
+替换时先导入新表
+替换现有插件失败
+最后加载的那个带 zoom=true
+最后用一句自然的话询问用户是否需要了解处理过程
+最后用简洁中文说明关键阶段并给出流程图文件路径
+最多 12 位
+最终交付图再用 vision.check_map 检查
+最终交付负责判断是否需要预检
+最终成果
+最终汇总和交付验收
+最终汇总和验收
+最终结论
+最近一次回复
+有  项原有数据没能放回
+有会话在等待确认idtitlesession-retitled
+有先后依赖时用 plan_exec 建计划
+有前后关系的 GIS 处理必须依赖前一步
+有对应能力时一律优先使用
+有把握就直接回答
+有效的分类有
+有效邮箱和至少 8 位密码
+有无大片空白或拥挤;
+朊O^'y1
+服务发布字段名
+服务器 bind-address 不能只绑本机
+服务器 pg_hba.conf 需允许本机 IP 登录
+服务地址不对或不支持所选接口协议AI 健康检查返回 
+服务地址填到 /geoserver 为止
+服务地址支持 http 与 https
+服务失败改用本地的页要说明
+服务报错信息里的 tk 也会替换为 ***
+朙f'B
+期间可以做别的事
+朣@!o
+未写扩展名时补 .tif
+未启用时只使用本地或已落地数据能力
+未启用时该专家只使用本地和已落地数据能力
+未完成 专家委派
+未完成的部分
+未完成项
+未定国界
+未导入文字
+未打开时自动启动
+未找到  解释器,请确认已安装并在 PATH 中
+未找到唯一匹配的 old_string(出现  次),请提供更具体的上下文或用 replace_all
+未找到本地 ASR 流式运行时
+未找到本地 ASR 运行时
+未指定日期时取 2025 全年
+未指定时
+未核实时标为未知
+未知工具 
+未知的目录类型crates\opengeodex-desktop\src\commands\developer.rs
+未知的目录类型登录已失效
+未知连接类型: 
+未知错误not granted火山引擎语音合成失败
+未确认就绪前不动手
+未结束的调用/未决审批
+未能恢复子进程主线程
+未配准影像按像素坐标
+本任务同一成果最多复查一次
+本会话允许或开启自动批准
+本地 CLI 输出非预期 JSON: 
+本地 OCR
+本地 OH
+本地 sherpa-onnx
+本地启动
+本地数据可能不完整
+本地时间
+本地表格结构模型尚未下载
+本地识图模型尚未下载
+本地识图模型尚未下载:请告诉用户到
+本地识图模型未就绪
+本地识图组件未安装
+本地识图超时
+本地识图运行时未就绪:请先运行 scripts\install-vision-ocr-runtime.ps1 生成 runtime\vision-ocr
+本地识图进程启动失败: 
+本地语音识别准备未完成
+本插件不提供工具
+本机 CPU  核
+本机无法读取
+本次压缩新增历史
+本设备已被管理员强制下线
+本轮先打个招呼
+本轮已运行约  分钟
+本轮有效
+本轮结束后就只剩这一段
+本轮请求必须由被召唤的专家执行
+本进程不再重试
+本项目的 Python 环境已经装了不同版本
+权限或认证问题要明确说明
+条数和预览
+来源或出版说明而报问题
+来源核验
+来者会话 
+杯1R,
+构建临时运行时失败
+构建代理 HTTP client 失败: 
+枕Z+|
+柆or]w
+某个工具调用被拒绝时
+某服务地址\b(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?\b(?i)\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b某邮箱(?i)\b(?:[a-z0-9\-]+\.)+(?:com|cn|net|org|gov|edu|io|cloud|local)(?::\d+)?\b(?i)(?:[a-z]:[\\/]|\\\\)[^\s"'<>|
+查无此表/路径不存在/附件为空/主 Agent 未交代
+查某份数据的文件信息
+查看本地文件无需联网
+查看矢量的图层
+查看类型
+查看结构与范围
+查询失败
+查询工作空间
+查询筛选
+查询超时
+柦m&k(&
+柬!=}
+栅格代数
+栅格可选 nearest
+栅格处理请使用 GDAL 插件
+栅格检查 Min/Max/nodata/透明区/像元类型/空间对齐
+栅格波段组合
+栅格瓦片
+栅格裁剪重投影
+栅格计算
+栅格重操作可加 --config GDAL_NUM_THREADS ALL_CPUS 开多线程
+标题:H3H
+标题不能为空desktop只能重命名桌面会话
+校验文件失败: 
+校验签名失败: 
+样式和构建脚本
+样式或顺序",
+核实严重问题后集中修复
+核对数据就绪
+核心图层加载
+核心图层和用户要完成的动作排在最前
+核心统计
+根据用户与助手的对话
+根据用户最近的请求和助手刚才的回复
+格式可识别
+格式嗅探
+格式有误
+格式转换
+栿ie$
+桌面上那个文件
+桌面和窄屏布局都能用
+桌面窗口给用户查看
+桓XSAy8
+桤G#Y
+桳Xew,Tj
+梙r_6
+梜Rq<
+检查 CRS
+检查本地空间文件
+检查能力不可用
+检查范围以用途与用户要求为准
+检查语音识别服务失败: 
+检查通过
+检测图片输入
+棾2oa
+椄'8I
+植被ndvi
+植被指数
+椎*d=M-G
+楈x=tX
+楾$mq
+楿 lkxO
+概念解释
+概括各专家职责
+概览见 https://www.opengeodex.com/llms.txt 
+槛iZU
+樃2g#
+模w7v\
+模型  缺少名称或文件
+模型 '' 缺少必填字段
+模型 ID  为宿主保留
+模型 ID 只能用小写字母
+模型 ID 重复: 
+模型 id= 不存在
+模型与计费
+模型与运行环境可在插件
+模型列表不是有效的 JSON: 
+模型只看到摘要
+模型只看到条数
+模型尚未下载运行时已就绪
+模型服务没有返回完整回复响应非 JSON: 
+模型服务返回失败事件: 
+模型认出了测试图里的数字
+模型设置中卸载其他登录信息
+樮<Z-[B
+橨dQS
+橿We1
+檂q?q
+檖6VS
+檪}6HWA
+櫰Zh)_
+欱f=8
+欻[5J
+歎w0V
+歖[BX25
+正在备份数据
+正在安装其他插件
+正在清理数据
+正在还原数据
+正式成品地图
+正文只提供给智能体
+正被其他程序占用
+正被占用
+正體中文 (繁體)
+正體中文简体中文繁体中文有限公司人民政府阿里巴巴社会主义操作系统政策法规informaci
+此参数需要 
+此时不要重新预检
+步骤 id 按顺序为 s1
+步骤 id 按顺序隐式为 s1
+步骤失败
+步骤执行失败
+步骤输出的数据
+武汉市行政区划下载与 KML 导出
+武汉智图时代科技有限公司研发
+殓dz3
+殭DCA
+每一位都必须实际承担一部分工作
+每个表格用一个 HTML <table> 输出,表头放 <thead>,合并单元格用 rowspan/colspan 还原,空单元格保留为空的 <td></td>;表格之外的文字(标题
+每句不超过 20 个字
+每日调用量有限额
+每步用一句简短中文标题描述要做什么,用 agent 指定实际执行角色,并用 depends_on 标明前置依赖步骤 id
+每轮任务结束前整理本轮交付文件到
+每轮多一次模型调用
+比例尺与投影
+比例尺与投影确定
+比例尺决定图幅范围
+比较结构化数据时才使用表格
+氍$厠J
+民政部地名信息库
+气g,Wy
+气象点位与土地覆盖范围使用 WGS84
+气象等优先使用对应内置工具或已配置连接器
+气象等数据搜索
+气象等数据获取任务
+氥CY"
+水文或 LiDAR 分析工具",
+水文水系河流流域湖泊洪水
+水系河流河网
+氶b6K
+汆YGX
+汇报挂图
+汇报还是内部工具
+汇流累积
+汔:[P
+江夏区地形图制作
+沂*,4
+沙盒脚本**只能写自己的临时工作目录
+沙箱 IO: 
+沙箱仍可读取它
+沙箱以受限权限运行
+没把握就先用 `web.crawl` 查官方文档 https://www.opengeodex.com/docs/ 
+没有可朗读的文字
+没有可用插件时只用本地或已落地数据
+没有可用的看图工具时
+没有可用的看图模型model
+没有启用的搜索引擎
+没有坐标
+没有坐标系的数据
+没有完成就明确阻塞原因
+没有已启用的插件为  连接器提供连接测试
+没有当前角色可用的工具
+没有当前角色可用的工具p?
+没有找到插件 
+没有收到文件内容crates\opengeodex-desktop\src\commands\knowledge.rs
+没有文字层
+没有读取
+没有问题时 issues 为空数组
+没有附属文件
+沲Sw9
+河网提取和流域划分
+沵_o:|
+波段与 Min/Max/StdDev 统计
+波段指数
+波段组合
+波段缩放系数
+波段选择
+注记与图例/比例尺/指北针/图框
+注记分级成体系统一制定
+注记压在关键要素上;
+注记未超出图廓
+泮F&&
+洣fp 
+活动记录数
+流域汇流
+流式模型尚未下载运行时已就绪
+流程图 SVG 出现多余的结束标签 </>
+流程图 SVG 含不允许的元素 <>
+流程图 SVG 存在无法解析的标签
+流程图 SVG 属性  的值必须用引号包裹
+流程图 SVG 标签嵌套不正确
+流程图 SVG 样式含不允许的内容
+流程图 SVG 根节点必须是 <svg>gdefsdescstylerectcircleellipselinepolylinepolygontexttspantextPathmarkersymboluseclipPathmaskpatternlinearGradientradialGradientstopfilterfeDropShadowfeGaussianBlurfeOffsetfeBlendfeCompositefeColorMatrixfeFloodfeMergefeMergeNode
+流程图 SVG 的  只允许同文档片段引用
+流程图标题不能为空写入流程图失败(): 
+流程图节点 id 重复
+流程图节点标签不能为空流程图节点标签过长
+流程图节点过多
+浏览空间表与结构
+海平面气压
+消息正文不能为空
+涛hk0N,U"
+涞~ `$E`1)6O]
+涡RAj
+涤)<QEE
+涫!B+
+淘n<1
+添msW
+添加 OpenTopography 连接器
+添加地图框
+添加或启用搜索引擎
+清单较大或指定输出路径时写入会话产物目录
+清理临时插件目录失败: 
+清理失败: 
+温和但不谄媚
+渲染当前画布为预览图
+渲染第 
+渲染页面时出错[embedding] 已补建  条向量
+湆7+B
+湷S/3
+滆P&J
+潪n37
+澈=$;
+澔\Yj
+澙n@.
+澳6(;Q
+澻2Q^#W
+澼Z<Qr
+濽%qG
+瀄(9%c
+瀉c[X
+灀>T.TA
+灓Cl5
+灗f@=
+火山引擎 API Key 含有非法字符
+火山引擎流式识别
+火山引擎语音合成没有返回音频
+火山引擎语音合成返回了无法识别的内容
+火山引擎语音识别出错
+火山引擎账号未开通
+火山引擎返回的音频无法解码
+火山引擎连接中断: 
+灮"P+
+灰e5w
+点/注记
+点云支持 LAS / LAZ
+点名的专家能独立完成时
+烮)]Ci
+烲k{=
+烳.Hq 
+焃5@V
+然后像绘制技术插图一样手工排版一份完整 SVG
+然后开始处理对方的问题
+然后结束本轮
+然后重新安装 OpenGeodex
+焼1DkX
+煖tOa"
+煠j8`
+熑ot[
+燌/7}c
+燪"[C
+爍=h2
+版本  没有发布签名
+版本不一致时工具调用可能报错
+版面设计
+特殊约定等
+犤A k~=
+犩+Y4
+狆,O0
+狗9/E!2,0
+独立子任务
+独立数据获取使用 collector,通用处理分析使用 processor,遥感影像
+独立数据获取用 collector
+猂"Yw
+猲eme
+獖Jy2
+獫'gU7
+环境变量无效或重复: 
+现在就把属于它们的那部分工作委派过去
+现在请综合所有步骤的产出
+现在退出会中断备份
+现在退出会中断清理
+现在退出会中断还原
+琹v= 
+瑏`0B!k<
+瑟GVo!
+璑km +8
+璯eUl{
+璾R-v_
+瓦片或其他数据下载
+瓰2#I)#
+瓼>@E
+生态林业植被土地覆盖landcoverforest
+生成坡度/阴影/等高线/指数/缓冲区/统计成果
+生成或修改文档请直接读写文件
+生成的文件应能在桌面右侧
+用 ATTACH 连接 PostgreSQL / PostGIS 后
+用 DuckDB 抽样汇总
+用 SQL 直接查询
+用 fs.read 的 offset/limit 按行范围读相关段落
+用一个简洁的中文短语概括用户要完成的事情
+用一句话描述要交付什么任务类别的自然语言短语
+用了哪些数据与工具
+用于出版印刷
+用于后续轮次继续对话
+用于排查问题附件与个人资料上传的附件
+用于统计用户需要哪些功能
+用同一个 key 加 replace=true 替换
+用对应的委派工具
+用工具目录中的栅格 / 矢量处理插件检查
+用户 @ 召唤了它时必须调用
+用户 @ 召唤的  本轮还没有接到任何任务
+用户关闭了自动续跑
+用户可单次允许
+用户可感知的阶段标题实际执行角色 id
+用户和密码
+用户在本轮通过 @技能 点名了该技能
+用户在输入框里用 @ 召唤了 
+用户已经同意过的位置不用再申请
+用户提供的本地图片不在可访问目录内时
+用户明确要求
+用户明确要求使用子 Agent 时必须至少安排一个非 coordinator 专家,不得只在标题中声称委派
+用户明确要求规划
+用户期间可以继续对话
+用户未要求严格溯源时
+用户本轮指定只由  执行
+用户本轮点名由  执行任务
+用户正在确认或请求查看上一轮复杂任务的处理过程
+用户没有提到这些插件时不必主动说起
+用户没给路径的申请会被直接拒绝
+用户消息包含英文
+用户点名由某个专家执行时,所有非 coordinator 步骤只能交给点名的专家,不要安排其他专家
+用户点名要用其中某个插件
+用户的明确偏好
+用户目录
+用户目标
+用户真实目标
+用户确认之前不要说已经保存
+用户确认你上一轮提出的多阶段方案时
+用户能直接打开体验的地图网页或前端组件
+用户自己打开的不受影响
+用户自述
+用户要求这条请求由被召唤的专家完成
+用户询问进展时据此直接回答
+用户问进展时据此直接回答
+用户需求
+用时 s
+用最短工具链完成
+用法以下面
+用环境变量 OPENGEODEX_FONTS_DIR 里的中文字体注册并设为默认字体后重新出图
+由主 Agent 派发边界清晰的独立任务
+由主进程拷出
+由智能体按字段与几何类型编写
+由沙箱执行
+由用户决定
+由用户换一张图片
+由用户点
+由用户自己决定是否替换原文件
+町t#8
+畑Ur$CAO2mQJ
+畕6<?
+留白是否均衡
+畸U$(4?
+疃j\:^
+疓o5#
+疡uJ)
+疥q,$
+症wg7
+痝J_)
+痦}Vs
+瘣S#E
+癙N_!z
+癠-d]s
+癥5q*
+登录已过期
+癿?]cd
+的上级目录
+的内容是可执行文件
+的名称和触发条件匹配当前任务
+的已启用通知目标-
+的文件不完整
+的文字框互相压盖
+的长文本只回灌了开头
+皐NtzX
+皖d1]M
+皥s^f
+盄uFj2
+盤1GYy4
+目录层级太深
+目录里没有找到技能
+目录里没有找到插件
+目标分辨率/比例尺
+目标和约束交代得越具体
+目标表非 InnoDB 时无法回滚
+直接使用当前工具完成
+直接写在 SQL 中
+直接回答
+直接执行或按复杂度创建计划
+直接把情况告诉用户
+直接整体委派给它即可
+直接用 `bash`
+直接由点云生成 DEM 栅格
+直接说明它不可用的这个原因和解决办法
+直接调用数据工具
+直接面向用户输出完整的最终结果/交付物
+省略数组元素/对象字段  个
+看图可视化三维显示
+看文件开头结尾
+看样例行
+看结果用的快速可视化不必走它
+眦$e^
+睇T3$HS
+睤c;$
+瞤&O>
+瞨;0z-
+瞻\uI
+矑 h)D
+矢量与高分辨率栅格
+矢量栅格转换与空间分析
+矢量格式之间转换
+矢量检查几何有效性
+矢量瓦片
+矢量道路及注记
+矢量颜色
+知识库文件
+矩形/路径/文本/渐变/滤镜等
+短工具链
+短工具链不要委派
+矯e4^
+矼zx`
+硠u4).|
+确定要退出吗
+确认后勾选
+确认图层精度与目标比例尺相称
+确认正确再进行后续步骤
+确认要升级就再调一次并带上 upgrade=true
+确认输入路径/表/图层存在
+磥XAVW
+祀O9x
+票据格式错误票据内容无法识别票据签名密钥未知票据签名格式错误票据签名无效票据不属于当前账号票据不属于本设备票据版本不受支持OpenGeodex/1.1.4
+祮H <[l
+祲N+p
+禈<*L,
+离线可用
+秂3z}/ZT
+秪<+J
+秫j<j
+移除图层不删文件
+秿N_l,
+程序  缺失或无法启动
+程序与清单
+程序文件  不存在
+稍后重新加载
+稫]_Y
+穇`*+
+穨sW;99
+穷en])
+空白页或纯图片页
+空间分析
+空间分析结果和用户需求实现为可交互的 WebGIS 页面
+空间分析结果和用户需求实现为可交互的地图网页
+空间功能未实测
+空间对象
+空间数据()请用工具目录中的栅格 / 矢量处理插件查看或处理
+空间数据(.tif/.shp/.gpkg)不要用 fs.read
+空间时间覆盖和主要限制
+空间统计
+空间范围
+立即用 zmv_add 加载到智图看看供用户浏览
+竓~Bi
+符号化配色
+符号系统与配色
+符号配色
+第  轮
+第  页是扫描页或图片页
+第  页由高精度 OCR 服务
+第一个为默认
+第一人称
+第一条给最可能的回答
+第一次使用某个插件前先 skill_load 加载它的技能
+第三方多模态或对话模型)
+第二次仍失败就换方法或停止该路线
+等受保护的文件夹里写文件
+等对方结束后会自动重连
+等待  退出失败: 
+等待用户确认任务awaiting_confirmation
+等待用户继续或调整
+等待自动恢复工具发现methodidresulterrorMCP错误: 
+等待重新连接MCP client unavailable
+等高线和可视域
+答不上来的那条也要写明为什么
+筷{~l
+签名索引中没有该插件包插件包文件名与签名索引不一致签名索引中缺少插件包信息插件版本与签名索引不一致
+签名缺失或无效
+筿\uZ
+简单任务不要套模板
+简短介绍自己
+简短答复后继续原任务
+箊wWOW5
+管理员执行 CREATE EXTENSION postgis;
+管理图层组
+簹7Kl
+类型应用取得 Key
+粑#W9)>-
+粗体和解释性副标题
+粘贴的图片数据无效
+粘贴的图片超过 
+粢jbu
+精修模型尚未下载Streaming Zipformer + SenseVoice
+精度与目标比例尺相称
+精度归并统计等空间运算
+精确修改文件用 fs.edit / fs.write
+精确写回需提供投影模板文件
+系4CG
+系统已只回灌关键字段
+系统已只回灌摘要
+系统报出来的却是找不到文件或拒绝访问
+紆$/`
+紝{Yz
+綄6S;
+緅(XN
+緇:]Q
+緙}_2
+縿i9t+
+繍9+U
+繖7P=
+繯p5%v
+约  MB
+约 7.4 MB
+约东经 72.004
+约束和附件路径完整带给专家
+纮+$L
+纯本地计算
+纯海域格子列入 missing_tiles
+纯问答或只是工具调用较多时不要用
+线路道路电路思路管路水路公路铁路网路回路通路支路干路主路辅路街道办农村乡村城镇乡镇城乡村镇城区市区山区地区景区园区社区小区片区辖区矿区林区牧区库区灾区湖区城市都市全市本市全省本省全县本县保护区研究区试验区实验区示范区开发区功能区缓冲区行政区区域区划县域市域省域省份花园园区内大厦
+经 Overpass API 查询
+结束后会继续
+结束后会自动通知
+结束音频失败: 
+结构化数据/地理脚本用 `python`
+结构化输出保留约定的字段名和枚举值
+结果保存为文件
+结果可视化和服务发布等处理工作
+结果可输出为表格或 JSON
+结果同时回显输入与输出坐标
+结果始终写入产物目录
+结果把候选坐标标为 unverified
+结果直接写成新的栅格或矢量文件
+结果较大
+结果较大或指定输出路径时同样落盘
+结果过大
+结果附 gdalwarp -te 拼接裁剪命令
+结论必须来自工具结果或明确知识
+绘a%H>*
+绘制测量
+绘制测量和本地预览验证
+给出可以直接点击发送的快捷回复
+给出文件路径即可
+给该目录授予当前账号完全控制
+绝不自行采集/下载
+绝不要一上来就写脚本
+统RJi
+统一用 `<input_path>`
+统一质检/汇总/写回要汇合
+统计口径
+统计和导出
+统计或专题制图
+统计或发布
+统计数据目录失败: 
+统计数量
+继续执行已确认的空间数据任务介绍一下制作生成下载裁剪转换重投影计算分析发布入库出图标注提取拼接镶嵌缓冲统计地形图地图空间数据DEMdem影像遥感NDVIndvishpShapefileGeoJSONgeojson栅格矢量坐标投影行政区边界等高线坡度坡向山体阴影PostGISGeoServerPOI地块流域水系timed outtimeouttemporarily unavailableconnection resetconnection refusedconnection abortedbroken pipedatabase is lockedresource busysharing violationhttp 408http 429http 500http 502http 503http 504流程说明怎么处理怎么完成是好好的可以需要要讲讲说说展开看一下/function/argumentsstepsdepends_ontitleexecutors
+继续拉取无关信息
+缄#_M
+编辑/删除数据
+编辑一个支持图片输入的模型
+编辑器等程序中打开了其中的文件
+缴;L'
+缺 shapH
+缺什么数据 + 为什么需要 + 建议由采集专家收集
+缺关键参数时回弹
+缺失条件
+缺少 TK 或坐标非法时直接拒绝
+缺少 runtime/pdfium
+缺少会改变结果的必要条件时
+缺少会显著改变结果的参数时回弹给主 Agent
+缺少必填参数 
+缺少权重 
+缺少连接器参数 
+缺数据就回弹给主 Agent
+缺数据时回弹
+缺省读文件 crs 声明
+网络搜索与抓取
+网络请求失败: 
+网络连接失败
+网页前端webgisleafletopenlayersmaplibrecesium
+网页搜索只用于发现来源
+罵Nd]<o
+羱_ZO
+翧 1I'
+考虑用 web.crawl 直接抓已知站点
+而 tool_calls
+而不是机械截断
+而分步执行的全过程与各步结果
+耓?8mLH
+耓UVJ
+职业/身份
+联:#$
+联网/写入风险等关键条件时
+联网获取web_searchweb_crawl
+聚合和空间连接本地或云端的 Parquet
+聛6@:
+肛UQg
+股V})
+肤\kN6O
+肬3nQnN
+肮_:3
+能在一次运行中完成并校验的连续处理合并成一个脚本
+能生成坐标系 WKT 时附带 .prj
+脎Es+
+脚本内 open() 绝对路径会被 OS 拒(Permission denied)
+脚本内只写相对产物
+脚本创建子进程过多
+脚本因超出沙箱内存上限被终止
+脚本超出了内存上限
+脚本输出了  条字体缺字警告
+脚本里写**相对路径**
+脚本里写相对路径(如 'out.geojson')
+脚本需要在沙箱工作目录(cwd)内写相对路径文件
+腾讯等使用
+膂k<Of
+自动审批下也一样
+自动拼到关键词前
+自包含任务描述[召唤专家未参与]
+自包含时
+自定义专家与技能插件
+自己写 Nominatim 查坐标
+自己写坐标转换
+至少包含四点
+臷}Uj
+臿b2[
+艧Kg}
+艱?.a 
+色彩模式
+色彩模式与字体处理
+芗&cx
+芩:(a
+苝I^~2*
+若与当前任务无关
+若专属工具和沙盒都做不到
+若它与描述不符
+若尚未建立运行计划
+若是修改要求或叫停
+若是旧版 .doc
+若是询问进度
+若有未完成项
+若核对发现所需数据没到位
+若用户消息是确认预检后的继续执行
+若用户要求的是报告
+若连续约 30 秒没有面向用户或主 Agent 的可见进展
+若需要任务预检
+英文资料或工具返回英文
+苶h@L
+范围与数据位置
+范围与要素数
+范围和投影
+范围和文件内记录的 EPSG/投影
+范围外的坐标不加偏移
+范围覆盖任务区
+茠Fa(
+荌LZ6
+荏SA6
+莉t\/
+莢%}4
+落地和来源验证
+落地处理行政区
+落库时已截断
+落款等)按阅读顺序原样输出在表格前后
+葚78z
+葛M[gy
+葵8EW
+蒆2y$*
+蒮%7MC`_(
+蔞z!'M
+蕨!7!q*w
+蕫S\9
+蕺?NV
+薃Ta<
+薎*咾?
+薦"pfN
+薬"4n
+薳\lu
+薷,Bc
+藀Ht[
+藘~Pra
+蘐9CU
+蘓j0W
+蘘?<]
+虓bY5
+號J$q
+虹C7>
+蚓y+-
+蚝3^R
+蚨++\
+蛂{9,
+蛏t~x~
+蛕)d 
+蛘4~,Y
+蜄:Ab
+蜇LTj
+蜚?!=
+蜣Ow*
+蜿gD%
+蝤QF6
+蝭mdN
+蝮Cpp
+螌7<m(
+蟺-*8
+蠞6uM5\x
+衇f恍yLb
+衉3_&
+行业专题等明显匹配可用自定义专家时直接把该专家 id 填入步骤 agent
+行业专题等明显匹配某个自定义专家时优先填该专家 id
+行政区划
+行政区名称
+行政区行政区划行政边界
+行政区边界
+行政区边界下载
+行政区边界和土地覆盖等免密公开地理数据
+行政边界五类模板
+衔接和最后汇总专家的结果
+表和几何列
+表或工作区
+表格与文档",
+表格和 PDF / Word 文档加载到
+表格或文档加载到看图窗口",
+表示它超过等待时间
+衱)BX
+衳m_%
+衺/g1
+袅&B)
+袋.I9
+袟*@ 
+被其他要素压住
+被截断或被压盖,也可能是 OCR 认错了字,请复核s)
+被沙箱限制
+被问到出处时才说研发方是武汉智图时代科技有限公司
+裁剪和投影都要有明确顺序
+裟tf45
+褊v(i
+襓Osy A
+襶HLl
+要什么数据
+要做什么
+要加载的服务名- 
+要委派的专家 id交给该专家的明确
+要明确列出
+要求规范的比例尺投影
+要用哪些宿主能力
+要用哪些插件的工具
+要素/像元非空
+要落盘到可访问目录
+要说明可能留有部分产物
+覆盖数据这类有破坏性的操作
+視LA`
+覩\S,
+覼~)E
+见本次结果的 memory_limit_mb
+视图及表注释
+视图和外部表及中文表注释
+视图和空间图层
+视图范围
+视觉效果写进交付说明请用户确认
+视觉识别vision_read_imagevision_check_map
+角色与工具权限这类内部机制
+觘{`l
+觛ylf
+解决办法
+解压失败
+解压失败: 
+解压技能包失败
+解压插件包失败: 
+解析输出目录失败: 
+解析配置失败: 
+解释或代码围栏
+解释方式和默认假设
+触发场景
+触发条件
+触发条件和正文由你判断并编写
+訏4aV
+訯\T:0
+詬>ze8
+誑$Xi
+誢OT#
+誥;de@<
+諦8?)
+謻~m0
+譌$hQ
+讟~xx
+计划不会自动重跑
+计划中的一个专家步骤只对应一个边界清晰
+计划中的一个专家步骤只承接一个边界清晰的子任务
+计划中的非 coordinator 步骤由执行器真实下发
+计划已中断typestatePlanRuntimeStateplan_idparentowner_agentmodegoalstepsactive_step_idreason
+计划已停止blocked
+计划已停止blocked0a
+计划已停止blockedH>}B
+计划已执行完成
+计划已转入后台执行job_id后台计划未完成后台计划执行完成plan_detached计划执行完成计划执行失败
+计划执行未完成计划步骤未完成
+计划拓扑
+计划标题
+计划步骤
+计划步骤的 agent 应直接填写该自定义专家 id
+计划结束后不会自动继续对话
+计划编排
+认证和任务状态流程使用
+让插件工具直接读 http(s) 远程地址
+让用户马上看到
+让遥感专家来做
+记住/以后都这样/保存为技能
+记录关键参数
+记忆与知识库
+讶z~+
+论文配图
+论文配图与插图专题挂图与汇报图印刷出版地图
+论文配图和汇报展示的成品地图
+论文配图或汇报展示的正式成品地图使用 cartographer(分析途中看结果的快速可视化不必用它),跨阶段决策
+设置 > 模型
+设置图层样式
+设置文件
+设置符号
+识别 CRS
+识别后无文字或识别失败
+识别和落地原始空间数据
+识别文字失败
+识别模型 2.0 
+识别模型版本与计费方式是否与已开通的服务一致火山引擎语音识别拒绝连接
+识别置信度 :可能被压盖
+识图失败: 
+识图模型正在下载中
+该 API Key 所在账号未开通对应的语音合成服务或音色
+该丢的要丢
+该会话正在运行
+该内容可能需登录或已被删除
+该技能缺少签名
+该服务不提供模型列表
+该服务仍被其它会话占用
+该版本没有可用的安装程序文件校验失败
+该版本缺少发布签名open
+该版本缺少发布签名发布索引接口返回了无法识别的数据取发布索引失败
+该能力需要
+该轮到此结束
+语音朗读未开启
+语音识别
+语音识别与朗读共用
+语音识别代理状态异常
+语音识别任务失败: 
+语音识别服务启动失败
+语音识别服务启动失败: 
+语音识别服务启动超时
+语音识别服务状态异常
+语音识别未开启
+语音识别模型正在下载中
+语音识别运行失败
+说明: 
+说明性文字默认使用中文
+说明整个计划已转入后台执行
+说明未完成视觉检查
+说明正在做什么
+说明用户是在确认查看上一轮复杂任务的处理过程
+说明用途
+说明真实过程并用 `workflow.diagram` 生成流程图图片
+请不要删除它
+请不要反复调用这个插件的工具
+请从官网下载最新安装包
+请依据 stderr 修正参数或脚本
+请修正参数后重试
+请先到 DeepSeek 开放平台充值该网页按 DeepSeek 的策略不允许抓取
+请先勾选要清理的分类未知的存储分类
+请先升级客户端技能包包含不安全路径
+请先另存为较小的图片再添加
+请先在设置 > 模型中填写 Base URL 和模型名
+请先在设置 > 模型中填写并测试
+请先在设置 > 模型中配置可用的大模型
+请先在设置 > 集成 > 语音中一键准备
+请先在设置 > 集成 > 语音中开启
+请先检查路径
+请先用 connection_list 查看可用连接器 IDp`
+请先调用 fs.authorize_path 获取用户授权
+请关闭占用它的程序后重试磁盘空间不足
+请判断对话里是否包含了值得长期记住的信息
+请到豆包语音控制台开通
+请到豆包语音控制台开通流式语音识别服务
+请升级 OpenGeodex$
+请升级 OpenGeodex凭证请求格式错误调用凭证无效或已使用调用凭证与插件不符调用凭证已过期OPENGEODEX_GUARD_PIPEOPENGEODEX_GUARD_TOKEN
+请升级会员后使用
+请压缩为阶段动作
+请压缩到 20 个以内流程图至少需要两个节点
+请另存一张较小的预览图
+请只根据图片本身检查这张地图/专题图的视觉质量,逐项看:
+请告诉用户到
+请告诉用户结束后可以让你接着处理专家完成后会自动通知你
+请告诉用户结束后可以让你接着处理完成后会自动通知并继续对话工具已运行  秒仍未结束
+请告诉用户结束后可以让你汇总结果计划结束后会自动通知你
+请在 WPS 中另存为 .docx 或 PDF 后再试暂不支持演示文稿
+请在 Word 中另存为 .docx 后再导入当前仅支持 PDF
+请在 Word 中另存为 .docx 后再试docx 中缺少正文
+请在 Word 中另存为 .docx 后再试暂不支持 .wps
+请在安全软件里恢复被隔离的文件并把 OpenGeodex 安装目录加入信任
+请在安全软件里恢复被隔离的文件并把 OpenGeodex 的安装目录加入信任
+请在客户端
+请在设置 > 集成 > 语音中填写
+请在设置 > 集成 > 语音中重新选择
+请在设置里重新填写api_keycreatedAtMscrates\opengeodex-desktop\src\runtimes.rs
+请在设置里重新填写模型
+请在设置里重新填写配置里的密钥是在另一台电脑或另一个 Windows 账户上保存的
+请在设置页
+请基于会话历史
+请复核执行拓扑
+请如实告诉用户
+请如实告诉用户这些页没有读取
+请如实告诉用户这项功能当前不可用
+请对方把文件或文件夹拖进对话框
+请对方把文件拖进来或给出完整路径
+请导出为 PDF 后再试PDF 解析组件未安装
+请将下面的 OpenGeodex 历史上下文压缩为一份中文摘要
+请尝试用其他软件另存为 PDF 后再导入
+请手动填写模型名获取模型列表返回 
+请手动完成
+请打开文件查看
+请把图片中的文字按自然阅读顺序完整转写出来
+请把缺失的能力和所需输入返回给主 Agent
+请拆分任务
+请按 map-matplotlib-recipe 技能
+请换个名字
+请换个名字再建议
+请换个名字再沉淀
+请换个文件夹
+请据此执行
+请据此继续之前的任务
+请控制在 
+请控制在  以内
+请提供图片路径 path 或附件引用号 ref识图未开启:请在设置页
+请改写为相对描述或参数占位
+请改写为通用方法
+请改派给指定的专家
+请检查 API Key 是否正确
+请检查临时环境变量
+请检查后重试/api/auth/login
+请检查网络Base URL 需以 http:// 或 https:// 开头F:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-core\src\ai\mod.rs
+请检查网络或在 设置 
+请求失败: 
+请求方会话 
+请求火山引擎语音合成失败: 
+请清理后重试
+请清理后重试找不到文件
+请独立实际完成该步骤
+请生成真实文件
+请用 sandbox.exec 带 skill 参数
+请用已提供的工具完成任务
+请用户自己打开文件核对
+请直接告诉用户你需要哪份数据
+请确认它已安装并且在 PATH 里
+请稍后再保存设置
+请稍后再保存通知设置
+请稍后再修改开发目录
+请稍后重试
+请等它们完成或取消后再清理
+请等它完成后再试该插件正在安装
+请等它完成无法写入备份文件
+请等待上一条回复完成
+请等待完成或停止后再操作
+请精简后再搜
+请给出用户接下来最可能说的 3 句话
+请给这段对话起标题
+请综合各步产出
+请缩小查询范围或让工具把输出写入文件后分段读取
+请让工具生成真实文件
+请让用户先去掉密码
+请让用户拆分后再试
+请识别图片中的文字及其版面
+请识别图片中的表格与文字
+请选择有效的 zip 备份文件
+请选择知识库文件
+请通过文件资源或会话过程查看摘要
+请重启 OpenGeodex
+请重启 OpenGeodex无法创建临时目录
+请重新一键准备
+请重新填写设置是从备份还原的
+请重新安装客户端
+请重新登录^[^\s@]+@[^\s@]+\.[^\s@]+$邮箱正则crates\opengeodex-desktop\src\operation.rs
+请重新登录session.jsonoperation HTTP client
+请重新登录后再下载当前会员不包含该内容下载失败 ()
+请重新读取后再编辑
+请重新输入密码settings_openedfeature_openedothersettings
+请重新选择会话
+读不到空间图层
+读写本地文件
+读取 S3
+读取 docx 正文失败: 
+读取事件流: 
+读取响应失败
+读取图片失败: 
+读取工具把会话设为只读事务
+读取归档内容失败: 
+读取归档头失败: 
+读取技能包失败
+读取技能包条目失败
+读取插件 manifest 失败: 
+读取插件包条目失败: 
+读取文件任务失败: 
+读取文件失败: 
+读取文档任务失败: 
+读取文档失败: 
+读取日志失败: 
+读取日志目录失败: 
+读取本地识图结果失败: 
+读取第  页失败
+读取表格任务失败: 
+读取表格失败: 
+读取表格文本失败: 
+读取语音合成结果失败: 
+读取语音识别代理端口失败: 
+读取语音识别结果失败: p
+读取配置失败: 
+读起来是一小段话而不是一份清单
+谀e%/
+调 `skill.load` 读取完整步骤后再执行
+调 `web.search`/`web.crawl`
+调地图 API
+调整名称
+调用凭证
+调用后本轮会停在任务确认状态
+调用工具
+调用数据下载类插件工具
+调用时直接给出阶段标题
+调用本身也只会超时
+调试构建沿用接口中的文件信息
+谆+=*
+谓@w^
+豅K#v
+豆包语音
+豆包语音合成模型 2.0
+豻$v^2v+q
+貓Bkj
+賕`Th
+贁HVU
+负责从理解需求到完成交付的整个回合
+负责比例尺与投影
+账号会写入 GeoServer 数据存储
+账号需为本机地址授权
+账号需改用 MD5 认证
+质检检查拓扑
+质量检查结果
+资产分类目录
+资源调度器已关闭F:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-app\src\agent\mod.rs
+资源调度器已关闭crates\opengeodex-app\src\job.rs
+资源调度器已关闭readwriteF:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-app\src\mcp.rs
+资源调度器已关闭readwriteF:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-app\src\op.rs
+资源调度器已关闭readwritecrates\opengeodex-app\src\mcp.rs
+资源调度器已关闭readwritecrates\opengeodex-app\src\op.rs
+赘JET
+趄=[Q
+超出画布,也可能是字太小 OCR 漏识,请复核
+超出的已被拦截
+超过  秒未完成
+超过 1 GB 的文件需显式允许才下载
+超过上限
+超过发给模型的上限  MB
+超过识图上限  MB: 
+趬?rd
+趽6Y(
+跨专家汇总和面向用户最终验收
+跨分幅时只给中心所在一幅
+跨已加载图层执行 SQL
+路径 URI 编码不是有效 UTF-8
+路径与关系
+路径可读
+路径含 .. 组件,不允许: 
+路径和未完成事项
+路径和风险
+路径必须是绝对路径: 
+路径经过符号链接或 Windows 重解析点
+路径规划等
+路径超出允许的工作区目录: 
+路径选择类型无效: 
+跳过了某步就说跳过
+跳过归档内容失败: 
+跳过文字对照与压盖检查
+踪aQK
+蹜?)!X
+蹤dR?
+蹥K|1
+躎?,F
+躐JICuL
+躔lE6o
+軪)71
+輟GM\
+转为一组 Shapefile
+转入后台失败: 
+转换程序随插件分发
+转换转成转为导出为投影坐标系
+轻量操作或最终整合使用 coordinator
+轻量检查
+轻量衔接
+轻量衔接和最终汇总
+轻量衔接或最终整合用 coordinator
+轻量转换只为让后续专家能读取
+载入会话事件任务失败: 
+轾(xk
+较小结果直接返回
+辏}C?_8
+辒bF[
+输入输出
+输入需同目录的 .shp/.shx/.dbf
+输出 CRS
+输出一句简短状态
+输出成果
+输出文件非空且尺寸正确
+输出格式
+输出格式和许可约束
+输出路径
+输出过长
+输出通常包含 .shp/.shx/.dbf/.cpg
+输出默认拒绝覆盖
+边界下载DEM / 遥感数据准备POI 与开放数据抓取
+边界和土地覆盖数据
+迁mZ.}n\t/S
+迁移  条用户技能为技能包
+过期中间状态和无关 UI 细节
+过程数据放处理中间件
+过程预览
+过程预览仅在需要核对文字时用 review=false
+运营服务返回 
+运营服务返回了无法识别的数据
+运营状态目录无效
+运营端 
+运营端返回的账号信息无法识别: 
+运行 Processing 算法
+运行日志仅在开发者模式下可用配置文件根节点不是对象trace 配置不是对象当前有任务正在运行
+运行时和依赖是否已准备
+运行时和配置数据是软件内部
+运行时已就绪
+运行时或配置数据
+运行状态等应用自身数据
+运行语音识别失败: 
+运行进度实时回传
+返回 JSON
+返回 ZIP 下载地址
+返回 {"skip":true}
+返回入口路径/启动方式
+返回各图层的加载状态
+返回名称
+返回文件类型
+返回格式化地址及省
+返回表格或 JSON 结果",
+返回错误 
+还会留下关不掉的后台进程
+还原 OpenGeodex 数据prepare.opengeodex-restore-service-
+还原或清理正在进行
+还原过程意外中断
+还在处理中
+还有后台任务正在运行
+还有后续步骤就接着做
+这两个极小的集合单独挑出来
+这个 PDF 共 
+这个 PDF 无法解析出文字
+这个 PDF 是扫描件
+这个 PDF 没有可导入的文字
+这个 PDF 设置了打开密码
+这个 Word 文档没有可导入的文字
+这个 Word 文档没有正文文字
+这个位置不在可访问范围内
+这个文档共 
+这个问题重试不会好转
+这些交回主 Agent 或处理专家
+这些工具从下一步起可以直接调用
+这些是从用户确认过的成功任务中沉淀出的经验
+这些超出你的职责
+这些页没有读取
+这几位专家要共同完成这条请求
+这台电脑开启了 Windows 安全中心的
+这四样没定下来不要开始画
+这张图不能交付
+这张图的用途与制图要求:
+这是 OpenGeodex 自身的程序
+这是一段自动压缩后的会话历史摘要
+这是主 Agent 唯一能看到的内容
+这是宿主自动发出的系统通知
+这是用户在设置中填写的长期自述信息
+这是这位用户第一次使用 OpenGeodex
+这是采集子 Agent 的活
+这条回复就是你交回主 Agent 的返回值
+这条用户消息很像会产生数据成果的空间数据任务
+这类前缀
+这类没有路径的话
+这类空话
+这类突兀的转折
+这里只保留前  个
+进度 %
+进度更新
+进程已结束
+进程意外退出
+进程结束后会通知作业已经结束
+连不上时在
+连不上自动换下一个
+连接可用连接测试失败: \
+连接后自动切回 PostgreSQL 语法
+连接器  不存在或未授权给当前项目
+连接器  配置
+连接器 '' 已停用
+连接器 ID 无效或重复: 
+连接器 ID 重复
+连接器名称不能为空: 
+连接器填写说明有空步骤: 
+连接器填写说明步骤过多: 
+连接器填写说明的链接必须是 http/https 地址: 
+连接器声明过多数据源  的 discover
+连接器权限模式无效: 
+连接器须设为
+连接失败: 
+连接成功
+连接火山引擎语音识别失败: 
+连接火山引擎语音识别超时
+连接等设置仍是还原前的
+连接运营服务超时运营服务请求失败 (
+连接运营服务超时运营服务请求失败 ()
+连续处理尽量合并为一次可靠流程
+追加失败会回滚
+追加或删表重建
+追加或替换
+追加或替换到已有表",
+追加或重建到 PostGIS",
+退出 OpenGeodex 后重新安装到默认位置
+退出码: 
+适合大文件
+逆编码输入标为 as_supplied 并附说明
+选择技能目录
+选择插件目录
+逐条答到
+逐行读取
+递归拍平为 section.key
+通常来自目录 ACL 的
+通用处理
+通知发送失败
+通道等用法时
+逮;Z=zE
+遁&&;
+遇到时把缺失能力交回主 Agent
+遇到的错误和改道原因
+道路交通路网轨迹导航
+道路路网
+遥感与云计算专家functioncore常驻能力skill_loadskill_suggestskill_creatememory_saveworkflow_diagramconnection_listjob_listjob_statusjob_waitjob_cancel
+遥感专题图与表格结果导出
+遥感云计算
+遥感卫星影像sentinellandsatmodisndvi栅格波段
+遥感影像
+遥感影像分类ndvi哨兵sentinellandsatgee
+遥感或 WebGIS 开发阶段
+遥感指数
+遥感数据与指数计算云端或本地影像处理不负责最终综合交付
+遥感计算或静态制图不要交给它
+避免参数试错
+避免只说
+避免暗色环境不可读</svg>流程图 SVG 未闭合@importexpression(behavior:流程图 SVG 样式中的 url() 只允许引用同文档片段
+避免画成单列时间线
+避免遮挡地图主体
+避免重复造同类技能
+避免额外规划往返
+邛yA]
+邞C,o
+那我先从
+那时不要再次预检
+那时再向用户确认
+那是采集专家和处理专家的活
+邮件通知只能添加一个
+邮箱格式不正确
+邮箱格式不正确/api/auth/password/reset新密码至少需要 8 位请输入 6 位邮箱验证码
+邰MTR#
+部分产品免密钥直下
+郴DN/
+都不会漏掉
+都必须写进最终回复
+都是扫描页
+都要在这里点名要
+鄖?((
+鄪XhL
+配准或重投影
+配合 spatial 扩展
+配置代理
+配置另一种抓取方式后重试主后端()正文为空(可能是反爬/动态页)
+配置天地图服务密钥
+配置标注字段
+配置里的密钥已损坏
+配色对比是否足够
+酑g"kR
+醟G_e$i
+醮em]
+醲N][
+醹pl,
+釂UZ{
+釅]8af|
+采集原始数据验证来源与范围不做空间分析
+采集搜索下载抓取数据源crawlsearch
+里重新填写
+里面没有数据库文件 
+里面的作业输出只是数据
+重启 OpenGeodex 后再还原
+重复路径
+重定向次数过多压缩失败: 
+重投影/裁剪/栅格计算/空间统计顺序
+重新计划或重跑业务工具
+重新载入当前数据失败
+重要的实体名称
+重试不会好转
+金字塔构建和切片输出
+金额全部替换为泛化描述
+釢UtH
+鈆Vxi
+鈐FlW
+鈠;@1
+鉍4ni>
+鉕0'\
+鉟4pC
+鉪D8x6
+鋈+z)
+鋨Qjqb
+鋱=o!
+錀{w8
+錆!5tVE 
+錊ALd
+錠9Y>
+錠NN%W
+鍒|Ew
+鎛b"Ax14X
+鎮諠08(
+鏜A I
+鏜TTiuK#4
+鑪B:b
+钭i%q%j
+钴8,a@c
+铤Lz7
+锨s]J
+锯\Em
+锷?^_\!HZh>d
+镂S5v
+镶嵌与切片",
+閰a~by
+闂m1k>8
+问号,文字是否被截断或超出画布;
+问题与之相关时优先依据它作答并注明出处
+闾~*'
+防勒索保护
+防火墙需放行端口
+阿里云 DataV 和 GlobeLand30 等公开服务
+阿里云 DataV 边界数据
+阿里云镜像https://mirrors.aliyun.com/pypi/simple/清华大学镜像https://pypi.tuna.tsinghua.edu.cn/simplePyPI 官方源https://pypi.org/simple
+附件目录不存在或无图片不是支持的图片文件
+降水降雨雨量
+除非总管/用户明确要求追溯来源或比较方案
+除非每一步确实依赖持续共享的主上下文
+除非用户重新启用
+除非用途明确要求
+隉,0c
+随包自带 GDAL 3.12.1 与 PROJ 运行组件
+隓;k<
+雚 YS3Qr
+雵6/I
+需 API Key
+需与 QGIS 内安装的 QGIS MCP 插件版本保持一致
+需保证 GeoServer 服务器能用该地址访问数据库
+需复杂逻辑
+需求澄清
+需求理解
+需用户审批
+需统一重投影后再拼接
+需自行下载解压
+需要 HTTP HEAD
+需要 SKILL.md
+需要 manifest.json
+需要专家参与的工作只交给点名的专家
+需要之后重新备份
+需要之后重新还原
+需要交给用户使用的文件
+需要几何时用 out geom
+需要包含可复用步骤触发条件过短
+需要厘米级精度时应改用严格的参数转换
+需要完整内容就调 knowledge.search
+需要完整内容请查看生成的文件或会话过程
+需要完整数据时
+需要完整结果请缩小查询范围
+需要完整输出时让工具把结果写入文件后用 fs.read 分段读取
+需要对该文件的
+需要并行时改用固定大小的进程池或线程池
+需要时可以重新获取继续之前的分析时需要重新下载分析过程中生成的中间结果继续之前的分析时可能需要重新计算会话与应用产生的临时文件其他会话文件会话目录中不属于以上分类的文件对话中引用这些文件的链接会失效地图预览缓存地图窗口使用的瓦片与图层缓存再次打开地图预览时会重新生成日志与运行追踪应用日志与智能体运行追踪记录
+需要时用 job_status 查看进度
+需要更多内容时请缩小范围
+需要独立上下文或可与其他工作流并行时
+需要的工具不可用时
+需要管理员权限
+需要给用户看时用看图插件
+需要让用户查看空间数据时
+需要选择一个默认模型模型 
+需要预览图
+需请管理员为账号改用 MD5 认证
+靀!cd&
+非 GIS 专业用户少问术语化问题并尽量给出可执行选择
+非 coordinator 步骤会被真实委派为子 Agent
+非常高兴为您服务
+非法图片引用号: 
+面 Shapefile
+面 Shapefile 转为 MapGIS WT/WL/WP 文件",
+靴+nM
+鞁vc;
+鞖`Pu
+鞗g?F
+鞺vlm
+韅s[Z
+韍2eL
+韕L];
+韖hi*
+音色须在音色库中可用
+音频数据解析失败: 
+韸%+u
+頗%zG
+顇uQ!
+顊V0V
+页确认插件已安装并启用
+页面是图片
+页面是展示
+页面是空白或纯图片
+项目 ID: 
+项目 file_roots 配置不是数组
+项目/会话约束
+项目会话另外可以读取项目的源文件夹
+项目引用目录只读
+顺序与显隐
+顺序和样式
+顺着助手给出的下一步建议
+预检已确认或信息足够后
+预览和分页读取数据
+预览和分页读取数据",
+颖sul>
+题:D3@
+颹+U9
+飞书企业微信钉钉email邮件F:\Codes_ZealMap\OpenGeodex\opengeodex\crates\opengeodex-app\src\notify.rs
+飞书企业微信钉钉邮件
+飞书企业微信钉钉邮件crates\opengeodex-app\src\notify.rs
+餒zP@u(
+饘q_*
+馰3~:
+駇.=P)N4
+駗4UU4
+骅0@k
+验证方法
+验证方法都写在技能里
+验证结果并回复用户
+验证结论
+骭"F!
+髊,0G
+高峰期可能排队
+高德/天地图反复交叉验证
+高程单位米
+高程基准 Copernicus 为 EGM2008
+高程基准和各产品标准署名
+高程海拔dem
+高精度 OCR 服务
+高精度 OCR 服务识别失败
+高精度 OCR 服务识别失败后改用
+高精度 OCR 服务需要在异步运行时里调用创建临时目录失败
+高频查询建议自建并配置 Overpass 连接器
+髻$'|
+鬩ha)
+魰><$
+魴qZj
+魿|LF
+鮰PI1t}
+鮴:+( 
+鯭f`8Y
+鰃OHR,_
+鰕g"uf
+鰗jiN
+鰚*;P
+鰯;TM
+鰰.PW5xm
+鱽D`v
+鲏3KKF
+鲐E(<
+鲙l~gi6
+鴅Yn;6
+鴛6{z
+鵣l-T(sX%Qp6
+鵦C{p
+鶂.3&
+鷃N-`;
+鷙G'z
+鷾,pg
+鹕 4Z
+麹o!d
+黄金配方
+黅~)]
+黔7g/
+默认 300 DPI
+默认 3306
+默认 5432
+默认 8080
+默认不联网
+默认产物目录
+默认产物目录仅供中间处理使用
+默认使用简体中文输出
+默认值和风险
+默认值或风险时调用
+默认只有本会话目录
+默认含无几何列的普通表
+默认每页 50 行
+默认由你直接回答
+默认的 SHA256 认证不支持
+默认直接使用工具
+默认直接执行按需计划编排最终汇总验收
+鼙{Kw
+鼚zi1`
+鼤tph
+鼮kZ3
+齘D-4
+龏Eo{
+龏YGw
+龫qp-
+龾挠78

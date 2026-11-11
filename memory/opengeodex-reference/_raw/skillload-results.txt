@@ -1,0 +1,33 @@
+=== 7efc3612_call_ea802d95e71d45a2b727f6a6 status=ok full_len=64
+{"bundled":true,"name":"DEM 下载","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== 7efc3612_call_8d9be80368244239971a0fdf status=ok full_len=62
+{"bundled":true,"name":"GDAL","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== 98fdd96f_call_4abf0529a6944d5abac362bb status=ok full_len=64
+{"bundled":true,"name":"公开地理数据","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== 98fdd96f_call_3534e8ce189548e987d64a4a status=ok full_len=66
+{"bundled":true,"name":"OSM 数据查询","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== e09d6a92_call_d26f2f7f9f1e41c09baa9d03 status=ok full_len=62
+{"bundled":true,"name":"GDAL","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== 778292ba_call_56fd480e1c844433883b8fa6 status=ok full_len=71
+{"bundled":true,"name":"WhiteboxTools","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== 778292ba_call_5e1dfab7df1b4861ac7e281a status=ok full_len=62
+{"bundled":true,"name":"GDAL","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== c02e60c0_call_0c084409a4ec4790b6ef1f2c status=ok full_len=62
+{"bundled":true,"name":"GDAL","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== c02e60c0_call_d54ad677325b4c839a355ab2 status=ok full_len=75
+{"bundled":true,"name":"matplotlib 中文出版制图","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== c02e60c0_call_5dfd13cbc8c1439c96b76c70 status=ok full_len=67
+{"bundled":true,"name":"中文出版级地图基线","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+
+=== c02e60c0_call_526bca61ae3442dba6160dfa status=ok full_len=66
+{"bundled":true,"name":"地图成品自检清单","note":"技能已加载；正文只提供给智能体，不在界面显示"}
+

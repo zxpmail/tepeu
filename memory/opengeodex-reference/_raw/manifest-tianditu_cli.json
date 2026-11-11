@@ -1,0 +1,150 @@
+{
+ "id": "tianditu_cli",
+ "name": "天地图服务",
+ "version": "0.1.1",
+ "description": "调用天地图地理编码服务，把中文地址、地名查成经纬度候选，或由经纬度反查省市区与格式化地址。",
+ "details": {
+  "category": "位置服务",
+  "features": [
+   {
+    "title": "地址查坐标",
+    "text": "输入中文地址或地名，可附城市提示（自动拼到关键词前），返回名称、地址与经纬度候选列表；出现多个候选时应由用户确认，不任意选取。"
+   },
+   {
+    "title": "坐标查地址",
+    "text": "输入经纬度，返回格式化地址及省、市、区县；坐标须为有限数字且在经纬度合法范围内，按传入坐标原样查询，不做坐标系转换。"
+   },
+   {
+    "title": "坐标基准标注",
+    "text": "接口未声明坐标基准，结果把候选坐标标为 unverified、逆编码输入标为 as_supplied 并附说明，提醒叠加专业数据前先核对坐标系。"
+   },
+   {
+    "title": "密钥托管与脱敏",
+    "text": "天地图 TK 由「设置 → 连接器」托管、以环境变量注入，不出现在工具参数和返回结果中；服务报错信息里的 tk 也会替换为 ***。"
+   },
+   {
+    "title": "输入校验",
+    "text": "地址超过 200 字、城市提示超过 80 字、缺少 TK 或坐标非法时直接拒绝，不调用接口、不消耗配额；单次请求 15 秒超时。"
+   }
+  ],
+  "support": [
+   "服务：天地图开放平台地理编码接口，支持正向地理编码与逆地理编码。",
+   "仅做地名、地址与坐标互查，不提供影像、瓦片或其他数据下载。",
+   "平台：Windows；CLI 静态链接 C 运行时，不需要额外安装 VC++ 运行库。"
+  ],
+  "requirements": [
+   "需在天地图开放平台注册并完成开发者认证，创建「服务端」类型应用取得 Key，在「设置 → 连接器 → 天地图」填写 TK。",
+   "需联网访问天地图服务；每日调用量有限额，以天地图控制台显示为准。"
+  ]
+ },
+ "dependency": {
+  "mode": "bundled"
+ },
+ "enabled_by_default": true,
+ "guard": 1,
+ "expert_roles": [
+  "collector",
+  "processor",
+  "webgis"
+ ],
+ "connector_types": [
+  {
+   "id": "tianditu",
+   "name": "天地图",
+   "description": "连接天地图开放平台。",
+   "category": "public_geo_service",
+   "docs_url": "http://lbs.tianditu.gov.cn/",
+   "docs_label": "去天地图申请密钥",
+   "guide": [
+    {
+     "text": "在天地图开放平台注册账号并登录，按提示完成开发者认证。",
+     "url": "http://lbs.tianditu.gov.cn/",
+     "url_label": "打开天地图开放平台"
+    },
+    {
+     "text": "进入「控制台 → 应用管理」，点「创建新应用」，应用类型选「服务端」（地名搜索、地理编码由本机程序直接调用，不经过浏览器）。"
+    },
+    {
+     "text": "创建后在应用列表复制 Key，填到下方「天地图 TK」。每日调用量有限额，以天地图控制台显示为准。"
+    }
+   ],
+   "access_modes": [
+    "read"
+   ],
+   "fields": [
+    {
+     "key": "api_key",
+     "label": "天地图 TK",
+     "type": "password",
+     "secret": true,
+     "required": true,
+     "env": "OPENGEODEX_TIANDITU_TK",
+     "description": "天地图开放平台「应用管理」里创建的服务端应用 Key。"
+    }
+   ]
+  }
+ ],
+ "cli_tools": [
+  {
+   "name": "tianditu_lookup",
+   "summary": "用天地图把地址查成坐标，或把坐标查成地址",
+   "description": "天地图地名/地址查询。request.action=geocode 时传 address，可选 city；action=reverse 时传 lng、lat。返回结构化候选/地址，不回显 TK。",
+   "command": "${plugin}/bin/tianditu_cli.exe",
+   "argv": [
+    "lookup",
+    "${request}"
+   ],
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "request": {
+      "type": "object",
+      "properties": {
+       "action": {
+        "type": "string",
+        "enum": [
+         "geocode",
+         "reverse"
+        ]
+       },
+       "address": {
+        "type": "string",
+        "description": "geocode 的中文地址或地名"
+       },
+       "city": {
+        "type": "string",
+        "description": "可选城市提示"
+       },
+       "lng": {
+        "type": "number",
+        "description": "reverse 的经度"
+       },
+       "lat": {
+        "type": "number",
+        "description": "reverse 的纬度"
+       }
+      },
+      "required": [
+       "action"
+      ]
+     }
+    },
+    "required": [
+     "request"
+    ]
+   },
+   "effect": "read",
+   "parse": "json"
+  }
+ ],
+ "skills": [
+  "skills/tianditu_cli.md"
+ ],
+ "probe": {
+  "command": "${plugin}/bin/tianditu_cli.exe",
+  "args": [
+   "--version"
+  ],
+  "on_missing": "天地图服务 CLI 缺失；请重新安装完整 OpenGeodex 包。"
+ }
+}

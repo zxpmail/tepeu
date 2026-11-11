@@ -1,0 +1,36 @@
+##### OPENGEODEX_GUARD_PIPE (1 hits)
+  @0x2875a43 证请求格式错误调用凭证无效或已使用调用凭证与插件不符调用凭证已过期OPENGEODEX_GUARD_PIPEOPENGEODEX_GUARD_TOKEN  (输出超过 64KB，已截断并保留开头与结尾)  crates\opengeodex-core\src\sandbox\mod.rs
+
+##### summon (6 hits)
+  @0x26fd595 nstalling_markeknowledge_chunkssearch_knowledgeugin_config_pathpick_plugin_confmmonable_expertslist_summonable_on_referral_infooperation_referresource_data_urlread_image_resound_register_codeoperation
+  @0x270048d ealmapview_linkedlist_plugin_connector_typeslist_plugin_data_source_providerssuggest_file_rootslist_summonable_expertsget_desktop_configsave_desktop_configset_trace_enabledget_notification_settingssav
+  @0x274613c model_request_start模型请求  >tB    M           /   tool_callsreasoning_contentresponses_replay,summon: coordinator tried to finish before delegating to    <stB    9       已停止当前任务。cancelled        >tB    
+  @0x275d50c model_request_start模型请求   uB    M           /   tool_callsreasoning_contentresponses_replay,summon: coordinator tried to finish before delegating to      uB    9       已停止当前任务。cancelled         uB    
+  @0x27d55a4 model_request_start模型请求 H>}B    &           /   tool_callsreasoning_contentresponses_replay,summon: coordinator tried to finish before delegating to     g}B    9       已停止当前任务。cancelled[任务预检提醒] 这条用户消息
+  @0x27f7844 model_request_start模型请求 0a B    &           /   tool_callsreasoning_contentresponses_replay,summon: coordinator tried to finish before delegating to    D  B    9       已停止当前任务。cancelled[任务预检提醒] 这条用户消息
+
+##### ai_connection (6 hits)
+  @0x27c9594 hb|B            hb|B            ~ |B            S |B    *       } |B    Z       agent.role..ai_connection         |B              |B            你是 OpenGeodex 的主 Agent，负责从理解需求到完成交付的整个回合。默认由
+  @0x27f14ac gapp_versionenabled_viatevent_startevent_idpidostrace_configconversation_startconversation_idchannelai_connection_idturn_startturn_idroleparent_call_idsystem_prompt_hashtools_hashinput_msg_countturn_e
+  @0x2854d03 crates\opengeodex-store\src\conversations.rs      ^ B    ,           %   select id, title, channel, ai_connection_id, project_id, created_at, updated_at from conversations where id=?1   ^ B    ,      
+  @0x28552bb ^ B    ,           !    ^ B    ,           !    ^ B    ,           %   select id, title, channel, ai_connection_id, project_id, created_at, updated_at                  from conversations where channel
+  @0x285593c context_compactioncontext_summary        ^ B    ,       {   %   insert into conversations (channel, ai_connection_id, project_id, created_at, updated_at) values (?1,?2,?3,?4,?5)        ^ B    ,       
+  @0x2857048 title text not null default '',                 channel text not null,                 ai_connection_id integer,                 project_id integer,                 created_at text not null,          
+
+##### model_view (1 hits)
+  @0x2808361 agent      B    &           (   error      B    &       4       执行者报告该步骤未完成model_view             [Image too large] These image(s) exceed the  MB image recognition limit and were not attached: . Tell 
+
+##### solo (17 hits)
+  @0x16b32d UAWAVVWS       qk H) H  $    H         I  H      H   H         I      H    Y Hc  H    H set_soloH9   R'  H app_metaH9    0  H exit_appH9       H      A     H  L     k I      H      A        k  A o    
+  @0x6e495d H  H   Li   CI  2I  H   H        *    tMH      H       P(H =    A     H     )3  H solo-autH3   @ H  oH  H         3  H      H       P(I  H     2  E1 L  H       Ad    U   $k       I      H      H      
+  @0x6e4c64 H  H   Li   CI  2I  H   H        ,    tMH      H       P(H =    A     H     3'  H solo-autH3   @ H  oH  H         '  H      H       P(I  H     &  E1 L  H  8    :a    R  H           A               褷  
+  @0x918976 u         H  H   Li   CI  2I  H   H        *    tMH      H       P(H = K  A     H      #  H solo-autH3   @ H  oH  H        z#  H      H       P(I  H    ?#  E1 L  H       ($   =   `     Y  I      H    
+  @0x918c7d n         H  H   Li   CI  2I  H   H        ,    tMH      H       P(H = H  A     H         H solo-autH3   @ H  oH  H            H      H       P(I  H    M   E1 L  H  8    !!   :     H   H  V`  Hc  H   
+  @0xd7d2f6 H  H   Li   CI  2I  H   H        *    tMH      H      H       P(H =   A     H     R'  H solo-autH3   @ H  oH    4'  H      H      H       P(I  H     &  E1 L  H          Z   c    6  I      H      H  x 
+  @0xd7d604 H  H   Li   CI  2I  H   H        ,    tMH      H      H       P(H =    A     H         H solo-autH3   @ H  oH        H      H      H       P(I  H        E1 L  H  x        W     H   H  G   Hc  H      o
+  @0xe8bef9 H  H   Li   CI  2I  H   H  `     *    tMH  `   H      H       P(H =r   A     H      )  H solo-autH3   @ H  oH     (  H  `   H      H       P(I  H     (  E1 L  H           X  I  X   H  P   A   X   I   
+  @0xe8c3fd H  H   Li   CI  2I  H   H  `     ,    tMH  `   H      H       P(H =n   A     H         H solo-autH3   @ H  oH        H  `   H      H       P(I  H    k   E1 L  H  X        S     (   H     Hc  H      o 
+  @0x2700185 ound_jobrename_sessionensure_conversationpending_approvalsturn_statuscancel_turnresolve_approvalset_soloopen_file_resourceviewer_availablesave_table_resourceopen_external_urlshow_desktop_notifications
+  @0x271f9a0 ttl_secondsversionin_flightconversation_idrunning_conversation_idsawaiting_approval_conversation_idssoloqueued_itemscancellableexecution_idlast_seqrecovered_execution_idrelative_pathsize_bytesmodified
+  @0x279788a thNewsreadweresigntakehavegameseencallpathwellplusmenufilmpartjointhislistgoodneedwayswestjobsmindalsologorichuseslastteamarmyfoodkingwilleastwardbestfirePageknowaway.pngmovethanloadgiveselfnotemuchfe
+

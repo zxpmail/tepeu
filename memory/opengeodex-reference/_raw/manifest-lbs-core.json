@@ -1,0 +1,113 @@
+{
+ "id": "lbs-core",
+ "name": "LBS Core",
+ "version": "0.2.0",
+ "description": "在 WGS84、GCJ02、BD09 与 CGCS2000 之间做单点经纬度坐标互转，纯本地计算，不联网。",
+ "details": {
+  "category": "位置服务",
+  "features": [
+   {
+    "title": "四种坐标系互转",
+    "text": "支持 WGS84、GCJ02（高德、腾讯等使用）、BD09（百度）、CGCS2000 任意两两互转，坐标系名称也可写作 wgs-84、gcj_02 等常见别名。"
+   },
+   {
+    "title": "纯本地计算",
+    "text": "转换在本机完成，不联网、不需要账号或密钥，坐标不会发送到任何在线服务，也不受网络环境影响。"
+   },
+   {
+    "title": "境外坐标不偏移",
+    "text": "按中国范围矩形（约东经 72.004°–137.8347°、北纬 0.8293°–55.8271°）判断，范围外的坐标不加偏移，原样返回。"
+   },
+   {
+    "title": "输出精度控制",
+    "text": "默认保留 6 位小数，可通过 precision 调整，最多 12 位；结果同时回显输入与输出坐标，便于核对。"
+   },
+   {
+    "title": "近似处理说明",
+    "text": "CGCS2000 按与 WGS84 等价处理，两者差异在米级以内；GCJ02 反算 WGS84 采用单步近似。需要厘米级精度时应改用严格的参数转换。"
+   }
+  ],
+  "support": [
+   "坐标系：WGS84、GCJ02、BD09、CGCS2000（按与 WGS84 等价处理）。",
+   "输入为单个经纬度点（度）；批量要素转换应交给 GDAL 等处理工具。"
+  ],
+  "requirements": []
+ },
+ "dependency": {
+  "mode": "bundled"
+ },
+ "enabled_by_default": true,
+ "guard": 1,
+ "expert_roles": [
+  "collector",
+  "processor"
+ ],
+ "skills": [
+  "skills/lbs-core.md"
+ ],
+ "probe": {
+  "command": "${plugin}/bin/lbs-core.exe",
+  "args": [
+   "--version"
+  ],
+  "on_missing": "LBS Core CLI 缺失；请重新安装完整 OpenGeodex 包。"
+ },
+ "cli_tools": [
+  {
+   "name": "lbs_coord_transform",
+   "summary": "在 WGS84、GCJ02、BD09、CGCS2000 之间转换单点坐标",
+   "description": "单点坐标转换：WGS84 / GCJ02（火星）/ BD09（百度）/ CGCS2000 互转，纯本地计算。CGCS2000 按与 WGS84 等价处理；中国境外坐标不做偏移。多点请逐个调用。",
+   "command": "${plugin}/bin/lbs-core.exe",
+   "argv": [
+    "lbs_coord_transform"
+   ],
+   "stdin": "$args",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "from": {
+      "type": "string",
+      "enum": [
+       "wgs84",
+       "gcj02",
+       "bd09",
+       "cgcs2000"
+      ],
+      "description": "源坐标系"
+     },
+     "to": {
+      "type": "string",
+      "enum": [
+       "wgs84",
+       "gcj02",
+       "bd09",
+       "cgcs2000"
+      ],
+      "description": "目标坐标系"
+     },
+     "lng": {
+      "type": "number",
+      "description": "经度"
+     },
+     "lat": {
+      "type": "number",
+      "description": "纬度"
+     },
+     "precision": {
+      "type": "integer",
+      "description": "输出小数位，默认 6"
+     }
+    },
+    "required": [
+     "from",
+     "to",
+     "lng",
+     "lat"
+    ]
+   },
+   "effect": "read",
+   "parse": "json",
+   "timeout_seconds": 30
+  }
+ ]
+}
