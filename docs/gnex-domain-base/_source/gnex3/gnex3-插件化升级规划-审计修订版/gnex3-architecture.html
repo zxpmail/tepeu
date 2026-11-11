@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GNEX3.0 插件化升级 —— 对比 · 融合 · 架构</title>
+<style>
+:root{
+  --bg:#0b0e14; --bg2:#0f131c; --panel:#131824; --panel2:#1a2130; --panel3:#202a3c;
+  --line:#263044; --line2:#33415c;
+  --tx:#dde4f0; --tx2:#93a0b8; --tx3:#5d6b85;
+  --acc:#8b7cf8; --acc2:#a78bfa; --teal:#2dd4bf; --amber:#f5b544; --red:#f87171; --green:#4ade80;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;overflow-x:hidden}
+a{color:var(--acc2);text-decoration:none}
+.wrap{max-width:1320px;margin:0 auto;padding:0 24px}
+header.hero{position:relative;padding:54px 0 38px;background:
+  radial-gradient(1200px 500px at 70% -10%,rgba(139,124,248,.18),transparent 60%),
+  radial-gradient(900px 400px at 10% -20%,rgba(45,212,191,.12),transparent 55%),
+  linear-gradient(180deg,#10151f 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--line)}
+.hero .kicker{color:var(--teal);font:600 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase}
+.hero h1{font-size:33px;line-height:1.25;margin:14px 0 10px;font-weight:800}
+.hero h1 .hl{background:linear-gradient(90deg,var(--acc2),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{color:var(--tx2);max-width:920px;font-size:15px}
+.stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 18px;min-width:120px}
+.stat b{display:block;font-size:24px;font-weight:800;color:var(--acc2);font-family:var(--mono)}
+.stat span{font-size:11.5px;color:var(--tx2)}
+.src-note{margin-top:16px;font:11px/1.7 var(--mono);color:var(--tx3)}
+nav{position:sticky;top:0;z-index:50;background:rgba(11,14,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .inner{display:flex;gap:2px;overflow-x:auto;padding:0 24px;max-width:1320px;margin:0 auto}
+nav a{display:block;padding:13px 14px;color:var(--tx2);font-size:13px;white-space:nowrap;border-bottom:2px solid transparent}
+nav a:hover{color:var(--tx);text-decoration:none}
+nav a.on{color:var(--acc2);border-bottom-color:var(--acc)}
+section{padding:50px 0 8px;border-bottom:1px solid var(--line)}
+section h2{font-size:24px;font-weight:800;margin-bottom:6px}
+section h2 .no{color:var(--acc);font-family:var(--mono);margin-right:8px}
+section .lead{color:var(--tx2);max-width:1020px;margin-bottom:20px}
+h3{font-size:16px;font-weight:700;margin:24px 0 10px}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{background:var(--panel);border:1px solid var(--line);color:var(--tx2);border-radius:9px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit}
+.tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.tab-pane{display:none}
+.tab-pane.on{display:block}
+.arch-frame{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px;overflow-x:auto}
+.arch-frame svg{display:block;min-width:1000px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--tx2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.cat-nav{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 4px}
+.cat-nav button{background:var(--panel);border:1px solid var(--line);color:var(--tx2);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.cat-nav button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.toolbar input{flex:1;min-width:240px;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--tx);padding:9px 14px;font-size:13px;outline:none}
+.toolbar input:focus{border-color:var(--acc)}
+.layer-block{margin:30px 0 8px;scroll-margin-top:70px}
+.layer-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.layer-head .ico{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--c1,#7c6cf0),var(--c2,#2dd4bf));display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.layer-head h3{font-size:17px;margin:0}
+.layer-head .cnt{font:12px var(--mono);color:var(--tx3);background:var(--panel3);padding:2px 9px;border-radius:20px}
+.layer-desc{color:var(--tx2);font-size:12.5px;margin:2px 0 12px;max-width:1100px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:11px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;transition:border-color .15s,background .15s}
+.pcard:hover{border-color:var(--acc);background:var(--panel2)}
+.pcard .nm{font:700 12.5px var(--mono);color:var(--acc2)}
+.pcard .tag{font:10.5px var(--mono);padding:1px 7px;border-radius:20px;margin-left:6px;border:1px solid var(--line2);color:var(--tx2)}
+.pcard .tag.prot{color:var(--amber);border-color:rgba(245,181,68,.4)}
+.pcard .ol{font-size:12.5px;color:var(--tx);margin:5px 0 7px}
+.pcard .map{font:11px/1.6 var(--mono);color:var(--tx3)}
+.pcard .map b{color:var(--teal);font-weight:600}
+.pcard .map i{color:var(--amber);font-style:normal;font-weight:600}
+.pcard .detail{display:none;margin-top:9px;border-top:1px dashed var(--line);padding-top:9px;font-size:12px;color:var(--tx2)}
+.pcard.open .detail{display:block}
+.detail .lb{display:block;font:700 10.5px var(--mono);color:var(--tx3);letter-spacing:.05em;margin:6px 0 2px}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px}
+table.tbl th{position:sticky;top:44px;background:var(--panel2);color:var(--tx2);text-align:left;font-weight:600;padding:9px 12px;border:1px solid var(--line);cursor:pointer;white-space:nowrap;z-index:5}
+table.tbl td{padding:8px 12px;border:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+table.tbl tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+table.tbl td b{color:var(--tx);font-family:var(--mono);font-size:12px}
+.tbl-wrap{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:10px}
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:14px}
+.ev-box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.ev-box .ns{font:700 13px var(--mono);color:var(--teal)}
+.ev-box ul{list-style:none;margin-top:5px}
+.ev-box li{font:11px var(--mono);color:var(--tx2);padding:1px 0;border-bottom:1px dashed rgba(38,48,68,.5)}
+.ev-box li:last-child{border-bottom:none}
+.ent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;margin-top:14px}
+.ent-box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.ent-box .t{font-weight:700;font-size:12.5px;color:var(--amber);margin-bottom:4px}
+.ent-box .d{font:11px/1.7 var(--mono);color:var(--tx2)}
+footer{padding:40px 0 60px;color:var(--tx3);font:11.5px/1.8 var(--mono)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">GNEX 3.0 · Pluginization Planning</div>
+    <h1>GNEX3.0 插件化升级：<span class="hl">对比 dsh · 融合设计 · 分层插件架构</span></h1>
+    <p class="sub">以 DeepSeek Harness（dsh，Cordis 一切皆插件）为镜，重构 GNEX（Java/Spring 企业级 Agent OS）：<strong>服务是部署单元，插件是组合单元</strong>——9 个微服务与企业特性（多副本/弹性/租户/记忆 SoR）全部保留，服务内部由 cordis-jvm 插件内核组合能力。本页呈现三张架构图、81 个插件定义、映射关系与接口关系。</p>
+    <div class="stats" id="heroStats"></div>
+    <div class="src-note">数据来源：gnex-core-v2 源码深析（9 服务 + 9 libs + E1-E36 企业特性）+ dsh @deepseek-ai/* v0.1.0-rc.6（186 插件）+ 规划文档 docs/v3.0/plugin-architecture/（00-07）· 完整文档体系见该目录与 docs/v3.0-specs/</div>
+  </div>
+</header>
+
+<nav id="nav">
+  <div class="inner">
+    <a href="#overview" class="on">总览</a>
+    <a href="#arch">三张架构图</a>
+    <a href="#catalog">GNEX3.0 插件目录</a>
+    <a href="#mapping">映射关系</a>
+    <a href="#interfaces">接口关系</a>
+    <a href="#enterprise">企业特性</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ═══════ 总览 ═══════ -->
+<section id="overview">
+  <h2><span class="no">00</span>总览：一页读懂 GNEX3.0</h2>
+  <p class="lead">GNEX3.0 = 企业骨架 + dsh 组合语义。左边是现状（能力=代码模块，改能力=改代码+重构建+重启），右边是目标（能力=插件，装配清单组合，装卸不动骨架）。</p>
+  <div class="cards" id="overviewCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px"></div>
+</section>
+
+<!-- ═══════ 架构图 ═══════ -->
+<section id="arch">
+  <h2><span class="no">01</span>三张架构图</h2>
+  <p class="lead">图 1 = GNEX 2.0 现状（服务面/共享库面/基础设施面）；图 2 = dsh ↔ GNEX 分类映射（15 组取并集）；图 3 = GNEX 3.0 六层插件架构（L0-L5）。点击图 3 中的层块可跳转到插件目录对应分组。</p>
+  <div class="tabs" id="archTabs">
+    <button data-t="g2" class="on">① GNEX 2.0 现状</button>
+    <button data-t="map">② dsh ↔ GNEX 映射</button>
+    <button data-t="g3">③ GNEX 3.0 六层插件架构</button>
+  </div>
+  <div class="tab-pane on" id="pane-g2"><div class="arch-frame" id="g2Svg"></div>
+    <div class="legend"><span><i style="background:#2a3550"></i>服务面（9 微服务）</span><span><i style="background:#3a2f55"></i>共享库面（9 libs）</span><span><i style="background:#23504d"></i>基础设施面（E1-E36）</span></div>
+  </div>
+  <div class="tab-pane" id="pane-map"><div class="arch-frame" id="mapSvg"></div>
+    <div class="legend"><span><i style="background:#7c6cf0"></i>dsh 分类</span><span><i style="background:#2dd4bf"></i>GNEX3.0 去向</span><span><i style="background:#f5b544"></i>映射策略</span></div>
+  </div>
+  <div class="tab-pane" id="pane-g3"><div class="arch-frame" id="g3Svg"></div>
+    <div class="legend"><span><i style="background:#3b4257"></i>L0 组合与装载</span><span><i style="background:#2a3550"></i>L1 内核层</span><span><i style="background:#1f3a4a"></i>L2 服务层</span><span><i style="background:#3a2f55"></i>L3 能力层</span><span><i style="background:#4a3322"></i>L4 企业层 🔒</span><span><i style="background:#23504d"></i>L5 客户端层</span></div>
+  </div>
+</section>
+
+<!-- ═══════ 插件目录 ═══════ -->
+<section id="catalog">
+  <h2><span class="no">02</span>GNEX3.0 插件目录：81 个插件</h2>
+  <p class="lead">每个插件卡片：ID、名称、与 dsh 的映射（<b style="color:var(--teal)">dsh→</b>）、与 gnex2.0 的映射（<i style="color:var(--amber)">gnex2.0→</i>）、技术选型、受保护级别、宿主服务。展开可见完整映射与定位。🔒 = 平台受保护（禁租户/Agent 装卸，继承 ADR-046 闸门不可卸）。</p>
+  <div class="cat-nav" id="catNav"></div>
+  <div class="toolbar"><input id="search" type="text" placeholder="搜索插件 ID / 名称 / dsh 映射 / gnex2.0 映射 / 宿主服务…"></div>
+  <div id="catList"></div>
+</section>
+
+<!-- ═══════ 映射关系 ═══════ -->
+<section id="mapping">
+  <h2><span class="no">03</span>框架映射关系（dsh 15 组 ↔ GNEX3.0）</h2>
+  <p class="lead">取并集映射：同构可对齐 8 组、gnex 独有 3 组（企业层保留）、dsh 独有缺口 2 组（组合与装载/内核，Java 移植新增）。</p>
+  <div class="tbl-wrap" style="max-height:none">
+    <table class="tbl" id="mapTable"></table>
+  </div>
+  <h3>核心服务目录（GNEX3.0 provide/inject，对齐 dsh 规制）</h3>
+  <div class="tbl-wrap">
+    <table class="tbl" id="svcTable"></table>
+  </div>
+</section>
+
+<!-- ═══════ 接口关系 ═══════ -->
+<section id="interfaces">
+  <h2><span class="no">04</span>接口关系：事件总线与影响域</h2>
+  <p class="lead">事件词汇对齐 dsh「域/动作」命名；进程内 waterfall/emit 由 cordis-jvm 提供，跨服务经 bus 插件发布到 RocketMQ topic。故障影响半径：L0/L1 内核 = 全服务，L3 能力 = 会话级，L4 企业 = 全平台（🔒 平台级升级+灰度）。</p>
+  <div class="ev-grid" id="evGrid"></div>
+</section>
+
+<!-- ═══════ 企业特性 ═══════ -->
+<section id="enterprise">
+  <h2><span class="no">05</span>企业特性保留清单（E1-E36 · 全部继承）</h2>
+  <p class="lead">GNEX3.0 插件化不放松任何企业红线：多副本/弹性/租户/记忆 SoR/完成门/审批地板保持平台层；红线能力为受保护插件。</p>
+  <div class="ent-grid" id="entGrid"></div>
+</section>
+
+<footer>
+  GNEX3.0 插件化升级规划 · 2026-08 · 配套文档：docs/v3.0/plugin-architecture/（00 任务书 · 01 现状 · 02 对比 · 03 融合 · 04 插件目录 · 05 接口 · 06 路线图 · 07 JS 桥）+ docs/v3.0-specs/（81 份 SDD 规格）· 本页单文件离线，无外部依赖。
+</footer>
+
+</div>
+
+
+
+<script>window.GNEX3_DATA = {"generatedAt":"2026-08-18T10:20:25.746Z","plugins":[{"id":"gnex3-l0-assembly","name":"服务装配清单（service-assembly.yml 解析/校验/组合）","dsh":"dsh-app-boot / dsh（profile·bundle·patch 组合）","gnex":"gnex-dev-assembler + application.yml","sel":"🅳","prot":"-","host":"各服务启动期","layer":"L0"},{"id":"gnex3-l0-kernel","name":"cordis-jvm 内核（ctx/Service/Plugin/Fiber/Events/Effect/Scope）","dsh":"cordis（Context/Service/Registry/Events/Fiber）","gnex":"无（新增）","sel":"🅳","prot":"🔒","host":"各服务","layer":"L0"},{"id":"gnex3-l0-loader","name":"插件加载器（模块/装配清单装载、依赖等待、卸载回卷）","dsh":"cordis-plugin-loader / cordis-plugin-include","gnex":"无（新增）","sel":"🅳","prot":"-","host":"各服务","layer":"L0"},{"id":"gnex3-l0-inventory","name":"插件清单与管理面（状态/版本/装卸 API）","dsh":"dsh-host-plugin-inventory","gnex":"registry-service 扩展","sel":"🅶","prot":"🔐","host":"registry-service","layer":"L0"},{"id":"gnex3-l0-commands","name":"用户命令注册表（/命令）","dsh":"dsh-commands + dsh-command-*","gnex":"agent-service shell/ShellRouter","sel":"🅶","prot":"-","host":"agent-service","layer":"L0"},{"id":"gnex3-l0-config","name":"配置中心（settings 类比，含 secret 引用）","dsh":"dsh-settings-file + dsh-credentials-local","gnex":"LLMConfigManager / config 包","sel":"🅶","prot":"-","host":"各服务","layer":"L0"},{"id":"gnex3-l1-ctx","name":"Ctx 服务容器（get/provide/isolate/intercept）","dsh":"cordis Context","gnex":"Spring DI（ApplicationContext）","sel":"🅳","prot":"-","host":"各服务","layer":"L1"},{"id":"gnex3-l1-events","name":"事件总线（waterfall/emit + scope 过滤）","dsh":"cordis events + dsh-scope","gnex":"Spring ApplicationEvent + Bus","sel":"🅳","prot":"-","host":"各服务","layer":"L1"},{"id":"gnex3-l1-fiber","name":"插件生命周期（装载/卸载/effect 回卷）","dsh":"cordis Fiber","gnex":"Spring Bean 生命周期","sel":"🅳","prot":"-","host":"各服务","layer":"L1"},{"id":"gnex3-l1-scope","name":"作用域（租户/项目/会话 realm 隔离）","dsh":"dsh-scope","gnex":"TenantInterceptor / ProjectScopeInterceptor","sel":"🅶","prot":"🔒","host":"各服务","layer":"L1"},{"id":"gnex3-l1-settings","name":"设置服务（插件配置段）","dsh":"dsh-settings","gnex":"@ConfigurationProperties","sel":"🅶","prot":"-","host":"各服务","layer":"L1"},{"id":"gnex3-l1-logger","name":"日志/诊断","dsh":"cordis logger","gnex":"SLF4J/Logback","sel":"🅶","prot":"-","host":"各服务","layer":"L1"},{"id":"gnex3-l1-invariants","name":"运行时不变量注册表","dsh":"dsh-invariants","gnex":"无（新增）","sel":"🅳","prot":"-","host":"各服务","layer":"L1"},{"id":"gnex3-l1-prompt","name":"系统提示组装（人设/章宪/配方序）","dsh":"dsh-system-prompt + dsh-persona + dsh-agent-instructions","gnex":"agent-service PromptAssemblyLayers / BASE_AGENT_CHARTER","sel":"🅶","prot":"🔒","host":"agent-service","layer":"L1"},{"id":"gnex3-cap-model-llm","name":"LLM 服务 seam（provider 注册表/路由）","dsh":"dsh-llm","gnex":"gnex-llm-adapt + LLMConfigManager","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.1"},{"id":"gnex3-cap-model-deepseek","name":"DeepSeek 适配器","dsh":"dsh-llm-deepseek","gnex":"spring-ai DeepSeek adapter","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.1"},{"id":"gnex3-cap-model-retry","name":"请求重试/模型 fallback","dsh":"dsh-llm-retry","gnex":"部分已有（OpenClaw P1 演进项）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.1"},{"id":"gnex3-cap-model-default","name":"默认模型选择","dsh":"dsh-agent-default-model","gnex":"LLMConfigManager","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.1"},{"id":"gnex3-cap-model-gateway","name":"模型网关（KV/预算/路由记录）","dsh":"dsh-llm（prepareCall）+ dsh-token-meter","gnex":"agent/model/gateway（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.1"},{"id":"gnex3-cap-session-store","name":"会话日志（append-only 事件溯源）","dsh":"dsh-session","gnex":"agent_run_event + SessionLoop","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.2"},{"id":"gnex3-cap-session-persist","name":"会话持久化（PG）","dsh":"dsh-session-persistence(-jsonl)","gnex":"gnex-agent-persistence","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.2"},{"id":"gnex3-cap-session-query","name":"会话查询/搜索","dsh":"dsh-session-query","gnex":"observability/query","sel":"🅶","prot":"-","host":"observability-service","layer":"L3 3.2"},{"id":"gnex3-cap-session-projection","name":"会话投影（CQRS 物化）","dsh":"dsh-session-projection","gnex":"state-plane projector","sel":"🅶","prot":"-","host":"state-plane-service","layer":"L3 3.2"},{"id":"gnex3-cap-session-checkpoint","name":"检查点（Redis）","dsh":"dsh-session-checkpoint-policy","gnex":"Redis checkpoint（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.2"},{"id":"gnex3-cap-session-title","name":"会话标题","dsh":"dsh-session-title","gnex":"会话标题摘要（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.2"},{"id":"gnex3-cap-session-export","name":"会话导出","dsh":"dsh-session-log-export","gnex":"无","sel":"🅶","prot":"-","host":"observability-service","layer":"L3 3.2"},{"id":"gnex3-cap-storage","name":"存储 hub（backend 注册表 + domain）","dsh":"dsh-storage + dsh-storage-domain","gnex":"gnex-persistence-common","sel":"🅳","prot":"-","host":"各服务","layer":"L3 3.3"},{"id":"gnex3-cap-storage-pg","name":"PG 后端","dsh":"dsh-storage-json","gnex":"MyBatis-Plus 持久层","sel":"🅶","prot":"-","host":"各服务","layer":"L3 3.3"},{"id":"gnex3-cap-credentials","name":"凭证管理（secret 引用）","dsh":"dsh-credentials-local","gnex":"registry/credential","sel":"🅶","prot":"🔒","host":"registry-service","layer":"L3 3.3"},{"id":"gnex3-cap-attachment","name":"附件/产物存储（MinIO）","dsh":"dsh-attachment-local","gnex":"MinIO（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.3"},{"id":"gnex3-cap-workspace","name":"工作区注册表","dsh":"dsh-workspace","gnex":"workspace 包","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.3"},{"id":"gnex3-cap-agent-registry","name":"Agent 注册表","dsh":"dsh-agent","gnex":"registry/agent + AgentRegistryService","sel":"🅶","prot":"-","host":"registry-service","layer":"L3 3.4"},{"id":"gnex3-cap-agent-loop","name":"Agent 循环（turn/step 事件化）","dsh":"dsh-agent-loop","gnex":"agent/runtime ReActLoop + SessionLoop","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.4"},{"id":"gnex3-cap-agent-preset","name":"Agent 会话装配（preset）","dsh":"dsh-agent-presets","gnex":"AgentLoader 改造为装配器（D-P1-32）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.4"},{"id":"gnex3-cap-agent-inbox","name":"会话 inbox（steer/followup/inject）","dsh":"dsh-agent（inbox）+ dsh-agent-tool-presentation","gnex":"agent/runtime inbox","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.4"},{"id":"gnex3-cap-tools","name":"工具注册表 + 执行管线（pre/guard/execute/post/result，含内置 guard：SandboxEnforcer/Path/Risk/Security）","dsh":"dsh-tools","gnex":"agent/tools + InspectorChain 融合（D-P1-07）","sel":"🅶","prot":"🔒","host":"agent-service","layer":"L3 3.5"},{"id":"gnex3-cap-tools-timeout","name":"工具调用超时策略","dsh":"dsh-tool-call-timeout-policy","gnex":"部分已有","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.5"},{"id":"gnex3-cap-tools-loop","name":"循环检测/重复提醒","dsh":"dsh-repeat-tool-reminder","gnex":"LoopInspector（已有，改造）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.5"},{"id":"gnex3-cap-tool-bash","name":"bash/进程工具","dsh":"dsh-tool-bash(+persistent)","gnex":"ProcessTool","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-pwsh","name":"PowerShell 工具","dsh":"dsh-tool-pwsh","gnex":"无","sel":"🅳","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-fs","name":"文件系统工具（read/write/edit）","dsh":"dsh-tool-fs","gnex":"FileSystemTools + ClaudeWorkspaceWriteTool","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-fs-search","name":"搜索工具（glob/grep）","dsh":"dsh-tool-fs-search","gnex":"GrepTool + GlobTool","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-web","name":"Web 搜索/抓取","dsh":"dsh-tool-web + dsh-web-search-deepseek","gnex":"WebSearch（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-todo","name":"任务清单工具","dsh":"dsh-tool-todo","gnex":"TodoWriteTool","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-ask-user","name":"用户提问工具","dsh":"dsh-tool-ask-user","gnex":"AskUserQuestionTool","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-goal","name":"目标工具","dsh":"dsh-tool-goal","gnex":"GoalService（agent.service，已有；改造为事件化 goal/change）","sel":"🅳","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-jobs","name":"后台任务工具","dsh":"dsh-tool-jobs","gnex":"无","sel":"🅳","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-str-replace","name":"文本替换编辑器","dsh":"dsh-tool-str-replace-editor","gnex":"ClaudeWorkspaceWriteTool","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-tool-mcp","name":"MCP 工具（管线包装）","dsh":"dsh-mcp-client","gnex":"McpToolRuntimePort 包装（连接管理留 registry，D-P1-10）","sel":"🅶","prot":"-","host":"agent-service（消费）/registry-service（连接）","layer":"L3 3.6"},{"id":"gnex3-cap-tool-http","name":"HTTP 工具","dsh":"无","gnex":"HttpClientTool（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.6"},{"id":"gnex3-cap-subagents","name":"子代理注册表","dsh":"dsh-subagent","gnex":"Task→Worker（Coordinator）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.7"},{"id":"gnex3-cap-subagent-backends","name":"spawn/fork 后端","dsh":"dsh-subagent-spawn/fork-in-process","gnex":"子 Agent 调度（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.7"},{"id":"gnex3-cap-workflow","name":"工作流引擎","dsh":"dsh-workflow + dsh-workflow-worker-thread","gnex":"workflow 包（已有）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.7"},{"id":"gnex3-cap-goal","name":"目标领域","dsh":"dsh-goal + dsh-goal-round-driver","gnex":"无（新增）","sel":"🅳","prot":"-","host":"agent-service","layer":"L3 3.8"},{"id":"gnex3-cap-plan","name":"计划模式","dsh":"dsh-plan-mode","gnex":"Plan 页面/流程（已有部分）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.8"},{"id":"gnex3-cap-schedule","name":"定时调度","dsh":"dsh-schedule","gnex":"定时任务（部分）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.8"},{"id":"gnex3-cap-skills","name":"技能注册表","dsh":"dsh-skill + dsh-skill-filesystem","gnex":"SkillRegistry（已有）","sel":"🅶","prot":"-","host":"registry-service","layer":"L3 3.8"},{"id":"gnex3-cap-approval","name":"审批原语（入队/回放/待办）","dsh":"dsh-user-approval","gnex":"InspectorChain 高风险确认（改造为原语）","sel":"🅶","prot":"🔒","host":"agent-service","layer":"L3 3.8"},{"id":"gnex3-cap-permission","name":"权限预设","dsh":"dsh-permission-presets","gnex":"RBAC（auth-service）","sel":"🅶","prot":"🔒","host":"auth-service","layer":"L3 3.8"},{"id":"gnex3-cap-sandbox","name":"沙箱 seam（执行世界抽象）","dsh":"dsh-sandbox + dsh-fs + dsh-shell","gnex":"gnex-sandbox（已有抽象）","sel":"🅶","prot":"-","host":"sandbox-runtime","layer":"L3 3.9"},{"id":"gnex3-cap-sandbox-backends","name":"沙箱提供方（firecracker/opensandbox/local）","dsh":"无（dsh 用 bwrap/landlock）","gnex":"provider/*（保留）","sel":"🅶","prot":"-","host":"sandbox-runtime","layer":"L3 3.9"},{"id":"gnex3-cap-sandbox-pool","name":"沙箱池/集群/弹性","dsh":"无","gnex":"pool/cluster（保留）","sel":"🅶","prot":"-","host":"sandbox-runtime","layer":"L3 3.9"},{"id":"gnex3-cap-sandbox-policy","name":"沙箱裁决器（档位/网络/配额，管线 guard）","dsh":"dsh-sandbox-policy","gnex":"SandboxEnforcer 收敛为管线 guard（D-P0-01）","sel":"🅶","prot":"🔒","host":"agent-service（裁决）","layer":"L3 3.9"},{"id":"gnex3-cap-compaction","name":"上下文压缩（token 驱动 + LLM 摘要）","dsh":"dsh-compaction(-basic) + dsh-token-meter","gnex":"上下文感知压缩（已有，改造）","sel":"🅶","prot":"-","host":"agent-service","layer":"L3 3.10"},{"id":"gnex3-cap-pruner","name":"工具结果修剪","dsh":"dsh-compaction-tool-result-pruner","gnex":"无","sel":"🅳","prot":"-","host":"agent-service","layer":"L3 3.10"},{"id":"gnex3-cap-spill","name":"溢出存储","dsh":"dsh-spill(-local/policy)","gnex":"无","sel":"🅳","prot":"-","host":"agent-service","layer":"L3 3.10"},{"id":"gnex3-ent-tenant","name":"租户边界（硬过滤+亲和调度）","dsh":"无","gnex":"TenantInterceptor + Worker label 亲和","sel":"🅶","prot":"🔒","host":"各服务","layer":"L4"},{"id":"gnex3-ent-gate","name":"完成证据门（P0-a 统一出口）","dsh":"无（dsh 无此原语）","gnex":"DelegationDeliverableResolver + gates","sel":"🅶","prot":"🔒","host":"agent-service","layer":"L4"},{"id":"gnex3-ent-memory","name":"企业记忆 SoR（热温冷多副本）","dsh":"dsh-session-reference（弱类比）","gnex":"记忆平面（目标态）","sel":"🅽","prot":"🔒","host":"state-plane + platform","layer":"L4"},{"id":"gnex3-ent-memory-providers","name":"记忆提供方（L0-L4 语义层）","dsh":"无","gnex":"Memory 系统改造","sel":"🅶","prot":"🔒","host":"agent-service","layer":"L4"},{"id":"gnex3-ent-ha","name":"多副本/弹性/心跳/重调度","dsh":"无","gnex":"WorkerRegistry + HealthMonitor + k8s","sel":"🅶","prot":"-","host":"platform/registry","layer":"L4"},{"id":"gnex3-ent-billing","name":"计费/配额","dsh":"无","gnex":"ops/billing","sel":"🅶","prot":"-","host":"ops-service","layer":"L4"},{"id":"gnex3-ent-org","name":"组织/成员/角色","dsh":"无","gnex":"ops/org + auth/rbac","sel":"🅶","prot":"🔒","host":"ops + auth","layer":"L4"},{"id":"gnex3-ent-audit","name":"审计日志","dsh":"无","gnex":"platform/audit","sel":"🅶","prot":"🔒","host":"platform-service","layer":"L4"},{"id":"gnex3-ent-observability","name":"可观测（指标/链路/告警）","dsh":"dsh-session-telemetry-otel","gnex":"observability-service","sel":"🅶","prot":"-","host":"observability-service","layer":"L4"},{"id":"gnex3-ent-stateplane","name":"状态面（CQRS/projector/restore）","dsh":"dsh-session-projection-cache","gnex":"state-plane-service","sel":"🅶","prot":"-","host":"state-plane-service","layer":"L4"},{"id":"gnex3-ent-auth","name":"认证授权（SSO/RBAC/APIKey/JWT）","dsh":"无","gnex":"auth-service","sel":"🅶","prot":"🔒","host":"auth-service","layer":"L4"},{"id":"gnex3-ent-bus","name":"消息总线（RocketMQ 可靠性）","dsh":"无","gnex":"bus-service","sel":"🅶","prot":"-","host":"bus-service","layer":"L4"},{"id":"gnex3-ent-api","name":"跨服务 API 网关（REST/gRPC/SSE）","dsh":"dsh-host-apiproxy + dsh-client-connection","gnex":"各服务 Controller + Kong（微服务规格）","sel":"🅶","prot":"-","host":"各服务","layer":"L4"},{"id":"gnex3-client-kernel","name":"前端内核（路由/状态/SSE 解析）","dsh":"dsh-client-web + dsh-client-runtime","gnex":"d1-web frontend 内核","sel":"🅶","prot":"-","host":"前端","layer":"L5"},{"id":"gnex3-client-modules","name":"前端功能模块（会话/工具/运营/审计/设置…）","dsh":"dsh-client-ui-*（32 个）","gnex":"d1-web 页面（12+ 入口）","sel":"🅶","prot":"-","host":"前端","layer":"L5"}],"layerMap":{"L0":{"title":"组合与装载层（6）"},"L1":{"title":"内核层（8）"},"L3":{"title":"能力层（52）"},"L3 3.1":{"title":"模型路由（5）"},"L3 3.2":{"title":"会话与持久化（7）"},"L3 3.3":{"title":"存储与凭证（5）"},"L3 3.4":{"title":"Agent 循环（4）"},"L3 3.5":{"title":"工具注册表与管线（3）"},"L3 3.6":{"title":"模型工具（12）"},"L3 3.7":{"title":"委派与工作流（3）"},"L3 3.8":{"title":"目标/计划/技能/审批（6）"},"L3 3.9":{"title":"沙箱与执行（4）"},"L3 3.10":{"title":"上下文与压缩（3）"},"L4":{"title":"企业层（13）"},"L5":{"title":"客户端层（2+模块）"}},"services":[{"name":"agent-service","role":"热路径控制面：Chat/ReAct/Team/Room/Swarm/Workflow","modules":"agent.runtime(Orchestrator/AgentRouter/ReActLoop/SessionLoop) · agent.tools · agent.search · agent.sandbox · agent.team/room/swarm · workflow.engine · evaluation · shell","ports":"ChatOrchestrationPort · AgentRuntimePort · SessionLoopPort · TeamTaskRoutingPort · SearchPort · SandboxPort · AgentEventPort"},{"name":"registry-service","role":"注册控制面：Agent/Skill/MCP/凭据/模型目录","modules":"registry.agent(安装/格式转换/卸载) · registry.skill(+HookExecutor) · registry.mcp(+HttpTransport) · registry.credential(AES) · registry.model(catalog+pricing)","ports":"AgentRegistryPort · SkillRegistryPort · CredentialManagementPort · LlmConfigPort · McpServerManagementPort · AgentAdapterPort"},{"name":"platform-service","role":"冷路径控制面：项目/审计/计费/技能质量/自定义工具","modules":"platform.project · platform.audit(异步物化) · platform.billing · skill.quality(QualityGate) · skill.tools(CustomToolRegistry/McpToolRegistry) · extension.spi · project.trajectory","ports":"ProjectManagementPort · BillingQueryPort · AuditPublisher · ConfirmationPort · RiskClassifier/ApprovalHandler/NotificationHandler(SPI)"},{"name":"ops-service","role":"运营管理：租户/组织/配额/授权/沙箱资源/计费","modules":"ops.tenant(生命周期+配额) · ops.org(部门树) · ops.grant(资源授权) · ops.sandbox(模板/类型/配额) · ops.billing(预算/三级熔断) · ops.config","ports":"TenantManagementInterface · BillingManagementInterface · SandboxResourceInterface · ResourceGrantInterface · SystemConfigInterface"},{"name":"auth-service","role":"认证内核：登录/JWT/SSO/RBAC/APIKey/密码策略","modules":"auth.core.login/token/password/apikey/session/sso · auth.rbac · auth.policy · auth.provisioning","ports":"AuthenticationPort · TokenPort · RbacManagementInterface · TenantAdminProvisioningPort · SsoConfigManagementInterface"},{"name":"sandbox-runtime","role":"执行平面：沙箱池/调度/检查点/集群/故障分级","modules":"sandbox.scheduler(GateChain:TypeMatch→Quota→Network→Tenant) · sandbox.pool(warm-pool) · sandbox.provider(OpenSandbox/Firecracker SPI) · sandbox.lifecycle · sandbox.checkpoint(L3) · sandbox.cluster(Leader选举) · sandbox.fault(L1-L4)","ports":"SandboxProviderPort · SandboxGate · SandboxPort · EnsureReadyPort · CheckpointStorageAdapter"},{"name":"state-plane-service","role":"状态面：CQRS 冷路径物化 + 恢复","modules":"stateplane.consumer(幂等消费) · stateplane.projector(6类) · stateplane.restore(RestorePackage) · stateplane.support","ports":"BusInterface(订阅) · StateRestoreInterface · MaterializationRouter"},{"name":"observability-service","role":"可观测只读查询层（BFF）","modules":"obs.controller(10只读) · obs.query(8 QueryInterfaceAdapter) · obs.service(运营指标聚合)","ports":"RunTraceQueryInterface · OperationsQueryInterface · AdoptionQueryInterface · MemoryQueryInterface · BusObservabilityQueryInterface 等 8 个"},{"name":"bus-service","role":"消息总线：RocketMQ 治理 + SDK 直连","modules":"bus.transport(RocketMqTransport) · bus.admin(DLQ/订阅/offset治理) · bus.reliability(事务消息/顺序消费) · bus.sdk","ports":"BusInterface(sync/async/batch/定时/事务) · BusAdminInterface · StandardTopics"}],"entFeatures":[["多副本/弹性/HA","E1 多副本无状态 · E2 跨副本运行态快照 · E3 取消广播 · E4 热状态外化 · E31 HPA 弹性 · E32 探针 · E36 金丝雀"],["消息总线","E5 SDK 直连 RocketMQ · E6 事务消息 · E7 总线治理 · E8 顺序消费 · E9 at-least-once+幂等"],["状态/恢复","E10 审计 MQ 化 · E11 CQRS projector · E12 三层恢复 · E13 RestorePackage"],["数据/租户","E15 四层租户隔离 · E16 引擎可移植 · E17 分布式锁 · E18 分布式 ID"],["运营","E19 租户管理/配额 · E20 RBAC · E21 资源授权 · E22 计费熔断 · E23 SSO · E24 密码策略 · E25 沙箱资源管理"],["执行","E26 沙箱生命周期总线化 · E27 A2A 协作 · E28 LLM 路由/弹性/BYOK · E29 成本计量 · E30 质量校验"],["记忆/可观测","E33 企业记忆三平面 SoR(设计态) · E34 删除传播 · E14 可观测 Query Interface · E35 遥测基建"]],"dshSummary":{"categories":15,"plugins":186,"coreServices":53,"events":128},"mappingSummary":[{"dsh":"启动与组合层(10)","gnex":"无对应+dev-assembler+yml","go":"L0 组合与装载层(6) ★新增","type":"新增"},{"dsh":"核心服务层(12)","gnex":"Spring DI+注册服务","go":"L1 内核层(8) ★新增","type":"新增"},{"dsh":"模型路由层(5)","gnex":"gnex-llm-adapt+LLMConfigManager","go":"L3.1 模型路由(5)","type":"改造"},{"dsh":"会话与持久化层(15)","gnex":"SessionLoop+状态面","go":"L3.2 会话(7)+L4 状态面","type":"改造"},{"dsh":"存储与设置层(11)","gnex":"persistence-common+credential+MinIO","go":"L3.3 存储凭证(5)","type":"改造"},{"dsh":"沙箱与文件系统层(12)","gnex":"gnex-sandbox+SandboxRuntime(更强)","go":"L3.9 沙箱(4) 保留增强","type":"保留"},{"dsh":"进程与终端层(9)","gnex":"ProcessTool+沙箱执行","go":"并入 L3.6 工具+L3.9 沙箱","type":"改造"},{"dsh":"工具注册表层(6)","gnex":"ToolCallback+InspectorChain","go":"L3.5 工具管线(3) 融合","type":"融合"},{"dsh":"委派与工作流层(6)","gnex":"Task→Worker+workflow 包","go":"L3.7 委派(3)","type":"改造"},{"dsh":"模型工具层(18)","gnex":"FileSystemTools/AskUserQuestion/HttpClient…","go":"L3.6 工具集(12)","type":"改造"},{"dsh":"目标/计划/技能/审批层(12)","gnex":"Todo/Plan/Skill/Inspector 确认","go":"L3.8 目标技能审批(6)","type":"改造"},{"dsh":"上下文与压缩层(7)","gnex":"上下文感知压缩(已有)","go":"L3.10 上下文(3)","type":"改造"},{"dsh":"宿主服务与RPC层(21)","gnex":"各服务 Controller+Kong","go":"L4 企业 API 网关","type":"保留"},{"dsh":"客户端层(42)","gnex":"d1-web React SPA(22页)","go":"L5 客户端层 模块化","type":"模块化"},{"dsh":"(dsh 无)","gnex":"9 服务+k8s+租户+记忆SoR","go":"L4 企业层(13) 保留+插件化","type":"保留"}]};
+</script>
+<script>/* GNEX3.0 插件化升级规划页 —— 渲染器 */
+(function () {
+'use strict';
+var D = window.GNEX3_DATA || {};
+var PL = D.plugins || [];
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+/* ── hero stats ── */
+function stats() {
+  var prot = PL.filter(function (p) { return (p.prot || '').indexOf('platform') >= 0 || (p.prot || '').indexOf('🔒') >= 0 || p.prot === '🔒platform'; }).length;
+  document.getElementById('heroStats').innerHTML = [
+    [String(PL.length), 'GNEX3.0 插件（L0×6 · L1×8 · L3×52 · L4×13 · L5×2）'],
+    ['16', '受保护插件（15 🔒platform + 1 🔐admin）'],
+    ['186', '对标 dsh 插件（15 组分类）'],
+    ['36', '企业特性保留（E1-E36）'],
+    ['9', 'GNEX2.0 微服务（保留）'],
+    ['81', 'SDD 规格（docs/v3.0-specs/）']
+  ].map(function (s) { return '<div class="stat"><b>' + s[0] + '</b><span>' + s[1] + '</span></div>'; }).join('');
+}
+
+/* ── overview cards ── */
+function overview() {
+  document.getElementById('overviewCards').innerHTML = [
+    ['GNEX 2.0（现状）', '痛点', '能力 = 代码模块：加能力 = 改代码 + 改 pom + 重构建 + 重启；能力边界不可枚举、不可装卸；Inspector 链顺序写死；事件语义不统一（Spring Event/Bus/WebSocket/hooks 并存）。'],
+    ['dsh（镜子）', '已验证规制', 'ctx 服务容器 · inject/provide 声明 · fiber 生命周期（effect 回卷）· waterfall/emit 事件 · scope/realm · 能力缝三角（Definition/Provider/Consumer）· 组合行 id 覆盖 · 双平面归属判据。'],
+    ['GNEX 3.0（目标）', '融合', '服务是部署单元，插件是组合单元：9 服务保留；服务内 cordis-jvm 内核 + 装配清单（service-assembly.yml）；企业红线（完成门/记忆SoR/审批/租户）为 🔒 受保护插件；接口关系对齐 dsh。']
+  ].map(function (c) {
+    return '<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px">' +
+      '<h4 style="color:var(--acc2);font-size:14px;margin-bottom:4px">' + c[0] + ' <span style="color:var(--amber);font-size:12px">· ' + c[1] + '</span></h4>' +
+      '<p style="font-size:12.5px;color:var(--tx2)">' + c[2] + '</p></div>';
+  }).join('');
+}
+
+/* ── SVG helpers ── */
+function box(parts, x, y, w, h, fill, title, sub, extra) {
+  parts.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8" fill="' + fill + '" stroke="#45506b" stroke-width="1"/>');
+  if (title) parts.push('<text x="' + (x + 10) + '" y="' + (y + 18) + '" fill="#e8edf7" font-size="12" font-weight="700">' + title + '</text>');
+  if (sub) parts.push('<text x="' + (x + 10) + '" y="' + (y + 34) + '" fill="#8fa0bd" font-size="9.5" font-family="ui-monospace,monospace">' + sub + '</text>');
+}
+function band(parts, x, y, w, h, fill, label) {
+  parts.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="' + fill + '" opacity="0.55" stroke="#45506b"/>');
+  parts.push('<text x="' + (x + 12) + '" y="' + (y + 18) + '" fill="#cdd6ea" font-size="12" font-weight="700">' + label + '</text>');
+}
+
+/* ── 图1: GNEX2.0 现状 ── */
+function svgG2() {
+  var W = 1120, X = 20, p = [];
+  var y = 12;
+  // frontend
+  band(p, X, y, W - X * 2, 64, '#1c2230', '前端面 d1-web：React 19 · 22 页面路由 · ~40 API 客户端 · SSE/WebSocket');
+  y += 78;
+  // services
+  band(p, X, y, W - X * 2, 208, '#2a3550', '服务面（9 微服务 · 控制面 + 热路径 · 跨服务经 gnex-contracts Port 注入 + RocketMQ Bus）');
+  var sw = (W - X * 2 - 8 * 10) / 5, sh = 88;
+  var names = ['agent-service', 'registry-service', 'platform-service', 'ops-service', 'auth-service', 'sandbox-runtime', 'state-plane-service', 'observability-service', 'bus-service'];
+  var roles = ['热路径控制面\nChat/ReAct/Team/Swarm', '注册控制面\nAgent/Skill/MCP/模型', '冷路径控制面\n项目/审计/计费', '运营管理\n租户/配额/授权', '认证内核\nJWT/SSO/RBAC', '执行平面\n沙箱池/调度/检查点', '状态面\nCQRS 物化/恢复', '可观测查询 BFF\n8 类 QueryInterface', '消息总线\nRocketMQ 治理'];
+  names.forEach(function (n, i) {
+    var r = Math.floor(i / 5), c = i % 5;
+    var bx = X + c * (sw + 10), by = y + 34 + r * (sh + 10);
+    box(p, bx, by, sw, sh, '#10141d', n, roles[i].replace('\n', ' · '));
+  });
+  y += 34 + 2 * (sh + 10) + 10;
+  // libs
+  band(p, X, y, W - X * 2, 70, '#3a2f55', '共享库面（9 libs · services→libs→contracts 单向依赖，maven-enforcer 强制）');
+  box(p, X + 8, y + 30, 240, 30, '#10141d', 'gnex-contracts', '475 文件 · Port/Event/DTO 唯一定义地');
+  box(p, X + 256, y + 30, 240, 30, '#10141d', 'gnex-agent-sdk', 'ReAct/SessionLoop/记忆/检查点/InspectorChain');
+  box(p, X + 504, y + 30, 240, 30, '#10141d', 'gnex-llm-adapt', 'ModelRouter/BYOK/熔断/限流');
+  box(p, X + 752, y + 30, 250, 30, '#10141d', '5 持久化 libs + gnex-sandbox(api+client)');
+  y += 84;
+  // infra
+  band(p, X, y, W - X * 2, 70, '#23504d', '基础设施面（企业特性 E1-E36）');
+  box(p, X + 8, y + 30, 350, 30, '#10141d', 'k8s 多副本+弹性(HPA) · PG(RLS) · Redis(热状态/锁/租约)');
+  box(p, X + 366, y + 30, 350, 30, '#10141d', 'MinIO(租户桶) · RocketMQ(事务/顺序/幂等) · Prometheus+Jaeger');
+  box(p, X + 724, y + 30, 270, 30, '#10141d', '企业记忆 SoR（热温冷三平面 · 设计态）');
+  y += 84;
+  // pain point
+  band(p, X, y, W - X * 2, 52, '#4a3322', '痛点：能力 = 代码模块 → 加能力=改代码+重构建+重启 · Inspector 链写死 · 事件语义不统一 · 修改影响面不可枚举');
+  document.getElementById('g2Svg').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + (y + 60) + '" xmlns="http://www.w3.org/2000/svg">' + p.join('') + '</svg>';
+}
+
+/* ── 图2: dsh ↔ GNEX 映射 ── */
+function svgMap() {
+  var rows = D.mappingSummary || [];
+  var W = 1120, X = 20;
+  var rowH = 34, y = 12;
+  var p = [];
+  band(p, X, y, W - X * 2, 30, '#1c2230', 'dsh 15 组 186 插件 ↔ GNEX3.0 去向（取并集）');
+  y += 42;
+  rows.forEach(function (r, i) {
+    var bx = X + 8, bw = (W - X * 2 - 16) / 3;
+    var fill = r.type === '新增' ? '#3a2f55' : r.type === '保留' ? '#23504d' : r.type === '融合' ? '#4a3322' : '#2a3550';
+    box(p, bx, y, bw - 6, rowH - 6, '#10141d', null, null);
+    p.push('<text x="' + (bx + 8) + '" y="' + (y + 19) + '" fill="#a78bfa" font-size="10.5" font-family="ui-monospace,monospace">' + esc(r.dsh) + '</text>');
+    box(p, bx + bw, y, bw - 6, rowH - 6, '#10141d', null, null);
+    p.push('<text x="' + (bx + bw + 8) + '" y="' + (y + 19) + '" fill="#8fa0bd" font-size="10.5" font-family="ui-monospace,monospace">' + esc(r.gnex) + '</text>');
+    box(p, bx + bw * 2, y, bw - 6, rowH - 6, fill, null, null);
+    p.push('<text x="' + (bx + bw * 2 + 8) + '" y="' + (y + 19) + '" fill="#e8edf7" font-size="10.5" font-family="ui-monospace,monospace">' + esc(r.go) + '  [' + r.type + ']</text>');
+    p.push('<line x1="' + (bx + bw - 4) + '" y1="' + (y + rowH / 2 - 4) + '" x2="' + (bx + bw + 2) + '" y2="' + (y + rowH / 2 - 4) + '" stroke="#2dd4bf" stroke-width="1.4" marker-end="url(#ah2)"/>');
+    p.push('<line x1="' + (bx + bw * 2 - 4) + '" y1="' + (y + rowH / 2 - 4) + '" x2="' + (bx + bw * 2 + 2) + '" y2="' + (y + rowH / 2 - 4) + '" stroke="#f5b544" stroke-width="1.4" marker-end="url(#ah3)"/>');
+    y += rowH;
+  });
+  document.getElementById('mapSvg').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + (y + 8) + '" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><marker id="ah2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#2dd4bf"/></marker>' +
+    '<marker id="ah3" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#f5b544"/></marker></defs>' + p.join('') + '</svg>';
+}
+
+/* ── 图3: GNEX3.0 六层插件架构 ── */
+function svgG3() {
+  var W = 1120, X = 20;
+  var layers = [
+    { id: 'L0', label: 'L0 组合与装载层（6 插件）：service-assembly.yml · cordis-jvm 内核 · 插件加载器 · 清单/管理 · 命令 · 配置中心', fill: '#3b4257', go: 'L0' },
+    { id: 'L1', label: 'L1 内核层（8 插件）：Ctx 容器 · 事件总线(waterfall/emit) · Fiber 生命周期 · Scope/Realm · settings · logger · invariants · prompt', fill: '#2a3550', go: 'L1' },
+    { id: 'L2', label: 'L2 服务层（9 服务保留 · 每服务 = 内核 + 插件集）：agent · registry · platform · ops · auth · sandbox · state-plane · observability · bus', fill: '#1f3a4a', go: 'L2' },
+    { id: 'L3', label: 'L3 能力层（52 插件 · 服务内组合）：模型路由(5) · 会话(7) · 存储(5) · Agent(4) · 工具管线(3) · 工具集(12) · 委派(3) · 目标技能审批(6) · 沙箱(4) · 上下文(3)', fill: '#3a2f55', go: 'L3' },
+    { id: 'L4', label: 'L4 企业层（13 插件 · 🔒 受保护）：租户 · 完成门 · 记忆SoR · 计费 · 组织 · 审计 · 可观测 · 状态面 · 认证 · 总线 · API 网关 · HA', fill: '#4a3322', go: 'L4' },
+    { id: 'L5', label: 'L5 客户端层（2 插件 · 前端模块化）：前端内核 · 功能模块（会话/工具/运营/审计/设置）', fill: '#23504d', go: 'L5' }
+  ];
+  var y = 12, p = [];
+  layers.forEach(function (L, i) {
+    var h = 62;
+    band(p, X, y, W - X * 2, h, L.fill, '');
+    var go = L.go === 'L2' ? '' : L.go;
+    p.push('<g class="arch-box' + (go ? '' : '') + '" data-go="' + go + '" style="cursor:' + (go ? 'pointer' : 'default') + '">');
+    p.push('<text x="' + (X + 14) + '" y="' + (y + 24) + '" fill="#e8edf7" font-size="12.5" font-weight="700">' + L.label + '</text>');
+    p.push('</g>');
+    if (i < layers.length - 1) p.push('<line x1="' + (W / 2) + '" y1="' + (y + h + 2) + '" x2="' + (W / 2) + '" y2="' + (y + h + 9) + '" stroke="#45506b" stroke-width="1.6" marker-end="url(#ahd)"/>');
+    y += h + 11;
+  });
+  document.getElementById('g3Svg').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + (y + 4) + '" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><marker id="ahd" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#45506b"/></marker></defs>' + p.join('') + '</svg>';
+  document.querySelectorAll('#g3Svg .arch-box[data-go]').forEach(function (g) {
+    g.addEventListener('click', function () {
+      var t = document.querySelector('.layer-block[data-layer="' + g.getAttribute('data-go') + '"]');
+      if (t) { document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' }); setTimeout(function () { t.scrollIntoView({ behavior: 'smooth' }); }, 300); }
+    });
+  });
+}
+
+/* ── tabs ── */
+function tabs() {
+  document.getElementById('archTabs').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#archTabs button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    ['g2', 'map', 'g3'].forEach(function (t) {
+      document.getElementById('pane-' + t).classList.toggle('on', b.getAttribute('data-t') === t);
+    });
+  });
+}
+
+/* ── plugin catalog ── */
+var LAYER_ORDER = [
+  { id: 'L0', title: 'L0 组合与装载层', icon: '🚀', c1: '#7c6cf0', c2: '#a78bfa', desc: '服务装配清单 + cordis-jvm 内核 + 插件加载器 + 插件清单/命令/配置——dsh 启动与组合层的 Java 移植（dsh 独有缺口，新增）。' },
+  { id: 'L1', title: 'L1 内核层', icon: '🧠', c1: '#8b7cf8', c2: '#4ade80', desc: 'Ctx 服务容器/事件总线/Fiber/Scope/设置/日志/不变量/提示组装——dsh 核心服务层的 Java 移植（dsh 独有缺口，新增）。' },
+  { id: 'L2', title: 'L2 服务层', icon: '🏗️', c1: '#60a5fa', c2: '#2dd4bf', desc: '9 个微服务保留（部署单元）——每个服务 = 内核 + 插件集；跨服务经 gnex-contracts Port + RocketMQ Bus（保留）。' },
+  { id: 'L3', title: 'L3 能力层', icon: '🧰', c1: '#a78bfa', c2: '#f5b544', desc: '服务内能力插件 52 个：模型路由/会话/存储/Agent/工具/委派/目标技能审批/沙箱/上下文——gnex2.0 模块改造 + dsh 规制对齐。' },
+  { id: 'L4', title: 'L4 企业层', icon: '🛡️', c1: '#f5b544', c2: '#f87171', desc: '企业特性插件 13 个（🔒 受保护）：租户/完成门/记忆SoR/计费/组织/审计/可观测/状态面/认证/总线/API 网关/HA——gnex 独有，保留并插件化。' },
+  { id: 'L5', title: 'L5 客户端层', icon: '🎨', c1: '#2dd4bf', c2: '#f472b6', desc: '前端内核 + 功能模块——d1-web 模块化（先模块后插件）。' }
+];
+var searchTerm = '';
+function layerId(p) { return p.layer.indexOf('L3') === 0 ? 'L3' : p.layer; }
+function renderCatalog() {
+  var nav = document.getElementById('catNav');
+  nav.innerHTML = LAYER_ORDER.map(function (L) {
+    var n = PL.filter(function (p) { return layerId(p) === L.id; }).length;
+    return '<button data-l="' + L.id + '">' + L.icon + ' ' + L.title + '<span style="opacity:.6"> · ' + n + '</span></button>';
+  }).join('');
+  var list = document.getElementById('catList');
+  var html = '';
+  LAYER_ORDER.forEach(function (L) {
+    var pkgs = PL.filter(function (p) { return layerId(p) === L.id; });
+    html += '<div class="layer-block" data-layer="' + L.id + '">' +
+      '<div class="layer-head"><div class="ico" style="--c1:' + L.c1 + ';--c2:' + L.c2 + '">' + L.icon + '</div>' +
+      '<h3>' + L.title + '</h3><span class="cnt">' + pkgs.length + ' 个插件</span></div>' +
+      '<div class="layer-desc">' + L.desc + '</div>' +
+      '<div class="pgrid">' + pkgs.map(cardHTML).join('') + '</div></div>';
+  });
+  list.innerHTML = html;
+  list.addEventListener('click', function (e) { var c = e.target.closest('.pcard'); if (c) c.classList.toggle('open'); });
+  nav.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    nav.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    var t = list.querySelector('.layer-block[data-layer="' + b.getAttribute('data-l') + '"]');
+    if (t) t.scrollIntoView({ behavior: 'smooth' });
+  });
+  applyFilter();
+}
+function matches(p) {
+  if (!searchTerm) return true;
+  return [p.id, p.name, p.dsh, p.gnex, p.host, p.sel, p.layer].join(' ').toLowerCase().indexOf(searchTerm) >= 0;
+}
+function cardHTML(p) {
+  var prot = (p.prot || '').indexOf('platform') >= 0 ? 'platform' : ((p.prot || '').indexOf('admin') >= 0 ? 'admin' : '');
+  return '<div class="pcard">' +
+    '<div class="nm">' + esc(p.id) + '<span class="tag' + (prot === 'platform' ? ' prot' : '') + '">' + esc(prot || 'normal') + '</span></div>' +
+    '<div class="ol">' + esc(p.name) + '</div>' +
+    '<div class="map"><b>dsh→</b> ' + esc(p.dsh) + '<br><i>gnex2.0→</i> ' + esc(p.gnex) + '</div>' +
+    '<div class="detail"><div class="lb">选型：' + esc(p.sel) + ' · 宿主：' + esc(p.host) + ' · 分组：' + esc(p.layer) + '</div></div></div>';
+}
+function applyFilter() {
+  document.querySelectorAll('#catList .layer-block').forEach(function (b) {
+    var pkgs = PL.filter(function (p) { return layerId(p) === b.getAttribute('data-layer'); });
+    var shown = pkgs.filter(matches).length;
+    b.style.display = shown ? '' : 'none';
+    b.querySelectorAll('.pcard').forEach(function (card, i) { card.style.display = matches(pkgs[i]) ? '' : 'none'; });
+  });
+}
+
+/* ── mapping table ── */
+function mapTable() {
+  document.getElementById('mapTable').innerHTML = '<thead><tr><th>dsh 分类</th><th>GNEX 2.0 对应</th><th>融合去向（GNEX3.0）</th><th>策略</th></tr></thead><tbody>' +
+    (D.mappingSummary || []).map(function (r) {
+      return '<tr><td><b>' + esc(r.dsh) + '</b></td><td>' + esc(r.gnex) + '</td><td>' + esc(r.go) + '</td><td>' + r.type + '</td></tr>';
+    }).join('') + '</tbody>';
+}
+
+/* ── service table ── */
+var SVC = [
+  ['ctx/events/fiber/scope', '内核 L0/L1', '全部插件', '服务容器/事件/生命周期/作用域'],
+  ['settings/logger/invariants/prompt', '内核 L1', '能力插件', '配置/日志/不变量/提示组装'],
+  ['llm · agentDefaultModel', 'L3.1 模型路由', 'agentLoop/标题/压缩/web', '模型路由与默认模型'],
+  ['sessions · sessionPersistence · sessionQuery · sessionProjection · sessionTitle', 'L3.2 会话', 'agentLoop/查询/UI', '会话日志/持久化/查询/投影/标题'],
+  ['storage · credentials 🔒 · attachments · workspaceRegistry', 'L3.3 存储', '模型适配器/UI', '存储 hub/密钥/附件/工作区'],
+  ['agents · agentLoop', 'L3.4 Agent', '入口/委派/UI', 'Agent 注册表与循环'],
+  ['tools 🔒 · sandbox · sandboxPolicy 🔒 · fs · shell', 'L3.5+L3.9 工具与沙箱', '工具插件/agentLoop', '工具管线/执行世界/策略'],
+  ['subagents · workflowEngine', 'L3.7 委派', '工具/委派', '子代理与工作流'],
+  ['goals · skills · approval 🔒 · permission 🔒', 'L3.8 目标技能审批', '工具/UI', '目标/技能/审批/权限'],
+  ['compaction · tokenMeter · spill', 'L3.10 上下文', 'agentLoop/UI', '压缩/计量/溢出'],
+  ['tenant 🔒 · gate 🔒 · memory 🔒 · audit 🔒 · auth 🔒', 'L4 企业层', '全部服务入口', '租户/完成门/记忆/审计/认证'],
+  ['statePlane · observability · bus · api · billing', 'L4 企业层', 'UI/跨服务', '状态面/可观测/总线/网关/计费']
+];
+function svcTable() {
+  document.getElementById('svcTable').innerHTML = '<thead><tr><th>服务（ctx 键）</th><th>提供层</th><th>主要注入者</th><th>说明</th></tr></thead><tbody>' +
+    SVC.map(function (r) { return '<tr><td><b>' + r[0] + '</b></td><td>' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>'; }).join('') + '</tbody>';
+}
+
+/* ── events ── */
+var EV = [
+  ['plugin/*', ['plugin/installed', 'plugin/started', 'plugin/stopped', 'plugin/uninstalled', 'plugin/error']],
+  ['session/*', ['session/created', 'session/event', 'session/flush', 'session/disposed']],
+  ['agent/*', ['agent/created', 'agent/disposed', 'agent/pre-step', 'agent/request', 'agent/request-error', 'agent/turn-stopping', 'agent/status']],
+  ['turn/* · step/*', ['turn/start', 'turn/end', 'step/start', 'step/end']],
+  ['tool/* · tools/*', ['tool/call', 'tool/result', 'tools/pre-execute', 'tools/execute', 'tools/post-execute', 'tools/result']],
+  ['llm/*', ['llm/stream', 'llm/adapters-updated']],
+  ['approval/* 🔒', ['approval/request', 'approval/decided', 'approval/queue']],
+  ['gate/* 🔒', ['gate/check', 'gate/passed', 'gate/denied']],
+  ['memory/* 🔒', ['memory/recall', 'memory/promote', 'memory/rollback']],
+  ['subagent/* · workflow/*', ['subagent/start', 'subagent/end', 'workflow/run-start', 'workflow/run-end']],
+  ['goal/* · skills/* · command/*', ['goal/change', 'skills/change', 'command/run', 'command/done']],
+  ['credentials/* · audit/* 🔒 · bus/*', ['credentials/updated', 'audit/record', 'bus/published', 'bus/consumed']]
+];
+function evGrid() {
+  document.getElementById('evGrid').innerHTML = EV.map(function (e) {
+    return '<div class="ev-box"><div class="ns">' + e[0] + '</div><ul>' + e[1].map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  }).join('');
+}
+
+/* ── enterprise ── */
+function entGrid() {
+  document.getElementById('entGrid').innerHTML = (D.entFeatures || []).map(function (e) {
+    return '<div class="ent-box"><div class="t">' + e[0] + '</div><div class="d">' + e[1] + '</div></div>';
+  }).join('');
+}
+
+/* ── init ── */
+function init() {
+  stats(); overview(); svgG2(); svgMap(); svgG3(); tabs();
+  renderCatalog(); mapTable(); svcTable(); evGrid(); entGrid();
+  var inp = document.getElementById('search'), t;
+  inp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { searchTerm = inp.value.trim().toLowerCase(); applyFilter(); }, 120); });
+  var links = document.querySelectorAll('#nav a');
+  var secs = ['overview', 'arch', 'catalog', 'mapping', 'interfaces', 'enterprise'];
+  window.addEventListener('scroll', function () {
+    var cur = 'overview';
+    secs.forEach(function (id) { var el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 120) cur = id; });
+    links.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + cur); });
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+</body>
+</html>

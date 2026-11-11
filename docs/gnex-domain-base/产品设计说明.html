@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>领域应用基座 · 产品设计说明</title>
+<style>
+  :root { --bg:#f4f1ea; --ink:#1c1915; --muted:#5c564c; --line:#d9d2c5; --card:#fffdf8; --accent:#0f6e56; }
+  body { margin:0; font:17px/1.65 "Segoe UI","Microsoft YaHei",sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width:820px; margin:0 auto; padding:40px 20px 80px; }
+  h1 { font-size:34px; line-height:1.2; }
+  h2 { margin-top:2em; font-size:22px; }
+  a { color:var(--accent); }
+  .box { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 18px; }
+  code { font-family: Consolas, monospace; font-size:0.92em; }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="09-网页呈现/index.html">返回目录页</a></p>
+  <h1>产品设计说明</h1>
+  <p>gnex 已经能调度和运行企业里的智能体。它还不是请假系统、巡检系统或资产系统。这些系统如果各自从头做用户、菜单、单据和接口，就无法形成集群，智能体也无法用同一套办法去配置它们。</p>
+  <p>领域应用基座是这层空白。业务系统在上面组合，而不是在基座里写死某一个行业。</p>
+
+  <h2>五条产品定义</h2>
+  <div class="box">
+    <ol>
+      <li>身份以 gnex 令牌为准。基座只增加「这个人在这个应用里能看哪些行」。</li>
+      <li>一个业务系统是一份可安装、可回滚的应用包。</li>
+      <li>页面用基座自己的模式描述。换界面实现不必重做历史页面。</li>
+      <li>数据可以在基座建表，也可以映射到已有的库和 REST。任何查询都带租户条件。</li>
+      <li>智能体只能提交组装单。改已经发布的应用，必须经过 gnex 的审批。</li>
+    </ol>
+  </div>
+
+  <h2>首版做到哪</h2>
+  <p>人能装上一个含列表和表单的标准包，在 60 秒内打开。能授权、能停用、能在安装失败时回到原点。智能体能给草稿应用加页面；给已发布应用加页面时没有审批号就会被拒绝。跨源数据量过大时拒绝，而不是拖死连接。</p>
+  <p>首版不做：第二套登录、任意 SQL、分析指标平台、行业成品、手机专用壳、页面里的脚本。</p>
+
+  <h2>实现落点</h2>
+  <p>一个 Java 21 服务，旁边一个 React 外壳。模块按身份、应用、服务、界面、数据、语义、安装、桥接分开。错误文案和上限数字集中在规格字面量库，避免前后端各写一句。</p>
+  <p>开发从 <a href="specs/00-contracts.md">契约索引</a> 进入单模块规格。阅读顺序建议：<a href="01-需求分析.md">需求</a>、<a href="02-同类产品调研.md">调研</a>、<a href="06-总体设计/00-总体设计方案.md">总体设计</a>、对应规格。</p>
+</main>
+</body>
+</html>

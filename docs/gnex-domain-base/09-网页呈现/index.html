@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gnex 领域应用基座</title>
+<style>
+  :root { --bg:#f4f1ea; --ink:#1c1915; --muted:#5c564c; --line:#d9d2c5; --card:#fffdf8; --accent:#0f6e56; --warn:#8a3b12; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.6 "Segoe UI","Microsoft YaHei",sans-serif; color:var(--ink); background:var(--bg); }
+  header { padding:32px 8vw 12px; }
+  h1 { font-size:32px; line-height:1.25; margin:0 0 8px; }
+  h2 { font-size:20px; margin:32px 0 8px; }
+  p, li { color:var(--ink); }
+  .muted { color:var(--muted); }
+  main { padding:0 8vw 64px; max-width:1100px; }
+  a { color:var(--accent); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .card strong { display:block; margin-bottom:4px; }
+  .stack { display:flex; flex-direction:column; gap:8px; margin:12px 0 20px; }
+  .layer { border:1px solid var(--line); background:var(--card); border-radius:8px; padding:10px 14px; }
+  .layer b { color:var(--accent); }
+  table { width:100%; border-collapse:collapse; background:var(--card); }
+  th, td { border-bottom:1px solid var(--line); text-align:left; padding:8px 10px; vertical-align:top; font-size:14px; }
+  .warn { color:var(--warn); }
+  nav a { margin-right:14px; }
+</style>
+</head>
+<body>
+<header>
+  <p class="muted">设计说明 · 2026-11-03 · 约束来自 gnex3 插件化升级规划审计修订版</p>
+  <h1>gnex 领域应用基座</h1>
+  <p>智能体操作系统负责把事情规划并跑起来。基座负责让不同业务系统用同一套方式装上去：人与权限、应用与菜单、业务服务、标准页面、多来源数据、可审批的智能组装。</p>
+  <nav>
+    <a href="#boundary">分界</a>
+    <a href="#parts">七块能力</a>
+    <a href="#path">一套系统怎么来</a>
+    <a href="#specs">规格</a>
+    <a href="../产品设计说明.html">完整说明</a>
+  </nav>
+</header>
+<main>
+  <h2 id="boundary">和 gnex 的分界</h2>
+  <div class="stack">
+    <div class="layer"><b>业务系统</b>　请假、巡检、资产等应用包。规则放在自己的钩子里。</div>
+    <div class="layer"><b>领域应用基座</b>　应用、路由、页面模式、实体、查询、语义包、安装事务。独立进程。托管数据同时按租户和项目隔开。</div>
+    <div class="layer"><b>gnex3</b>　租户硬边界、登录、组织、审批、审计、凭证、智能体循环、模型、沙箱、记忆。基座只调用，不重做。</div>
+  </div>
+  <p class="warn">基座停了，正在 gnex 里跑、且不再访问基座的那一轮智能体仍应跑完。基座不把业务查询塞进智能体进程。</p>
+
+  <h2 id="parts">七块能力</h2>
+  <div class="grid">
+    <div class="card"><strong>身份</strong>核验 gnex 令牌。应用内成员和数据权限另记。不自建用户库。</div>
+    <div class="card"><strong>应用</strong>草稿、发布、停用、退役。菜单由已发布路由生成。</div>
+    <div class="card"><strong>服务</strong>登记业务接口和健康。键以 biz. 开头，避免和 gnex 内部服务重名。</div>
+    <div class="card"><strong>界面</strong>六种标准区块。页面格式不绑死某一组件库。</div>
+    <div class="card"><strong>数据</strong>托管表或外接 PostgreSQL、MySQL、REST。查询强制带租户。不提供任意 SQL。</div>
+    <div class="card"><strong>智能组装</strong>智能体提交结构化差异。已发布应用必须先过 gnex 审批。</div>
+    <div class="card"><strong>应用包</strong>清单安装。失败则回到安装前。标准包 60 秒内可打开。</div>
+  </div>
+
+  <h2 id="path">一套系统怎么来</h2>
+  <ol>
+    <li>管理员登记数据源，或使用基座托管库。</li>
+    <li>安装应用包。包里有实体、页面、语义和可选的业务钩子。</li>
+    <li>把人放进应用并授予角色。</li>
+    <li>业务用户从外壳进入菜单，列表和表单经统一查询读写。</li>
+    <li>要改已发布页面时，智能体提议，审批通过后才落地。</li>
+  </ol>
+
+  <h2>取舍（摘要）</h2>
+  <table>
+    <tr><th>决定</th><th>不这样做的原因</th></tr>
+    <tr><td>独立服务，而不是塞进智能体进程</td><td>业务安装和页面流量不应重启智能体循环</td></tr>
+    <tr><td>登录沿用 gnex</td><td>两套账号会停用不同步</td></tr>
+    <tr><td>元数据用 PostgreSQL</td><td>与现有租户行级隔离同一套路。不把应用定义放进另一套文档库</td></tr>
+    <tr><td>首版不做大查询引擎</td><td>第一批系统是单据，不是分析仓。跨源超过一万行估算就拒绝</td></tr>
+    <tr><td>页面不使用某一低代码产品的私有 JSON</td><td>换界面实现时不应重写全部历史页面</td></tr>
+  </table>
+
+  <h2 id="specs">规格入口</h2>
+  <p class="muted">开发按单模块规格开工。数值和错误文案以字面量库为准。</p>
+  <table>
+    <tr><th>规格</th><th>做什么</th></tr>
+    <tr><td><a href="../specs/spec-idn-context.md">登录上下文</a></td><td>核验令牌，失败即拒绝</td></tr>
+    <tr><td><a href="../specs/spec-idn-grant.md">应用授权</a></td><td>成员、角色、行过滤、打码</td></tr>
+    <tr><td><a href="../specs/spec-app-registry.md">应用注册</a></td><td>应用状态</td></tr>
+    <tr><td><a href="../specs/spec-app-router.md">路由</a></td><td>路径与菜单</td></tr>
+    <tr><td><a href="../specs/spec-svc-catalog.md">服务目录</a></td><td>业务服务与健康</td></tr>
+    <tr><td><a href="../specs/spec-ui-schema.md">页面模式</a></td><td>正式页面格式</td></tr>
+    <tr><td><a href="../specs/spec-ui-shell.md">外壳</a></td><td>中文标准界面</td></tr>
+    <tr><td><a href="../specs/spec-dat-source.md">数据源</a></td><td>三种连接，密钥只留引用</td></tr>
+    <tr><td><a href="../specs/spec-dat-entity.md">实体</a></td><td>托管建表或外接映射</td></tr>
+    <tr><td><a href="../specs/spec-dat-query.md">查询与命令</a></td><td>下推、拒绝任意 SQL、跨源上限</td></tr>
+    <tr><td><a href="../specs/spec-sem-package.md">语义包</a></td><td>给人和智能体读的说明</td></tr>
+    <tr><td><a href="../specs/spec-sem-assemble.md">组装事务</a></td><td>提议、审批、回滚</td></tr>
+    <tr><td><a href="../specs/spec-pkg-install.md">安装升级</a></td><td>事务、回滚、禁跳版</td></tr>
+    <tr><td><a href="../specs/spec-brg-gnex.md">gnex 桥</a></td><td>唯一对外调用点</td></tr>
+  </table>
+
+  <h2>正文目录</h2>
+  <ul>
+    <li><a href="../01-需求分析.md">需求</a></li>
+    <li><a href="../02-同类产品调研.md">同类产品</a></li>
+    <li><a href="../06-总体设计/00-总体设计方案.md">总体设计</a></li>
+    <li><a href="../06-总体设计/05-智能组装设计.md">智能组装</a></li>
+    <li><a href="../00-项目管理/03-决策日志.md">决策</a></li>
+    <li><a href="../00-项目管理/02-审计记录.md">评审记录</a></li>
+  </ul>
+</main>
+</body>
+</html>
